@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: Image.asset(
-              'assets/images/oncosense_logo.png',
+              'assets/images/oncosense_logoo.png',
               width: 250,
               height: 250,
               fit: BoxFit.contain,
