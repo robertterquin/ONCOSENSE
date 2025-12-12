@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/constants.dart';
+import 'package:cancerapp/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/auth_button.dart';
 import 'widgets/input_field.dart';
 
@@ -43,14 +45,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = true;
     });
 
-    // TODO: Implement actual password reset logic
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final supabase = SupabaseService();
+      await supabase.resetPassword(_emailController.text.trim());
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _emailSent = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _emailSent = true;
+        });
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

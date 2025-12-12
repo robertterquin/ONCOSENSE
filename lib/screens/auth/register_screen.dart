@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/utils/routes.dart';
+import 'package:cancerapp/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/input_field.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -94,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!_termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please accept the terms and conditions'),
           backgroundColor: Colors.red,
         ),
@@ -106,23 +108,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoading = true;
     });
 
-    // TODO: Implement actual registration logic
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created successfully!'),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      final supabase = SupabaseService();
+      
+      // Prepare user metadata
+      final metadata = <String, dynamic>{
+        'full_name': _nameController.text.trim(),
+      };
+      
+      if (_ageController.text.isNotEmpty) {
+        metadata['age'] = int.parse(_ageController.text);
+      }
+      
+      if (_selectedGender != null) {
+        metadata['gender'] = _selectedGender;
+      }
+      
+      await supabase.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        metadata: metadata,
       );
 
-      // Navigate to login or home screen
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully! Please check your email to verify.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+
+        // Navigate to login screen
+        Navigator.pushReplacementNamed(context, AppRoutes.login);
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

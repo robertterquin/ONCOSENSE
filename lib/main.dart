@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/utils/constants.dart';
+import 'package:cancerapp/services/supabase_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase
+  await SupabaseService.initialize();
+  
   runApp(const CancerApp());
 }
 
