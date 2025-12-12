@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Pink Ribbon Color Palette
@@ -48,7 +49,43 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Poppins',
+      textTheme: GoogleFonts.poppinsTextTheme(
+        const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: textDark,
+          ),
+          displayMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: textDark,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: textDark,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: textDark,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            color: textDark,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: textDark,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: white,
+          ),
+        ),
+      ),
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryPink,
         primary: primaryPink,
@@ -65,41 +102,6 @@ class AppTheme {
           color: textDark,
           fontSize: 20,
           fontWeight: FontWeight.w600,
-        ),
-      ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: textDark,
-        ),
-        displayMedium: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: textDark,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          color: textDark,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: textDark,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          color: textDark,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: textDark,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: white,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -148,7 +150,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Poppins',
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryPink,
         brightness: Brightness.dark,
