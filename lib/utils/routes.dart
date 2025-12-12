@@ -4,7 +4,7 @@ import 'package:cancerapp/screens/auth/welcome_screen.dart';
 import 'package:cancerapp/screens/auth/register_screen.dart';
 import 'package:cancerapp/screens/auth/login_screen.dart';
 import 'package:cancerapp/screens/auth/forgot_password_screen.dart';
-import 'package:cancerapp/screens/home/home_screen.dart';
+import 'package:cancerapp/screens/main_navigation.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -21,7 +21,7 @@ class AppRoutes {
       register: (context) => const RegisterScreen(),
       login: (context) => const LoginScreen(),
       forgotPassword: (context) => const ForgotPasswordScreen(),
-      home: (context) => const HomeScreen(),
+      home: (context) => const MainNavigation(),
       // TODO: Add other routes (onboarding, etc.)
     };
   }

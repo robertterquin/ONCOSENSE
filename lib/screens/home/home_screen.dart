@@ -71,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
                   onPressed: () {
                     // TODO: Navigate to profile
-                    Navigator.pushNamed(context, '/profile');
                   },
                 ),
               ],
@@ -325,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAwarenessBanner() {
     return Container(
       width: double.infinity,
-      height: 160,
+      height: 240,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -367,13 +366,13 @@ class _HomeScreenState extends State<HomeScreen> {
           
           // Content
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD81B60),
                     borderRadius: BorderRadius.circular(20),
@@ -387,25 +386,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 const Text(
                   'National Cancer\nAwareness Month',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF212121),
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 const Text(
                   'Learn about early detection & prevention',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Color(0xFF616161),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
                     // TODO: Navigate to awareness content
@@ -413,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD81B60),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -422,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Text(
                     'Learn More',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -456,7 +455,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.medical_information_outlined,
                 label: 'Cancer Types',
                 color: const Color(0xFFE91E63),
-                onTap: () => Navigator.pushNamed(context, '/cancer-info'),
+                onTap: () {
+                  // Use bottom nav bar to switch tabs
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tap Cancer Info in bottom menu')),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -465,7 +469,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.health_and_safety_outlined,
                 label: 'Self-Checks',
                 color: const Color(0xFF9C27B0),
-                onTap: () => Navigator.pushNamed(context, '/prevention'),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tap Prevention in bottom menu')),
+                  );
+                },
               ),
             ),
           ],
@@ -478,7 +486,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.forum_outlined,
                 label: 'Q&A Forum',
                 color: const Color(0xFF2196F3),
-                onTap: () => Navigator.pushNamed(context, '/forum'),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tap Q&A Forum in bottom menu')),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -487,7 +499,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.support_agent_outlined,
                 label: 'Resources',
                 color: const Color(0xFF4CAF50),
-                onTap: () => Navigator.pushNamed(context, '/resources'),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tap Resources in bottom menu')),
+                  );
+                },
               ),
             ),
           ],
