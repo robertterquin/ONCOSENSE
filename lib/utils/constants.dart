@@ -1,6 +1,6 @@
 class AppConstants {
   // App Info
-  static const String appName = 'CancerApp';
+  static const String appName = 'OncoSense';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Empowering Awareness. Saving Lives.';
   

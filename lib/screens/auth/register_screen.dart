@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/constants.dart';
-import 'widgets/auth_button.dart';
+import 'package:cancerapp/utils/routes.dart';
 import 'widgets/input_field.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -123,242 +122,278 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       // Navigate to login or home screen
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: AppTheme.softPinkGradient,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-        child: SafeArea(
+        title: Text(
+          'Create Account',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Form(
+          key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // App Bar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.pop(context),
+              // Full Name
+              InputField(
+                controller: _nameController,
+                label: 'Full Name',
+                hint: 'Enter your full name',
+                keyboardType: TextInputType.name,
+                prefixIcon: const Icon(Icons.person_outline),
+                validator: _validateName,
+              ),
+
+              const SizedBox(height: 16.0),
+
+              // Email
+              InputField(
+                controller: _emailController,
+                label: 'Email',
+                hint: 'Enter your email',
+                keyboardType: TextInputType.emailAddress,
+                prefixIcon: const Icon(Icons.email_outlined),
+                validator: _validateEmail,
+              ),
+
+              const SizedBox(height: 16.0),
+
+              // Password
+              InputField(
+                controller: _passwordController,
+                label: 'Password',
+                hint: 'At least 6 characters',
+                isPassword: true,
+                prefixIcon: const Icon(Icons.lock_outline),
+                validator: _validatePassword,
+              ),
+
+              const SizedBox(height: 16.0),
+
+              // Confirm Password
+              InputField(
+                controller: _confirmPasswordController,
+                label: 'Confirm Password',
+                hint: 'Re-enter your password',
+                isPassword: true,
+                prefixIcon: const Icon(Icons.lock_outline),
+                validator: _validateConfirmPassword,
+              ),
+
+              const SizedBox(height: 16.0),
+
+              // Age (Optional)
+              InputField(
+                controller: _ageController,
+                label: 'Age (Optional)',
+                hint: 'Enter your age',
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(Icons.calendar_today_outlined),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3),
+                ],
+                validator: _validateAge,
+              ),
+
+              const SizedBox(height: 16.0),
+
+              // Gender (Optional)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Gender (Optional)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF424242),
                     ),
-                    const SizedBox(width: 8.0),
-                    Text(
-                      'Create Account',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedGender,
+                      decoration: InputDecoration(
+                        hintText: 'Select your gender',
+                        hintStyle: TextStyle(
+                          color: Color(0xFF9E9E9E),
+                          fontSize: 14,
+                        ),
+                        prefixIcon: Icon(Icons.wc_outlined, color: Color(0xFF757575)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                      dropdownColor: Colors.white,
+                      items: ['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((gender) {
+                        return DropdownMenuItem(
+                          value: gender,
+                          child: Text(gender),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedGender = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24.0),
+
+              // Terms & Privacy Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Checkbox(
+                      value: _termsAccepted,
+                      onChanged: (value) {
+                        setState(() {
+                          _termsAccepted = value ?? false;
+                        });
+                      },
+                      activeColor: Color(0xFFD81B60),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _termsAccepted = !_termsAccepted;
+                        });
+                      },
+                      child: RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF616161),
+                            height: 1.4,
+                          ),
+                          children: const [
+                            TextSpan(text: 'I agree to the '),
+                            TextSpan(
+                              text: 'Terms & Conditions',
+                              style: TextStyle(
+                                color: Color(0xFFD81B60),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: TextStyle(
+                                color: Color(0xFFD81B60),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32.0),
+
+              // Register Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleRegister,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFD81B60),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    elevation: 0,
+                    disabledBackgroundColor: Color(0xFFD81B60).withOpacity(0.6),
+                  ),
+                  child: _isLoading
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Register',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
 
-              // Form
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Full Name
-                        InputField(
-                          controller: _nameController,
-                          label: 'Full Name *',
-                          hint: 'Enter your full name',
-                          keyboardType: TextInputType.name,
-                          prefixIcon: const Icon(Icons.person_outline),
-                          validator: _validateName,
-                        ),
+              const SizedBox(height: 16.0),
 
-                        const SizedBox(height: 16.0),
-
-                        // Email
-                        InputField(
-                          controller: _emailController,
-                          label: 'Email *',
-                          hint: 'Enter your email',
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          validator: _validateEmail,
-                        ),
-
-                        const SizedBox(height: 16.0),
-
-                        // Password
-                        InputField(
-                          controller: _passwordController,
-                          label: 'Password *',
-                          hint: 'At least 6 characters',
-                          isPassword: true,
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          validator: _validatePassword,
-                        ),
-
-                        const SizedBox(height: 16.0),
-
-                        // Confirm Password
-                        InputField(
-                          controller: _confirmPasswordController,
-                          label: 'Confirm Password *',
-                          hint: 'Re-enter your password',
-                          isPassword: true,
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          validator: _validateConfirmPassword,
-                        ),
-
-                        const SizedBox(height: 16.0),
-
-                        // Age (Optional)
-                        InputField(
-                          controller: _ageController,
-                          label: 'Age (Optional)',
-                          hint: 'Enter your age',
-                          keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.cake_outlined),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(3),
-                          ],
-                          validator: _validateAge,
-                        ),
-
-                        const SizedBox(height: 16.0),
-
-                        // Gender (Optional)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Gender (Optional)',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF212121),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _selectedGender,
-                              decoration: InputDecoration(
-                                hintText: 'Select your gender',
-                                hintStyle: TextStyle(
-                                  color: Color(0xFFBDBDBD).withOpacity(0.6),
-                                  fontSize: 14,
-                                ),
-                                prefixIcon: const Icon(Icons.wc_outlined),
-                              ),
-                              items: ['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((gender) {
-                                return DropdownMenuItem(
-                                  value: gender,
-                                  child: Text(gender),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedGender = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24.0),
-
-                        // Terms & Privacy Checkbox
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _termsAccepted,
-                              onChanged: (value) {
-                                setState(() {
-                                  _termsAccepted = value ?? false;
-                                });
-                              },
-                              activeColor: Color(0xFFE91E63),
-                            ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _termsAccepted = !_termsAccepted;
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: Theme.of(context).textTheme.bodyMedium,
-                                      children: const [
-                                        TextSpan(text: 'I agree to the '),
-                                        TextSpan(
-                                          text: 'Terms & Conditions',
-                                          style: TextStyle(
-                                            color: Color(0xFFE91E63),
-                                            fontWeight: FontWeight.bold,
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                        ),
-                                        TextSpan(text: ' and '),
-                                        TextSpan(
-                                          text: 'Privacy Policy',
-                                          style: TextStyle(
-                                            color: Color(0xFFE91E63),
-                                            fontWeight: FontWeight.bold,
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24.0),
-
-                        // Register Button
-                        AuthButton(
-                          text: 'Register',
-                          onPressed: _handleRegister,
-                          isLoading: _isLoading,
-                        ),
-
-                        const SizedBox(height: 16.0),
-
-                        // Login Link
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Already have an account? ',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacementNamed(context, '/login');
-                              },
-                              child: const Text(
-                                'Login',
-                                style: TextStyle(
-                                  color: Color(0xFFE91E63),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+              // Login Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Already have an account? ',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF616161),
                     ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.login);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                        color: Color(0xFFD81B60),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
