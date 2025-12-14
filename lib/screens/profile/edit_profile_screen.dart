@@ -296,29 +296,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   // App Bar
                   SliverAppBar(
                     floating: true,
-                    expandedHeight: 100,
+                    expandedHeight: 80,
                     backgroundColor: const Color(0xFFD81B60),
                     elevation: 0,
                     leading: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
+                        bottomLeft: Radius.circular(24),
+                        bottomRight: Radius.circular(24),
                       ),
                     ),
                     flexibleSpace: FlexibleSpaceBar(
                       background: SafeArea(
                         child: Center(
-                          child: Text(
-                            'Edit Profile',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Edit Profile',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

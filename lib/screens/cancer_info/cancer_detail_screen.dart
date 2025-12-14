@@ -20,16 +20,9 @@ class CancerDetailScreen extends StatelessWidget {
             expandedHeight: 80,
             backgroundColor: const Color(0xFFD81B60),
             elevation: 0,
-            leading: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
