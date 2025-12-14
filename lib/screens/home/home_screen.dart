@@ -37,43 +37,48 @@ class _HomeScreenState extends State<HomeScreen> {
             // App Bar
             SliverAppBar(
               floating: true,
+              expandedHeight: 80,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hello, $userName 👋',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'Stay informed, stay healthy',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                ],
+              automaticallyImplyLeading: false,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                  onPressed: () {
-                    // TODO: Navigate to notifications
-                  },
+              flexibleSpace: FlexibleSpaceBar(
+                background: SafeArea(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Hello, $userName 👋',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.account_circle_outlined, color: Colors.white, size: 28),
+                                onPressed: () {
+                                  // TODO: Navigate to profile
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
-                  onPressed: () {
-                    // TODO: Navigate to profile
-                  },
-                ),
-              ],
+              ),
             ),
 
             // Content
