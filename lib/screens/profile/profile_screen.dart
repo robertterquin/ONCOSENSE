@@ -13,6 +13,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final supabase = SupabaseService();
   String userName = 'Guest';
   String userEmail = '';
+  String? profilePictureUrl;
   
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         userName = user.userMetadata?['full_name'] ?? 'User';
         userEmail = user.email ?? '';
+        profilePictureUrl = user.userMetadata?['profile_picture_url'];
       });
     }
   }
@@ -384,15 +386,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 3,
               ),
             ),
-            child: Center(
-              child: Text(
-                userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                style: const TextStyle(
-                  color: Color(0xFFD81B60),
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            child: ClipOval(
+              child: profilePictureUrl != null
+                  ? Image.network(
+                      profilePictureUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Text(
+                            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                            style: const TextStyle(
+                              color: Color(0xFFD81B60),
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                        style: const TextStyle(
+                          color: Color(0xFFD81B60),
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 16),

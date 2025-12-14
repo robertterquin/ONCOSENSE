@@ -16,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final supabase = SupabaseService();
   final gNewsService = GNewsService();
   String userName = 'Guest';
+  String? profilePictureUrl;
   List<Article> articles = [];
   bool isLoadingArticles = true;
   
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user != null) {
       setState(() {
         userName = user.userMetadata?['full_name'] ?? user.email?.split('@')[0] ?? 'User';
+        profilePictureUrl = user.userMetadata?['profile_picture_url'];
       });
     }
   }
@@ -105,16 +107,46 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Row(
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.account_circle_outlined, color: Colors.white, size: 28),
-                                onPressed: () {
+                              GestureDetector(
+                                onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => const ProfileScreen(),
                                     ),
-                                  );
+                                  ).then((_) => _loadUserData());
                                 },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: profilePictureUrl != null
+                                        ? Image.network(
+                                            profilePictureUrl!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.person,
+                                                color: Color(0xFFD81B60),
+                                                size: 24,
+                                              );
+                                            },
+                                          )
+                                        : const Icon(
+                                            Icons.person,
+                                            color: Color(0xFFD81B60),
+                                            size: 24,
+                                          ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),

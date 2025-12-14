@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,6 +23,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedGender;
   bool _isLoading = false;
   bool _isSaving = false;
+  String? _profilePictureUrl;
+  XFile? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   final List<String> _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
@@ -49,6 +55,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _emailController.text = user.email ?? '';
       _ageController.text = user.userMetadata?['age']?.toString() ?? '';
       _selectedGender = user.userMetadata?['gender'];
+      _profilePictureUrl = user.userMetadata?['profile_picture_url'];
     }
     
     setState(() => _isLoading = false);
@@ -64,6 +71,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final user = supabase.currentUser;
       if (user != null) {
+        String? uploadedImageUrl = _profilePictureUrl;
+        
+        // Upload new profile picture if selected
+        if (_selectedImage != null) {
+          uploadedImageUrl = await _uploadProfilePicture(user.id);
+        }
+        
         // Update user metadata
         await supabase.client.auth.updateUser(
           UserAttributes(
@@ -71,6 +85,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               'full_name': _nameController.text.trim(),
               'age': _ageController.text.isNotEmpty ? int.tryParse(_ageController.text) : null,
               'gender': _selectedGender,
+              'profile_picture_url': uploadedImageUrl,
             },
           ),
         );
@@ -98,6 +113,170 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
       }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = pickedFile;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Choose Profile Picture',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Color(0xFFD81B60)),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFFD81B60)),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _takePhoto();
+                },
+              ),
+              if (_profilePictureUrl != null || _selectedImage != null)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Remove Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _removePhoto();
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = pickedFile;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to take photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _removePhoto() {
+    setState(() {
+      _selectedImage = null;
+      _profilePictureUrl = null;
+    });
+  }
+
+  Future<String?> _uploadProfilePicture(String userId) async {
+    if (_selectedImage == null) return null;
+
+    try {
+      final fileName = 'profile_$userId.jpg';
+      final filePath = 'profile_pictures/$fileName';
+
+      // Read image bytes
+      final imageBytes = await _selectedImage!.readAsBytes();
+
+      // Upload to Supabase Storage
+      await supabase.client.storage
+          .from('images')
+          .uploadBinary(
+            filePath,
+            imageBytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      // Get public URL
+      final publicUrl = supabase.client.storage
+          .from('images')
+          .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to upload image';
+        
+        // Check if it's a bucket not found error
+        if (e.toString().contains('Bucket not found') || 
+            e.toString().contains('404')) {
+          errorMessage = 'Storage bucket not configured. Please create an "images" bucket in Supabase Storage (see STORAGE_SETUP.md)';
+        } else if (e.toString().contains('row-level security policy') || 
+                   e.toString().contains('403') ||
+                   e.toString().contains('Unauthorized')) {
+          errorMessage = 'Storage permissions error. Please enable "Public bucket" or add upload policies for the "images" bucket in Supabase';
+        } else {
+          errorMessage = 'Failed to upload image: ${e.toString()}';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+      return null;
     }
   }
 
@@ -160,66 +339,113 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                             // Profile Picture Section
                             Center(
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Color(0xFFD81B60),
-                                          Color(0xFFE91E63),
-                                        ],
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFD81B60).withOpacity(0.3),
-                                          blurRadius: 15,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        _nameController.text.isNotEmpty 
-                                            ? _nameController.text[0].toUpperCase() 
-                                            : 'U',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 40,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
+                              child: GestureDetector(
+                                onTap: _showImageSourceDialog,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      width: 100,
+                                      height: 100,
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
                                         shape: BoxShape.circle,
+                                        gradient: (_selectedImage == null && _profilePictureUrl == null)
+                                            ? const LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [
+                                                  Color(0xFFD81B60),
+                                                  Color(0xFFE91E63),
+                                                ],
+                                              )
+                                            : null,
+                                        color: (_selectedImage != null || _profilePictureUrl != null) 
+                                            ? Colors.grey[200] 
+                                            : null,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                            color: const Color(0xFFD81B60).withOpacity(0.3),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 8),
                                           ),
                                         ],
                                       ),
-                                      child: const Icon(
-                                        Icons.camera_alt,
-                                        color: Color(0xFFD81B60),
-                                        size: 20,
+                                      child: ClipOval(
+                                        child: _selectedImage != null
+                                            ? FutureBuilder<Uint8List>(
+                                                future: _selectedImage!.readAsBytes(),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot.hasData) {
+                                                    return Image.memory(
+                                                      snapshot.data!,
+                                                      fit: BoxFit.cover,
+                                                    );
+                                                  }
+                                                  return const Center(
+                                                    child: CircularProgressIndicator(
+                                                      color: Color(0xFFD81B60),
+                                                      strokeWidth: 2,
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                            : _profilePictureUrl != null
+                                                ? Image.network(
+                                                    _profilePictureUrl!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return Center(
+                                                        child: Text(
+                                                          _nameController.text.isNotEmpty 
+                                                              ? _nameController.text[0].toUpperCase() 
+                                                              : 'U',
+                                                          style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 40,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                : Center(
+                                                    child: Text(
+                                                      _nameController.text.isNotEmpty 
+                                                          ? _nameController.text[0].toUpperCase() 
+                                                          : 'U',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 40,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.1),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          color: Color(0xFFD81B60),
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
 
