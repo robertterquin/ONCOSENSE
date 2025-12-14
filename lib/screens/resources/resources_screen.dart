@@ -12,14 +12,31 @@ class ResourcesScreen extends StatelessWidget {
           slivers: [
             SliverAppBar(
               floating: true,
+              expandedHeight: 80,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
-              title: const Text(
-                'Resources',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              automaticallyImplyLeading: false,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: SafeArea(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Resources',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
