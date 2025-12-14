@@ -3,6 +3,7 @@ import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/gnews_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cancerapp/screens/profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -107,7 +108,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               IconButton(
                                 icon: const Icon(Icons.account_circle_outlined, color: Colors.white, size: 28),
                                 onPressed: () {
-                                  // TODO: Navigate to profile
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ProfileScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ],
