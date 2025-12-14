@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/services/gnews_service.dart';
+import 'package:cancerapp/models/article.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,12 +13,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final supabase = SupabaseService();
+  final gNewsService = GNewsService();
   String userName = 'Guest';
+  List<Article> articles = [];
+  bool isLoadingArticles = true;
   
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadArticles();
   }
 
   void _loadUserData() {
@@ -24,6 +31,38 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         userName = user.userMetadata?['full_name'] ?? user.email?.split('@')[0] ?? 'User';
       });
+    }
+  }
+
+  Future<void> _loadArticles() async {
+    try {
+      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: 3);
+      setState(() {
+        articles = fetchedArticles;
+        isLoadingArticles = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingArticles = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load articles: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openArticle(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open article')),
+        );
+      }
     }
   }
 
@@ -224,27 +263,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Articles Preview List
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        _buildArticlePreview(
-                          'Understanding Breast Cancer: Early Detection',
-                          'Learn about the importance of early screening...',
-                          '5 min read',
-                        ),
-                        const SizedBox(height: 12),
-                        _buildArticlePreview(
-                          'Nutrition Tips for Cancer Prevention',
-                          'Discover foods that may help reduce your risk...',
-                          '4 min read',
-                        ),
-                        const SizedBox(height: 12),
-                        _buildArticlePreview(
-                          'Mental Health During Treatment',
-                          'Supporting your emotional well-being...',
-                          '6 min read',
-                        ),
-                      ],
-                    ),
+                    child: isLoadingArticles
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFD81B60),
+                              ),
+                            ),
+                          )
+                        : articles.isEmpty
+                            ? Center(
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.article_outlined,
+                                      size: 48,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'No articles available',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Column(
+                                children: articles
+                                    .map((article) => Padding(
+                                          padding: const EdgeInsets.only(bottom: 12),
+                                          child: _buildArticlePreview(
+                                            article.title,
+                                            article.description,
+                                            article.readTime,
+                                            article.url,
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
                   ),
 
                   const SizedBox(height: 32),
@@ -782,10 +842,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Article Preview Widget
-  Widget _buildArticlePreview(String title, String excerpt, String readTime) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url]) {
+    return InkWell(
+      onTap: url != null ? () => _openArticle(url) : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE0E0E0)),
@@ -865,6 +928,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Color(0xFFBDBDBD),
           ),
         ],
+      ),
       ),
     );
   }

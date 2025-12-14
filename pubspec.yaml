@@ -43,6 +43,12 @@ dependencies:
   
   # Google Fonts
   google_fonts: ^6.1.0
+  
+  # HTTP requests
+  http: ^1.2.0
+  
+  # URL launcher
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
