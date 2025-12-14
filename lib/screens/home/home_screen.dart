@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/gnews_service.dart';
+import 'package:cancerapp/services/health_tips_service.dart';
 import 'package:cancerapp/models/article.dart';
+import 'package:cancerapp/models/health_tip.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/screens/profile/profile_screen.dart';
 
@@ -19,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? profilePictureUrl;
   List<Article> articles = [];
   bool isLoadingArticles = true;
+  HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
   
   @override
   void initState() {
@@ -177,14 +180,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _buildAwarenessBanner(),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Quick Access Buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildQuickAccessButtons(),
                   ),
 
                   const SizedBox(height: 24),
@@ -393,22 +388,42 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Daily Health Tip',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  children: [
+                    const Text(
+                      'Daily Health Tip',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        dailyTip.category,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Regular exercise reduces cancer risk by up to 30%',
-                  style: TextStyle(
+                  dailyTip.tip,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -533,137 +548,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // Quick Access Buttons Widget
-  Widget _buildQuickAccessButtons() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Access',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF212121),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickAccessButton(
-                icon: Icons.medical_information_outlined,
-                label: 'Cancer Types',
-                color: const Color(0xFFE91E63),
-                onTap: () {
-                  // Use bottom nav bar to switch tabs
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tap Cancer Info in bottom menu')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickAccessButton(
-                icon: Icons.health_and_safety_outlined,
-                label: 'Self-Checks',
-                color: const Color(0xFF9C27B0),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tap Prevention in bottom menu')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickAccessButton(
-                icon: Icons.forum_outlined,
-                label: 'Q&A Forum',
-                color: const Color(0xFF2196F3),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tap Q&A Forum in bottom menu')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickAccessButton(
-                icon: Icons.support_agent_outlined,
-                label: 'Resources',
-                color: const Color(0xFF4CAF50),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tap Resources in bottom menu')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickAccessButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF212121),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
