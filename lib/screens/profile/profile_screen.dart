@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -62,24 +63,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             // App Bar
             SliverAppBar(
               floating: true,
-              expandedHeight: 80,
+              expandedHeight: 100,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
                 onPressed: () => Navigator.pop(context),
               ),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
               ),
               flexibleSpace: FlexibleSpaceBar(
@@ -89,8 +90,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'Profile',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -102,119 +104,242 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Profile Header
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildProfileHeader(),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
-                  // Menu Items
-                  _buildMenuItem(
-                    icon: Icons.edit_outlined,
-                    title: 'Edit Profile',
-                    subtitle: 'Update your personal information',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Edit Profile - Coming soon')),
-                      );
-                    },
+                  // Menu Section Title
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Your Content',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ),
 
-                  _buildMenuItem(
-                    icon: Icons.bookmark_outline,
-                    title: 'Saved Articles',
-                    subtitle: 'View your bookmarked articles',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Saved Articles - Coming soon')),
-                      );
-                    },
+                  const SizedBox(height: 12),
+
+                  // Content Menu Items
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildModernMenuItem(
+                            icon: Icons.edit_rounded,
+                            title: 'Edit Profile',
+                            subtitle: 'Update your personal information',
+                            iconColor: const Color(0xFFD81B60),
+                            iconBg: const Color(0xFFFCE4EC),
+                            onTap: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EditProfileScreen(),
+                                ),
+                              );
+                              // Reload user data if changes were made
+                              if (result == true) {
+                                _loadUserData();
+                              }
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.bookmark_rounded,
+                            title: 'Saved Articles',
+                            subtitle: 'View your bookmarked articles',
+                            iconColor: const Color(0xFFE91E63),
+                            iconBg: const Color(0xFFFCE4EC),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Saved Articles - Coming soon')),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.question_answer_rounded,
+                            title: 'Saved Questions',
+                            subtitle: 'Your saved forum discussions',
+                            iconColor: const Color(0xFF9C27B0),
+                            iconBg: const Color(0xFFF3E5F5),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Saved Questions - Coming soon')),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.favorite_rounded,
+                            title: 'Saved Resources',
+                            subtitle: 'Your favorite support resources',
+                            iconColor: const Color(0xFFEC407A),
+                            iconBg: const Color(0xFFFCE4EC),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Saved Resources - Coming soon')),
+                              );
+                            },
+                            isLast: true,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  _buildMenuItem(
-                    icon: Icons.question_answer_outlined,
-                    title: 'Saved Questions',
-                    subtitle: 'Your saved forum discussions',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Saved Questions - Coming soon')),
-                      );
-                    },
+                  const SizedBox(height: 24),
+
+                  // Settings Section Title
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Preferences',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ),
 
-                  _buildMenuItem(
-                    icon: Icons.favorite_outline,
-                    title: 'Saved Resources',
-                    subtitle: 'Your favorite support resources',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Saved Resources - Coming soon')),
-                      );
-                    },
+                  const SizedBox(height: 12),
+
+                  // Settings Menu Items
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildModernMenuItem(
+                            icon: Icons.settings_rounded,
+                            title: 'Settings',
+                            subtitle: 'App preferences and privacy',
+                            iconColor: const Color(0xFF2196F3),
+                            iconBg: const Color(0xFFE3F2FD),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Settings - Coming soon')),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.notifications_rounded,
+                            title: 'Notifications',
+                            subtitle: 'Manage your notifications',
+                            iconColor: const Color(0xFFFF9800),
+                            iconBg: const Color(0xFFFFF3E0),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Notifications - Coming soon')),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.help_rounded,
+                            title: 'Help & Support',
+                            subtitle: 'Get help and contact us',
+                            iconColor: const Color(0xFF4CAF50),
+                            iconBg: const Color(0xFFE8F5E9),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Help & Support - Coming soon')),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
+                            icon: Icons.info_rounded,
+                            title: 'About',
+                            subtitle: 'App version and information',
+                            iconColor: const Color(0xFF607D8B),
+                            iconBg: const Color(0xFFECEFF1),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('About - Coming soon')),
+                              );
+                            },
+                            isLast: true,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  const Divider(height: 32, thickness: 1),
+                  const SizedBox(height: 24),
 
-                  _buildMenuItem(
-                    icon: Icons.settings_outlined,
-                    title: 'Settings',
-                    subtitle: 'App preferences and privacy',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Settings - Coming soon')),
-                      );
-                    },
+                  // Logout Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: _buildModernMenuItem(
+                        icon: Icons.logout_rounded,
+                        title: 'Log Out',
+                        subtitle: 'Sign out of your account',
+                        iconColor: const Color(0xFFF44336),
+                        iconBg: const Color(0xFFFFEBEE),
+                        titleColor: const Color(0xFFF44336),
+                        onTap: _handleLogout,
+                        isLast: true,
+                      ),
+                    ),
                   ),
 
-                  _buildMenuItem(
-                    icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    subtitle: 'Manage your notifications',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notifications - Coming soon')),
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    subtitle: 'Get help and contact us',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Help & Support - Coming soon')),
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    icon: Icons.info_outline,
-                    title: 'About',
-                    subtitle: 'App version and information',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('About - Coming soon')),
-                      );
-                    },
-                  ),
-
-                  const Divider(height: 32, thickness: 1),
-
-                  _buildMenuItem(
-                    icon: Icons.logout,
-                    title: 'Log Out',
-                    subtitle: 'Sign out of your account',
-                    iconColor: const Color(0xFFD81B60),
-                    titleColor: const Color(0xFFD81B60),
-                    onTap: _handleLogout,
-                  ),
-
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -226,16 +351,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFD81B60),
+            Color(0xFFE91E63),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: const Color(0xFFD81B60).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -243,25 +374,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           // Profile Picture
           Container(
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFD81B60),
-                  Color(0xFFE91E63),
-                ],
+              color: Colors.white,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 3,
               ),
             ),
             child: Center(
               child: Text(
                 userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
+                  color: Color(0xFFD81B60),
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -279,31 +407,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
+                    color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   userEmail,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF757575),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withOpacity(0.9),
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFCE4EC),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Active Member',
-                    style: TextStyle(
-                      color: Color(0xFFD81B60),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
                     ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.verified,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        'Active Member',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -314,30 +460,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildModernMenuItem({
     required IconData icon,
     required String title,
     required String subtitle,
+    required Color iconColor,
+    required Color iconBg,
     required VoidCallback onTap,
-    Color? iconColor,
     Color? titleColor,
+    bool isLast = false,
   }) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(isLast ? 0 : 16),
+        bottom: Radius.circular(isLast ? 16 : 0),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: (iconColor ?? const Color(0xFFD81B60)).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: iconBg,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? const Color(0xFFD81B60),
-                size: 24,
+                color: iconColor,
+                size: 22,
               ),
             ),
             const SizedBox(width: 16),
@@ -348,29 +500,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: titleColor ?? const Color(0xFF212121),
+                      letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF757575),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.arrow_forward_ios,
+              Icons.arrow_forward_ios_rounded,
               size: 16,
               color: Colors.grey[400],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 68),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: Colors.grey[100],
       ),
     );
   }
