@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
 
 class PreventionScreen extends StatelessWidget {
   const PreventionScreen({super.key});
@@ -10,35 +11,9 @@ class PreventionScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              floating: true,
-              expandedHeight: 80,
-              backgroundColor: const Color(0xFFD81B60),
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: SafeArea(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'Prevention & Lifestyle',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            const CustomAppHeader(
+              title: 'Prevention & Lifestyle',
+              subtitle: 'Healthy tips for a cancer-free life',
             ),
             SliverToBoxAdapter(
               child: Column(

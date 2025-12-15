@@ -270,6 +270,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           _buildDivider(),
                           _buildModernMenuItem(
+                            icon: Icons.lock_rounded,
+                            title: 'Change Password',
+                            subtitle: 'Update your account password',
+                            iconColor: const Color(0xFFFF7043),
+                            iconBg: const Color(0xFFFFE0B2),
+                            onTap: () {
+                              Navigator.pushNamed(context, '/change-password');
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildModernMenuItem(
                             icon: Icons.notifications_rounded,
                             title: 'Notifications',
                             subtitle: 'Manage your notifications',

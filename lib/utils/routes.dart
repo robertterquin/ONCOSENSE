@@ -5,6 +5,7 @@ import 'package:cancerapp/screens/auth/register_screen.dart';
 import 'package:cancerapp/screens/auth/login_screen.dart';
 import 'package:cancerapp/screens/auth/forgot_password_screen.dart';
 import 'package:cancerapp/screens/main_navigation.dart';
+import 'package:cancerapp/screens/profile/change_password_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+  static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -22,6 +24,7 @@ class AppRoutes {
       login: (context) => const LoginScreen(),
       forgotPassword: (context) => const ForgotPasswordScreen(),
       home: (context) => const MainNavigation(),
+      changePassword: (context) => const ChangePasswordScreen(),
       // TODO: Add other routes (onboarding, etc.)
     };
   }
