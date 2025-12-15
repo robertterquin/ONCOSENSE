@@ -10,6 +10,7 @@ class ResourcesScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
+          clipBehavior: Clip.antiAlias,
           slivers: [
             const CustomAppHeader(
               title: 'Resources',

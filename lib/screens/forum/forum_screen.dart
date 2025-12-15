@@ -10,6 +10,7 @@ class ForumScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
+          clipBehavior: Clip.antiAlias,
           slivers: [
             const CustomAppHeader(
               title: 'Q&A Forum',

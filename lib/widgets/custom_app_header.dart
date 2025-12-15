@@ -25,6 +25,7 @@ class CustomAppHeader extends StatelessWidget {
         ),
       ),
       flexibleSpace: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,

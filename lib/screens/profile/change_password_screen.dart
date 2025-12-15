@@ -163,6 +163,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
               ),
               flexibleSpace: Container(
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,

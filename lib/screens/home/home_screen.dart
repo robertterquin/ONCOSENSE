@@ -79,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
+          clipBehavior: Clip.antiAlias,
           slivers: [
             // App Bar with custom design
             SliverAppBar(
@@ -94,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               flexibleSpace: Container(
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,

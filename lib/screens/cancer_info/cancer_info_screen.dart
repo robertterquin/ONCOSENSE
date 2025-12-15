@@ -69,6 +69,7 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
+          clipBehavior: Clip.antiAlias,
           slivers: [
             const CustomAppHeader(
               title: 'Cancer Information',

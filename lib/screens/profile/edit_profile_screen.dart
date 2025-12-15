@@ -310,6 +310,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
                     flexibleSpace: Container(
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
