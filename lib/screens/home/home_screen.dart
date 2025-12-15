@@ -426,6 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               )
                             : Column(
                                 children: articles
+                                    .where((article) => article.imageUrl != null && article.imageUrl!.isNotEmpty)
                                     .map((article) => Padding(
                                           padding: const EdgeInsets.only(bottom: 12),
                                           child: _buildArticlePreview(
@@ -433,6 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             article.description,
                                             article.readTime,
                                             article.url,
+                                            article.imageUrl,
                                           ),
                                         ))
                                     .toList(),
@@ -459,14 +461,14 @@ class _HomeScreenState extends State<HomeScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFD81B60),
-            Color(0xFFE91E63),
+            Color(0xFFF48FB1),
+            Color(0xFFF06292),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFD81B60).withOpacity(0.3),
+            color: const Color(0xFFF48FB1).withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -863,93 +865,115 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Article Preview Widget
-  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url]) {
+  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl]) {
     return InkWell(
       onTap: url != null ? () => _openArticle(url) : null,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFCE4EC),
-              borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: const Icon(
-              Icons.article_outlined,
-              color: Color(0xFFD81B60),
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  excerpt,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF757575),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      readTime,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF9E9E9E),
-                      ),
-                    ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Section
+            Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFCE4EC),
+                    Color(0xFFF8BBD0),
                   ],
                 ),
-              ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: imageUrl != null && imageUrl.isNotEmpty
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Icon(
+                            Icons.article_outlined,
+                            color: const Color(0xFFD81B60).withOpacity(0.4),
+                            size: 48,
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.article_outlined,
+                        color: const Color(0xFFD81B60).withOpacity(0.4),
+                        size: 48,
+                      ),
+                    ),
             ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: Color(0xFFBDBDBD),
-          ),
-        ],
-      ),
+            // Content Section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF212121),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    excerpt,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF757575),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 12,
+                        color: Color(0xFF9E9E9E),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        readTime,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF9E9E9E),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
