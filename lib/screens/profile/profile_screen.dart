@@ -55,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true) {
-      await supabase.signOut();
+      await supabase.signOutAndClearSession();
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/welcome');
       }

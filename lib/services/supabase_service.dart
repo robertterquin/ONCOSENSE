@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Supabase service for handling all Supabase operations
 class SupabaseService {
@@ -107,4 +108,46 @@ class SupabaseService {
 
   /// Listen to auth state changes
   Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
+
+  // Remember Me Feature Keys
+  static const String _rememberMeKey = 'remember_me';
+  static const String _hasActiveSessionKey = 'has_active_session';
+
+  /// Save remember me preference
+  Future<void> saveRememberMePreference(bool rememberMe) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_rememberMeKey, rememberMe);
+    if (rememberMe && isAuthenticated) {
+      await prefs.setBool(_hasActiveSessionKey, true);
+    }
+  }
+
+  /// Get remember me preference
+  Future<bool> getRememberMePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_rememberMeKey) ?? false;
+  }
+
+  /// Check if user has an active session (remembered)
+  Future<bool> hasActiveSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rememberMe = prefs.getBool(_rememberMeKey) ?? false;
+    final hasSession = prefs.getBool(_hasActiveSessionKey) ?? false;
+    
+    // Check if user is authenticated and remember me is enabled
+    return rememberMe && hasSession && isAuthenticated;
+  }
+
+  /// Clear remember me session
+  Future<void> clearRememberMeSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_hasActiveSessionKey);
+    await prefs.remove(_rememberMeKey);
+  }
+
+  /// Sign out and clear remember me
+  Future<void> signOutAndClearSession() async {
+    await clearRememberMeSession();
+    await signOut();
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/routes.dart';
+import 'package:cancerapp/services/supabase_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,12 +36,33 @@ class _SplashScreenState extends State<SplashScreen>
     // Start animation
     _controller.forward();
     
-    // Navigate to welcome screen after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
+    // Check for active session and navigate
+    _checkSessionAndNavigate();
+  }
+
+  Future<void> _checkSessionAndNavigate() async {
+    // Wait for 3 seconds for splash animation
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (!mounted) return;
+
+    try {
+      final supabase = SupabaseService();
+      final hasSession = await supabase.hasActiveSession();
+      
+      if (hasSession) {
+        // User has active session, navigate to home
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      } else {
+        // No active session, navigate to welcome screen
+        Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
+      }
+    } catch (e) {
+      // If error checking session, go to welcome
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
       }
-    });
+    }
   }
 
   @override

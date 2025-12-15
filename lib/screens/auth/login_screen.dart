@@ -61,6 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
+      // Save remember me preference
+      await supabase.saveRememberMePreference(_rememberMe);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

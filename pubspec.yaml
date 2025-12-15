@@ -52,6 +52,9 @@ dependencies:
   
   # Image picker for profile pictures
   image_picker: ^1.0.7
+  
+  # Shared preferences for local storage
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
