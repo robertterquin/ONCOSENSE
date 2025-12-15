@@ -33,41 +33,61 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFFD81B60),
-        unselectedItemColor: const Color(0xFF9E9E9E),
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
+      extendBody: true,
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onNavItemTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            selectedItemColor: const Color(0xFFD81B60),
+            unselectedItemColor: const Color(0xFF9E9E9E),
+            elevation: 0,
+            selectedFontSize: 12,
+            unselectedFontSize: 11,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.medical_information_outlined),
+                activeIcon: Icon(Icons.medical_information),
+                label: 'Cancer Info',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.health_and_safety_outlined),
+                activeIcon: Icon(Icons.health_and_safety),
+                label: 'Prevention',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.forum_outlined),
+                activeIcon: Icon(Icons.forum),
+                label: 'Q&A Forum',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.support_agent_outlined),
+                activeIcon: Icon(Icons.support_agent),
+                label: 'Resources',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.medical_information_outlined),
-            activeIcon: Icon(Icons.medical_information),
-            label: 'Cancer Info',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.health_and_safety_outlined),
-            activeIcon: Icon(Icons.health_and_safety),
-            label: 'Prevention',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum_outlined),
-            activeIcon: Icon(Icons.forum),
-            label: 'Q&A Forum',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent_outlined),
-            activeIcon: Icon(Icons.support_agent),
-            label: 'Resources',
-          ),
-        ],
+        ),
       ),
     );
   }
