@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // App Bar with custom design
             SliverAppBar(
               floating: true,
-              expandedHeight: 120,
+              expandedHeight: 85,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
               automaticallyImplyLeading: false,
@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Content
                     SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -169,29 +169,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'Hello, $userName 👋',
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.3,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 3),
                                   Text(
                                     'Your wellness journey starts here',
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.9),
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w400,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 6),
                                   // Decorative line
                                   Container(
-                                    width: 60,
-                                    height: 3,
+                                    width: 40,
+                                    height: 2,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.8),
                                       borderRadius: BorderRadius.circular(2),
@@ -200,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -210,8 +211,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ).then((_) => _loadUserData());
                               },
                               child: Container(
-                                width: 50,
-                                height: 50,
+                                width: 45,
+                                height: 45,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.white,
@@ -236,14 +237,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                             return const Icon(
                                               Icons.person,
                                               color: Color(0xFFD81B60),
-                                              size: 28,
+                                              size: 24,
                                             );
                                           },
                                         )
                                       : const Icon(
                                           Icons.person,
                                           color: Color(0xFFD81B60),
-                                          size: 28,
+                                          size: 24,
                                         ),
                                 ),
                               ),
