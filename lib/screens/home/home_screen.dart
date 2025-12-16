@@ -26,8 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
   String? currentUserId;
   List<Article> articles = [];
   List<HealthReminder> healthReminders = [];
+  Article? survivorStory;
   bool isLoadingArticles = true;
   bool isLoadingReminders = true;
+  bool isLoadingSurvivorStory = true;
   HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
 
   // Get current month's cancer awareness information
@@ -56,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserData();
     _loadArticles();
+    _loadSurvivorStory();
     _loadHealthReminders(forceRefresh: true); // Force new reminders on app start
   }
 
@@ -100,6 +103,32 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(content: Text('Failed to load articles: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _loadSurvivorStory() async {
+    try {
+      // Fetch articles with survivor story filters
+      final stories = await gNewsService.fetchCancerArticles(
+        maxResults: 5,
+        query: '"cancer survivor" OR "cancer journey" OR "cancer recovery story" OR "beating cancer"',
+      );
+      
+      if (stories.isNotEmpty) {
+        setState(() {
+          survivorStory = stories.first;
+          isLoadingSurvivorStory = false;
+        });
+      } else {
+        setState(() {
+          isLoadingSurvivorStory = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingSurvivorStory = false;
+      });
+      print('Error loading survivor story: $e');
     }
   }
 
@@ -442,7 +471,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildSurvivorStoryCard(),
+                    child: isLoadingSurvivorStory
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32),
+                              child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+                            ),
+                          )
+                        : survivorStory != null
+                            ? _buildSurvivorStoryCard(survivorStory!)
+                            : const SizedBox.shrink(),
                   ),
 
                   const SizedBox(height: 24),
@@ -877,150 +915,177 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Survivor Story Card Widget
-  Widget _buildSurvivorStoryCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image placeholder
-          Container(
-            height: 180,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFCE4EC),
-                  Color(0xFFF8BBD0),
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
+  Widget _buildSurvivorStoryCard(Article article) {
+    return InkWell(
+      onTap: () => _openArticle(article.url),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-            child: Center(
-              child: Icon(
-                Icons.favorite_rounded,
-                size: 64,
-                color: const Color(0xFFD81B60).withOpacity(0.3),
-              ),
-            ),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFCE4EC),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Survivor Story',
-                    style: TextStyle(
-                      color: Color(0xFFD81B60),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Maria\'s Journey: From Diagnosis to Hope',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'After being diagnosed with breast cancer at 45, Maria shares her inspiring story of resilience, treatment, and finding strength in community support.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF616161),
-                    height: 1.4,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Color(0xFFFCE4EC),
-                      child: Icon(
-                        Icons.person,
-                        size: 18,
-                        color: Color(0xFFD81B60),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Maria Santos',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF212121),
-                            ),
-                          ),
-                          Text(
-                            '5 years cancer-free',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF757575),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to full story
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        backgroundColor: const Color(0xFFFCE4EC),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text(
-                        'Read More',
-                        style: TextStyle(
-                          color: Color(0xFFD81B60),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Container(
+              height: 180,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFCE4EC),
+                    Color(0xFFF8BBD0),
                   ],
                 ),
-              ],
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: article.imageUrl != null && article.imageUrl!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child: Image.network(
+                        article.imageUrl!,
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.favorite_rounded,
+                              size: 64,
+                              color: const Color(0xFFD81B60).withOpacity(0.3),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.favorite_rounded,
+                        size: 64,
+                        color: const Color(0xFFD81B60).withOpacity(0.3),
+                      ),
+                    ),
             ),
-          ),
-        ],
+            
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFCE4EC),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Survivor Story',
+                      style: TextStyle(
+                        color: Color(0xFFD81B60),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    article.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF212121),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    article.description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF616161),
+                      height: 1.4,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xFFFCE4EC),
+                        child: Text(
+                          article.sourceName.isNotEmpty ? article.sourceName[0].toUpperCase() : 'N',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFD81B60),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              article.sourceName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF212121),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              article.publishedAt,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF9E9E9E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => _openArticle(article.url),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFD81B60),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                        child: const Text(
+                          'Read More',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

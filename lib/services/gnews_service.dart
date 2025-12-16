@@ -52,14 +52,14 @@ class GNewsService {
   ];
 
   /// Fetch cancer-related articles with randomization
-  Future<List<Article>> fetchCancerArticles({int maxResults = 3}) async {
+  Future<List<Article>> fetchCancerArticles({int maxResults = 3, String? query}) async {
     try {
-      // Simplified query - GNews has query length limits
-      final query = 'cancer';
+      // Use custom query or default to 'cancer'
+      final searchQuery = query ?? 'cancer';
       
       final response = await http.get(
         Uri.parse(
-          '$_baseUrl/search?q=$query&lang=en&max=30&apikey=$_apiKey',
+          '$_baseUrl/search?q=$searchQuery&lang=en&max=30&apikey=$_apiKey',
         ),
       );
 
