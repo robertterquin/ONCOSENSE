@@ -18,6 +18,7 @@ class ForumService {
     int offset = 0,
   }) async {
     try {
+      // First, get questions
       dynamic query = _supabase.client
           .from('questions')
           .select('*');
@@ -50,7 +51,31 @@ class ForumService {
       query = query.range(offset, offset + limit - 1);
 
       final response = await query;
-      return (response as List).map((json) => Question.fromJson(json)).toList();
+      final questions = (response as List).map((json) {
+        final question = Question.fromJson(json);
+        
+        // If user_name or profile_picture_url is null and not anonymous, 
+        // fetch from current user if it's their question
+        if (!question.isAnonymous && 
+            (question.userName == null || question.profilePictureUrl == null)) {
+          final currentUser = _supabase.currentUser;
+          if (currentUser != null && currentUser.id == question.userId) {
+            final metadata = _supabase.userMetadata;
+            return question.copyWith(
+              userName: question.userName ?? 
+                       (metadata?['full_name'] as String? ?? 
+                        metadata?['name'] as String? ?? 
+                        currentUser.email?.split('@')[0]),
+              profilePictureUrl: question.profilePictureUrl ?? 
+                                metadata?['profile_picture_url'] as String?,
+            );
+          }
+        }
+        
+        return question;
+      }).toList();
+      
+      return questions;
     } catch (e) {
       print('❌ Error fetching questions: $e');
       rethrow;
@@ -89,7 +114,12 @@ class ForumService {
 
       final userName = isAnonymous 
           ? null 
-          : _supabase.userMetadata?['name'] as String?;
+          : (_supabase.userMetadata?['full_name'] as String? ?? 
+             _supabase.userMetadata?['name'] as String?);
+
+      final profilePictureUrl = isAnonymous
+          ? null
+          : _supabase.userMetadata?['profile_picture_url'] as String?;
 
       final now = DateTime.now();
       final questionData = {
@@ -106,6 +136,11 @@ class ForumService {
         'is_resolved': false,
         'tags': tags,
       };
+
+      // Only add profile_picture_url if column exists and has a value
+      if (profilePictureUrl != null) {
+        questionData['profile_picture_url'] = profilePictureUrl;
+      }
 
       final response = await _supabase.client
           .from('questions')

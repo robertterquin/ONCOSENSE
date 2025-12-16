@@ -6,6 +6,7 @@ class Question {
   final String category;
   final String userId;
   final String? userName; // null if anonymous
+  final String? profilePictureUrl; // null if anonymous or no profile picture
   final bool isAnonymous;
   final int upvotes;
   final int answerCount;
@@ -21,6 +22,7 @@ class Question {
     required this.category,
     required this.userId,
     this.userName,
+    this.profilePictureUrl,
     required this.isAnonymous,
     this.upvotes = 0,
     this.answerCount = 0,
@@ -39,6 +41,7 @@ class Question {
       category: json['category'] as String,
       userId: json['user_id'] as String,
       userName: json['user_name'] as String?,
+      profilePictureUrl: json['profile_picture_url'] as String?,
       isAnonymous: json['is_anonymous'] as bool? ?? false,
       upvotes: json['upvotes'] as int? ?? 0,
       answerCount: json['answer_count'] as int? ?? 0,
@@ -60,6 +63,7 @@ class Question {
       'category': category,
       'user_id': userId,
       'user_name': userName,
+      'profile_picture_url': profilePictureUrl,
       'is_anonymous': isAnonymous,
       'upvotes': upvotes,
       'answer_count': answerCount,
@@ -78,6 +82,7 @@ class Question {
     String? category,
     String? userId,
     String? userName,
+    String? profilePictureUrl,
     bool? isAnonymous,
     int? upvotes,
     int? answerCount,
@@ -93,6 +98,7 @@ class Question {
       category: category ?? this.category,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       upvotes: upvotes ?? this.upvotes,
       answerCount: answerCount ?? this.answerCount,
@@ -103,8 +109,37 @@ class Question {
     );
   }
 
-  /// Get display name (Anonymous if user chose anonymous)
-  String get displayName => isAnonymous ? 'Anonymous' : (userName ?? 'User');
+  /// Get display name (Random anonymous name if user chose anonymous)
+  String get displayName {
+    if (isAnonymous) {
+      return _getAnonymousName(userId);
+    }
+    // If userName is empty, generate a display name from userId
+    if (userName == null || userName!.isEmpty) {
+      return 'User ${userId.substring(0, 8)}';
+    }
+    return userName!;
+  }
+
+  /// Generate consistent anonymous name based on user ID
+  static String _getAnonymousName(String userId) {
+    final anonymousNames = [
+      'Anonymous User',
+      'Anonymous Helper',
+      'Anonymous Friend',
+      'Anonymous Supporter',
+      'Anonymous Warrior',
+      'Anonymous Hope',
+      'Anonymous Light',
+      'Anonymous Care',
+      'Anonymous Heart',
+      'Anonymous Soul',
+    ];
+    
+    // Use user ID hash to get consistent name for same user
+    final hash = userId.hashCode.abs();
+    return anonymousNames[hash % anonymousNames.length];
+  }
 
   /// Get relative time string (e.g., "2 hours ago")
   String get relativeTime {

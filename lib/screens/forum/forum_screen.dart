@@ -342,67 +342,107 @@ class _ForumScreenState extends State<ForumScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.person_outline,
-                    size: 14, color: Color(0xFF9E9E9E)),
-                const SizedBox(width: 4),
-                Text(
-                  question.displayName,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF9E9E9E),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  // Profile Picture or Anonymous Icon
+                  _buildUserAvatar(question),
+                  const SizedBox(width: 6),
+                  Text(
+                    question.displayName,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF9E9E9E),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                const Icon(Icons.message_outlined,
-                    size: 14, color: Color(0xFF9E9E9E)),
-                const SizedBox(width: 4),
-                Text(
-                  '${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF9E9E9E),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.message_outlined,
+                      size: 14, color: Color(0xFF9E9E9E)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF9E9E9E),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
-                const SizedBox(width: 4),
-                Text(
-                  question.relativeTime,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF9E9E9E),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
+                  const SizedBox(width: 4),
+                  Text(
+                    question.relativeTime,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF9E9E9E),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFCE4EC),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.thumb_up_outlined,
-                          size: 12, color: Color(0xFFD81B60)),
-                      const SizedBox(width: 2),
-                      Text(
-                        '${question.upvotes}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFFD81B60),
-                          fontWeight: FontWeight.w600,
+                  const SizedBox(width: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFCE4EC),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.thumb_up_outlined,
+                            size: 12, color: Color(0xFFD81B60)),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${question.upvotes}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFD81B60),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
+
+  Widget _buildUserAvatar(Question question) {
+    final hasProfilePicture = !question.isAnonymous &&
+        question.profilePictureUrl != null &&
+        question.profilePictureUrl!.isNotEmpty;
+
+    if (hasProfilePicture) {
+      // Show profile picture with no child
+      return CircleAvatar(
+        radius: 10,
+        backgroundColor: const Color(0xFFFCE4EC),
+        backgroundImage: NetworkImage(question.profilePictureUrl!),
+      );
+    } else {
+      // Show initials or anonymous icon
+      return CircleAvatar(
+        radius: 10,
+        backgroundColor: question.isAnonymous
+            ? const Color(0xFFE0E0E0)
+            : const Color(0xFFFCE4EC),
+        child: Text(
+          question.isAnonymous
+              ? '?'
+              : (question.userName?.isNotEmpty == true
+                  ? question.userName![0].toUpperCase()
+                  : 'U'),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: question.isAnonymous
+                ? const Color(0xFF9E9E9E)
+                : const Color(0xFFD81B60),
+          ),
+        ),
+      );
+    }
+  }}

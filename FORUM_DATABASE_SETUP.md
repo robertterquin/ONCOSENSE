@@ -15,6 +15,7 @@ CREATE TABLE questions (
   category TEXT NOT NULL,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_name TEXT,
+  profile_picture_url TEXT,
   is_anonymous BOOLEAN DEFAULT FALSE,
   upvotes INTEGER DEFAULT 0,
   answer_count INTEGER DEFAULT 0,
@@ -61,6 +62,7 @@ CREATE TABLE answers (
   content TEXT NOT NULL,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_name TEXT,
+  profile_picture_url TEXT,
   is_anonymous BOOLEAN DEFAULT FALSE,
   upvotes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -314,3 +316,22 @@ After setting up the database:
 2. Monitor database performance in Supabase dashboard
 3. Adjust RLS policies if needed
 4. Add additional indexes for better performance if needed
+
+---
+
+## Migration: Add Profile Picture Support (If Tables Already Exist)
+
+If you already have the questions and answers tables created, run this SQL to add profile picture support:
+
+```sql
+-- Add profile_picture_url column to questions table
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;
+
+-- Add profile_picture_url column to answers table
+ALTER TABLE answers ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;
+```
+
+After running this migration:
+1. New questions/answers will automatically include profile pictures
+2. Existing questions/answers will show anonymous icons or user initials
+3. Profile pictures are only shown for non-anonymous posts
