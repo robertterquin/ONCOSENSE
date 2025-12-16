@@ -23,6 +23,27 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Article> articles = [];
   bool isLoadingArticles = true;
   HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
+
+  // Get current month's cancer awareness information
+  Map<String, String> _getAwarenessMonth() {
+    final month = DateTime.now().month;
+    const awarenessList = {
+      1: {'emoji': '🎗️', 'month': 'January', 'title': 'Cervical Cancer', 'subtitle': 'Know the signs and prevention methods'},
+      2: {'emoji': '🛡️', 'month': 'February', 'title': 'Cancer Prevention', 'subtitle': 'Healthy habits reduce your risk'},
+      3: {'emoji': '🎗️', 'month': 'March', 'title': 'Colorectal Cancer', 'subtitle': 'Early screening saves lives'},
+      4: {'emoji': '💪', 'month': 'April', 'title': 'Testicular Cancer', 'subtitle': 'Self-checks are important'},
+      5: {'emoji': '☀️', 'month': 'May', 'title': 'Skin Cancer', 'subtitle': 'Protect yourself from UV rays'},
+      6: {'emoji': '🧠', 'month': 'June', 'title': 'Brain Tumor', 'subtitle': 'Awareness and early detection'},
+      7: {'emoji': '👩', 'month': 'July', 'title': 'Ovarian Cancer', 'subtitle': 'Know the symptoms'},
+      8: {'emoji': '🗣️', 'month': 'August', 'title': 'Head & Neck Cancer', 'subtitle': 'Screening and prevention'},
+      9: {'emoji': '👩', 'month': 'September', 'title': 'Ovarian Cancer', 'subtitle': 'Support and awareness'},
+      10: {'emoji': '💗', 'month': 'October', 'title': 'Breast Cancer', 'subtitle': 'Early detection matters'},
+      11: {'emoji': '💨', 'month': 'November', 'title': 'Lung Cancer', 'subtitle': 'Learn about prevention'},
+      12: {'emoji': '🎗️', 'month': 'December', 'title': 'National Cancer', 'subtitle': 'Learn about early detection & prevention'},
+    };
+    
+    return awarenessList[month] ?? awarenessList[12]!;
+  }
   
   @override
   void initState() {
@@ -596,9 +617,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: const Color(0xFFD81B60),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    '🎗️ December',
-                    style: TextStyle(
+                  child: Text(
+                    '${_getAwarenessMonth()['emoji']} ${_getAwarenessMonth()['month']}',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -606,9 +627,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'National Cancer\nAwareness Month',
-                  style: TextStyle(
+                Text(
+                  '${_getAwarenessMonth()['title']}\nAwareness Month',
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF212121),
@@ -616,9 +637,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Learn about early detection & prevention',
-                  style: TextStyle(
+                Text(
+                  _getAwarenessMonth()['subtitle']!,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF616161),
                   ),

@@ -1,0 +1,658 @@
+import 'package:flutter/material.dart';
+import 'package:cancerapp/models/question.dart';
+import 'package:cancerapp/models/answer.dart';
+import 'package:cancerapp/services/forum_service.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
+
+class QuestionDetailScreen extends StatefulWidget {
+  final String questionId;
+
+  const QuestionDetailScreen({
+    super.key,
+    required this.questionId,
+  });
+
+  @override
+  State<QuestionDetailScreen> createState() => _QuestionDetailScreenState();
+}
+
+class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
+  final _forumService = ForumService();
+  final _answerController = TextEditingController();
+  
+  Question? _question;
+  List<Answer> _answers = [];
+  bool _isLoading = true;
+  bool _isSubmittingAnswer = false;
+  bool _isAnonymous = false;
+  bool _hasUpvotedQuestion = false;
+  Set<String> _upvotedAnswers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuestionAndAnswers();
+  }
+
+  @override
+  void dispose() {
+    _answerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadQuestionAndAnswers() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final question = await _forumService.getQuestion(widget.questionId);
+      final answers = await _forumService.getAnswers(widget.questionId);
+      final hasUpvoted = await _forumService.hasUpvotedQuestion(widget.questionId);
+      
+      // Check which answers user has upvoted
+      final upvotedAnswers = <String>{};
+      for (var answer in answers) {
+        final hasUpvotedAnswer = await _forumService.hasUpvotedAnswer(answer.id);
+        if (hasUpvotedAnswer) {
+          upvotedAnswers.add(answer.id);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _question = question;
+          _answers = answers;
+          _hasUpvotedQuestion = hasUpvoted;
+          _upvotedAnswers = upvotedAnswers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading question: $e')),
+        );
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _toggleQuestionUpvote() async {
+    try {
+      await _forumService.upvoteQuestion(widget.questionId);
+      await _loadQuestionAndAnswers(); // Reload to get updated counts
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleAnswerUpvote(String answerId) async {
+    try {
+      await _forumService.upvoteAnswer(answerId);
+      await _loadQuestionAndAnswers(); // Reload to get updated counts
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitAnswer() async {
+    if (_answerController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an answer')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmittingAnswer = true);
+
+    try {
+      await _forumService.createAnswer(
+        questionId: widget.questionId,
+        content: _answerController.text.trim(),
+        isAnonymous: _isAnonymous,
+      );
+
+      _answerController.clear();
+      await _loadQuestionAndAnswers();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Answer posted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error posting answer: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmittingAnswer = false);
+      }
+    }
+  }
+
+  Future<void> _showReportDialog() async {
+    final reasons = [
+      'Spam or misleading',
+      'Inappropriate content',
+      'Harmful medical advice',
+      'Harassment or hate speech',
+      'Other',
+    ];
+
+    String? selectedReason;
+    final additionalInfoController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Report Question'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Why are you reporting this?'),
+                const SizedBox(height: 16),
+                ...reasons.map((reason) => RadioListTile<String>(
+                      title: Text(reason),
+                      value: reason,
+                      groupValue: selectedReason,
+                      onChanged: (value) {
+                        setDialogState(() => selectedReason = value);
+                      },
+                      activeColor: const Color(0xFFD81B60),
+                    )),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: additionalInfoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Additional information (optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: selectedReason == null
+                  ? null
+                  : () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD81B60),
+              ),
+              child: const Text('Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true && selectedReason != null) {
+      try {
+        await _forumService.reportContent(
+          contentType: 'question',
+          contentId: widget.questionId,
+          reason: selectedReason!,
+          additionalInfo: additionalInfoController.text,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Report submitted. Thank you for helping keep our community safe.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error submitting report: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _question == null
+                ? const Center(child: Text('Question not found'))
+                : CustomScrollView(
+                    slivers: [
+                      const CustomAppHeader(
+                        title: 'Question Details',
+                        subtitle: 'Read and respond',
+                      ),
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            // Question Card
+                            _buildQuestionCard(),
+                            const SizedBox(height: 24),
+                            
+                            // Answers Section
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '${_answers.length} ${_answers.length == 1 ? 'Answer' : 'Answers'}',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF212121),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Answers List
+                            if (_answers.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.question_answer_outlined,
+                                      size: 64,
+                                      color: Colors.grey[300],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No answers yet',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Be the first to answer!',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF757575),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _answers.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                                itemBuilder: (context, index) {
+                                  return _buildAnswerCard(_answers[index]);
+                                },
+                              ),
+                            const SizedBox(height: 100),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+      ),
+      bottomSheet: _buildAnswerInput(),
+    );
+  }
+
+  Widget _buildQuestionCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFCE4EC),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${ForumCategory.getIcon(_question!.category)} ${_question!.category}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFD81B60),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.flag_outlined, size: 20),
+                onPressed: _showReportDialog,
+                color: const Color(0xFF757575),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _question!.title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _question!.content,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF424242),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Icon(Icons.person_outline, size: 14, color: Color(0xFF9E9E9E)),
+              const SizedBox(width: 4),
+              Text(
+                _question!.displayName,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
+              const SizedBox(width: 4),
+              Text(
+                _question!.relativeTime,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: _toggleQuestionUpvote,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _hasUpvotedQuestion 
+                        ? const Color(0xFFFCE4EC) 
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _hasUpvotedQuestion
+                          ? const Color(0xFFD81B60)
+                          : const Color(0xFFE0E0E0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _hasUpvotedQuestion 
+                            ? Icons.thumb_up 
+                            : Icons.thumb_up_outlined,
+                        size: 14,
+                        color: _hasUpvotedQuestion
+                            ? const Color(0xFFD81B60)
+                            : const Color(0xFF757575),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_question!.upvotes}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _hasUpvotedQuestion
+                              ? const Color(0xFFD81B60)
+                              : const Color(0xFF757575),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnswerCard(Answer answer) {
+    final hasUpvoted = _upvotedAnswers.contains(answer.id);
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: answer.isAccepted 
+            ? const Color(0xFFF1F8F4) 
+            : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: answer.isAccepted 
+              ? const Color(0xFF4CAF50) 
+              : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (answer.isAccepted)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check_circle, size: 14, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text(
+                    'Best Answer',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Text(
+            answer.content,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF424242),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.person_outline, size: 14, color: Color(0xFF9E9E9E)),
+              const SizedBox(width: 4),
+              Text(
+                answer.displayName,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
+              const SizedBox(width: 4),
+              Text(
+                answer.relativeTime,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () => _toggleAnswerUpvote(answer.id),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: hasUpvoted 
+                        ? const Color(0xFFFCE4EC) 
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: hasUpvoted
+                          ? const Color(0xFFD81B60)
+                          : const Color(0xFFE0E0E0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        hasUpvoted ? Icons.thumb_up : Icons.thumb_up_outlined,
+                        size: 14,
+                        color: hasUpvoted
+                            ? const Color(0xFFD81B60)
+                            : const Color(0xFF757575),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${answer.upvotes}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: hasUpvoted
+                              ? const Color(0xFFD81B60)
+                              : const Color(0xFF757575),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnswerInput() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Checkbox(
+                  value: _isAnonymous,
+                  onChanged: (value) {
+                    setState(() => _isAnonymous = value ?? false);
+                  },
+                  activeColor: const Color(0xFFD81B60),
+                ),
+                const Text(
+                  'Post anonymously',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _answerController,
+                    decoration: InputDecoration(
+                      hintText: 'Write your answer...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: null,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _isSubmittingAnswer
+                    ? const SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _submitAnswer,
+                        icon: const Icon(Icons.send),
+                        color: const Color(0xFFD81B60),
+                        iconSize: 28,
+                      ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
