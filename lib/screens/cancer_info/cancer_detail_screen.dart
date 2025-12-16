@@ -12,9 +12,10 @@ class CancerDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
+          // Original App Bar with rounded corners
           SliverAppBar(
             floating: true,
             expandedHeight: 80,
@@ -48,168 +49,182 @@ class CancerDetailScreen extends StatelessWidget {
               ),
             ),
           ),
+
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Description Card
-                  _buildSection(
-                    title: 'About',
-                    icon: Icons.info_outline,
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+
+                // About Section - Modern Card
+                _buildModernCard(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  iconColor: const Color(0xFF2196F3),
+                  child: Text(
+                    cancer.description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF424242),
+                      height: 1.6,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Statistics Section
+                if (cancer.statistics != null)
+                  _buildModernCard(
+                    icon: Icons.bar_chart,
+                    title: 'Statistics',
+                    iconColor: const Color(0xFF4CAF50),
                     child: Text(
-                      cancer.description,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[700],
+                      cancer.statistics!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF424242),
                         height: 1.6,
-                        letterSpacing: 0.2,
+                        letterSpacing: 0.1,
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                if (cancer.statistics != null) const SizedBox(height: 16),
 
-                  // Statistics
-                  if (cancer.statistics != null) ...[
-                    _buildSection(
-                      title: 'Statistics',
-                      icon: Icons.bar_chart_outlined,
-                      child: Text(
-                        cancer.statistics!,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
-                          height: 1.6,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                // Symptoms & Warning Signs Section
+                _buildModernCard(
+                  icon: Icons.warning_amber_rounded,
+                  title: 'Symptoms & Warning Signs',
+                  iconColor: const Color(0xFFFF9800),
+                  child: _buildModernList(cancer.symptoms),
+                ),
 
-                  // Symptoms
-                  _buildSection(
-                    title: 'Symptoms & Warning Signs',
-                    icon: Icons.warning_amber_outlined,
-                    child: _buildList(cancer.symptoms),
-                  ),
+                const SizedBox(height: 16),
 
-                  const SizedBox(height: 20),
+                // Risk Factors Section
+                _buildModernCard(
+                  icon: Icons.shield_outlined,
+                  title: 'Risk Factors',
+                  iconColor: const Color(0xFFF44336),
+                  child: _buildModernList(cancer.riskFactors),
+                ),
 
-                  // Risk Factors
-                  _buildSection(
-                    title: 'Risk Factors',
-                    icon: Icons.health_and_safety_outlined,
-                    child: _buildList(cancer.riskFactors),
-                  ),
+                const SizedBox(height: 16),
 
-                  const SizedBox(height: 20),
+                // Prevention Tips Section
+                _buildModernCard(
+                  icon: Icons.verified_user,
+                  title: 'Prevention Tips',
+                  iconColor: const Color(0xFF9C27B0),
+                  child: _buildModernList(cancer.preventionTips),
+                ),
 
-                  // Prevention Tips
-                  _buildSection(
-                    title: 'Prevention Tips',
-                    icon: Icons.verified_user_outlined,
-                    child: _buildList(cancer.preventionTips),
-                  ),
+                const SizedBox(height: 16),
 
-                  const SizedBox(height: 20),
+                // Screening Methods Section
+                _buildModernCard(
+                  icon: Icons.medical_services_rounded,
+                  title: 'Screening Methods',
+                  iconColor: const Color(0xFF00BCD4),
+                  child: _buildModernList(cancer.screeningMethods),
+                ),
 
-                  // Screening Methods
-                  _buildSection(
-                    title: 'Screening Methods',
-                    icon: Icons.medical_services_outlined,
-                    child: _buildList(cancer.screeningMethods),
-                  ),
+                const SizedBox(height: 16),
 
-                  const SizedBox(height: 20),
-
-                  // Early Detection
-                  _buildSection(
-                    title: 'Early Detection',
-                    icon: Icons.search,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.lightbulb_outline,
-                            color: Colors.grey[600],
-                            size: 22,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              cancer.earlyDetectionInfo,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[700],
-                                height: 1.6,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Disclaimer
-                  Container(
-                    padding: const EdgeInsets.all(20),
+                // Early Detection Section
+                _buildModernCard(
+                  icon: Icons.tips_and_updates,
+                  title: 'Early Detection',
+                  iconColor: const Color(0xFFFFB300),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[300]!),
+                      color: const Color(0xFFFFF8E1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFFE082),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: Colors.grey[600],
-                          size: 22,
+                        const Icon(
+                          Icons.lightbulb,
+                          color: Color(0xFFFFB300),
+                          size: 20,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Medical Disclaimer',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'This information is for educational purposes only. Always consult with healthcare professionals for medical advice, diagnosis, or treatment.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
-                                  height: 1.5,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            cancer.earlyDetectionInfo,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF424242),
+                              height: 1.6,
+                              letterSpacing: 0.1,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 32),
-                ],
-              ),
+                const SizedBox(height: 24),
+
+                // Disclaimer Section
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFE0E0E0),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.grey[700],
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Medical Disclaimer',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'This information is for educational purposes only. Always consult with healthcare professionals for medical advice, diagnosis, or treatment.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
             ),
           ),
         ],
@@ -217,24 +232,29 @@ class CancerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection({
-    required String title,
+  Widget _buildModernCard({
     required IconData icon,
+    required String title,
+    required Color iconColor,
     required Widget child,
   }) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(
+          color: const Color(0xFFF0F0F0),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,34 +264,35 @@ class CancerDetailScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(10),
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
-                  color: Colors.grey[700],
+                  color: iconColor,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 18,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[900],
+                  color: Color(0xFF212121),
+                  letterSpacing: -0.2,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           child,
         ],
       ),
     );
   }
 
-  Widget _buildList(List<String> items) {
+  Widget _buildModernList(List<String> items) {
     return Column(
       children: items.asMap().entries.map((entry) {
         return Padding(
@@ -281,22 +302,29 @@ class CancerDetailScreen extends StatelessWidget {
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 6),
-                width: 6,
-                height: 6,
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: const Color(0xFFD81B60).withOpacity(0.15),
                   shape: BoxShape.circle,
+                ),
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFD81B60),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   entry.value,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[700],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF424242),
                     height: 1.6,
-                    letterSpacing: 0.2,
+                    letterSpacing: 0.1,
                   ),
                 ),
               ),
