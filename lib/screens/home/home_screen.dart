@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/gnews_service.dart';
 import 'package:cancerapp/services/health_tips_service.dart';
+import 'package:cancerapp/services/health_reminders_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
+import 'package:cancerapp/models/health_reminder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/screens/profile/profile_screen.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
@@ -18,10 +20,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final supabase = SupabaseService();
   final gNewsService = GNewsService();
+  final healthRemindersService = HealthRemindersService();
   String userName = 'Guest';
   String? profilePictureUrl;
+  String? currentUserId;
   List<Article> articles = [];
+  List<HealthReminder> healthReminders = [];
   bool isLoadingArticles = true;
+  bool isLoadingReminders = true;
   HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
 
   // Get current month's cancer awareness information
@@ -50,14 +56,30 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserData();
     _loadArticles();
+    _loadHealthReminders(forceRefresh: true); // Force new reminders on app start
   }
 
   void _loadUserData() {
     final user = supabase.currentUser;
     if (user != null) {
+      final newUserId = user.id;
+      final userChanged = currentUserId != newUserId;
+      
       setState(() {
         userName = user.userMetadata?['full_name'] ?? user.email?.split('@')[0] ?? 'User';
         profilePictureUrl = user.userMetadata?['profile_picture_url'];
+        currentUserId = newUserId;
+      });
+      
+      // Refresh reminders when user logs in or changes
+      if (userChanged) {
+        _loadHealthReminders(forceRefresh: true);
+      }
+    } else {
+      setState(() {
+        userName = 'Guest';
+        profilePictureUrl = null;
+        currentUserId = null;
       });
     }
   }
@@ -78,6 +100,21 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(content: Text('Failed to load articles: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _loadHealthReminders({bool forceRefresh = false}) async {
+    try {
+      final reminders = await healthRemindersService.getRemindersToShow(count: 2, forceRefresh: forceRefresh);
+      setState(() {
+        healthReminders = reminders;
+        isLoadingReminders = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingReminders = false;
+      });
+      print('Error loading health reminders: $e');
     }
   }
 
@@ -231,7 +268,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => const ProfileScreen(),
                                   ),
-                                ).then((_) => _loadUserData());
+                                ).then((_) {
+                                  _loadUserData();
+                                  _loadHealthReminders(forceRefresh: true); // Refresh reminders on return
+                                });
                               },
                               child: Container(
                                 width: 45,
@@ -305,40 +345,66 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
 
                   // Health Reminders Section
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Health Reminders',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Health Reminders',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF212121),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isLoadingReminders = true;
+                            });
+                            _loadHealthReminders(forceRefresh: true);
+                          },
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Color(0xFFD81B60),
+                            size: 20,
+                          ),
+                          tooltip: 'Refresh reminders',
+                        ),
+                      ],
                     ),
                   ),
 
                   const SizedBox(height: 12),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        _buildHealthReminderCard(
-                          icon: Icons.water_drop_outlined,
-                          title: 'Stay Hydrated',
-                          message: 'Drink 8 glasses of water daily',
-                          color: const Color(0xFF2196F3),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildHealthReminderCard(
-                          icon: Icons.directions_walk_outlined,
-                          title: 'Move Your Body',
-                          message: 'Take a 3-minute walk break',
-                          color: const Color(0xFF4CAF50),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Health Reminders List
+                  isLoadingReminders
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : healthReminders.isEmpty
+                          ? const SizedBox.shrink()
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: healthReminders.map((reminder) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: _buildHealthReminderCard(
+                                      icon: _getIconData(reminder.icon),
+                                      title: reminder.title,
+                                      message: reminder.message,
+                                      color: _getColorFromHex(reminder.color),
+                                      reminder: reminder,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
 
                   const SizedBox(height: 24),
 
@@ -680,60 +746,134 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title,
     required String message,
     required Color color,
+    HealthReminder? reminder,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
+    return InkWell(
+      onTap: reminder != null
+          ? () async {
+              // Mark as shown when user interacts
+              await healthRemindersService.markReminderAsShown(reminder.id);
+              // Show source information
+              if (reminder.source != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Source: ${reminder.source}'),
+                    duration: const Duration(seconds: 2),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  message,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF757575),
-                  ),
-                ),
-              ],
+                );
+              }
+            }
+          : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
             ),
-          ),
-          Icon(
-            Icons.check_circle_outline,
-            color: color.withOpacity(0.5),
-            size: 20,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF757575),
+                    ),
+                  ),
+                  if (reminder?.source != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '📚 ${reminder!.source}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: color.withOpacity(0.7),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(
+              Icons.check_circle_outline,
+              color: color.withOpacity(0.5),
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper method to convert icon string to IconData
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'local_drink':
+        return Icons.local_drink;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      case 'fitness_center':
+        return Icons.fitness_center;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'eco':
+        return Icons.eco;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'health_and_safety':
+        return Icons.health_and_safety;
+      case 'spa':
+        return Icons.spa;
+      case 'wb_sunny':
+        return Icons.wb_sunny;
+      case 'wb_twilight':
+        return Icons.wb_twilight;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'favorite':
+        return Icons.favorite;
+      case 'healing':
+        return Icons.healing;
+      default:
+        return Icons.notifications_active;
+    }
+  }
+
+  // Helper method to convert hex color to Color
+  Color _getColorFromHex(String hexColor) {
+    final hex = hexColor.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
   }
 
   // Survivor Story Card Widget
