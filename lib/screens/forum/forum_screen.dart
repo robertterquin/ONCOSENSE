@@ -342,67 +342,77 @@ class _ForumScreenState extends State<ForumScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  // Profile Picture or Anonymous Icon
-                  _buildUserAvatar(question),
-                  const SizedBox(width: 6),
-                  Text(
-                    question.displayName,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF9E9E9E),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.message_outlined,
-                      size: 14, color: Color(0xFF9E9E9E)),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
-                  const SizedBox(width: 4),
-                  Text(
-                    question.relativeTime,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFCE4EC),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.thumb_up_outlined,
-                            size: 12, color: Color(0xFFD81B60)),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${question.upvotes}',
+            Row(
+              children: [
+                // Profile Picture or Anonymous Icon
+                _buildUserAvatar(question),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          question.displayName,
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFFD81B60),
-                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF9E9E9E),
+                            fontWeight: FontWeight.w500,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.message_outlined,
+                          size: 14, color: Color(0xFF9E9E9E)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${question.answerCount}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF9E9E9E),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          question.relativeTime,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9E9E9E),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFCE4EC),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.thumb_up_outlined,
+                          size: 12, color: Color(0xFFD81B60)),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${question.upvotes}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFFD81B60),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
