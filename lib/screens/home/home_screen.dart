@@ -3,6 +3,7 @@ import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/gnews_service.dart';
 import 'package:cancerapp/services/health_tips_service.dart';
 import 'package:cancerapp/services/health_reminders_service.dart';
+import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
 import 'package:cancerapp/models/health_reminder.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final supabase = SupabaseService();
   final gNewsService = GNewsService();
   final healthRemindersService = HealthRemindersService();
+  final _bookmarkService = BookmarkService();
   String userName = 'Guest';
   String? profilePictureUrl;
   String? currentUserId;
@@ -31,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoadingReminders = true;
   bool isLoadingSurvivorStory = true;
   HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
+  Map<String, bool> _bookmarkStates = {};
 
   // Get current month's cancer awareness information
   Map<String, String> _getAwarenessMonth() {
@@ -94,6 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
         articles = fetchedArticles;
         isLoadingArticles = false;
       });
+      
+      // Load bookmark states for all articles
+      await _loadBookmarkStates();
     } catch (e) {
       setState(() {
         isLoadingArticles = false;
@@ -103,6 +109,52 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(content: Text('Failed to load articles: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _loadBookmarkStates() async {
+    final states = <String, bool>{};
+    for (final article in articles) {
+      states[article.url] = await _bookmarkService.isBookmarked(article.url);
+    }
+    if (survivorStory != null) {
+      states[survivorStory!.url] = await _bookmarkService.isBookmarked(survivorStory!.url);
+    }
+    setState(() {
+      _bookmarkStates = states;
+    });
+  }
+
+  Future<void> _toggleBookmark(Article article) async {
+    final isBookmarked = await _bookmarkService.toggleBookmark(article);
+    
+    setState(() {
+      _bookmarkStates[article.url] = isBookmarked;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isBookmarked 
+                ? 'Article saved to bookmarks' 
+                : 'Article removed from bookmarks',
+          ),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: 'View',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -560,6 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             article.readTime,
                                             article.url,
                                             article.imageUrl,
+                                            article,
                                           ),
                                         ))
                                     .toList(),
@@ -916,6 +969,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Survivor Story Card Widget
   Widget _buildSurvivorStoryCard(Article article) {
+    final isBookmarked = _bookmarkStates[article.url] ?? false;
+    
     return InkWell(
       onTap: () => _openArticle(article.url),
       borderRadius: BorderRadius.circular(16),
@@ -936,51 +991,80 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Container(
-              height: 180,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFFCE4EC),
-                    Color(0xFFF8BBD0),
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: article.imageUrl != null && article.imageUrl!.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                      child: Image.network(
-                        article.imageUrl!,
-                        width: double.infinity,
-                        height: 180,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.favorite_rounded,
-                              size: 64,
-                              color: const Color(0xFFD81B60).withOpacity(0.3),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.favorite_rounded,
-                        size: 64,
-                        color: const Color(0xFFD81B60).withOpacity(0.3),
-                      ),
+            Stack(
+              children: [
+                Container(
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFFCE4EC),
+                        Color(0xFFF8BBD0),
+                      ],
                     ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: article.imageUrl != null && article.imageUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                          ),
+                          child: Image.network(
+                            article.imageUrl!,
+                            width: double.infinity,
+                            height: 180,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(
+                                  Icons.favorite_rounded,
+                                  size: 64,
+                                  color: const Color(0xFFD81B60).withOpacity(0.3),
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            size: 64,
+                            color: const Color(0xFFD81B60).withOpacity(0.3),
+                          ),
+                        ),
+                ),
+                // Bookmark button
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color: const Color(0xFFD81B60),
+                      ),
+                      onPressed: () => _toggleBookmark(article),
+                      tooltip: isBookmarked ? 'Remove bookmark' : 'Add bookmark',
+                    ),
+                  ),
+                ),
+              ],
             ),
             
             Padding(
@@ -1091,7 +1175,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Article Preview Widget
-  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl]) {
+  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl, Article? article]) {
+    final isBookmarked = article != null ? (_bookmarkStates[article.url] ?? false) : false;
+    
     return InkWell(
       onTap: url != null ? () => _openArticle(url) : null,
       borderRadius: BorderRadius.circular(12),
@@ -1112,44 +1198,83 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image Section
-            Container(
-              width: double.infinity,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFFCE4EC),
-                    Color(0xFFF8BBD0),
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: imageUrl != null && imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFFCE4EC),
+                        Color(0xFFF8BBD0),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: imageUrl != null && imageUrl.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(
+                                  Icons.article_rounded,
+                                  color: const Color(0xFFD81B60).withOpacity(0.3),
+                                  size: 48,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
                           child: Icon(
-                            Icons.article_outlined,
-                            color: const Color(0xFFD81B60).withOpacity(0.4),
+                            Icons.article_rounded,
+                            color: const Color(0xFFD81B60).withOpacity(0.3),
                             size: 48,
                           ),
-                        );
-                      },
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.article_outlined,
-                        color: const Color(0xFFD81B60).withOpacity(0.4),
-                        size: 48,
+                        ),
+                ),
+                // Bookmark button
+                if (article != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        padding: const EdgeInsets.all(6),
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          color: const Color(0xFFD81B60),
+                          size: 20,
+                        ),
+                        onPressed: () => _toggleBookmark(article),
+                        tooltip: isBookmarked ? 'Remove bookmark' : 'Add bookmark',
                       ),
                     ),
+                  ),
+              ],
             ),
             // Content Section
             Padding(

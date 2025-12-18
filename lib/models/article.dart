@@ -22,8 +22,19 @@ class Article {
       url: json['url'] ?? '',
       imageUrl: json['image'],
       publishedAt: json['publishedAt'] ?? '',
-      sourceName: json['source']?['name'] ?? 'Unknown',
+      sourceName: json['source']?['name'] ?? json['sourceName'] ?? 'Unknown',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'url': url,
+      'image': imageUrl,
+      'publishedAt': publishedAt,
+      'sourceName': sourceName,
+    };
   }
 
   // Calculate estimated read time based on description length

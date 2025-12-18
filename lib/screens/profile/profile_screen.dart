@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
+import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -11,14 +13,24 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final supabase = SupabaseService();
+  final _bookmarkService = BookmarkService();
   String userName = 'Guest';
   String userEmail = '';
   String? profilePictureUrl;
+  int _bookmarkCount = 0;
   
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadBookmarkCount();
+  }
+
+  Future<void> _loadBookmarkCount() async {
+    final count = await _bookmarkService.getBookmarkCount();
+    setState(() {
+      _bookmarkCount = count;
+    });
   }
 
   void _loadUserData() {
@@ -254,13 +266,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildModernMenuItem(
                             icon: Icons.bookmark_rounded,
                             title: 'Saved Articles',
-                            subtitle: 'View your bookmarked articles',
+                            subtitle: _bookmarkCount > 0 
+                                ? '$_bookmarkCount saved article${_bookmarkCount != 1 ? 's' : ''}'
+                                : 'View your bookmarked articles',
                             iconColor: const Color(0xFFE91E63),
                             iconBg: const Color(0xFFFCE4EC),
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Saved Articles - Coming soon')),
+                            badge: _bookmarkCount > 0 ? _bookmarkCount.toString() : null,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SavedArticlesScreen(),
+                                ),
                               );
+                              // Reload bookmark count when returning
+                              _loadBookmarkCount();
                             },
                           ),
                           _buildDivider(),
@@ -579,6 +599,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required Color iconBg,
     required VoidCallback onTap,
     Color? titleColor,
+    String? badge,
     bool isLast = false,
   }) {
     return InkWell(
@@ -629,6 +650,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+            if (badge != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
