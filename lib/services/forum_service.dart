@@ -6,6 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Service for handling Q&A Forum operations with Supabase
 class ForumService {
   final SupabaseService _supabase = SupabaseService();
+  
+  /// Get SupabaseService instance (for accessing current user)
+  SupabaseService get supabaseService => _supabase;
 
   // ==================== QUESTIONS ====================
 

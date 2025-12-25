@@ -146,6 +146,114 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     }
   }
 
+  bool _isQuestionOwner() {
+    final currentUser = _forumService.supabaseService.currentUser;
+    return currentUser != null && _question?.userId == currentUser.id;
+  }
+
+  bool _isAnswerOwner(Answer answer) {
+    final currentUser = _forumService.supabaseService.currentUser;
+    return currentUser != null && answer.userId == currentUser.id;
+  }
+
+  Future<void> _deleteQuestion() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Question'),
+        content: const Text(
+          'Are you sure you want to delete this question? This action cannot be undone and will also delete all answers.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _forumService.deleteQuestion(widget.questionId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Question deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true); // Return to forum screen
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting question: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteAnswer(Answer answer) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Answer'),
+        content: const Text(
+          'Are you sure you want to delete this answer? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _forumService.deleteAnswer(answer.id, widget.questionId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Answer deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await _loadQuestionAndAnswers(); // Reload the page
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting answer: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _showReportDialog() async {
     final reasons = [
       'Spam or misleading',
@@ -367,10 +475,18 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ),
               ),
               const Spacer(),
+              if (_isQuestionOwner())
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: _deleteQuestion,
+                  color: Colors.red,
+                  tooltip: 'Delete question',
+                ),
               IconButton(
                 icon: const Icon(Icons.flag_outlined, size: 20),
                 onPressed: _showReportDialog,
                 color: const Color(0xFF757575),
+                tooltip: 'Report question',
               ),
             ],
           ),
@@ -537,6 +653,17 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ),
               ),
               const Spacer(),
+              if (_isAnswerOwner(answer))
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  onPressed: () => _deleteAnswer(answer),
+                  color: Colors.red,
+                  tooltip: 'Delete answer',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              if (_isAnswerOwner(answer))
+                const SizedBox(width: 8),
               InkWell(
                 onTap: () => _toggleAnswerUpvote(answer.id),
                 child: Container(
