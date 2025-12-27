@@ -629,7 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 100), // Extra padding for floating bottom nav
                 ],
               ),
             ),

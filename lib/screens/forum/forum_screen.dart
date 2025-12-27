@@ -240,7 +240,7 @@ class _ForumScreenState extends State<ForumScreen> {
                                 },
                               ),
                             ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 100), // Extra padding for floating bottom nav
                 ],
               ),
             ),
