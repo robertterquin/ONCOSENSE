@@ -6,10 +6,12 @@ import 'package:cancerapp/widgets/custom_app_header.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final String questionId;
+  final Question? initialQuestion; // Optional pre-loaded question data
 
   const QuestionDetailScreen({
     super.key,
     required this.questionId,
+    this.initialQuestion,
   });
 
   @override
@@ -31,13 +33,50 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadQuestionAndAnswers();
+    // Use initial question data if provided for instant display
+    if (widget.initialQuestion != null) {
+      _question = widget.initialQuestion;
+      _isLoading = false;
+      _loadAnswersOnly(); // Load only answers in background
+    } else {
+      _loadQuestionAndAnswers();
+    }
   }
 
   @override
   void dispose() {
     _answerController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAnswersOnly() async {
+    try {
+      final answers = await _forumService.getAnswers(widget.questionId);
+      final hasUpvoted = await _forumService.hasUpvotedQuestion(widget.questionId);
+      
+      // Check which answers user has upvoted
+      final upvotedAnswers = <String>{};
+      for (var answer in answers) {
+        final hasUpvotedAnswer = await _forumService.hasUpvotedAnswer(answer.id);
+        if (hasUpvotedAnswer) {
+          upvotedAnswers.add(answer.id);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _answers = answers;
+          _hasUpvotedQuestion = hasUpvoted;
+          _upvotedAnswers = upvotedAnswers;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading answers: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadQuestionAndAnswers() async {
@@ -77,11 +116,28 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   }
 
   Future<void> _toggleQuestionUpvote() async {
+    if (_question == null) return;
+    
+    // Optimistically update UI
+    final wasUpvoted = _hasUpvotedQuestion;
+    final previousUpvotes = _question!.upvotes;
+    
+    setState(() {
+      _hasUpvotedQuestion = !wasUpvoted;
+      _question = _question!.copyWith(
+        upvotes: wasUpvoted ? previousUpvotes - 1 : previousUpvotes + 1,
+      );
+    });
+    
     try {
       await _forumService.upvoteQuestion(widget.questionId);
-      await _loadQuestionAndAnswers(); // Reload to get updated counts
     } catch (e) {
+      // Revert on error
       if (mounted) {
+        setState(() {
+          _hasUpvotedQuestion = wasUpvoted;
+          _question = _question!.copyWith(upvotes: previousUpvotes);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
         );
@@ -90,11 +146,39 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   }
 
   Future<void> _toggleAnswerUpvote(String answerId) async {
+    // Find the answer
+    final answerIndex = _answers.indexWhere((a) => a.id == answerId);
+    if (answerIndex == -1) return;
+    
+    final answer = _answers[answerIndex];
+    final wasUpvoted = _upvotedAnswers.contains(answerId);
+    final previousUpvotes = answer.upvotes;
+    
+    // Optimistically update UI
+    setState(() {
+      if (wasUpvoted) {
+        _upvotedAnswers.remove(answerId);
+      } else {
+        _upvotedAnswers.add(answerId);
+      }
+      _answers[answerIndex] = answer.copyWith(
+        upvotes: wasUpvoted ? previousUpvotes - 1 : previousUpvotes + 1,
+      );
+    });
+    
     try {
       await _forumService.upvoteAnswer(answerId);
-      await _loadQuestionAndAnswers(); // Reload to get updated counts
     } catch (e) {
+      // Revert on error
       if (mounted) {
+        setState(() {
+          if (wasUpvoted) {
+            _upvotedAnswers.add(answerId);
+          } else {
+            _upvotedAnswers.remove(answerId);
+          }
+          _answers[answerIndex] = answer.copyWith(upvotes: previousUpvotes);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
         );
@@ -111,18 +195,30 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     }
 
     setState(() => _isSubmittingAnswer = true);
+    final answerContent = _answerController.text.trim();
+    final wasAnonymous = _isAnonymous;
 
     try {
-      await _forumService.createAnswer(
+      final newAnswer = await _forumService.createAnswer(
         questionId: widget.questionId,
-        content: _answerController.text.trim(),
-        isAnonymous: _isAnonymous,
+        content: answerContent,
+        isAnonymous: wasAnonymous,
       );
 
       _answerController.clear();
-      await _loadQuestionAndAnswers();
-
+      
+      // Add the new answer locally and update question answer count
       if (mounted) {
+        setState(() {
+          _answers.add(newAnswer);
+          _isAnonymous = false;
+          if (_question != null) {
+            _question = _question!.copyWith(
+              answerCount: _question!.answerCount + 1,
+            );
+          }
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Answer posted successfully!'),

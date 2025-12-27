@@ -72,13 +72,17 @@ class _ForumScreenState extends State<ForumScreen> {
     }
   }
 
-  void _navigateToQuestionDetail(String questionId) {
+  void _navigateToQuestionDetail(Question question) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailScreen(questionId: questionId),
+        builder: (context) => QuestionDetailScreen(
+          questionId: question.id,
+          initialQuestion: question, // Pass the question data for instant display
+        ),
       ),
-    ).then((_) => _loadQuestions());
+    );
+    // Removed automatic reload on return - only reload when explicitly needed
   }
 
   void _onCategorySelected(String? category) {
@@ -327,7 +331,7 @@ class _ForumScreenState extends State<ForumScreen> {
 
   Widget _buildDiscussionCard(Question question) {
     return InkWell(
-      onTap: () => _navigateToQuestionDetail(question.id),
+      onTap: () => _navigateToQuestionDetail(question),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
