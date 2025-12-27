@@ -247,12 +247,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fileOptions: const FileOptions(upsert: true),
           );
 
-      // Get public URL
+      // Get public URL with cache-busting timestamp
       final publicUrl = supabase.client.storage
           .from('images')
           .getPublicUrl(filePath);
+      
+      // Add timestamp to prevent caching issues
+      final urlWithTimestamp = '$publicUrl?t=${DateTime.now().millisecondsSinceEpoch}';
 
-      return publicUrl;
+      return urlWithTimestamp;
     } catch (e) {
       if (mounted) {
         String errorMessage = 'Failed to upload image';
