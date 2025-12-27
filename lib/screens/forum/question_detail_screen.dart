@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/models/answer.dart';
 import 'package:cancerapp/services/forum_service.dart';
+import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final String questionId;
@@ -20,6 +22,7 @@ class QuestionDetailScreen extends StatefulWidget {
 
 class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   final _forumService = ForumService();
+  final _bookmarkService = BookmarkService();
   final _answerController = TextEditingController();
   
   Question? _question;
@@ -28,11 +31,13 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   bool _isSubmittingAnswer = false;
   bool _isAnonymous = false;
   bool _hasUpvotedQuestion = false;
+  bool _isBookmarked = false;
   Set<String> _upvotedAnswers = {};
 
   @override
   void initState() {
     super.initState();
+    _loadBookmarkStatus();
     // Use initial question data if provided for instant display
     if (widget.initialQuestion != null) {
       _question = widget.initialQuestion;
@@ -47,6 +52,55 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   void dispose() {
     _answerController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadBookmarkStatus() async {
+    final isBookmarked = await _bookmarkService.isQuestionBookmarked(widget.questionId);
+    if (mounted) {
+      setState(() {
+        _isBookmarked = isBookmarked;
+      });
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    if (_question == null) return;
+
+    final wasBookmarked = _isBookmarked;
+    setState(() {
+      _isBookmarked = !wasBookmarked;
+    });
+
+    try {
+      final newStatus = await _bookmarkService.toggleQuestionBookmark(_question!);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              newStatus 
+                  ? '✅ Question bookmarked!'
+                  : 'Question removed from bookmarks',
+            ),
+            duration: const Duration(seconds: 2),
+            backgroundColor: newStatus ? Colors.green : Colors.grey[700],
+          ),
+        );
+      }
+    } catch (e) {
+      // Revert on error
+      if (mounted) {
+        setState(() {
+          _isBookmarked = wasBookmarked;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _loadAnswersOnly() async {
@@ -452,10 +506,36 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ? const Center(child: Text('Question not found'))
                 : CustomScrollView(
                     slivers: [
-                      CustomAppHeader(
-                        title: 'Question Details',
-                        subtitle: 'Read and respond',
-                        showBackButton: true,
+                      SliverAppBar(
+                        expandedHeight: 120,
+                        pinned: true,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        leading: const ModernBackButton(),
+                        actions: [
+                          // Bookmark Button
+                          IconButton(
+                            onPressed: _toggleBookmark,
+                            icon: Icon(
+                              _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              color: _isBookmarked ? const Color(0xFFD81B60) : Colors.grey[600],
+                            ),
+                            tooltip: _isBookmarked ? 'Remove bookmark' : 'Bookmark question',
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        flexibleSpace: FlexibleSpaceBar(
+                          title: const Text(
+                            'Question Details',
+                            style: TextStyle(
+                              color: Color(0xFF212121),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          centerTitle: false,
+                          titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                        ),
                       ),
                       SliverToBoxAdapter(
                         child: Column(

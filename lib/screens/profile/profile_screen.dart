@@ -4,6 +4,7 @@ import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
+import 'package:cancerapp/screens/profile/saved_questions_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userEmail = '';
   String? profilePictureUrl;
   int _bookmarkCount = 0;
+  int _questionBookmarkCount = 0;
   
   @override
   void initState() {
@@ -29,8 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadBookmarkCount() async {
     final count = await _bookmarkService.getBookmarkCount();
+    final questionCount = await _bookmarkService.getQuestionBookmarkCount();
     setState(() {
       _bookmarkCount = count;
+      _questionBookmarkCount = questionCount;
     });
   }
 
@@ -285,13 +289,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildModernMenuItem(
                             icon: Icons.question_answer_rounded,
                             title: 'Saved Questions',
-                            subtitle: 'Your saved forum discussions',
+                            subtitle: _questionBookmarkCount > 0
+                                ? '$_questionBookmarkCount saved question${_questionBookmarkCount != 1 ? 's' : ''}'
+                                : 'Your saved forum discussions',
                             iconColor: const Color(0xFF9C27B0),
                             iconBg: const Color(0xFFF3E5F5),
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Saved Questions - Coming soon')),
+                            badge: _questionBookmarkCount > 0 ? _questionBookmarkCount.toString() : null,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SavedQuestionsScreen(),
+                                ),
                               );
+                              // Reload bookmark count when returning
+                              _loadBookmarkCount();
                             },
                           ),
                           _buildDivider(),
