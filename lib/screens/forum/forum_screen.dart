@@ -153,62 +153,103 @@ class _ForumScreenState extends State<ForumScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Categories',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String?>(
+                                value: _selectedCategory,
+                                hint: const Row(
+                                  children: [
+                                    Icon(Icons.category_outlined, size: 20, color: Color(0xFF757575)),
+                                    SizedBox(width: 8),
+                                    Text('All Categories', style: TextStyle(color: Color(0xFF757575))),
+                                  ],
+                                ),
+                                isExpanded: true,
+                                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFD81B60)),
+                                items: [
+                                  const DropdownMenuItem<String?>(
+                                    value: null,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.category_outlined, size: 20, color: Color(0xFF757575)),
+                                        SizedBox(width: 8),
+                                        Text('All Categories'),
+                                      ],
+                                    ),
+                                  ),
+                                  ...ForumCategory.all.map((category) => DropdownMenuItem<String?>(
+                                    value: category,
+                                    child: Row(
+                                      children: [
+                                        Text(ForumCategory.getIcon(category), style: const TextStyle(fontSize: 18)),
+                                        const SizedBox(width: 8),
+                                        Text(category),
+                                      ],
+                                    ),
+                                  )),
+                                ],
+                                onChanged: (value) {
+                                  setState(() => _selectedCategory = value);
+                                  _loadQuestions();
+                                },
+                              ),
+                            ),
+                          ),
                         ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.sort),
-                          onSelected: _onSortChanged,
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'recent',
-                              child: Text('Most Recent'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'trending',
-                              child: Text('Trending'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'unanswered',
-                              child: Text('Unanswered'),
-                            ),
-                          ],
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.sort, color: Color(0xFFD81B60)),
+                            tooltip: 'Sort by',
+                            onSelected: _onSortChanged,
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'recent',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.access_time, size: 20, color: _sortBy == 'recent' ? const Color(0xFFD81B60) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Most Recent', style: TextStyle(color: _sortBy == 'recent' ? const Color(0xFFD81B60) : null)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'trending',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.trending_up, size: 20, color: _sortBy == 'trending' ? const Color(0xFFD81B60) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Trending', style: TextStyle(color: _sortBy == 'trending' ? const Color(0xFFD81B60) : null)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'unanswered',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.help_outline, size: 20, color: _sortBy == 'unanswered' ? const Color(0xFFD81B60) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Unanswered', style: TextStyle(color: _sortBy == 'unanswered' ? const Color(0xFFD81B60) : null)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: ForumCategory.all
-                          .map(
-                            (category) => FilterChip(
-                              label: Text(
-                                '${ForumCategory.getIcon(category)} $category',
-                              ),
-                              selected: _selectedCategory == category,
-                              onSelected: (_) => _onCategorySelected(category),
-                              selectedColor: const Color(0xFFFCE4EC),
-                              backgroundColor: Colors.white,
-                              labelStyle: TextStyle(
-                                color: _selectedCategory == category
-                                    ? const Color(0xFFD81B60)
-                                    : const Color(0xFF757575),
-                              ),
-                              side: BorderSide(
-                                color: _selectedCategory == category
-                                    ? const Color(0xFFD81B60)
-                                    : const Color(0xFFE0E0E0),
-                              ),
-                            ),
-                          )
-                          .toList(),
                     ),
                   ),
                   const SizedBox(height: 24),
