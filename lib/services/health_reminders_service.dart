@@ -8,7 +8,7 @@ class HealthRemindersService {
   /// Get active health reminders
   Future<List<HealthReminder>> getActiveReminders({
     String? category,
-    int limit = 10,
+    int limit = 100, // Increased to get all 66+ reminders
   }) async {
     try {
       dynamic query = _supabase.client
@@ -767,6 +767,6 @@ class HealthRemindersService {
   List<HealthReminder> _getDefaultReminders() {
     final allReminders = _getReliableHealthReminders();
     allReminders.shuffle(); // Shuffle to show different reminders each time
-    return allReminders.take(10).toList(); // Return 10 random reminders instead of just 5
+    return allReminders; // Return ALL 66 reminders, not just 10
   }
 }
