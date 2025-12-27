@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/models/cancer_type.dart';
-import 'package:cancerapp/widgets/modern_back_button.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
 
 class CancerDetailScreen extends StatelessWidget {
   final CancerType cancer;
@@ -16,36 +16,11 @@ class CancerDetailScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // Original App Bar with rounded corners
-          SliverAppBar(
-            floating: true,
-            expandedHeight: 80,
-            backgroundColor: const Color(0xFFD81B60),
-            elevation: 0,
-            leading: const ModernBackButton(),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: SafeArea(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 64),
-                    child: Text(
-                      cancer.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // Custom App Header matching main pages
+          CustomAppHeader(
+            title: cancer.name,
+            subtitle: 'Learn about ${cancer.name.toLowerCase()}',
+            showBackButton: true,
           ),
 
           SliverToBoxAdapter(
