@@ -214,27 +214,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          clipBehavior: Clip.antiAlias,
-          slivers: [
-            // App Bar with custom design
-            SliverAppBar(
-              floating: true,
-              expandedHeight: 85,
-              backgroundColor: const Color(0xFFD81B60),
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
+      body: CustomScrollView(
+        clipBehavior: Clip.antiAlias,
+        slivers: [
+          // App Bar with custom design
+          SliverAppBar(
+            floating: true,
+            pinned: false,
+            expandedHeight: 85 + topPadding,
+            collapsedHeight: 85 + topPadding,
+            toolbarHeight: 85 + topPadding,
+            backgroundColor: const Color(0xFFD81B60),
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
-              flexibleSpace: Container(
-                clipBehavior: Clip.antiAlias,
+            ),
+            flexibleSpace: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -243,10 +251,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       Color(0xFFD81B60),
                       Color(0xFFE91E63),
                     ],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -257,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     // Decorative circles
                     Positioned(
@@ -286,27 +291,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Pink ribbon decoration
                     Positioned(
                       right: 70,
-                      top: 20,
+                      top: topPadding + 10,
                       child: Icon(
                         Icons.favorite,
                         color: Colors.white.withOpacity(0.15),
                         size: 40,
                       ),
                     ),
-                    // Content
-                    SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
+                    // Content - positioned to avoid SafeArea overlap
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      top: topPadding + 12,
+                      bottom: 12,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
                                     'Hello, $userName 👋',
                                     style: const TextStyle(
                                       color: Colors.white,
@@ -317,90 +326,91 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    'Your wellness journey starts here',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'Your wellness journey starts here',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                  const SizedBox(height: 6),
-                                  // Decorative line
-                                  Container(
-                                    width: 40,
-                                    height: 2,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.8),
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                // Decorative line
+                                Container(
+                                  width: 40,
+                                  height: 2,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ProfileScreen(),
+                                ),
+                              ).then((_) {
+                                _loadUserData();
+                                _loadHealthReminders(forceRefresh: true); // Refresh reminders on return
+                              });
+                            },
+                            child: Container(
+                              width: 45,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 3,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ProfileScreen(),
-                                  ),
-                                ).then((_) {
-                                  _loadUserData();
-                                  _loadHealthReminders(forceRefresh: true); // Refresh reminders on return
-                                });
-                              },
-                              child: Container(
-                                width: 45,
-                                height: 45,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 3,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipOval(
-                                  child: profilePictureUrl != null
-                                      ? Image.network(
-                                          profilePictureUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return const Icon(
-                                              Icons.person,
-                                              color: Color(0xFFD81B60),
-                                              size: 24,
-                                            );
-                                          },
-                                        )
-                                      : const Icon(
-                                          Icons.person,
-                                          color: Color(0xFFD81B60),
-                                          size: 24,
-                                        ),
-                                ),
+                              child: ClipOval(
+                                child: profilePictureUrl != null
+                                    ? Image.network(
+                                        profilePictureUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.person,
+                                            color: Color(0xFFD81B60),
+                                            size: 24,
+                                          );
+                                        },
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        color: Color(0xFFD81B60),
+                                        size: 24,
+                                      ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          ),
 
             // Content
             SliverToBoxAdapter(
@@ -625,7 +635,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

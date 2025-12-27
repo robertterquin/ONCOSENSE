@@ -70,10 +70,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          clipBehavior: Clip.antiAlias,
-          slivers: [
+      body: CustomScrollView(
+        clipBehavior: Clip.antiAlias,
+        slivers: [
             const CustomAppHeader(
               title: 'Resources',
               subtitle: 'Find support, hotlines, and centers',
@@ -197,7 +196,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

@@ -99,20 +99,19 @@ class _PreventionScreenState extends State<PreventionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? _buildErrorState()
-                : RefreshIndicator(
-                    onRefresh: _loadPreventionData,
-                    child: CustomScrollView(
-                      clipBehavior: Clip.antiAlias,
-                      slivers: [
-                        const CustomAppHeader(
-                          title: 'Prevention & Lifestyle',
-                          subtitle: 'Healthy tips for a cancer-free life',
-                        ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? _buildErrorState()
+              : RefreshIndicator(
+                  onRefresh: _loadPreventionData,
+                  child: CustomScrollView(
+                    clipBehavior: Clip.antiAlias,
+                    slivers: [
+                      const CustomAppHeader(
+                        title: 'Prevention & Lifestyle',
+                        subtitle: 'Healthy tips for a cancer-free life',
+                      ),
                         SliverToBoxAdapter(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +197,6 @@ class _PreventionScreenState extends State<PreventionScreen> {
                       ],
                     ),
                   ),
-      ),
     );
   }
 

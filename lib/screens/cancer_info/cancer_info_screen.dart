@@ -67,10 +67,9 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          clipBehavior: Clip.antiAlias,
-          slivers: [
+      body: CustomScrollView(
+        clipBehavior: Clip.antiAlias,
+        slivers: [
             const CustomAppHeader(
               title: 'Cancer Information',
               subtitle: 'Learn about types, symptoms, and prevention',
@@ -236,7 +235,6 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

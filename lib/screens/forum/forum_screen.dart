@@ -97,10 +97,9 @@ class _ForumScreenState extends State<ForumScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          clipBehavior: Clip.antiAlias,
-          slivers: [
+      body: CustomScrollView(
+        clipBehavior: Clip.antiAlias,
+        slivers: [
             const CustomAppHeader(
               title: 'Q&A Forum',
               subtitle: 'Ask questions, share experiences',
@@ -247,7 +246,6 @@ class _ForumScreenState extends State<ForumScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 
