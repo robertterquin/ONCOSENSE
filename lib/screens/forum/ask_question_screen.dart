@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/services/forum_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 
 class AskQuestionScreen extends StatefulWidget {
   const AskQuestionScreen({super.key});
@@ -71,10 +72,7 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF212121)),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const ModernCloseButton(),
         title: const Text(
           'Ask a Question',
           style: TextStyle(

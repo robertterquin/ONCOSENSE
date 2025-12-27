@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 
@@ -87,10 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               expandedHeight: 85,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
+              leading: const ModernBackButton(),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(24),

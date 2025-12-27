@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/models/cancer_type.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 
 class CancerDetailScreen extends StatelessWidget {
   final CancerType cancer;
@@ -21,10 +22,7 @@ class CancerDetailScreen extends StatelessWidget {
             expandedHeight: 80,
             backgroundColor: const Color(0xFFD81B60),
             elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
+            leading: const ModernBackButton(),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(24),

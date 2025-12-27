@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/input_field.dart';
 
@@ -176,11 +177,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
+        leading: const ModernBackButtonLight(),
+        title: const Text(
           'Create Account',
           style: TextStyle(
             color: Colors.black,

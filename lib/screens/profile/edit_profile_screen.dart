@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -299,10 +300,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     expandedHeight: 85,
                     backgroundColor: const Color(0xFFD81B60),
                     elevation: 0,
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+                    leading: const ModernBackButton(),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(24),

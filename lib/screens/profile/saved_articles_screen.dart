@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SavedArticlesScreen extends StatefulWidget {
@@ -76,67 +77,45 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFD81B60),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Saved Articles',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      body: CustomScrollView(
+        slivers: [
+          // Custom App Header matching main pages
+          CustomAppHeader(
+            title: 'Saved Articles',
+            subtitle: 'Your bookmarked articles',
+            showBackButton: true,
           ),
-        ),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(24),
-            bottomRight: Radius.circular(24),
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFD81B60),
-                Color(0xFFE91E63),
-              ],
-            ),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
-            ),
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFD81B60),
-              ),
-            )
-          : _savedArticles.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadSavedArticles,
-                  color: const Color(0xFFD81B60),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _savedArticles.length,
-                    itemBuilder: (context, index) {
-                      final article = _savedArticles[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildArticleCard(article),
-                      );
-                    },
+
+          // Content
+          _isLoading
+              ? const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFD81B60),
+                    ),
                   ),
-                ),
+                )
+              : _savedArticles.isEmpty
+                  ? SliverFillRemaining(
+                      child: _buildEmptyState(),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final article = _savedArticles[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildArticleCard(article),
+                            );
+                          },
+                          childCount: _savedArticles.length,
+                        ),
+                      ),
+                    ),
+        ],
+      ),
     );
   }
 

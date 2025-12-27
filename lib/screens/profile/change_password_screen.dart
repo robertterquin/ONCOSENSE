@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cancerapp/screens/auth/widgets/auth_button.dart';
 import 'package:cancerapp/screens/auth/widgets/input_field.dart';
@@ -152,10 +153,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               expandedHeight: 85,
               backgroundColor: const Color(0xFFD81B60),
               elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
+              leading: const ModernBackButton(),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(24),

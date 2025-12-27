@@ -452,9 +452,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ? const Center(child: Text('Question not found'))
                 : CustomScrollView(
                     slivers: [
-                      const CustomAppHeader(
+                      CustomAppHeader(
                         title: 'Question Details',
                         subtitle: 'Read and respond',
+                        showBackButton: true,
                       ),
                       SliverToBoxAdapter(
                         child: Column(

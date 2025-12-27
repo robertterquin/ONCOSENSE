@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class CustomAppHeader extends StatelessWidget {
   final String title;
   final String subtitle;
+  final bool showBackButton;
+  final VoidCallback? onBackPressed;
 
   const CustomAppHeader({
     super.key,
     required this.title,
     required this.subtitle,
+    this.showBackButton = false,
+    this.onBackPressed,
   });
 
   @override
@@ -91,9 +95,34 @@ class CustomAppHeader extends StatelessWidget {
                   size: 40,
                 ),
               ),
+              // Back button - minimal modern design
+              if (showBackButton)
+                Positioned(
+                  left: 8,
+                  top: topPadding + 8,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onBackPressed ?? () => Navigator.of(context).pop(),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               // Content - positioned to avoid SafeArea overlap
               Positioned(
-                left: 20,
+                left: showBackButton ? 56 : 20,
                 right: 20,
                 top: topPadding + 12,
                 bottom: 12,

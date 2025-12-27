@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/auth_button.dart';
 import 'widgets/input_field.dart';
@@ -114,14 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // App Bar
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(width: 8.0),
+                    const ModernBackButtonLight(),
+                    const SizedBox(width: 12.0),
                     Text(
                       'Login',
                       style: Theme.of(context).textTheme.headlineMedium,
@@ -185,10 +183,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 8.0),
 
                         // Remember Me & Forgot Password
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Checkbox(
                                   value: _rememberMe,
