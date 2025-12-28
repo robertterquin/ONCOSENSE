@@ -160,10 +160,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadSurvivorStory() async {
     try {
-      // Fetch articles with survivor story filters
+      // Fetch articles with survivor story filters - prioritize Filipino stories
       final stories = await gNewsService.fetchCancerArticles(
         maxResults: 5,
-        query: '"cancer survivor" OR "cancer journey" OR "cancer recovery story" OR "beating cancer"',
+        query: '"cancer survivor" OR "cancer journey" OR "cancer recovery story" OR "beating cancer" OR "Filipino cancer survivor" OR "Pinoy cancer fighter"',
       );
       
       if (stories.isNotEmpty) {

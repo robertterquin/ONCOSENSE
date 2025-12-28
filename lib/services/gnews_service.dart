@@ -8,8 +8,22 @@ class GNewsService {
   static const String _baseUrl = 'https://gnews.io/api/v4';
   final _random = Random();
 
-  // Trusted medical and news sources
+  // Trusted medical and news sources (including Philippine sources)
   static const List<String> _trustedSources = [
+    // Philippine news sources
+    'abs-cbn.com',
+    'gmanetwork.com',
+    'inquirer.net',
+    'philstar.com',
+    'rappler.com',
+    'mb.com.ph',
+    'manilatimes.net',
+    'sunstar.com.ph',
+    'pna.gov.ph',
+    'doh.gov.ph',
+    'pchrd.dost.gov.ph',
+    'pgh.gov.ph',
+    // International trusted sources
     'who.int',
     'cdc.gov',
     'mayoclinic.org',
@@ -51,17 +65,27 @@ class GNewsService {
     'big pharma conspiracy',
   ];
 
-  /// Fetch cancer-related articles with randomization
-  Future<List<Article>> fetchCancerArticles({int maxResults = 3, String? query}) async {
+  /// Fetch cancer-related articles with randomization (prioritizes Philippine sources)
+  Future<List<Article>> fetchCancerArticles({int maxResults = 3, String? query, bool philippineOnly = false}) async {
     try {
       // Use custom query or default to 'cancer'
       final searchQuery = query ?? 'cancer';
       
-      final response = await http.get(
+      // Try fetching from Philippines first
+      var response = await http.get(
         Uri.parse(
-          '$_baseUrl/search?q=$searchQuery&lang=en&max=30&apikey=$_apiKey',
+          '$_baseUrl/search?q=$searchQuery&lang=en&country=ph&max=30&apikey=$_apiKey',
         ),
       );
+      
+      // If no Philippine results or error, fall back to international (unless philippineOnly is true)
+      if (!philippineOnly && (response.statusCode != 200 || _getArticleCount(response.body) == 0)) {
+        response = await http.get(
+          Uri.parse(
+            '$_baseUrl/search?q=$searchQuery&lang=en&max=30&apikey=$_apiKey',
+          ),
+        );
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -115,14 +139,24 @@ class GNewsService {
     return true;
   }
 
-  /// Fetch top health headlines from trusted sources
-  Future<List<Article>> fetchHealthHeadlines({int maxResults = 3}) async {
+  /// Fetch top health headlines from trusted sources (prioritizes Philippine sources)
+  Future<List<Article>> fetchHealthHeadlines({int maxResults = 3, bool philippineOnly = false}) async {
     try {
-      final response = await http.get(
+      // Try fetching from Philippines first
+      var response = await http.get(
         Uri.parse(
-          '$_baseUrl/top-headlines?category=health&lang=en&max=30&apikey=$_apiKey',
+          '$_baseUrl/top-headlines?category=health&lang=en&country=ph&max=30&apikey=$_apiKey',
         ),
       );
+      
+      // If no Philippine results or error, fall back to international (unless philippineOnly is true)
+      if (!philippineOnly && (response.statusCode != 200 || _getArticleCount(response.body) == 0)) {
+        response = await http.get(
+          Uri.parse(
+            '$_baseUrl/top-headlines?category=health&lang=en&max=30&apikey=$_apiKey',
+          ),
+        );
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -151,6 +185,17 @@ class GNewsService {
       }
     } catch (e) {
       throw Exception('Error fetching headlines: $e');
+    }
+  }
+
+  /// Helper to get article count from response body
+  int _getArticleCount(String responseBody) {
+    try {
+      final data = json.decode(responseBody);
+      final articles = data['articles'] as List?;
+      return articles?.length ?? 0;
+    } catch (e) {
+      return 0;
     }
   }
 }
