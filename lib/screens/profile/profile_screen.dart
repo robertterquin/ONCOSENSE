@@ -7,6 +7,7 @@ import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 import 'package:cancerapp/screens/profile/saved_questions_screen.dart';
 import 'package:cancerapp/screens/profile/saved_resources_screen.dart';
 import 'package:cancerapp/screens/profile/settings_screen.dart';
+import 'package:cancerapp/screens/profile/notifications_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -83,6 +84,132 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.of(context).pushReplacementNamed('/welcome');
       }
     }
+  }
+
+  void _showHelpSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.help_rounded, color: Color(0xFF4CAF50), size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('Help & Support'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Need assistance?',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'For questions, feedback, or support, please contact us:',
+              style: TextStyle(color: Colors.grey[600], height: 1.5),
+            ),
+            const SizedBox(height: 16),
+            _buildContactItem(Icons.email_rounded, 'support@oncosense.app'),
+            const SizedBox(height: 8),
+            _buildContactItem(Icons.phone_rounded, '+63 123 456 7890'),
+            const SizedBox(height: 16),
+            Text(
+              'You can also visit our FAQ section for common questions.',
+              style: TextStyle(color: Colors.grey[600], height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF4CAF50)),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFD81B60), Color(0xFFE91E63)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.favorite, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('OncoSense'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Version 1.0.0',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'OncoSense is a cancer awareness and education app designed to provide reliable information about cancer types, prevention strategies, and support resources.',
+              style: TextStyle(color: Colors.grey[600], height: 1.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Empowering Awareness. Saving Lives.',
+              style: TextStyle(
+                color: const Color(0xFFD81B60),
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '© 2024 OncoSense Team. All rights reserved.',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -411,8 +538,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             iconColor: const Color(0xFFFF9800),
                             iconBg: const Color(0xFFFFF3E0),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Notifications - Coming soon')),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NotificationsScreen(),
+                                ),
                               );
                             },
                           ),
@@ -424,9 +554,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             iconColor: const Color(0xFF4CAF50),
                             iconBg: const Color(0xFFE8F5E9),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Help & Support - Coming soon')),
-                              );
+                              _showHelpSupportDialog();
                             },
                           ),
                           _buildDivider(),
@@ -437,9 +565,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             iconColor: const Color(0xFF607D8B),
                             iconBg: const Color(0xFFECEFF1),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('About - Coming soon')),
-                              );
+                              _showAboutDialog();
                             },
                             isLast: true,
                           ),

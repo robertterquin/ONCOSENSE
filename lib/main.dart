@@ -4,12 +4,16 @@ import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/theme_provider.dart';
+import 'package:cancerapp/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Supabase
   await SupabaseService.initialize();
+  
+  // Initialize Notification Service
+  await NotificationService().initialize();
   
   runApp(const CancerApp());
 }

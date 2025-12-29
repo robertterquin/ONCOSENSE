@@ -58,6 +58,18 @@ dependencies:
   
   # Date formatting
   intl: ^0.19.0
+  
+  # Local notifications for background reminders
+  flutter_local_notifications: ^19.0.0
+  
+  # Timezone support for scheduled notifications
+  timezone: ^0.10.0
+  
+  # Workmanager for background tasks (Android)
+  workmanager: ^0.5.2
+  
+  # Permission handler
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

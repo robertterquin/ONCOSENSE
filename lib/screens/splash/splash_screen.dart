@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,7 +52,9 @@ class _SplashScreenState extends State<SplashScreen>
       final supabase = SupabaseService();
       final hasSession = await supabase.hasActiveSession();
       
+      // Initialize notifications for logged-in users
       if (hasSession) {
+        await _initializeNotifications();
         // User has active session, navigate to home
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);
       } else {
@@ -62,6 +66,27 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
       }
+    }
+  }
+  
+  Future<void> _initializeNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSetupNotifications = prefs.getBool('notifications_setup_complete') ?? false;
+      
+      if (!hasSetupNotifications) {
+        // First time setup - request permissions and schedule notifications
+        final notificationService = NotificationService();
+        final granted = await notificationService.requestPermissions();
+        
+        if (granted) {
+          await notificationService.enableAllNotifications();
+          await prefs.setBool('notifications_setup_complete', true);
+          debugPrint('✅ Initial notification setup complete');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error initializing notifications: $e');
     }
   }
 
