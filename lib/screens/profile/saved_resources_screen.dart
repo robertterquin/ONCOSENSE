@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/models/resource.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SavedResourcesScreen extends StatefulWidget {
@@ -147,7 +148,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         slivers: [
           // Custom App Header matching main pages
@@ -210,12 +211,12 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Saved Resources',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF212121),
+                color: AppTheme.getTextColor(context),
               ),
             ),
             const SizedBox(height: 12),
@@ -224,7 +225,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[600],
+                color: AppTheme.getSecondaryTextColor(context),
                 height: 1.5,
               ),
             ),
@@ -255,15 +256,16 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     final color = _getResourceColor(resource.type);
     final icon = _getResourceIcon(resource.type);
     final typeLabel = _getResourceTypeLabel(resource.type);
+    final isDark = AppTheme.isDarkMode(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -322,10 +324,10 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                       const SizedBox(height: 8),
                       Text(
                         resource.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF212121),
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
                     ],
@@ -355,7 +357,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                   resource.description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[700],
+                    color: AppTheme.getSecondaryTextColor(context),
                     height: 1.4,
                   ),
                 ),

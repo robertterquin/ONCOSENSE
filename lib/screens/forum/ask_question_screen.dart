@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/services/forum_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class AskQuestionScreen extends StatefulWidget {
   const AskQuestionScreen({super.key});
@@ -68,15 +69,15 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.getCardColor(context),
         elevation: 0,
         leading: const ModernCloseButton(),
-        title: const Text(
+        title: Text(
           'Ask a Question',
           style: TextStyle(
-            color: Color(0xFF212121),
+            color: AppTheme.getTextColor(context),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -114,12 +115,12 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Category Selection
-              const Text(
+              Text(
                 'Category',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
+                  color: AppTheme.getTextColor(context),
                 ),
               ),
               const SizedBox(height: 12),
@@ -139,18 +140,18 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
                       }
                     },
                     selectedColor: const Color(0xFFFCE4EC),
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.getCardColor(context),
                     labelStyle: TextStyle(
                       color: isSelected
                           ? const Color(0xFFD81B60)
-                          : const Color(0xFF757575),
+                          : AppTheme.getSecondaryTextColor(context),
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.normal,
                     ),
                     side: BorderSide(
                       color: isSelected
                           ? const Color(0xFFD81B60)
-                          : const Color(0xFFE0E0E0),
+                          : AppTheme.getDividerColor(context),
                     ),
                   );
                 }).toList(),
@@ -158,12 +159,12 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
               const SizedBox(height: 24),
 
               // Title Field
-              const Text(
+              Text(
                 'Title',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
+                  color: AppTheme.getTextColor(context),
                 ),
               ),
               const SizedBox(height: 8),
@@ -196,12 +197,12 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
               const SizedBox(height: 16),
 
               // Content Field
-              const Text(
+              Text(
                 'Details',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
+                  color: AppTheme.getTextColor(context),
                 ),
               ),
               const SizedBox(height: 8),
@@ -240,17 +241,17 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: AppTheme.isDarkMode(context) ? AppTheme.getCardColor(context) : const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.visibility_off_outlined,
-                      color: Color(0xFF757575),
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -259,15 +260,15 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF212121),
+                              color: AppTheme.getTextColor(context),
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             'Your name won\'t be shown',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF757575),
+                              color: AppTheme.getSecondaryTextColor(context),
                             ),
                           ),
                         ],
@@ -289,7 +290,7 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFCE4EC),
+                  color: AppTheme.isDarkMode(context) ? const Color(0xFF3D1F2B) : const Color(0xFFFCE4EC),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -314,14 +315,14 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       '• Be respectful and supportive\n'
                       '• Don\'t share personal medical information\n'
                       '• Seek professional medical advice\n'
                       '• No spam or promotional content',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF757575),
+                        color: AppTheme.getSecondaryTextColor(context),
                         height: 1.5,
                       ),
                     ),

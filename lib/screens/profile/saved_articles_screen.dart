@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SavedArticlesScreen extends StatefulWidget {
@@ -76,7 +77,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         slivers: [
           // Custom App Header matching main pages
@@ -139,12 +140,12 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Saved Articles',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF212121),
+                color: AppTheme.getTextColor(context),
               ),
             ),
             const SizedBox(height: 12),
@@ -153,7 +154,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[600],
+                color: AppTheme.getSecondaryTextColor(context),
                 height: 1.5,
               ),
             ),
@@ -181,17 +182,18 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
   }
 
   Widget _buildArticleCard(Article article) {
+    final isDark = AppTheme.isDarkMode(context);
     return InkWell(
       onTap: () => _openArticle(article.url),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: AppTheme.getDividerColor(context)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -329,14 +331,14 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                       Icon(
                         Icons.schedule,
                         size: 14,
-                        color: Colors.grey[600],
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         article.readTime,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppTheme.getSecondaryTextColor(context),
                         ),
                       ),
                     ],
@@ -346,10 +348,10 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                   // Title
                   Text(
                     article.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
+                      color: AppTheme.getTextColor(context),
                       height: 1.3,
                     ),
                     maxLines: 2,
@@ -362,7 +364,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                     article.description,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[700],
+                      color: AppTheme.getSecondaryTextColor(context),
                       height: 1.4,
                     ),
                     maxLines: 3,
@@ -391,7 +393,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                         icon: const Icon(Icons.bookmark_remove, size: 16),
                         label: const Text('Remove'),
                         style: TextButton.styleFrom(
-                          foregroundColor: Colors.grey[600],
+                          foregroundColor: AppTheme.getSecondaryTextColor(context),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,

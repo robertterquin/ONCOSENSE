@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/models/cancer_type.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class CancerDetailScreen extends StatelessWidget {
   final CancerType cancer;
@@ -13,7 +14,7 @@ class CancerDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         slivers: [
           // Custom App Header matching main pages
@@ -30,14 +31,15 @@ class CancerDetailScreen extends StatelessWidget {
 
                 // About Section - Modern Card
                 _buildModernCard(
+                  context: context,
                   icon: Icons.info_outline,
                   title: 'About',
                   iconColor: const Color(0xFF2196F3),
                   child: Text(
                     cancer.description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF424242),
+                      color: AppTheme.getTextColor(context).withOpacity(0.85),
                       height: 1.6,
                       letterSpacing: 0.1,
                     ),
@@ -49,14 +51,15 @@ class CancerDetailScreen extends StatelessWidget {
                 // Statistics Section
                 if (cancer.statistics != null)
                   _buildModernCard(
+                    context: context,
                     icon: Icons.bar_chart,
                     title: 'Statistics',
                     iconColor: const Color(0xFF4CAF50),
                     child: Text(
                       cancer.statistics!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF424242),
+                        color: AppTheme.getTextColor(context).withOpacity(0.85),
                         height: 1.6,
                         letterSpacing: 0.1,
                       ),
@@ -67,53 +70,60 @@ class CancerDetailScreen extends StatelessWidget {
 
                 // Symptoms & Warning Signs Section
                 _buildModernCard(
+                  context: context,
                   icon: Icons.warning_amber_rounded,
                   title: 'Symptoms & Warning Signs',
                   iconColor: const Color(0xFFFF9800),
-                  child: _buildModernList(cancer.symptoms),
+                  child: _buildModernList(context, cancer.symptoms),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Risk Factors Section
                 _buildModernCard(
+                  context: context,
                   icon: Icons.shield_outlined,
                   title: 'Risk Factors',
                   iconColor: const Color(0xFFF44336),
-                  child: _buildModernList(cancer.riskFactors),
+                  child: _buildModernList(context, cancer.riskFactors),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Prevention Tips Section
                 _buildModernCard(
+                  context: context,
                   icon: Icons.verified_user,
                   title: 'Prevention Tips',
                   iconColor: const Color(0xFF9C27B0),
-                  child: _buildModernList(cancer.preventionTips),
+                  child: _buildModernList(context, cancer.preventionTips),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Screening Methods Section
                 _buildModernCard(
+                  context: context,
                   icon: Icons.medical_services_rounded,
                   title: 'Screening Methods',
                   iconColor: const Color(0xFF00BCD4),
-                  child: _buildModernList(cancer.screeningMethods),
+                  child: _buildModernList(context, cancer.screeningMethods),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Early Detection Section
                 _buildModernCard(
+                  context: context,
                   icon: Icons.tips_and_updates,
                   title: 'Early Detection',
                   iconColor: const Color(0xFFFFB300),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF8E1),
+                      color: AppTheme.isDarkMode(context)
+                          ? const Color(0xFFFFB300).withOpacity(0.15)
+                          : const Color(0xFFFFF8E1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: const Color(0xFFFFE082),
@@ -132,9 +142,9 @@ class CancerDetailScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             cancer.earlyDetectionInfo,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF424242),
+                              color: AppTheme.getTextColor(context).withOpacity(0.85),
                               height: 1.6,
                               letterSpacing: 0.1,
                             ),
@@ -152,10 +162,12 @@ class CancerDetailScreen extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
+                    color: AppTheme.isDarkMode(context)
+                        ? Colors.grey[900]
+                        : const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFE0E0E0),
+                      color: AppTheme.getDividerColor(context),
                       width: 1,
                     ),
                   ),
@@ -164,7 +176,7 @@ class CancerDetailScreen extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.info_outline_rounded,
-                        color: Colors.grey[700],
+                        color: AppTheme.getSecondaryTextColor(context),
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -177,7 +189,7 @@ class CancerDetailScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
+                                color: AppTheme.getTextColor(context),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -185,7 +197,7 @@ class CancerDetailScreen extends StatelessWidget {
                               'This information is for educational purposes only. Always consult with healthcare professionals for medical advice, diagnosis, or treatment.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[600],
+                                color: AppTheme.getSecondaryTextColor(context),
                                 height: 1.5,
                               ),
                             ),
@@ -206,26 +218,28 @@ class CancerDetailScreen extends StatelessWidget {
   }
 
   Widget _buildModernCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required Color iconColor,
     required Widget child,
   }) {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: const Color(0xFFF0F0F0),
+          color: AppTheme.getDividerColor(context),
           width: 1,
         ),
       ),
@@ -249,10 +263,10 @@ class CancerDetailScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF212121),
+                  color: AppTheme.getTextColor(context),
                   letterSpacing: -0.2,
                 ),
               ),
@@ -265,7 +279,7 @@ class CancerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildModernList(List<String> items) {
+  Widget _buildModernList(BuildContext context, List<String> items) {
     return Column(
       children: items.asMap().entries.map((entry) {
         return Padding(
@@ -293,9 +307,9 @@ class CancerDetailScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   entry.value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF424242),
+                    color: AppTheme.getTextColor(context).withOpacity(0.85),
                     height: 1.6,
                     letterSpacing: 0.1,
                   ),

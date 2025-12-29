@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/health_reminders_service.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 /// One-time setup screen to seed health reminders database
 /// This only needs to be run once to populate the database
@@ -40,6 +41,7 @@ class _SetupHealthRemindersScreenState extends State<SetupHealthRemindersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.getSurfaceColor(context),
       appBar: AppBar(
         title: const Text('Setup Health Reminders'),
         backgroundColor: const Color(0xFFD81B60),
@@ -57,11 +59,12 @@ class _SetupHealthRemindersScreenState extends State<SetupHealthRemindersScreen>
                 color: _isComplete ? Colors.green : const Color(0xFFD81B60),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Health Reminders Database',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -70,9 +73,9 @@ class _SetupHealthRemindersScreenState extends State<SetupHealthRemindersScreen>
                 _message.isEmpty
                     ? 'Click the button below to populate your database with reliable health reminders from trusted sources (WHO, CDC, American Cancer Society, etc.)'
                     : _message,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF757575),
+                  color: AppTheme.getSecondaryTextColor(context),
                 ),
                 textAlign: TextAlign.center,
               ),

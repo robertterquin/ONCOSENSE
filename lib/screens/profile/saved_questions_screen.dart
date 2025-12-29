@@ -3,6 +3,7 @@ import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/screens/forum/question_detail_screen.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:intl/intl.dart';
 
 class SavedQuestionsScreen extends StatefulWidget {
@@ -100,7 +101,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         slivers: [
           // Custom App Header matching main pages
@@ -163,12 +164,12 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Saved Questions',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF212121),
+                color: AppTheme.getTextColor(context),
               ),
             ),
             const SizedBox(height: 12),
@@ -177,7 +178,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[600],
+                color: AppTheme.getSecondaryTextColor(context),
                 height: 1.5,
               ),
             ),
@@ -205,17 +206,18 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
   }
 
   Widget _buildQuestionCard(Question question) {
+    final isDark = AppTheme.isDarkMode(context);
     return InkWell(
       onTap: () => _openQuestion(question),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: AppTheme.getDividerColor(context)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -298,9 +300,9 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
                   // Bookmark Button
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppTheme.getCardColor(context),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      border: Border.all(color: AppTheme.getDividerColor(context)),
                     ),
                     child: IconButton(
                       icon: const Icon(
@@ -321,10 +323,10 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
               // Question Title
               Text(
                 question.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
+                  color: AppTheme.getTextColor(context),
                   height: 1.3,
                 ),
                 maxLines: 2,
@@ -337,7 +339,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
                 question.content,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[700],
+                  color: AppTheme.getSecondaryTextColor(context),
                   height: 1.4,
                 ),
                 maxLines: 3,

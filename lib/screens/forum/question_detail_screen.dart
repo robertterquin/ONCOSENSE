@@ -4,6 +4,7 @@ import 'package:cancerapp/models/answer.dart';
 import 'package:cancerapp/services/forum_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final String questionId;
@@ -497,7 +498,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
@@ -529,10 +530,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               children: [
                                 Text(
                                   '${_answers.length} ${_answers.length == 1 ? 'Answer' : 'Answers'}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF212121),
+                                    color: AppTheme.getTextColor(context),
                                   ),
                                 ),
                               ],
@@ -592,16 +593,17 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   }
 
   Widget _buildQuestionCard() {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -656,18 +658,18 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
           const SizedBox(height: 12),
           Text(
             _question!.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: AppTheme.getTextColor(context),
             ),
           ),
           const SizedBox(height: 12),
           Text(
             _question!.content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF424242),
+              color: AppTheme.getSecondaryTextColor(context),
               height: 1.5,
             ),
           ),
@@ -701,12 +703,12 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   decoration: BoxDecoration(
                     color: _hasUpvotedQuestion 
                         ? const Color(0xFFFCE4EC) 
-                        : Colors.white,
+                        : AppTheme.getCardColor(context),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: _hasUpvotedQuestion
                           ? const Color(0xFFD81B60)
-                          : const Color(0xFFE0E0E0),
+                          : AppTheme.getDividerColor(context),
                     ),
                   ),
                   child: Row(
@@ -744,18 +746,19 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
 
   Widget _buildAnswerCard(Answer answer) {
     final hasUpvoted = _upvotedAnswers.contains(answer.id);
+    final isDark = AppTheme.isDarkMode(context);
     
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: answer.isAccepted 
-            ? const Color(0xFFF1F8F4) 
-            : Colors.white,
+            ? (isDark ? const Color(0xFF1B3D2E) : const Color(0xFFF1F8F4))
+            : AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: answer.isAccepted 
               ? const Color(0xFF4CAF50) 
-              : const Color(0xFFE0E0E0),
+              : AppTheme.getDividerColor(context),
         ),
       ),
       child: Column(
@@ -787,9 +790,9 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
             ),
           Text(
             answer.content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF424242),
+              color: AppTheme.getSecondaryTextColor(context),
               height: 1.5,
             ),
           ),
@@ -834,12 +837,12 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   decoration: BoxDecoration(
                     color: hasUpvoted 
                         ? const Color(0xFFFCE4EC) 
-                        : Colors.white,
+                        : AppTheme.getCardColor(context),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: hasUpvoted
                           ? const Color(0xFFD81B60)
-                          : const Color(0xFFE0E0E0),
+                          : AppTheme.getDividerColor(context),
                     ),
                   ),
                   child: Row(
@@ -874,13 +877,14 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   }
 
   Widget _buildAnswerInput() {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

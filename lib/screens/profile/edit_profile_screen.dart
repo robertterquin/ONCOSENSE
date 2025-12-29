@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
+import 'package:cancerapp/utils/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -287,7 +288,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: SafeArea(
         child: _isLoading
             ? const Center(
@@ -536,7 +537,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
+                                color: AppTheme.getSecondaryTextColor(context),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -682,13 +683,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -701,7 +703,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         validator: validator,
         style: TextStyle(
           fontSize: 15,
-          color: enabled ? const Color(0xFF212121) : Colors.grey[600],
+          color: enabled ? AppTheme.getTextColor(context) : AppTheme.getSecondaryTextColor(context),
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
@@ -710,20 +712,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           helperText: helperText,
           prefixIcon: Icon(
             icon,
-            color: enabled ? const Color(0xFFD81B60) : Colors.grey[400],
+            color: enabled ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
             size: 22,
           ),
           labelStyle: TextStyle(
-            color: enabled ? const Color(0xFFD81B60) : Colors.grey[600],
+            color: enabled ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           hintStyle: TextStyle(
-            color: Colors.grey[400],
+            color: AppTheme.getSecondaryTextColor(context),
             fontSize: 14,
           ),
           helperStyle: TextStyle(
-            color: Colors.grey[500],
+            color: AppTheme.getSecondaryTextColor(context),
             fontSize: 12,
           ),
           border: OutlineInputBorder(
@@ -756,7 +758,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppTheme.getCardColor(context),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
@@ -764,13 +766,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildGenderField() {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -806,7 +809,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppTheme.getCardColor(context),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
         items: _genderOptions.map((String gender) {
@@ -814,9 +817,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             value: gender,
             child: Text(
               gender,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
+                color: AppTheme.getTextColor(context),
               ),
             ),
           );
@@ -830,7 +834,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Icons.arrow_drop_down,
           color: Color(0xFFD81B60),
         ),
-        dropdownColor: Colors.white,
+        dropdownColor: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(16),
       ),
     );
