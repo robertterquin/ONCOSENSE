@@ -163,30 +163,31 @@ class _ForumScreenState extends State<ForumScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Colors.grey[50],
+                              color: AppTheme.getCardColor(context),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(color: AppTheme.getDividerColor(context)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String?>(
                                 value: _selectedCategory,
-                                hint: const Row(
+                                hint: Row(
                                   children: [
-                                    Icon(Icons.category_outlined, size: 20, color: Color(0xFF757575)),
-                                    SizedBox(width: 8),
-                                    Text('All Categories', style: TextStyle(color: Color(0xFF757575))),
+                                    Icon(Icons.category_outlined, size: 20, color: AppTheme.getSecondaryTextColor(context)),
+                                    const SizedBox(width: 8),
+                                    Text('All Categories', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
                                   ],
                                 ),
                                 isExpanded: true,
+                                dropdownColor: AppTheme.getCardColor(context),
                                 icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFD81B60)),
                                 items: [
-                                  const DropdownMenuItem<String?>(
+                                  DropdownMenuItem<String?>(
                                     value: null,
                                     child: Row(
                                       children: [
-                                        Icon(Icons.category_outlined, size: 20, color: Color(0xFF757575)),
-                                        SizedBox(width: 8),
-                                        Text('All Categories'),
+                                        Icon(Icons.category_outlined, size: 20, color: AppTheme.getSecondaryTextColor(context)),
+                                        const SizedBox(width: 8),
+                                        Text('All Categories', style: TextStyle(color: AppTheme.getTextColor(context))),
                                       ],
                                     ),
                                   ),
@@ -196,7 +197,7 @@ class _ForumScreenState extends State<ForumScreen> {
                                       children: [
                                         Text(ForumCategory.getIcon(category), style: const TextStyle(fontSize: 18)),
                                         const SizedBox(width: 8),
-                                        Text(category),
+                                        Text(category, style: TextStyle(color: AppTheme.getTextColor(context))),
                                       ],
                                     ),
                                   )),
@@ -212,13 +213,14 @@ class _ForumScreenState extends State<ForumScreen> {
                         const SizedBox(width: 12),
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey[50],
+                            color: AppTheme.getCardColor(context),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!),
+                            border: Border.all(color: AppTheme.getDividerColor(context)),
                           ),
                           child: PopupMenuButton<String>(
                             icon: const Icon(Icons.sort, color: Color(0xFFD81B60)),
                             tooltip: 'Sort by',
+                            color: AppTheme.getCardColor(context),
                             onSelected: _onSortChanged,
                             itemBuilder: (context) => [
                               PopupMenuItem(
