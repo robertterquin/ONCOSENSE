@@ -5,6 +5,7 @@ import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 import 'package:cancerapp/screens/profile/saved_questions_screen.dart';
+import 'package:cancerapp/screens/profile/saved_resources_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,6 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? profilePictureUrl;
   int _bookmarkCount = 0;
   int _questionBookmarkCount = 0;
+  int _resourceBookmarkCount = 0;
   
   @override
   void initState() {
@@ -32,9 +34,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadBookmarkCount() async {
     final count = await _bookmarkService.getBookmarkCount();
     final questionCount = await _bookmarkService.getQuestionBookmarkCount();
+    final resourceCount = await _bookmarkService.getResourceBookmarkCount();
     setState(() {
       _bookmarkCount = count;
       _questionBookmarkCount = questionCount;
+      _resourceBookmarkCount = resourceCount;
     });
   }
 
@@ -310,13 +314,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildModernMenuItem(
                             icon: Icons.favorite_rounded,
                             title: 'Saved Resources',
-                            subtitle: 'Your favorite support resources',
+                            subtitle: _resourceBookmarkCount > 0
+                                ? '$_resourceBookmarkCount saved resource${_resourceBookmarkCount != 1 ? 's' : ''}'
+                                : 'Your favorite support resources',
                             iconColor: const Color(0xFFEC407A),
                             iconBg: const Color(0xFFFCE4EC),
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Saved Resources - Coming soon')),
+                            badge: _resourceBookmarkCount > 0 ? _resourceBookmarkCount.toString() : null,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SavedResourcesScreen(),
+                                ),
                               );
+                              // Reload bookmark count when returning
+                              _loadBookmarkCount();
                             },
                             isLast: true,
                           ),

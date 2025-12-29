@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/services/resources_service.dart';
+import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/models/resource.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,16 +14,55 @@ class ResourcesScreen extends StatefulWidget {
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
   final resourcesService = ResourcesService();
+  final _bookmarkService = BookmarkService();
   List<Resource> hotlines = [];
   List<Resource> screeningCenters = [];
   List<Resource> financialSupport = [];
   List<Resource> supportGroups = [];
   bool isLoading = true;
+  Set<String> _bookmarkedResourceIds = {};
 
   @override
   void initState() {
     super.initState();
     _loadResources();
+    _loadBookmarkedResources();
+  }
+
+  Future<void> _loadBookmarkedResources() async {
+    final bookmarked = await _bookmarkService.getBookmarkedResources();
+    setState(() {
+      _bookmarkedResourceIds = bookmarked.map((r) => r.id).toSet();
+    });
+  }
+
+  Future<void> _toggleBookmark(Resource resource) async {
+    final wasBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    
+    // Optimistic update
+    setState(() {
+      if (wasBookmarked) {
+        _bookmarkedResourceIds.remove(resource.id);
+      } else {
+        _bookmarkedResourceIds.add(resource.id);
+      }
+    });
+
+    final isNowBookmarked = await _bookmarkService.toggleResourceBookmark(resource);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isNowBookmarked 
+                ? '✅ Resource saved!' 
+                : 'Resource removed from saved',
+          ),
+          duration: const Duration(seconds: 2),
+          backgroundColor: isNowBookmarked ? Colors.green : Colors.grey[700],
+        ),
+      );
+    }
   }
 
   Future<void> _loadResources() async {
@@ -200,6 +240,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Widget _buildHotlineCard(Resource resource) {
+    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    
     return InkWell(
       onTap: resource.phone != null ? () => _makePhoneCall(resource.phone!) : null,
       borderRadius: BorderRadius.circular(12),
@@ -254,6 +296,19 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                       ],
                     ),
                   ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () => _toggleBookmark(resource),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                      size: 22,
+                      color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
@@ -302,6 +357,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Widget _buildCenterCard(Resource resource) {
+    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -346,6 +403,19 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               ),
               if (resource.isVerified)
                 const Icon(Icons.verified, size: 20, color: Color(0xFF4CAF50)),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _toggleBookmark(resource),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                    size: 22,
+                    color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                  ),
+                ),
+              ),
             ],
           ),
           if (resource.location != null) ...[
@@ -389,6 +459,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Widget _buildSupportCard(Resource resource) {
+    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -420,6 +492,19 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               ),
               if (resource.isVerified)
                 const Icon(Icons.verified, size: 20, color: Color(0xFF4CAF50)),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _toggleBookmark(resource),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                    size: 22,
+                    color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -453,6 +538,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Widget _buildGroupCard(Resource resource) {
+    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -508,9 +595,20 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             ),
           ),
           if (resource.isVerified)
-            const Icon(Icons.verified, size: 18, color: Color(0xFF4CAF50))
-          else
-            const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF757575)),
+            const Icon(Icons.verified, size: 18, color: Color(0xFF4CAF50)),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () => _toggleBookmark(resource),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                size: 22,
+                color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/question.dart';
+import 'package:cancerapp/models/resource.dart';
 
-/// Service for managing bookmarked articles and questions using local storage
+/// Service for managing bookmarked articles, questions, and resources using local storage
 class BookmarkService {
   static const String _bookmarksKey = 'bookmarked_articles';
   static const String _questionsKey = 'bookmarked_questions';
+  static const String _resourcesKey = 'bookmarked_resources';
 
   /// Get all bookmarked articles
   Future<List<Article>> getBookmarkedArticles() async {
@@ -225,6 +227,117 @@ class BookmarkService {
   /// Get question bookmark count
   Future<int> getQuestionBookmarkCount() async {
     final bookmarks = await getBookmarkedQuestions();
+    return bookmarks.length;
+  }
+
+  // ==================== RESOURCE BOOKMARKS ====================
+
+  /// Get all bookmarked resources
+  Future<List<Resource>> getBookmarkedResources() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final resourcesJson = prefs.getString(_resourcesKey);
+      
+      if (resourcesJson == null) {
+        return [];
+      }
+
+      final List<dynamic> resourcesList = json.decode(resourcesJson);
+      return resourcesList
+          .map((json) => Resource.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error loading bookmarked resources: $e');
+      return [];
+    }
+  }
+
+  /// Check if a resource is bookmarked
+  Future<bool> isResourceBookmarked(String resourceId) async {
+    try {
+      final bookmarks = await getBookmarkedResources();
+      return bookmarks.any((resource) => resource.id == resourceId);
+    } catch (e) {
+      print('Error checking resource bookmark status: $e');
+      return false;
+    }
+  }
+
+  /// Add a resource to bookmarks
+  Future<bool> addResourceBookmark(Resource resource) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bookmarks = await getBookmarkedResources();
+      
+      // Check if already bookmarked
+      if (bookmarks.any((r) => r.id == resource.id)) {
+        return false; // Already bookmarked
+      }
+
+      // Add to bookmarks
+      bookmarks.insert(0, resource); // Add at the beginning
+      
+      // Save to storage
+      final bookmarksJson = json.encode(
+        bookmarks.map((r) => r.toJson()).toList(),
+      );
+      await prefs.setString(_resourcesKey, bookmarksJson);
+      
+      return true;
+    } catch (e) {
+      print('Error adding resource bookmark: $e');
+      return false;
+    }
+  }
+
+  /// Remove a resource from bookmarks
+  Future<bool> removeResourceBookmark(String resourceId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bookmarks = await getBookmarkedResources();
+      
+      // Remove the resource
+      bookmarks.removeWhere((resource) => resource.id == resourceId);
+      
+      // Save to storage
+      final bookmarksJson = json.encode(
+        bookmarks.map((r) => r.toJson()).toList(),
+      );
+      await prefs.setString(_resourcesKey, bookmarksJson);
+      
+      return true;
+    } catch (e) {
+      print('Error removing resource bookmark: $e');
+      return false;
+    }
+  }
+
+  /// Toggle resource bookmark status
+  Future<bool> toggleResourceBookmark(Resource resource) async {
+    final isCurrentlyBookmarked = await isResourceBookmarked(resource.id);
+    
+    if (isCurrentlyBookmarked) {
+      await removeResourceBookmark(resource.id);
+      return false; // Now not bookmarked
+    } else {
+      await addResourceBookmark(resource);
+      return true; // Now bookmarked
+    }
+  }
+
+  /// Clear all resource bookmarks
+  Future<void> clearAllResourceBookmarks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_resourcesKey);
+    } catch (e) {
+      print('Error clearing resource bookmarks: $e');
+    }
+  }
+
+  /// Get resource bookmark count
+  Future<int> getResourceBookmarkCount() async {
+    final bookmarks = await getBookmarkedResources();
     return bookmarks.length;
   }
 }
