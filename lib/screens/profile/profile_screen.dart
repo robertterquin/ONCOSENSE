@@ -6,6 +6,7 @@ import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 import 'package:cancerapp/screens/profile/saved_questions_screen.dart';
 import 'package:cancerapp/screens/profile/saved_resources_screen.dart';
+import 'package:cancerapp/screens/profile/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -382,8 +383,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             iconColor: const Color(0xFF2196F3),
                             iconBg: const Color(0xFFE3F2FD),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Settings - Coming soon')),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SettingsScreen(),
+                                ),
                               );
                             },
                           ),
