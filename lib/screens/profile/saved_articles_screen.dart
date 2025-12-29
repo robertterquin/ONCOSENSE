@@ -214,6 +214,35 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                       width: double.infinity,
                       height: 180,
                       fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 180,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFFFCE4EC),
+                                Color(0xFFF8BBD0),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: const Color(0xFFD81B60),
+                            ),
+                          ),
+                        );
+                      },
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           height: 180,

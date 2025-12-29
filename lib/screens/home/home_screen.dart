@@ -1029,6 +1029,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: double.infinity,
                             height: 180,
                             fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  color: const Color(0xFFD81B60),
+                                ),
+                              );
+                            },
                             errorBuilder: (context, error, stackTrace) {
                               return Center(
                                 child: Icon(
@@ -1235,6 +1247,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 120,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  color: const Color(0xFFD81B60),
+                                ),
+                              );
+                            },
                             errorBuilder: (context, error, stackTrace) {
                               return Center(
                                 child: Icon(
