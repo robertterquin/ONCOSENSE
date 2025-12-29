@@ -3,6 +3,7 @@ import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/services/prevention_service.dart';
 import 'package:cancerapp/models/prevention_tip.dart';
 import 'package:cancerapp/models/self_check_guide.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PreventionScreen extends StatefulWidget {
@@ -98,7 +99,7 @@ class _PreventionScreenState extends State<PreventionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -226,39 +227,40 @@ class _PreventionScreenState extends State<PreventionScreen> {
   }
 
   Widget _buildEmptyTips() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Center(
         child: Text(
           'No prevention tips available at this time.',
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
         ),
       ),
     );
   }
 
   Widget _buildEmptyGuides() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Center(
         child: Text(
           'No self-check guides available at this time.',
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
         ),
       ),
     );
   }
 
   Widget _buildTipCard(PreventionTip tip) {
+    final isDark = AppTheme.isDarkMode(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -288,18 +290,18 @@ class _PreventionScreenState extends State<PreventionScreen> {
                   children: [
                     Text(
                       tip.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF212121),
+                        color: AppTheme.getTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       tip.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF757575),
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                     ),
                   ],
@@ -311,9 +313,9 @@ class _PreventionScreenState extends State<PreventionScreen> {
             const SizedBox(height: 12),
             Text(
               tip.detailedInfo!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF424242),
+                color: AppTheme.getTextColor(context).withOpacity(0.8),
                 height: 1.4,
               ),
             ),
@@ -349,7 +351,9 @@ class _PreventionScreenState extends State<PreventionScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFCE4EC),
+          color: AppTheme.isDarkMode(context) 
+              ? const Color(0xFFD81B60).withOpacity(0.15)
+              : const Color(0xFFFCE4EC),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFD81B60).withOpacity(0.2)),
         ),
@@ -377,18 +381,18 @@ class _PreventionScreenState extends State<PreventionScreen> {
                     children: [
                       Text(
                         guide.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF212121),
+                          color: AppTheme.isDarkMode(context) ? Colors.white : const Color(0xFF212121),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         guide.description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF757575),
+                          color: AppTheme.isDarkMode(context) ? Colors.white70 : const Color(0xFF757575),
                         ),
                       ),
                     ],
@@ -457,6 +461,7 @@ class _PreventionScreenState extends State<PreventionScreen> {
   }
 
   void _showGuideDetails(SelfCheckGuide guide) {
+    final isDark = AppTheme.isDarkMode(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -466,9 +471,9 @@ class _PreventionScreenState extends State<PreventionScreen> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: AppTheme.getSurfaceColor(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -477,7 +482,7 @@ class _PreventionScreenState extends State<PreventionScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -498,9 +503,9 @@ class _PreventionScreenState extends State<PreventionScreen> {
                     const SizedBox(height: 8),
                     Text(
                       guide.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF757575),
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 16),

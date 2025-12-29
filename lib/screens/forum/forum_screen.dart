@@ -4,6 +4,7 @@ import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/services/forum_service.dart';
 import 'package:cancerapp/screens/forum/ask_question_screen.dart';
 import 'package:cancerapp/screens/forum/question_detail_screen.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class ForumScreen extends StatefulWidget {
   const ForumScreen({super.key});
@@ -100,7 +101,7 @@ class _ForumScreenState extends State<ForumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         clipBehavior: Clip.antiAlias,
         slivers: [
@@ -302,7 +303,7 @@ class _ForumScreenState extends State<ForumScreen> {
           Icon(
             Icons.forum_outlined,
             size: 64,
-            color: Colors.grey[300],
+            color: AppTheme.isDarkMode(context) ? Colors.grey[700] : Colors.grey[300],
           ),
           const SizedBox(height: 16),
           Text(
@@ -311,7 +312,7 @@ class _ForumScreenState extends State<ForumScreen> {
                 : 'No questions yet',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
           const SizedBox(height: 8),
@@ -319,9 +320,9 @@ class _ForumScreenState extends State<ForumScreen> {
             _searchController.text.isNotEmpty
                 ? 'Try different search terms'
                 : 'Be the first to ask!',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF757575),
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
         ],
@@ -330,18 +331,19 @@ class _ForumScreenState extends State<ForumScreen> {
   }
 
   Widget _buildDiscussionCard(Question question) {
+    final isDark = AppTheme.isDarkMode(context);
     return InkWell(
       onTap: () => _navigateToQuestionDetail(question),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: AppTheme.getDividerColor(context)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -368,18 +370,18 @@ class _ForumScreenState extends State<ForumScreen> {
             const SizedBox(height: 8),
             Text(
               question.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF212121),
+                color: AppTheme.getTextColor(context),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               question.content,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF757575),
+                color: AppTheme.getSecondaryTextColor(context),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -396,34 +398,34 @@ class _ForumScreenState extends State<ForumScreen> {
                       Flexible(
                         child: Text(
                           question.displayName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF9E9E9E),
+                            color: AppTheme.getSecondaryTextColor(context),
                             fontWeight: FontWeight.w500,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.message_outlined,
-                          size: 14, color: Color(0xFF9E9E9E)),
+                      Icon(Icons.message_outlined,
+                          size: 14, color: AppTheme.getSecondaryTextColor(context)),
                       const SizedBox(width: 4),
                       Text(
                         '${question.answerCount}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF9E9E9E),
+                          color: AppTheme.getSecondaryTextColor(context),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.schedule, size: 14, color: Color(0xFF9E9E9E)),
+                      Icon(Icons.schedule, size: 14, color: AppTheme.getSecondaryTextColor(context)),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           question.relativeTime,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF9E9E9E),
+                            color: AppTheme.getSecondaryTextColor(context),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),

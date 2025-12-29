@@ -4,6 +4,7 @@ import 'package:cancerapp/screens/cancer_info/cancer_info_screen.dart';
 import 'package:cancerapp/screens/prevention/prevention_screen.dart';
 import 'package:cancerapp/screens/forum/forum_screen.dart';
 import 'package:cancerapp/screens/resources/resources_screen.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -31,17 +32,18 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDarkMode(context);
     return Scaffold(
       body: _screens[_selectedIndex],
       extendBody: true,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.15),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -55,7 +57,7 @@ class _MainNavigationState extends State<MainNavigation> {
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.transparent,
             selectedItemColor: const Color(0xFFD81B60),
-            unselectedItemColor: const Color(0xFF9E9E9E),
+            unselectedItemColor: isDark ? AppTheme.darkTextSecondary : const Color(0xFF9E9E9E),
             elevation: 0,
             selectedFontSize: 12,
             unselectedFontSize: 11,

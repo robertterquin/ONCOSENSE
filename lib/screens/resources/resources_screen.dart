@@ -3,6 +3,7 @@ import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/services/resources_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/models/resource.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ResourcesScreen extends StatefulWidget {
@@ -109,7 +110,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         clipBehavior: Clip.antiAlias,
         slivers: [
@@ -142,9 +143,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: hotlines.isEmpty
-                        ? const Text(
+                        ? Text(
                             'No hotlines available',
-                            style: TextStyle(color: Color(0xFF757575)),
+                            style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
                             children: hotlines
@@ -167,9 +168,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: screeningCenters.isEmpty
-                        ? const Text(
+                        ? Text(
                             'No screening centers available',
-                            style: TextStyle(color: Color(0xFF757575)),
+                            style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
                             children: screeningCenters
@@ -192,9 +193,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: financialSupport.isEmpty
-                        ? const Text(
+                        ? Text(
                             'No financial support resources available',
-                            style: TextStyle(color: Color(0xFF757575)),
+                            style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
                             children: financialSupport
@@ -217,9 +218,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: supportGroups.isEmpty
-                        ? const Text(
+                        ? Text(
                             'No support groups available',
-                            style: TextStyle(color: Color(0xFF757575)),
+                            style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
                             children: supportGroups
@@ -241,6 +242,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
   Widget _buildHotlineCard(Resource resource) {
     final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(
       onTap: resource.phone != null ? () => _makePhoneCall(resource.phone!) : null,
@@ -248,12 +250,12 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: AppTheme.getDividerColor(context)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -267,10 +269,10 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                 Expanded(
                   child: Text(
                     resource.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF212121),
+                      color: AppTheme.getTextColor(context),
                     ),
                   ),
                 ),
@@ -305,7 +307,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                     child: Icon(
                       isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                       size: 22,
-                      color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                      color: isBookmarked ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
                     ),
                   ),
                 ),
@@ -314,9 +316,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             const SizedBox(height: 4),
             Text(
               resource.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF757575),
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
             if (resource.phone != null) ...[
@@ -358,16 +360,17 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
   Widget _buildCenterCard(Resource resource) {
     final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    final isDark = AppTheme.isDarkMode(context);
     
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -384,18 +387,18 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   children: [
                     Text(
                       resource.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF212121),
+                        color: AppTheme.getTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       resource.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF757575),
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                     ),
                   ],
@@ -412,7 +415,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   child: Icon(
                     isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                     size: 22,
-                    color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                    color: isBookmarked ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
                   ),
                 ),
               ),
@@ -441,13 +444,13 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.phone, size: 16, color: Color(0xFF757575)),
+                Icon(Icons.phone, size: 16, color: AppTheme.getSecondaryTextColor(context)),
                 const SizedBox(width: 8),
                 Text(
                   resource.phone!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF757575),
+                    color: AppTheme.getSecondaryTextColor(context),
                   ),
                 ),
               ],
@@ -460,16 +463,17 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
   Widget _buildSupportCard(Resource resource) {
     final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    final isDark = AppTheme.isDarkMode(context);
     
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -483,10 +487,10 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               Expanded(
                 child: Text(
                   resource.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
+                    color: AppTheme.getTextColor(context),
                   ),
                 ),
               ),
@@ -501,7 +505,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   child: Icon(
                     isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                     size: 22,
-                    color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                    color: isBookmarked ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
                   ),
                 ),
               ),
@@ -510,9 +514,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
           const SizedBox(height: 4),
           Text(
             resource.description,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF757575),
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
           if (resource.phone != null) ...[
@@ -539,16 +543,17 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
   Widget _buildGroupCard(Resource resource) {
     final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    final isDark = AppTheme.isDarkMode(context);
     
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: AppTheme.getDividerColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -575,18 +580,18 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               children: [
                 Text(
                   resource.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
+                    color: AppTheme.getTextColor(context),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   resource.location ?? resource.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF757575),
+                    color: AppTheme.getSecondaryTextColor(context),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -605,7 +610,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               child: Icon(
                 isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                 size: 22,
-                color: isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                color: isBookmarked ? const Color(0xFFD81B60) : AppTheme.getSecondaryTextColor(context),
               ),
             ),
           ),

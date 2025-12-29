@@ -3,6 +3,7 @@ import 'package:cancerapp/services/cancer_info_service.dart';
 import 'package:cancerapp/models/cancer_type.dart';
 import 'package:cancerapp/screens/cancer_info/cancer_detail_screen.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class CancerInfoScreen extends StatefulWidget {
   const CancerInfoScreen({super.key});
@@ -66,7 +67,7 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         clipBehavior: Clip.antiAlias,
         slivers: [
@@ -179,10 +180,10 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
                                     highlightColor: const Color(0xFFD81B60).withOpacity(0.1),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: AppTheme.getCardColor(context),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: const Color(0xFFE0E0E0),
+                                          color: AppTheme.getDividerColor(context),
                                         ),
                                         boxShadow: [
                                           BoxShadow(
@@ -214,9 +215,10 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
                                             child: Text(
                                               cancer.name,
                                               textAlign: TextAlign.center,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
+                                                color: AppTheme.getTextColor(context),
                                               ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,

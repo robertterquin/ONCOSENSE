@@ -7,6 +7,7 @@ import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
 import 'package:cancerapp/models/health_reminder.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/screens/profile/profile_screen.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
@@ -217,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
     
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
         clipBehavior: Clip.antiAlias,
         slivers: [
@@ -441,12 +442,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Health Reminders',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: AppTheme.getTextColor(context),
                           ),
                         ),
                         IconButton(
@@ -505,12 +506,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Inspiring Stories',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: AppTheme.getTextColor(context),
                           ),
                         ),
                         TextButton(
@@ -553,12 +554,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Latest Articles',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: AppTheme.getTextColor(context),
                           ),
                         ),
                         TextButton(
@@ -795,19 +796,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 Text(
                   '${_getAwarenessMonth()['title']}\nAwareness Month',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
+                    color: AppTheme.getTextColor(context),
                     height: 1.2,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _getAwarenessMonth()['subtitle']!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF616161),
+                    color: AppTheme.getSecondaryTextColor(context),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -868,16 +869,18 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: AppTheme.isDarkMode(context) 
+              ? color.withOpacity(0.15) 
+              : color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withOpacity(0.3)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -893,18 +896,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF212121),
+                      color: AppTheme.getTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     message,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF757575),
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                   ),
                   if (reminder?.source != null) ...[
@@ -913,8 +916,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       '📚 ${reminder!.source}',
                       style: TextStyle(
                         fontSize: 10,
-                        color: color.withOpacity(0.7),
-                        fontStyle: FontStyle.italic,
+                        color: color,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -923,7 +926,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Icon(
               Icons.check_circle_outline,
-              color: color.withOpacity(0.5),
+              color: color,
               size: 20,
             ),
           ],
@@ -979,18 +982,19 @@ class _HomeScreenState extends State<HomeScreen> {
   // Survivor Story Card Widget
   Widget _buildSurvivorStoryCard(Article article) {
     final isBookmarked = _bookmarkStates[article.url] ?? false;
+    final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(
       onTap: () => _openArticle(article.url),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: isDark ? AppTheme.darkDivider : const Color(0xFFE0E0E0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -1111,10 +1115,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   Text(
                     article.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
+                      color: AppTheme.getTextColor(context),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1122,9 +1126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   Text(
                     article.description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF616161),
+                      color: AppTheme.getSecondaryTextColor(context),
                       height: 1.4,
                     ),
                     maxLines: 3,
@@ -1152,19 +1156,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               article.sourceName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF212121),
+                                color: AppTheme.getTextColor(context),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               article.publishedAt,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF9E9E9E),
+                                color: AppTheme.getSecondaryTextColor(context),
                               ),
                             ),
                           ],
@@ -1198,18 +1202,19 @@ class _HomeScreenState extends State<HomeScreen> {
   // Article Preview Widget
   Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl, Article? article]) {
     final isBookmarked = article != null ? (_bookmarkStates[article.url] ?? false) : false;
+    final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(
       onTap: url != null ? () => _openArticle(url) : null,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: isDark ? AppTheme.darkDivider : const Color(0xFFE0E0E0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1319,10 +1324,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF212121),
+                      color: AppTheme.getTextColor(context),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1330,9 +1335,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 4),
                   Text(
                     excerpt,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF757575),
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1340,17 +1345,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.access_time,
                         size: 12,
-                        color: Color(0xFF9E9E9E),
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         readTime,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF9E9E9E),
+                          color: AppTheme.getSecondaryTextColor(context),
                         ),
                       ),
                     ],

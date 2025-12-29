@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
+import 'package:cancerapp/main.dart';
+import 'package:cancerapp/utils/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,9 +26,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    final themeProvider = CancerApp.of(context);
     setState(() {
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _darkModeEnabled = prefs.getBool('dark_mode_enabled') ?? false;
+      _darkModeEnabled = themeProvider?.isDarkMode ?? false;
       _dailyTipsEnabled = prefs.getBool('daily_tips_enabled') ?? true;
       _healthRemindersEnabled = prefs.getBool('health_reminders_enabled') ?? true;
     });
@@ -167,7 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -344,14 +347,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconBg: const Color(0xFFE8EAF6),
                       value: _darkModeEnabled,
                       onChanged: (value) {
+                        final themeProvider = CancerApp.of(context);
+                        themeProvider?.setDarkMode(value);
                         setState(() => _darkModeEnabled = value);
-                        _saveSettings('dark_mode_enabled', value);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Dark mode will be available in a future update'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
                       },
                       isLast: true,
                     ),
@@ -456,7 +454,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[600],
+            color: AppTheme.getSecondaryTextColor(context),
             letterSpacing: 0.5,
           ),
         ),
@@ -469,7 +467,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.getCardColor(context),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -509,16 +507,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
+            color: AppTheme.getTextColor(context),
           ),
         ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[500],
+            color: AppTheme.getSecondaryTextColor(context),
           ),
         ),
         trailing: Switch(
@@ -567,9 +566,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -577,7 +577,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                   ),
                 ],
@@ -585,7 +585,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey[400],
+              color: AppTheme.getSecondaryTextColor(context),
               size: 24,
             ),
           ],
@@ -600,7 +600,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Divider(
         height: 1,
         thickness: 1,
-        color: Colors.grey[100],
+        color: AppTheme.getDividerColor(context),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
 import 'package:cancerapp/screens/profile/saved_questions_screen.dart';
 import 'package:cancerapp/screens/profile/saved_resources_screen.dart';
 import 'package:cancerapp/screens/profile/settings_screen.dart';
+import 'package:cancerapp/utils/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -87,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -224,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[600],
+                          color: AppTheme.getSecondaryTextColor(context),
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -238,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.getCardColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -350,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[600],
+                          color: AppTheme.getSecondaryTextColor(context),
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -364,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.getCardColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -454,7 +455,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.getCardColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -660,7 +661,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: titleColor ?? const Color(0xFF212121),
+                      color: titleColor ?? AppTheme.getTextColor(context),
                       letterSpacing: 0.2,
                     ),
                   ),
@@ -669,7 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppTheme.getSecondaryTextColor(context),
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -697,7 +698,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: Colors.grey[400],
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ],
         ),
@@ -711,7 +712,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Divider(
         height: 1,
         thickness: 1,
-        color: Colors.grey[100],
+        color: AppTheme.getDividerColor(context),
       ),
     );
   }
