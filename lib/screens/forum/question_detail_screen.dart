@@ -4,7 +4,6 @@ import 'package:cancerapp/models/answer.dart';
 import 'package:cancerapp/services/forum_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
-import 'package:cancerapp/widgets/modern_back_button.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final String questionId;
@@ -499,118 +498,95 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _question == null
-                ? const Center(child: Text('Question not found'))
-                : CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        expandedHeight: 120,
-                        pinned: true,
-                        backgroundColor: Colors.white,
-                        elevation: 0,
-                        leading: const ModernBackButton(),
-                        actions: [
-                          // Bookmark Button
-                          IconButton(
-                            onPressed: _toggleBookmark,
-                            icon: Icon(
-                              _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                              color: _isBookmarked ? const Color(0xFFD81B60) : Colors.grey[600],
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFD81B60),
+              ),
+            )
+          : _question == null
+              ? const Center(child: Text('Question not found'))
+              : CustomScrollView(
+                  slivers: [
+                    // Custom App Header matching other pages
+                    CustomAppHeader(
+                      title: 'Question Details',
+                      subtitle: 'Discussion thread',
+                      showBackButton: true,
+                    ),
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          // Question Card
+                          _buildQuestionCard(),
+                          const SizedBox(height: 24),
+                          
+                          // Answers Section
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '${_answers.length} ${_answers.length == 1 ? 'Answer' : 'Answers'}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF212121),
+                                  ),
+                                ),
+                              ],
                             ),
-                            tooltip: _isBookmarked ? 'Remove bookmark' : 'Bookmark question',
                           ),
-                          const SizedBox(width: 8),
-                        ],
-                        flexibleSpace: FlexibleSpaceBar(
-                          title: const Text(
-                            'Question Details',
-                            style: TextStyle(
-                              color: Color(0xFF212121),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          centerTitle: false,
-                          titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            // Question Card
-                            _buildQuestionCard(),
-                            const SizedBox(height: 24),
-                            
-                            // Answers Section
+                          const SizedBox(height: 16),
+                          
+                          // Answers List
+                          if (_answers.isEmpty)
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
                                 children: [
+                                  Icon(
+                                    Icons.question_answer_outlined,
+                                    size: 64,
+                                    color: Colors.grey[300],
+                                  ),
+                                  const SizedBox(height: 16),
                                   Text(
-                                    '${_answers.length} ${_answers.length == 1 ? 'Answer' : 'Answers'}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF212121),
+                                    'No answers yet',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Be the first to answer!',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF757575),
                                     ),
                                   ),
                                 ],
                               ),
+                            )
+                          else
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _answers.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 16),
+                              itemBuilder: (context, index) {
+                                return _buildAnswerCard(_answers[index]);
+                              },
                             ),
-                            const SizedBox(height: 16),
-                            
-                            // Answers List
-                            if (_answers.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.question_answer_outlined,
-                                      size: 64,
-                                      color: Colors.grey[300],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No answers yet',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Be the first to answer!',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Color(0xFF757575),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: _answers.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                itemBuilder: (context, index) {
-                                  return _buildAnswerCard(_answers[index]);
-                                },
-                              ),
-                            const SizedBox(height: 100),
-                          ],
-                        ),
+                          const SizedBox(height: 100),
+                        ],
                       ),
-                    ],
-                  ),
-      ),
+                    ),
+                  ],
+                ),
       bottomSheet: _buildAnswerInput(),
     );
   }
@@ -652,6 +628,16 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ),
               ),
               const Spacer(),
+              // Bookmark button
+              IconButton(
+                icon: Icon(
+                  _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  size: 20,
+                ),
+                onPressed: _toggleBookmark,
+                color: _isBookmarked ? const Color(0xFFD81B60) : const Color(0xFF757575),
+                tooltip: _isBookmarked ? 'Remove bookmark' : 'Bookmark question',
+              ),
               if (_isQuestionOwner())
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20),
