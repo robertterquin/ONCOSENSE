@@ -213,11 +213,7 @@ class NotificationService {
     return true; // iOS handles this differently
   }
 
-  // ============================================
-  // HEALTH & PREVENTION NOTIFICATIONS
-  // ============================================
-
-  /// Schedule daily health tip notification
+  
   Future<void> scheduleDailyHealthTip({
     int hour = 9,
     int minute = 0,
