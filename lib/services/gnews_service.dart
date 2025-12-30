@@ -52,6 +52,38 @@ class GNewsService {
     'big pharma conspiracy',
   ];
 
+  // Horoscope/Astrology keywords to filter out (Cancer zodiac sign confusion)
+  static const List<String> _horoscopeKeywords = [
+    'horoscope',
+    'zodiac',
+    'astrology',
+    'tarot',
+    'aries',
+    'taurus',
+    'gemini',
+    'leo',
+    'virgo',
+    'libra',
+    'scorpio',
+    'sagittarius',
+    'capricorn',
+    'aquarius',
+    'pisces',
+    'daily horoscope',
+    'love horoscope',
+    'cancer horoscope',
+    'cancer zodiac',
+    'june 21',
+    'july 22',
+    'star sign',
+    'birth chart',
+    'astrological',
+    'moon sign',
+    'sun sign',
+    'rising sign',
+    'cosmic',
+  ];
+
   /// Fetch cancer-related articles with randomization
   Future<List<Article>> fetchCancerArticles({int maxResults = 3, String? query}) async {
     try {
@@ -103,12 +135,19 @@ class GNewsService {
     return _trustedSources.any((source) => lowerUrl.contains(source));
   }
 
-  /// Check if article contains safe content (no dangerous claims)
+  /// Check if article contains safe content (no dangerous claims or horoscopes)
   bool _isSafeContent(String title, String description) {
     final combinedText = '$title $description'.toLowerCase();
     
     // Check for dangerous keywords
     for (var keyword in _dangerousKeywords) {
+      if (combinedText.contains(keyword.toLowerCase())) {
+        return false;
+      }
+    }
+    
+    // Check for horoscope/astrology keywords
+    for (var keyword in _horoscopeKeywords) {
       if (combinedText.contains(keyword.toLowerCase())) {
         return false;
       }
