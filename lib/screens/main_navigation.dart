@@ -4,6 +4,7 @@ import 'package:cancerapp/screens/cancer_info/cancer_info_screen.dart';
 import 'package:cancerapp/screens/prevention/prevention_screen.dart';
 import 'package:cancerapp/screens/forum/forum_screen.dart';
 import 'package:cancerapp/screens/resources/resources_screen.dart';
+import 'package:cancerapp/screens/journey/journey_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const PreventionScreen(),
     const ForumScreen(),
     const ResourcesScreen(),
+    const JourneyScreen(),
   ];
 
   void _onNavItemTapped(int index) {
@@ -35,7 +37,6 @@ class _MainNavigationState extends State<MainNavigation> {
     final isDark = AppTheme.isDarkMode(context);
     return Scaffold(
       body: _screens[_selectedIndex],
-      extendBody: true,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
@@ -59,8 +60,10 @@ class _MainNavigationState extends State<MainNavigation> {
             selectedItemColor: const Color(0xFFD81B60),
             unselectedItemColor: isDark ? AppTheme.darkTextSecondary : const Color(0xFF9E9E9E),
             elevation: 0,
-            selectedFontSize: 12,
-            unselectedFontSize: 11,
+            selectedFontSize: 10,
+            unselectedFontSize: 9,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined),
@@ -70,7 +73,7 @@ class _MainNavigationState extends State<MainNavigation> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.medical_information_outlined),
                 activeIcon: Icon(Icons.medical_information),
-                label: 'Cancer Info',
+                label: 'Info',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.health_and_safety_outlined),
@@ -80,12 +83,17 @@ class _MainNavigationState extends State<MainNavigation> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.forum_outlined),
                 activeIcon: Icon(Icons.forum),
-                label: 'Q&A Forum',
+                label: 'Forum',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.support_agent_outlined),
                 activeIcon: Icon(Icons.support_agent),
                 label: 'Resources',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.auto_graph_outlined),
+                activeIcon: Icon(Icons.auto_graph),
+                label: 'Journey',
               ),
             ],
           ),
