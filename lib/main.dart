@@ -5,6 +5,7 @@ import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/theme_provider.dart';
 import 'package:cancerapp/services/notification_service.dart';
+import 'package:cancerapp/services/notification_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,9 @@ void main() async {
   
   // Initialize Notification Service
   await NotificationService().initialize();
+  
+  // Initialize Notification Storage Service
+  await NotificationStorageService().initialize();
   
   runApp(const CancerApp());
 }

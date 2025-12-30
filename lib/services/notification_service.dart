@@ -6,7 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cancerapp/services/health_reminders_service.dart';
-import 'package:cancerapp/models/health_reminder.dart';
+import 'package:cancerapp/services/notification_storage_service.dart';
 
 /// Notification types for the Cancer Awareness App
 class NotificationType {
@@ -41,6 +41,7 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   final HealthRemindersService _healthRemindersService = HealthRemindersService();
+  final NotificationStorageService _storageService = NotificationStorageService();
   
   bool _isInitialized = false;
   
@@ -552,11 +553,14 @@ class NotificationService {
     required String questionId,
   }) async {
     final id = _forumBaseId + Random().nextInt(1000);
+    final title = '💬 New Reply to Your Question';
+    final body = '$replierName replied to "$questionTitle"';
+    final payload = '${NotificationType.forumReply}:$questionId';
     
     await _notifications.show(
       id,
-      '💬 New Reply to Your Question',
-      '$replierName replied to "$questionTitle"',
+      title,
+      body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           NotificationChannels.forumNotifications,
@@ -573,7 +577,15 @@ class NotificationService {
           presentSound: true,
         ),
       ),
-      payload: '${NotificationType.forumReply}:$questionId',
+      payload: payload,
+    );
+    
+    // Store for notification center
+    await _storeNotification(
+      title: title,
+      body: body,
+      type: NotificationType.forumReply,
+      payload: payload,
     );
   }
 
@@ -586,11 +598,14 @@ class NotificationService {
   }) async {
     final id = _forumBaseId + Random().nextInt(1000);
     final contentType = isQuestion ? 'question' : 'answer';
+    final title = '👍 Your $contentType was upvoted!';
+    final body = '"$contentTitle" now has $upvoteCount upvotes';
+    final payload = '${NotificationType.forumUpvote}:$contentId';
     
     await _notifications.show(
       id,
-      '👍 Your $contentType was upvoted!',
-      '"$contentTitle" now has $upvoteCount upvotes',
+      title,
+      body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           NotificationChannels.forumNotifications,
@@ -607,7 +622,15 @@ class NotificationService {
           presentSound: true,
         ),
       ),
-      payload: '${NotificationType.forumUpvote}:$contentId',
+      payload: payload,
+    );
+    
+    // Store for notification center
+    await _storeNotification(
+      title: title,
+      body: body,
+      type: NotificationType.forumUpvote,
+      payload: payload,
     );
   }
 
@@ -621,10 +644,11 @@ class NotificationService {
     required String message,
   }) async {
     final id = Random().nextInt(10000) + 8000;
+    final fullTitle = '📢 $title';
     
     await _notifications.show(
       id,
-      '📢 $title',
+      fullTitle,
       message,
       NotificationDetails(
         android: AndroidNotificationDetails(
@@ -643,6 +667,13 @@ class NotificationService {
         ),
       ),
       payload: NotificationType.resourceUpdate,
+    );
+    
+    // Store for notification center
+    await _storeNotification(
+      title: fullTitle,
+      body: message,
+      type: NotificationType.resourceUpdate,
     );
   }
 
@@ -811,12 +842,58 @@ class NotificationService {
     return await _notifications.pendingNotificationRequests();
   }
 
+  /// Store notification to the notification center
+  Future<void> _storeNotification({
+    required String title,
+    required String body,
+    required String type,
+    String? payload,
+  }) async {
+    await _storageService.initialize();
+    await _storageService.addNotificationFromData(
+      title: title,
+      body: body,
+      type: type,
+      payload: payload,
+    );
+  }
+
+  /// Show and store a notification with the given details
+  Future<void> showAndStoreNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String type,
+    required NotificationDetails notificationDetails,
+    String? payload,
+  }) async {
+    // Show the notification
+    await _notifications.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
+    );
+    
+    // Store for notification center
+    await _storeNotification(
+      title: title,
+      body: body,
+      type: type,
+      payload: payload,
+    );
+  }
+
   /// Show a test notification (for debugging)
   Future<void> showTestNotification() async {
+    const title = '🧪 Test Notification';
+    const body = 'OncoSense notifications are working!';
+    
     await _notifications.show(
       0,
-      '🧪 Test Notification',
-      'OncoSense notifications are working!',
+      title,
+      body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           NotificationChannels.healthReminders,
@@ -833,6 +910,13 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+    );
+    
+    // Store the test notification
+    await _storeNotification(
+      title: title,
+      body: body,
+      type: NotificationType.healthTip,
     );
   }
 }

@@ -4,13 +4,15 @@ import 'package:cancerapp/services/gnews_service.dart';
 import 'package:cancerapp/services/health_tips_service.dart';
 import 'package:cancerapp/services/health_reminders_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/services/notification_storage_service.dart';
+import 'package:cancerapp/services/notification_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
 import 'package:cancerapp/models/health_reminder.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/screens/profile/profile_screen.dart';
-import 'package:cancerapp/widgets/custom_app_header.dart';
+import 'package:cancerapp/screens/notifications/notification_center_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final gNewsService = GNewsService();
   final healthRemindersService = HealthRemindersService();
   final _bookmarkService = BookmarkService();
+  final _notificationStorageService = NotificationStorageService();
+  final _notificationService = NotificationService();
   String userName = 'Guest';
   String? profilePictureUrl;
   String? currentUserId;
@@ -35,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoadingSurvivorStory = true;
   HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
   Map<String, bool> _bookmarkStates = {};
+  int _unreadNotificationCount = 0;
 
   // Get current month's cancer awareness information
   Map<String, String> _getAwarenessMonth() {
@@ -64,6 +69,67 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadArticles();
     _loadSurvivorStory();
     _loadHealthReminders(forceRefresh: true); // Force new reminders on app start
+    _loadNotificationCount();
+    _notificationStorageService.addListener(_onNotificationChange);
+  }
+
+  @override
+  void dispose() {
+    _notificationStorageService.removeListener(_onNotificationChange);
+    super.dispose();
+  }
+
+  void _onNotificationChange() {
+    _loadNotificationCount();
+  }
+
+  Future<void> _loadNotificationCount() async {
+    await _notificationStorageService.initialize();
+    if (mounted) {
+      setState(() {
+        _unreadNotificationCount = _notificationStorageService.unreadCount;
+      });
+    }
+    
+    // Add sample notifications for demo (only if empty)
+    if (_notificationStorageService.notifications.isEmpty) {
+      await _addSampleNotifications();
+    }
+  }
+
+  // Add some sample notifications for demonstration
+  Future<void> _addSampleNotifications() async {
+    final sampleNotifications = [
+      {
+        'title': '💡 Daily Health Tip',
+        'body': 'Drink at least 8 glasses of water daily to help reduce cancer risk and maintain overall health.',
+        'type': 'health_tip',
+      },
+      {
+        'title': '💧 Hydration Reminder',
+        'body': 'Time to drink water! Stay hydrated throughout the day.',
+        'type': 'hydration',
+      },
+      {
+        'title': '🚶 Movement Reminder',
+        'body': 'Take a 5-minute walk break. Regular movement helps reduce cancer risk!',
+        'type': 'movement',
+      },
+    ];
+
+    for (final notification in sampleNotifications) {
+      await _notificationStorageService.addNotificationFromData(
+        title: notification['title']!,
+        body: notification['body']!,
+        type: notification['type']!,
+      );
+    }
+
+    if (mounted) {
+      setState(() {
+        _unreadNotificationCount = _notificationStorageService.unreadCount;
+      });
+    }
   }
 
   void _loadUserData() {
@@ -213,6 +279,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // For testing: Send test notification and store it
+  Future<void> _sendTestNotification() async {
+    await _notificationService.showTestNotification();
+    await _loadNotificationCount();
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Test notification sent! Check the notification center.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -353,6 +434,71 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          // Notification Bell Icon
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NotificationCenterScreen(),
+                                ),
+                              ).then((_) {
+                                _loadNotificationCount();
+                              });
+                            },
+                            onLongPress: () {
+                              _sendTestNotification();
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.2),
+                              ),
+                              child: Stack(
+                                children: [
+                                  const Center(
+                                    child: Icon(
+                                      Icons.notifications_outlined,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  if (_unreadNotificationCount > 0)
+                                    Positioned(
+                                      right: 6,
+                                      top: 6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.redAccent,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            _unreadNotificationCount > 9
+                                                ? '9+'
+                                                : '$_unreadNotificationCount',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Profile Icon
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
