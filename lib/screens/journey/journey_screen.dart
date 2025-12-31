@@ -65,7 +65,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
       );
     }
 
-    // Show setup screen if journey hasn't started
+    // Show setup screen if journey hasn't started (fallback for edge cases)
     if (!_journeyService.journeyStarted) {
       return const JourneySetupScreen();
     }

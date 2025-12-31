@@ -3,6 +3,7 @@ import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/notification_service.dart';
+import 'package:cancerapp/services/journey_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -55,8 +56,18 @@ class _SplashScreenState extends State<SplashScreen>
       // Initialize notifications for logged-in users
       if (hasSession) {
         await _initializeNotifications();
-        // User has active session, navigate to home
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        
+        // Check if journey setup is completed
+        final journeyService = JourneyService();
+        await journeyService.initialize();
+        
+        if (!journeyService.journeyStarted) {
+          // Journey not started, go to journey setup
+          Navigator.of(context).pushReplacementNamed(AppRoutes.journeySetup);
+        } else {
+          // User has active session and journey started, navigate to home
+          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        }
       } else {
         // No active session, navigate to welcome screen
         Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);

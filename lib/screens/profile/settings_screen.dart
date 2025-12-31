@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/main.dart';
 import 'package:cancerapp/utils/theme.dart';
+import 'package:cancerapp/utils/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/services/notification_service.dart';
+import 'package:cancerapp/services/supabase_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +17,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final NotificationService _notificationService = NotificationService();
+  final SupabaseService _supabaseService = SupabaseService();
   
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
@@ -105,6 +108,209 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open link')),
+        );
+      }
+    }
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEE),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Color(0xFFE53935),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Delete Account'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to delete your account?',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'This will permanently clear all your local data and sign you out:',
+              style: TextStyle(
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._buildDeleteWarningItems(),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEE),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: Color(0xFFE53935),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This will clear all app data and sign you out',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _deleteAccount();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53935),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Delete Account',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildDeleteWarningItems() {
+    final items = [
+      'Your profile and personal information',
+      'All saved articles and bookmarks',
+      'Your forum posts and comments',
+      'Cancer journey tracking data',
+      'Health reminders and preferences',
+    ];
+
+    return items.map((item) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '• ',
+              style: TextStyle(
+                color: Color(0xFFE53935),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                item,
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  Future<void> _deleteAccount() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD81B60)),
+                  ),
+                  SizedBox(height: 16),
+                  Text('Deleting your account...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Delete account
+      await _supabaseService.deleteAccount();
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Navigate to welcome screen
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.welcome,
+          (route) => false,
+        );
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Your account data has been cleared'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete account: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -519,6 +725,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Privacy Policy',
                         _privacyPolicyContent,
                       ),
+                      isLast: true,
+                    ),
+                  ]),
+
+                  const SizedBox(height: 24),
+
+                  // Account Section
+                  _buildSectionTitle('Account'),
+                  const SizedBox(height: 12),
+                  _buildSettingsCard([
+                    _buildMenuTile(
+                      icon: Icons.delete_forever_rounded,
+                      title: 'Delete Account',
+                      subtitle: 'Permanently delete your account',
+                      iconColor: const Color(0xFFE53935),
+                      iconBg: const Color(0xFFFFEBEE),
+                      onTap: _showDeleteAccountDialog,
                       isLast: true,
                     ),
                   ]),

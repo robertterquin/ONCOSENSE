@@ -7,6 +7,7 @@ import 'package:cancerapp/screens/auth/forgot_password_screen.dart';
 import 'package:cancerapp/screens/main_navigation.dart';
 import 'package:cancerapp/screens/profile/change_password_screen.dart';
 import 'package:cancerapp/screens/profile/settings_screen.dart';
+import 'package:cancerapp/screens/journey/journey_onboarding_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String changePassword = '/change-password';
   static const String settings = '/settings';
+  static const String journeySetup = '/journey-setup';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -28,7 +30,7 @@ class AppRoutes {
       home: (context) => const MainNavigation(),
       changePassword: (context) => const ChangePasswordScreen(),
       settings: (context) => const SettingsScreen(),
-      // TODO: Add other routes (onboarding, etc.)
+      journeySetup: (context) => const JourneyOnboardingScreen(),
     };
   }
 

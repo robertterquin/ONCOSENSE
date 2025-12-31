@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/constants.dart';
+import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/auth_button.dart';
@@ -65,6 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
       // Save remember me preference
       await supabase.saveRememberMePreference(_rememberMe);
 
+      // Check if journey setup is completed
+      final journeyService = JourneyService();
+      await journeyService.initialize();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -73,8 +79,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Navigate to home screen
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navigate to journey setup if not completed, otherwise home
+        if (!journeyService.journeyStarted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.journeySetup);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       }
     } on AuthException catch (e) {
       if (mounted) {

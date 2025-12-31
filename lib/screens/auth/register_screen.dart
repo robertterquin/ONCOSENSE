@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
+import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/input_field.dart';
@@ -132,16 +133,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (mounted) {
+        print('🔍 Registration successful, checking user status...');
+        print('🔍 Current user: ${supabase.currentUser?.email}');
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Account created successfully! Please check your email to verify.'),
+            content: Text('🎉 Welcome to OncoSense!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: 2),
           ),
         );
-
-        // Navigate to login screen
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        
+        // Small delay to ensure user session is established
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Initialize journey service
+        final journeyService = JourneyService();
+        await journeyService.initialize();
+        
+        print('🔍 Journey started: ${journeyService.journeyStarted}');
+        print('🔍 Navigating to journey setup...');
+        
+        // Always go to journey setup for new users
+        Navigator.pushReplacementNamed(context, AppRoutes.journeySetup);
       }
     } on AuthException catch (e) {
       if (mounted) {

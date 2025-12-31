@@ -150,4 +150,27 @@ class SupabaseService {
     await clearRememberMeSession();
     await signOut();
   }
+
+  /// Delete user account permanently
+  /// This will clear all local data and sign out the user
+  /// Note: Full account deletion from Supabase requires backend implementation
+  Future<void> deleteAccount() async {
+    try {
+      final userId = currentUser?.id;
+      
+      // Clear all local data first
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      // Clear remember me session
+      await clearRememberMeSession();
+      
+      // Sign out from Supabase
+      await signOut();
+      
+      print('🗑️ Account data cleared for user: $userId');
+    } catch (e) {
+      throw Exception('Failed to delete account data: ${e.toString()}');
+    }
+  }
 }
