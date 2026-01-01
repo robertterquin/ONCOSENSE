@@ -58,8 +58,8 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context),
-        body: const Center(
+        backgroundColor: Colors.transparent,
+        body: Center(
           child: CircularProgressIndicator(color: Color(0xFFD81B60)),
         ),
       );
@@ -71,7 +71,8 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
+      backgroundColor: Colors.transparent,
+      extendBody: true,
       body: Column(
         children: [
           // Fixed Header
@@ -193,14 +194,17 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           ),
           // Tab Content
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildDashboardTab(isDark),
-                _buildJournalTab(isDark),
-                _buildTreatmentTab(isDark),
-                _buildMilestonesTab(isDark),
-              ],
+            child: Container(
+              color: AppTheme.getBackgroundColor(context),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildDashboardTab(isDark),
+                  _buildJournalTab(isDark),
+                  _buildTreatmentTab(isDark),
+                  _buildMilestonesTab(isDark),
+                ],
+              ),
             ),
           ),
         ],
