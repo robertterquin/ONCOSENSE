@@ -231,7 +231,7 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
                                 },
                               ),
                             ),
-                  const SizedBox(height: 100), // Extra padding for floating bottom nav
+                  const SizedBox(height: 16),
                 ],
               ),
             ),

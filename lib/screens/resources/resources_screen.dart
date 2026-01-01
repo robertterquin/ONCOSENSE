@@ -231,7 +231,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                                 .toList(),
                           ),
                   ),
-                  const SizedBox(height: 100), // Extra padding for floating bottom nav
+                  const SizedBox(height: 16),
                 ],
               ),
             ),

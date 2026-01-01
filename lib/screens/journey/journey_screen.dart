@@ -815,6 +815,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
               ),
             ],
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -943,7 +944,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
       itemCount: entries.length + 1,
       itemBuilder: (context, index) {
         if (index == entries.length) {
-          return const SizedBox(height: 80); // Space for FAB
+          return const SizedBox(height: 16);
         }
         final entry = entries[index];
         return Padding(
@@ -1152,7 +1153,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
         itemCount: treatments.length + 1,
       itemBuilder: (context, index) {
         if (index == treatments.length) {
-          return const SizedBox(height: 80);
+          return const SizedBox(height: 16);
         }
         final treatment = treatments[index];
         return Padding(
@@ -1345,7 +1346,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
         itemCount: milestones.length + 1,
       itemBuilder: (context, index) {
         if (index == milestones.length) {
-          return const SizedBox(height: 80);
+          return const SizedBox(height: 16);
         }
         final milestone = milestones[index];
         return Padding(
