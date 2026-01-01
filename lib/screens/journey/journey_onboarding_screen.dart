@@ -331,16 +331,8 @@ class _JourneyOnboardingScreenState extends State<JourneyOnboardingScreen> {
             isDark,
             icon: Icons.favorite,
             title: 'I\'m a Survivor',
-            subtitle: 'Completed treatment, in remission',
+            subtitle: 'Completed treatment, in remission or cancer-free',
             value: 'survivor',
-          ),
-          const SizedBox(height: 16),
-          _buildJourneyTypeOption(
-            isDark,
-            icon: Icons.people,
-            title: 'I\'m a Supporter',
-            subtitle: 'Caring for someone with cancer',
-            value: 'supporter',
           ),
           const SizedBox(height: 24),
           Container(

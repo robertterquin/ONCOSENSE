@@ -72,144 +72,92 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            // App Bar
-            SliverAppBar(
-              floating: true,
-              pinned: true,
-              expandedHeight: 140 + topPadding,
-              collapsedHeight: 60 + topPadding,
-              toolbarHeight: 60 + topPadding,
-              backgroundColor: const Color(0xFFD81B60),
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
+      body: Column(
+        children: [
+          // Fixed Header
+          Container(
+            padding: EdgeInsets.only(
+              top: topPadding + 12,
+              left: 20,
+              right: 20,
+              bottom: 8,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFD81B60),
+                  Color(0xFFE91E63),
+                ],
               ),
-              flexibleSpace: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFD81B60),
-                        Color(0xFFE91E63),
-                      ],
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_graph,
+                      color: Colors.white,
+                      size: 28,
                     ),
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Decorative circles
-                      Positioned(
-                        right: -30,
-                        top: -30,
-                        child: Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'My Journey',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Positioned(
-                        left: -20,
-                        bottom: 40,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
+                    ),
+                    // Days cancer-free badge
+                    if (_journeyService.cancerFreeStartDate != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                      // Content
-                      Positioned(
-                        left: 20,
-                        right: 20,
-                        top: topPadding + 12,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.auto_graph,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Text(
-                                    'My Journey',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                // Days cancer-free badge
-                                if (_journeyService.cancerFreeStartDate != null)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.celebration,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${_journeyService.daysCancerFree} days free',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
+                            const Icon(
+                              Icons.celebration,
+                              color: Colors.white,
+                              size: 16,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              'Track your progress, celebrate milestones',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 13,
+                              '${_journeyService.daysCancerFree} days free',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Track your progress, celebrate milestones',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13,
                   ),
                 ),
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(48),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                const SizedBox(height: 16),
+                // Tab Bar
+                Container(
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(25),
@@ -240,19 +188,22 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildDashboardTab(isDark),
-            _buildJournalTab(isDark),
-            _buildTreatmentTab(isDark),
-            _buildMilestonesTab(isDark),
-          ],
-        ),
+          ),
+          // Tab Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildDashboardTab(isDark),
+                _buildJournalTab(isDark),
+                _buildTreatmentTab(isDark),
+                _buildMilestonesTab(isDark),
+              ],
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddOptions(context),
@@ -472,9 +423,11 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     final entries = _journeyService.entries;
     final todayEntry = _journeyService.getEntryForDate(DateTime.now());
     
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
+    return Container(
+      color: AppTheme.getBackgroundColor(context),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Quick Stats Row
@@ -558,7 +511,10 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           const SizedBox(height: 100), // Space for FAB
         ],
       ),
+    )
+
     );
+
   }
 
   Widget _buildStatCard(bool isDark, {
@@ -925,10 +881,14 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     final entries = _journeyService.entries;
     
     if (entries.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      return Container(
+        color: AppTheme.getBackgroundColor(context),
+        child: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             Icon(
               Icons.edit_note,
               size: 64,
@@ -967,11 +927,15 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             ),
           ],
         ),
+        ),
+        ),
       );
     }
     
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
+    return Container(
+      color: AppTheme.getBackgroundColor(context),
+      child: ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       itemCount: entries.length + 1,
       itemBuilder: (context, index) {
         if (index == entries.length) {
@@ -983,6 +947,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           child: _buildJournalEntryCard(entry, isDark),
         );
       },
+      ),
     );
   }
 
@@ -1125,10 +1090,14 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     final treatments = _journeyService.treatments;
     
     if (treatments.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      return Container(
+        color: AppTheme.getBackgroundColor(context),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             Icon(
               Icons.medical_services,
               size: 64,
@@ -1167,12 +1136,16 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             ),
           ],
         ),
+          ),
+        ),
       );
     }
-    
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: treatments.length + 1,
+
+    return Container(
+      color: AppTheme.getBackgroundColor(context),
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        itemCount: treatments.length + 1,
       itemBuilder: (context, index) {
         if (index == treatments.length) {
           return const SizedBox(height: 80);
@@ -1183,6 +1156,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           child: _buildTreatmentProgressCard(treatment, isDark),
         );
       },
+      ),
     );
   }
 
@@ -1324,10 +1298,14 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     final milestones = _journeyService.milestones;
     
     if (milestones.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      return Container(
+        color: AppTheme.getBackgroundColor(context),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             Icon(
               Icons.emoji_events,
               size: 64,
@@ -1351,12 +1329,16 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             ),
           ],
         ),
+          ),
+        ),
       );
     }
-    
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: milestones.length + 1,
+
+    return Container(
+      color: AppTheme.getBackgroundColor(context),
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        itemCount: milestones.length + 1,
       itemBuilder: (context, index) {
         if (index == milestones.length) {
           return const SizedBox(height: 80);
@@ -1367,6 +1349,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           child: _buildMilestoneCard(milestone, isDark),
         );
       },
+      ),
     );
   }
 
