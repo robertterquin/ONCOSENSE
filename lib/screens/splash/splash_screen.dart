@@ -61,6 +61,9 @@ class _SplashScreenState extends State<SplashScreen>
         final journeyService = JourneyService();
         await journeyService.initialize();
         
+        // Sync journey setup from Supabase in case user logged in on different device
+        await journeyService.syncFromSupabase();
+        
         if (!journeyService.journeyStarted) {
           // Journey not started, go to journey setup
           Navigator.of(context).pushReplacementNamed(AppRoutes.journeySetup);

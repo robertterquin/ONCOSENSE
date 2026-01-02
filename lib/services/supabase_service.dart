@@ -151,6 +151,61 @@ class SupabaseService {
     await signOut();
   }
 
+  /// Save journey setup status to user metadata in Supabase
+  Future<void> saveJourneySetupStatus({
+    required bool journeyStarted,
+    DateTime? diagnosisDate,
+    DateTime? cancerFreeDate,
+  }) async {
+    if (!isAuthenticated) return;
+    
+    try {
+      final metadata = {
+        'journey_started': journeyStarted,
+        if (diagnosisDate != null) 'diagnosis_date': diagnosisDate.toIso8601String(),
+        if (cancerFreeDate != null) 'cancer_free_date': cancerFreeDate.toIso8601String(),
+      };
+      
+      await updateProfile(metadata);
+      print('✅ Journey setup status saved to Supabase');
+    } catch (e) {
+      print('❌ Error saving journey setup status: $e');
+    }
+  }
+  
+  /// Get journey setup status from user metadata
+  bool get hasCompletedJourneySetup {
+    if (!isAuthenticated) return false;
+    final metadata = userMetadata;
+    return metadata?['journey_started'] == true;
+  }
+  
+  /// Get diagnosis date from user metadata
+  DateTime? get diagnosisDateFromMetadata {
+    if (!isAuthenticated) return null;
+    final metadata = userMetadata;
+    final dateStr = metadata?['diagnosis_date'];
+    if (dateStr == null) return null;
+    try {
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  /// Get cancer free date from user metadata
+  DateTime? get cancerFreeDateFromMetadata {
+    if (!isAuthenticated) return null;
+    final metadata = userMetadata;
+    final dateStr = metadata?['cancer_free_date'];
+    if (dateStr == null) return null;
+    try {
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Delete user account permanently
   /// This will clear all local data and sign out the user
   /// Note: Full account deletion from Supabase requires backend implementation

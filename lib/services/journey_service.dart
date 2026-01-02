@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cancerapp/models/journey_entry.dart';
 import 'package:cancerapp/models/treatment.dart';
 import 'package:cancerapp/models/milestone.dart';
+import 'package:cancerapp/services/supabase_service.dart';
 
 /// Service to manage all cancer journey data
 class JourneyService extends ChangeNotifier {
@@ -136,6 +137,18 @@ class JourneyService extends ChangeNotifier {
     }
     await prefs.setBool(_journeyStartedKey, true);
 
+    // Sync with Supabase to persist across devices/logins
+    try {
+      final supabaseService = SupabaseService();
+      await supabaseService.saveJourneySetupStatus(
+        journeyStarted: true,
+        diagnosisDate: diagnosisDate,
+        cancerFreeDate: cancerFreeDate,
+      );
+    } catch (e) {
+      print('⚠️ Failed to sync journey setup with Supabase: $e');
+    }
+
     // Add initial milestone
     await addMilestone(Milestone(
       id: '${DateTime.now().millisecondsSinceEpoch}_journey_start',
@@ -146,6 +159,47 @@ class JourneyService extends ChangeNotifier {
     ));
 
     notifyListeners();
+  }
+  
+  /// Sync journey setup status from Supabase (call after login)
+  Future<void> syncFromSupabase() async {
+    try {
+      final supabaseService = SupabaseService();
+      
+      // Check if user has completed journey setup in Supabase
+      if (supabaseService.hasCompletedJourneySetup) {
+        final prefs = await SharedPreferences.getInstance();
+        
+        // Only sync if local data doesn't exist
+        final localJourneyStarted = prefs.getBool(_journeyStartedKey) ?? false;
+        
+        if (!localJourneyStarted) {
+          print('📥 Syncing journey setup from Supabase...');
+          
+          _journeyStarted = true;
+          await prefs.setBool(_journeyStartedKey, true);
+          
+          // Sync diagnosis date if available
+          final diagnosisDate = supabaseService.diagnosisDateFromMetadata;
+          if (diagnosisDate != null) {
+            _diagnosisDate = diagnosisDate;
+            await prefs.setString(_diagnosisDateKey, diagnosisDate.toIso8601String());
+          }
+          
+          // Sync cancer-free date if available
+          final cancerFreeDate = supabaseService.cancerFreeDateFromMetadata;
+          if (cancerFreeDate != null) {
+            _cancerFreeStartDate = cancerFreeDate;
+            await prefs.setString(_cancerFreeStartKey, cancerFreeDate.toIso8601String());
+          }
+          
+          print('✅ Journey setup synced from Supabase');
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      print('⚠️ Failed to sync journey setup from Supabase: $e');
+    }
   }
 
   /// Update cancer-free start date

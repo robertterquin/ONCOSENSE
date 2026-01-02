@@ -70,6 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // Check if journey setup is completed
       final journeyService = JourneyService();
       await journeyService.initialize();
+      
+      // Sync journey setup from Supabase in case user completed setup on different device
+      await journeyService.syncFromSupabase();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
