@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
-import 'package:cancerapp/main.dart';
+import 'package:cancerapp/providers/theme_provider.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,14 +9,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/services/notification_service.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final NotificationService _notificationService = NotificationService();
   final SupabaseService _supabaseService = SupabaseService();
   
@@ -38,12 +39,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeProvider = CancerApp.of(context);
+    final isDarkMode = ref.read(isDarkModeProvider);
     final notificationSettings = await _notificationService.getNotificationSettings();
     
     setState(() {
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _darkModeEnabled = themeProvider?.isDarkMode ?? false;
+      _darkModeEnabled = isDarkMode;
       _dailyTipsEnabled = notificationSettings['health_tips'] ?? true;
       _healthRemindersEnabled = prefs.getBool('health_reminders_enabled') ?? true;
       _hydrationRemindersEnabled = notificationSettings['hydration'] ?? true;
@@ -689,8 +690,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconBg: const Color(0xFFE8EAF6),
                       value: _darkModeEnabled,
                       onChanged: (value) {
-                        final themeProvider = CancerApp.of(context);
-                        themeProvider?.setDarkMode(value);
+                        ref.read(themeModeProvider.notifier).setDarkMode(value);
                         setState(() => _darkModeEnabled = value);
                       },
                       isLast: true,
