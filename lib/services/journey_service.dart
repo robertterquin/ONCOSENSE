@@ -12,13 +12,13 @@ class JourneyService extends ChangeNotifier {
   factory JourneyService() => _instance;
   JourneyService._internal();
 
-  // Storage keys
-  static const String _entriesKey = 'journey_entries';
-  static const String _treatmentsKey = 'journey_treatments';
-  static const String _milestonesKey = 'journey_milestones';
-  static const String _diagnosisDateKey = 'diagnosis_date';
-  static const String _cancerFreeStartKey = 'cancer_free_start_date';
-  static const String _journeyStartedKey = 'journey_started';
+  // Base storage keys (will be prefixed with user ID)
+  static const String _entriesKeyBase = 'journey_entries';
+  static const String _treatmentsKeyBase = 'journey_treatments';
+  static const String _milestonesKeyBase = 'journey_milestones';
+  static const String _diagnosisDateKeyBase = 'diagnosis_date';
+  static const String _cancerFreeStartKeyBase = 'cancer_free_start_date';
+  static const String _journeyStartedKeyBase = 'journey_started';
 
   List<JourneyEntry> _entries = [];
   List<Treatment> _treatments = [];
@@ -27,6 +27,15 @@ class JourneyService extends ChangeNotifier {
   DateTime? _cancerFreeStartDate;
   bool _journeyStarted = false;
   bool _isLoaded = false;
+  String? _currentUserId;
+
+  // Get user-specific storage keys
+  String get _entriesKey => '${_currentUserId ?? 'guest'}_$_entriesKeyBase';
+  String get _treatmentsKey => '${_currentUserId ?? 'guest'}_$_treatmentsKeyBase';
+  String get _milestonesKey => '${_currentUserId ?? 'guest'}_$_milestonesKeyBase';
+  String get _diagnosisDateKey => '${_currentUserId ?? 'guest'}_$_diagnosisDateKeyBase';
+  String get _cancerFreeStartKey => '${_currentUserId ?? 'guest'}_$_cancerFreeStartKeyBase';
+  String get _journeyStartedKey => '${_currentUserId ?? 'guest'}_$_journeyStartedKeyBase';
 
   // Getters
   List<JourneyEntry> get entries => List.unmodifiable(_entries);
@@ -40,6 +49,17 @@ class JourneyService extends ChangeNotifier {
   /// Initialize and load data
   /// Set [forceReload] to true to reload data even if already loaded (e.g., after login)
   Future<void> initialize({bool forceReload = false}) async {
+    // Get current user ID for user-specific storage
+    final supabaseService = SupabaseService();
+    final newUserId = supabaseService.currentUser?.id;
+    
+    // If user changed, force reload
+    if (_currentUserId != newUserId) {
+      _currentUserId = newUserId;
+      forceReload = true;
+      print('🔄 User changed to: ${_currentUserId ?? 'guest'}, forcing reload');
+    }
+    
     if (_isLoaded && !forceReload) return;
     await _loadAllData();
     _isLoaded = true;
@@ -55,15 +75,19 @@ class JourneyService extends ChangeNotifier {
     _cancerFreeStartDate = null;
     _journeyStarted = false;
     _isLoaded = false;
+    _currentUserId = null;
     notifyListeners();
   }
 
   /// Load all journey data from storage
   Future<void> _loadAllData() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    print('📂 Loading journey data for user: ${_currentUserId ?? 'guest'}');
 
-    // Load journey started flag
+    // Load journey started flag from SharedPreferences
     _journeyStarted = prefs.getBool(_journeyStartedKey) ?? false;
+    print('📂 Journey started: $_journeyStarted');
 
     // Load diagnosis date
     final diagnosisStr = prefs.getString(_diagnosisDateKey);
@@ -77,6 +101,69 @@ class JourneyService extends ChangeNotifier {
       _cancerFreeStartDate = DateTime.parse(cancerFreeStr);
     }
 
+    // Load from Supabase if user is authenticated
+    final supabaseService = SupabaseService();
+    if (supabaseService.isAuthenticated && _currentUserId != null) {
+      await _loadFromSupabase();
+    } else {
+      // Fallback to local storage if not authenticated
+      await _loadFromLocalStorage(prefs);
+    }
+
+    notifyListeners();
+  }
+
+  /// Load journey data from Supabase tables
+  Future<void> _loadFromSupabase() async {
+    try {
+      final supabase = SupabaseService().client;
+      
+      // Load entries from Supabase
+      final entriesResponse = await supabase
+          .from('journey_entries')
+          .select()
+          .eq('user_id', _currentUserId!)
+          .order('date', ascending: false);
+      
+      _entries = (entriesResponse as List)
+          .map((e) => JourneyEntry.fromJson(e as Map<String, dynamic>))
+          .toList();
+      print('📂 Loaded ${_entries.length} entries from Supabase');
+
+      // Load treatments from Supabase
+      final treatmentsResponse = await supabase
+          .from('journey_treatments')
+          .select()
+          .eq('user_id', _currentUserId!);
+      
+      _treatments = (treatmentsResponse as List)
+          .map((t) => Treatment.fromJson(t as Map<String, dynamic>))
+          .toList();
+      print('📂 Loaded ${_treatments.length} treatments from Supabase');
+
+      // Load milestones from Supabase
+      final milestonesResponse = await supabase
+          .from('journey_milestones')
+          .select()
+          .eq('user_id', _currentUserId!)
+          .order('date_achieved', ascending: false);
+      
+      _milestones = (milestonesResponse as List)
+          .map((m) => Milestone.fromJson(m as Map<String, dynamic>))
+          .toList();
+      print('📂 Loaded ${_milestones.length} milestones from Supabase');
+
+      // Cache to SharedPreferences for offline access
+      await _cacheToLocalStorage();
+    } catch (e) {
+      print('⚠️ Error loading from Supabase, falling back to local: $e');
+      final prefs = await SharedPreferences.getInstance();
+      await _loadFromLocalStorage(prefs);
+    }
+  }
+
+  /// Load journey data from local SharedPreferences (fallback/offline)
+  Future<void> _loadFromLocalStorage(SharedPreferences prefs) async {
     // Load entries
     final entriesJson = prefs.getString(_entriesKey);
     if (entriesJson != null) {
@@ -85,7 +172,10 @@ class JourneyService extends ChangeNotifier {
           .map((e) => JourneyEntry.fromJson(e as Map<String, dynamic>))
           .toList();
       _entries.sort((a, b) => b.date.compareTo(a.date));
+    } else {
+      _entries.clear();
     }
+    print('📂 Loaded ${_entries.length} entries from local storage');
 
     // Load treatments
     final treatmentsJson = prefs.getString(_treatmentsKey);
@@ -94,7 +184,10 @@ class JourneyService extends ChangeNotifier {
       _treatments = treatmentsList
           .map((t) => Treatment.fromJson(t as Map<String, dynamic>))
           .toList();
+    } else {
+      _treatments.clear();
     }
+    print('📂 Loaded ${_treatments.length} treatments from local storage');
 
     // Load milestones
     final milestonesJson = prefs.getString(_milestonesKey);
@@ -104,30 +197,123 @@ class JourneyService extends ChangeNotifier {
           .map((m) => Milestone.fromJson(m as Map<String, dynamic>))
           .toList();
       _milestones.sort((a, b) => b.dateAchieved.compareTo(a.dateAchieved));
+    } else {
+      _milestones.clear();
     }
-
-    notifyListeners();
+    print('📂 Loaded ${_milestones.length} milestones from local storage');
   }
 
-  /// Save entries to storage
+  /// Cache current data to local storage for offline access
+  Future<void> _cacheToLocalStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    final entriesJson = jsonEncode(_entries.map((e) => e.toJson()).toList());
+    await prefs.setString(_entriesKey, entriesJson);
+    
+    final treatmentsJson = jsonEncode(_treatments.map((t) => t.toJson()).toList());
+    await prefs.setString(_treatmentsKey, treatmentsJson);
+    
+    final milestonesJson = jsonEncode(_milestones.map((m) => m.toJson()).toList());
+    await prefs.setString(_milestonesKey, milestonesJson);
+  }
+
+  /// Save entries to storage and Supabase
   Future<void> _saveEntries() async {
+    // Save to Supabase first
+    await _saveEntriesToSupabase();
+    
+    // Then cache locally
     final prefs = await SharedPreferences.getInstance();
     final entriesJson = jsonEncode(_entries.map((e) => e.toJson()).toList());
     await prefs.setString(_entriesKey, entriesJson);
+    print('💾 Saved ${_entries.length} entries');
   }
 
-  /// Save treatments to storage
+  /// Save treatments to storage and Supabase
   Future<void> _saveTreatments() async {
+    // Save to Supabase first
+    await _saveTreatmentsToSupabase();
+    
+    // Then cache locally
     final prefs = await SharedPreferences.getInstance();
     final treatmentsJson = jsonEncode(_treatments.map((t) => t.toJson()).toList());
     await prefs.setString(_treatmentsKey, treatmentsJson);
+    print('💾 Saved ${_treatments.length} treatments');
   }
 
-  /// Save milestones to storage
+  /// Save milestones to storage and Supabase
   Future<void> _saveMilestones() async {
+    // Save to Supabase first
+    await _saveMilestonesToSupabase();
+    
+    // Then cache locally
     final prefs = await SharedPreferences.getInstance();
     final milestonesJson = jsonEncode(_milestones.map((m) => m.toJson()).toList());
     await prefs.setString(_milestonesKey, milestonesJson);
+    print('💾 Saved ${_milestones.length} milestones');
+  }
+  
+  /// Save entries to Supabase
+  Future<void> _saveEntriesToSupabase() async {
+    try {
+      final supabase = SupabaseService().client;
+      if (!SupabaseService().isAuthenticated || _currentUserId == null) return;
+      
+      // Upsert all entries (insert or update if exists)
+      for (final entry in _entries) {
+        final data = entry.toJson();
+        data['user_id'] = _currentUserId;
+        
+        await supabase
+            .from('journey_entries')
+            .upsert(data);
+      }
+      print('☁️ Entries synced to Supabase');
+    } catch (e) {
+      print('⚠️ Failed to save entries to Supabase: $e');
+    }
+  }
+
+  /// Save treatments to Supabase
+  Future<void> _saveTreatmentsToSupabase() async {
+    try {
+      final supabase = SupabaseService().client;
+      if (!SupabaseService().isAuthenticated || _currentUserId == null) return;
+      
+      // Upsert all treatments
+      for (final treatment in _treatments) {
+        final data = treatment.toJson();
+        data['user_id'] = _currentUserId;
+        
+        await supabase
+            .from('journey_treatments')
+            .upsert(data);
+      }
+      print('☁️ Treatments synced to Supabase');
+    } catch (e) {
+      print('⚠️ Failed to save treatments to Supabase: $e');
+    }
+  }
+
+  /// Save milestones to Supabase
+  Future<void> _saveMilestonesToSupabase() async {
+    try {
+      final supabase = SupabaseService().client;
+      if (!SupabaseService().isAuthenticated || _currentUserId == null) return;
+      
+      // Upsert all milestones
+      for (final milestone in _milestones) {
+        final data = milestone.toJson();
+        data['user_id'] = _currentUserId;
+        
+        await supabase
+            .from('journey_milestones')
+            .upsert(data);
+      }
+      print('☁️ Milestones synced to Supabase');
+    } catch (e) {
+      print('⚠️ Failed to save milestones to Supabase: $e');
+    }
   }
 
   // =====================
@@ -180,13 +366,12 @@ class JourneyService extends ChangeNotifier {
   Future<void> syncFromSupabase() async {
     try {
       final supabaseService = SupabaseService();
+      if (!supabaseService.isAuthenticated) return;
+      
+      final prefs = await SharedPreferences.getInstance();
       
       // Check if user has completed journey setup in Supabase
       if (supabaseService.hasCompletedJourneySetup) {
-        final prefs = await SharedPreferences.getInstance();
-        
-        // Always sync from Supabase if server has journey data
-        // This ensures data is restored after logout/login or app reinstall
         print('📥 Syncing journey setup from Supabase...');
         
         _journeyStarted = true;
@@ -207,10 +392,13 @@ class JourneyService extends ChangeNotifier {
         }
         
         print('✅ Journey setup synced from Supabase');
+        
+        // Load journey data from Supabase tables
+        await _loadFromSupabase();
         notifyListeners();
       }
     } catch (e) {
-      print('⚠️ Failed to sync journey setup from Supabase: $e');
+      print('⚠️ Failed to sync journey data from Supabase: $e');
     }
   }
 

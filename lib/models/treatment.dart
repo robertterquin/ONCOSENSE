@@ -126,33 +126,40 @@ class Treatment {
     return {
       'id': id,
       'name': name,
-      'type': type.index,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'doctorName': doctorName,
-      'hospitalName': hospitalName,
+      'type': type.name,
+      'start_date': startDate.toIso8601String(),
+      'total_sessions': totalSessions,
+      'completed_sessions': completedSessions,
+      'side_effects': sideEffects,
       'notes': notes,
-      'totalSessions': totalSessions,
-      'completedSessions': completedSessions,
-      'sideEffects': sideEffects,
-      'isActive': isActive,
+      'is_active': isActive,
+      // user_id will be added by the service when saving to Supabase
     };
   }
 
   factory Treatment.fromJson(Map<String, dynamic> json) {
+    // Parse type - support both string name and int index
+    TreatmentType parsedType;
+    final typeValue = json['type'];
+    if (typeValue is String) {
+      parsedType = TreatmentType.values.firstWhere(
+        (e) => e.name == typeValue,
+        orElse: () => TreatmentType.other,
+      );
+    } else {
+      parsedType = TreatmentType.values[typeValue as int];
+    }
+    
     return Treatment(
       id: json['id'] as String,
       name: json['name'] as String,
-      type: TreatmentType.values[json['type'] as int],
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
-      doctorName: json['doctorName'] as String?,
-      hospitalName: json['hospitalName'] as String?,
+      type: parsedType,
+      startDate: DateTime.parse((json['start_date'] ?? json['startDate']) as String),
       notes: json['notes'] as String?,
-      totalSessions: json['totalSessions'] as int? ?? 0,
-      completedSessions: json['completedSessions'] as int? ?? 0,
-      sideEffects: List<String>.from(json['sideEffects'] ?? []),
-      isActive: json['isActive'] as bool? ?? true,
+      totalSessions: (json['total_sessions'] ?? json['totalSessions'] ?? 0) as int,
+      completedSessions: (json['completed_sessions'] ?? json['completedSessions'] ?? 0) as int,
+      sideEffects: List<String>.from(json['side_effects'] ?? json['sideEffects'] ?? []),
+      isActive: (json['is_active'] ?? json['isActive'] ?? true) as bool,
     );
   }
 

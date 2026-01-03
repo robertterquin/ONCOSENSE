@@ -85,24 +85,35 @@ class Milestone {
       'id': id,
       'title': title,
       'description': description,
-      'type': type.index,
-      'dateAchieved': dateAchieved.toIso8601String(),
-      'isCelebrated': isCelebrated,
-      'iconName': iconName,
-      'daysCount': daysCount,
+      'type': type.name,
+      'date_achieved': dateAchieved.toIso8601String(),
+      'is_celebrated': isCelebrated,
+      'days_count': daysCount,
+      // user_id will be added by the service when saving to Supabase
     };
   }
 
   factory Milestone.fromJson(Map<String, dynamic> json) {
+    // Parse type - support both string name and int index
+    MilestoneType parsedType;
+    final typeValue = json['type'];
+    if (typeValue is String) {
+      parsedType = MilestoneType.values.firstWhere(
+        (e) => e.name == typeValue,
+        orElse: () => MilestoneType.personal,
+      );
+    } else {
+      parsedType = MilestoneType.values[typeValue as int];
+    }
+    
     return Milestone(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      type: MilestoneType.values[json['type'] as int],
-      dateAchieved: DateTime.parse(json['dateAchieved'] as String),
-      isCelebrated: json['isCelebrated'] as bool? ?? false,
-      iconName: json['iconName'] as String?,
-      daysCount: json['daysCount'] as int?,
+      type: parsedType,
+      dateAchieved: DateTime.parse((json['date_achieved'] ?? json['dateAchieved']) as String),
+      isCelebrated: (json['is_celebrated'] ?? json['isCelebrated'] ?? false) as bool,
+      daysCount: (json['days_count'] ?? json['daysCount']) as int?,
     );
   }
 

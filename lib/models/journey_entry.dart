@@ -56,14 +56,15 @@ class JourneyEntry {
     return {
       'id': id,
       'date': date.toIso8601String(),
-      'moodLevel': moodLevel,
-      'painLevel': painLevel,
-      'energyLevel': energyLevel,
-      'sleepQuality': sleepQuality,
+      'mood_level': moodLevel,
+      'pain_level': painLevel,
+      'energy_level': energyLevel,
+      'sleep_quality': sleepQuality,
       'symptoms': symptoms,
       'notes': notes,
-      'appointmentNotes': appointmentNotes,
-      'hasAppointment': hasAppointment,
+      'appointment_notes': appointmentNotes,
+      'has_appointment': hasAppointment,
+      // user_id will be added by the service when saving to Supabase
     };
   }
 
@@ -71,14 +72,15 @@ class JourneyEntry {
     return JourneyEntry(
       id: json['id'] as String,
       date: DateTime.parse(json['date'] as String),
-      moodLevel: json['moodLevel'] as int,
-      painLevel: json['painLevel'] as int,
-      energyLevel: json['energyLevel'] as int,
-      sleepQuality: json['sleepQuality'] as int,
+      // Support both snake_case (Supabase) and camelCase (local storage)
+      moodLevel: (json['mood_level'] ?? json['moodLevel']) as int,
+      painLevel: (json['pain_level'] ?? json['painLevel']) as int,
+      energyLevel: (json['energy_level'] ?? json['energyLevel']) as int,
+      sleepQuality: (json['sleep_quality'] ?? json['sleepQuality']) as int,
       symptoms: List<String>.from(json['symptoms'] ?? []),
       notes: json['notes'] as String?,
-      appointmentNotes: json['appointmentNotes'] as String?,
-      hasAppointment: json['hasAppointment'] as bool? ?? false,
+      appointmentNotes: (json['appointment_notes'] ?? json['appointmentNotes']) as String?,
+      hasAppointment: (json['has_appointment'] ?? json['hasAppointment'] ?? false) as bool,
     );
   }
 
