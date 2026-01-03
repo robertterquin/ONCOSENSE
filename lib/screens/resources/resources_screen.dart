@@ -13,7 +13,10 @@ class ResourcesScreen extends StatefulWidget {
   State<ResourcesScreen> createState() => _ResourcesScreenState();
 }
 
-class _ResourcesScreenState extends State<ResourcesScreen> {
+class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   final resourcesService = ResourcesService();
   final _bookmarkService = BookmarkService();
   List<Resource> hotlines = [];
@@ -109,6 +112,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(

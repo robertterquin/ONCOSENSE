@@ -17,18 +17,44 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CancerInfoScreen(),
-    const PreventionScreen(),
-    const ForumScreen(),
-    const ResourcesScreen(),
-    const JourneyScreen(),
-  ];
+  // Lazy-loaded screen instances
+  final Map<int, Widget> _screenCache = {};
+
+  // Track which screens have been created
+  final Set<int> _loadedScreens = {0}; // Home loads immediately
+
+  Widget _getScreen(int index) {
+    if (!_screenCache.containsKey(index)) {
+      switch (index) {
+        case 0:
+          _screenCache[index] = const HomeScreen();
+          break;
+        case 1:
+          _screenCache[index] = const CancerInfoScreen();
+          break;
+        case 2:
+          _screenCache[index] = const PreventionScreen();
+          break;
+        case 3:
+          _screenCache[index] = const ForumScreen();
+          break;
+        case 4:
+          _screenCache[index] = const ResourcesScreen();
+          break;
+        case 5:
+          _screenCache[index] = const JourneyScreen();
+          break;
+        default:
+          _screenCache[index] = const HomeScreen();
+      }
+    }
+    return _screenCache[index]!;
+  }
 
   void _onNavItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _loadedScreens.add(index); // Mark as loaded when navigated to
     });
   }
 
@@ -36,7 +62,15 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     final isDark = AppTheme.isDarkMode(context);
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: List.generate(
+          6,
+          (index) => _loadedScreens.contains(index) 
+              ? _getScreen(index)
+              : const SizedBox.shrink(), // Empty widget for unloaded screens
+        ),
+      ),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(

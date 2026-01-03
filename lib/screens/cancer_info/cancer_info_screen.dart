@@ -12,7 +12,10 @@ class CancerInfoScreen extends StatefulWidget {
   State<CancerInfoScreen> createState() => _CancerInfoScreenState();
 }
 
-class _CancerInfoScreenState extends State<CancerInfoScreen> {
+class _CancerInfoScreenState extends State<CancerInfoScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   final CancerInfoService _cancerInfoService = CancerInfoService();
   List<CancerType> _cancerTypes = [];
   List<CancerType> _filteredCancerTypes = [];
@@ -66,6 +69,7 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(

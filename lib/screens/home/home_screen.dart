@@ -21,7 +21,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Keep state when navigating away
+  
   final supabase = SupabaseService();
   final gNewsService = GNewsService();
   final healthRemindersService = HealthRemindersService();
@@ -295,7 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final topPadding = MediaQuery.of(context).padding.top;
     
     return Scaffold(

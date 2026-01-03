@@ -13,7 +13,10 @@ class ForumScreen extends StatefulWidget {
   State<ForumScreen> createState() => _ForumScreenState();
 }
 
-class _ForumScreenState extends State<ForumScreen> {
+class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   final _forumService = ForumService();
   final _searchController = TextEditingController();
   
@@ -100,6 +103,7 @@ class _ForumScreenState extends State<ForumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(

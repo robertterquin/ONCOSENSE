@@ -13,7 +13,10 @@ class PreventionScreen extends StatefulWidget {
   State<PreventionScreen> createState() => _PreventionScreenState();
 }
 
-class _PreventionScreenState extends State<PreventionScreen> {
+class _PreventionScreenState extends State<PreventionScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   final _preventionService = PreventionService();
   List<PreventionTip> _preventionTips = [];
   List<SelfCheckGuide> _selfCheckGuides = [];
@@ -98,6 +101,7 @@ class _PreventionScreenState extends State<PreventionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: _isLoading

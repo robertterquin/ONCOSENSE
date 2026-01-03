@@ -15,7 +15,10 @@ class JourneyScreen extends StatefulWidget {
   State<JourneyScreen> createState() => _JourneyScreenState();
 }
 
-class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProviderStateMixin {
+class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   final JourneyService _journeyService = JourneyService();
   late TabController _tabController;
   bool _isLoading = true;
@@ -53,6 +56,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final topPadding = MediaQuery.of(context).padding.top;
     final isDark = AppTheme.isDarkMode(context);
 
