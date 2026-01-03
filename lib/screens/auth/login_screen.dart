@@ -69,7 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Check if journey setup is completed
       final journeyService = JourneyService();
-      await journeyService.initialize();
+      // Force reload to ensure fresh data after login
+      await journeyService.initialize(forceReload: true);
       
       // Sync journey setup from Supabase in case user completed setup on different device
       await journeyService.syncFromSupabase();

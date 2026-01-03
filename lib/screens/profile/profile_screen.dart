@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
 import 'package:cancerapp/screens/profile/saved_articles_screen.dart';
@@ -79,6 +80,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true) {
+      // Reset journey service state before logout
+      JourneyService().reset();
       await supabase.signOutAndClearSession();
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/welcome');

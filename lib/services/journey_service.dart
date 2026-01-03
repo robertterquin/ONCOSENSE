@@ -38,10 +38,24 @@ class JourneyService extends ChangeNotifier {
   bool get isLoaded => _isLoaded;
 
   /// Initialize and load data
-  Future<void> initialize() async {
-    if (_isLoaded) return;
+  /// Set [forceReload] to true to reload data even if already loaded (e.g., after login)
+  Future<void> initialize({bool forceReload = false}) async {
+    if (_isLoaded && !forceReload) return;
     await _loadAllData();
     _isLoaded = true;
+  }
+  
+  /// Reset the service state (call on logout)
+  /// This clears in-memory data and resets the loaded flag so data will be reloaded on next initialize
+  void reset() {
+    _entries.clear();
+    _treatments.clear();
+    _milestones.clear();
+    _diagnosisDate = null;
+    _cancerFreeStartDate = null;
+    _journeyStarted = false;
+    _isLoaded = false;
+    notifyListeners();
   }
 
   /// Load all journey data from storage
@@ -162,6 +176,7 @@ class JourneyService extends ChangeNotifier {
   }
   
   /// Sync journey setup status from Supabase (call after login)
+  /// This ensures the user's journey status is restored from the server
   Future<void> syncFromSupabase() async {
     try {
       final supabaseService = SupabaseService();
@@ -170,32 +185,29 @@ class JourneyService extends ChangeNotifier {
       if (supabaseService.hasCompletedJourneySetup) {
         final prefs = await SharedPreferences.getInstance();
         
-        // Only sync if local data doesn't exist
-        final localJourneyStarted = prefs.getBool(_journeyStartedKey) ?? false;
+        // Always sync from Supabase if server has journey data
+        // This ensures data is restored after logout/login or app reinstall
+        print('📥 Syncing journey setup from Supabase...');
         
-        if (!localJourneyStarted) {
-          print('📥 Syncing journey setup from Supabase...');
-          
-          _journeyStarted = true;
-          await prefs.setBool(_journeyStartedKey, true);
-          
-          // Sync diagnosis date if available
-          final diagnosisDate = supabaseService.diagnosisDateFromMetadata;
-          if (diagnosisDate != null) {
-            _diagnosisDate = diagnosisDate;
-            await prefs.setString(_diagnosisDateKey, diagnosisDate.toIso8601String());
-          }
-          
-          // Sync cancer-free date if available
-          final cancerFreeDate = supabaseService.cancerFreeDateFromMetadata;
-          if (cancerFreeDate != null) {
-            _cancerFreeStartDate = cancerFreeDate;
-            await prefs.setString(_cancerFreeStartKey, cancerFreeDate.toIso8601String());
-          }
-          
-          print('✅ Journey setup synced from Supabase');
-          notifyListeners();
+        _journeyStarted = true;
+        await prefs.setBool(_journeyStartedKey, true);
+        
+        // Sync diagnosis date if available
+        final diagnosisDate = supabaseService.diagnosisDateFromMetadata;
+        if (diagnosisDate != null) {
+          _diagnosisDate = diagnosisDate;
+          await prefs.setString(_diagnosisDateKey, diagnosisDate.toIso8601String());
         }
+        
+        // Sync cancer-free date if available
+        final cancerFreeDate = supabaseService.cancerFreeDateFromMetadata;
+        if (cancerFreeDate != null) {
+          _cancerFreeStartDate = cancerFreeDate;
+          await prefs.setString(_cancerFreeStartKey, cancerFreeDate.toIso8601String());
+        }
+        
+        print('✅ Journey setup synced from Supabase');
+        notifyListeners();
       }
     } catch (e) {
       print('⚠️ Failed to sync journey setup from Supabase: $e');

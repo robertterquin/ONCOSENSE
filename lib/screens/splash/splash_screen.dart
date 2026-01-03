@@ -59,7 +59,8 @@ class _SplashScreenState extends State<SplashScreen>
         
         // Check if journey setup is completed
         final journeyService = JourneyService();
-        await journeyService.initialize();
+        // Force reload to ensure fresh data on app restart
+        await journeyService.initialize(forceReload: true);
         
         // Sync journey setup from Supabase in case user logged in on different device
         await journeyService.syncFromSupabase();

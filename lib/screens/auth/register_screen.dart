@@ -149,7 +149,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         
         // Initialize journey service
         final journeyService = JourneyService();
-        await journeyService.initialize();
+        // Force reload to ensure fresh state for new user
+        await journeyService.initialize(forceReload: true);
         
         print('🔍 Journey started: ${journeyService.journeyStarted}');
         print('🔍 Navigating to journey setup...');
