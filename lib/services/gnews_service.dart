@@ -108,16 +108,24 @@ class GNewsService {
           return _isSafeContent(article.title, article.description);
         }).toList();
         
-        // Try to get trusted source articles first
+        // Separate trusted and other articles
         var trustedArticles = safeArticles.where((article) {
           return _isFromTrustedSource(article.url);
         }).toList();
         
-        // If we have trusted articles, use them; otherwise use any safe articles
-        var finalArticles = trustedArticles.isNotEmpty ? trustedArticles : safeArticles;
+        var otherArticles = safeArticles.where((article) {
+          return !_isFromTrustedSource(article.url);
+        }).toList();
         
-        // Shuffle for variety
-        finalArticles.shuffle(_random);
+        // Mix trusted articles (prioritized) with other articles
+        trustedArticles.shuffle(_random);
+        otherArticles.shuffle(_random);
+        
+        // Take all trusted articles first, then fill with other articles if needed
+        var finalArticles = <Article>[...trustedArticles];
+        if (finalArticles.length < maxResults) {
+          finalArticles.addAll(otherArticles.take(maxResults - finalArticles.length));
+        }
         
         return finalArticles.take(maxResults).toList();
       } else {

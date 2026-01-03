@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   Future<void> _loadArticles() async {
     try {
-      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: 3);
+      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: 10);
       setState(() {
         articles = fetchedArticles;
         isLoadingArticles = false;
@@ -765,7 +765,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               )
                             : Column(
                                 children: articles
-                                    .where((article) => article.imageUrl != null && article.imageUrl!.isNotEmpty)
+                                    .take(3) // Show max 3 articles
                                     .map((article) => Padding(
                                           padding: const EdgeInsets.only(bottom: 12),
                                           child: _buildArticlePreview(
