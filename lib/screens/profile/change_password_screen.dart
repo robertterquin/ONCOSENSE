@@ -60,12 +60,31 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return null;
   }
 
+  // Password requirement checks
+  bool _hasMinLength(String password) => password.length >= 8;
+  bool _hasUppercase(String password) => password.contains(RegExp(r'[A-Z]'));
+  bool _hasLowercase(String password) => password.contains(RegExp(r'[a-z]'));
+  bool _hasNumber(String password) => password.contains(RegExp(r'[0-9]'));
+  bool _hasSpecialChar(String password) => password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+
   String? _validateNewPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppConstants.passwordEmptyError;
     }
-    if (value.length < AppConstants.minPasswordLength) {
-      return AppConstants.passwordShortError;
+    if (!_hasMinLength(value)) {
+      return 'Password must be at least 8 characters';
+    }
+    if (!_hasUppercase(value)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!_hasLowercase(value)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!_hasNumber(value)) {
+      return 'Password must contain at least one number';
+    }
+    if (!_hasSpecialChar(value)) {
+      return 'Password must contain at least one special character';
     }
     return null;
   }
@@ -294,11 +313,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 InputField(
                   controller: _newPasswordController,
                   label: 'New Password',
-                  hint: 'Enter new password',
+                  hint: 'Enter a strong password',
                   isPassword: true,
                   prefixIcon: const Icon(Icons.lock_outline),
                   validator: _validateNewPassword,
+                  onChanged: (value) => setState(() {}), // Trigger rebuild to update requirements
                 ),
+
+                const SizedBox(height: 12.0),
+
+                // Password Requirements
+                _buildPasswordRequirements(),
 
                 const SizedBox(height: 16.0),
 
@@ -355,4 +380,60 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     ),
     );
   }
+
+  Widget _buildPasswordRequirements() {
+    final password = _newPasswordController.text;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Password must have:',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildRequirementItem('At least 8 characters', _hasMinLength(password)),
+          _buildRequirementItem('One uppercase letter', _hasUppercase(password)),
+          _buildRequirementItem('One lowercase letter', _hasLowercase(password)),
+          _buildRequirementItem('One number', _hasNumber(password)),
+          _buildRequirementItem('One special character', _hasSpecialChar(password)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequirementItem(String text, bool isMet) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 16,
+            color: isMet ? Colors.green : Colors.grey[400],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: isMet ? Colors.green[700] : Colors.grey[600],
+              fontWeight: isMet ? FontWeight.w500 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

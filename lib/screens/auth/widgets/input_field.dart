@@ -9,6 +9,7 @@ class InputField extends StatefulWidget {
   final bool isPassword;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final int? maxLength;
@@ -24,6 +25,7 @@ class InputField extends StatefulWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.onChanged,
     this.prefixIcon,
     this.suffixIcon,
     this.maxLength,
@@ -61,6 +63,7 @@ class _InputFieldState extends State<InputField> {
           maxLength: widget.maxLength,
           maxLines: widget.maxLines,
           inputFormatters: widget.inputFormatters,
+          onChanged: widget.onChanged,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: TextStyle(
