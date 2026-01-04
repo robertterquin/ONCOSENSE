@@ -67,6 +67,49 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> with AutomaticKeepA
     });
   }
 
+  /// Get icon for each cancer type
+  IconData _getIconForCancerType(String cancerName) {
+    final name = cancerName.toLowerCase();
+    
+    if (name.contains('breast')) {
+      return Icons.favorite; // Heart/ribbon for breast cancer awareness
+    } else if (name.contains('lung')) {
+      return Icons.air; // Air/breathing for lungs
+    } else if (name.contains('prostate')) {
+      return Icons.man; // Male symbol
+    } else if (name.contains('cervical') || name.contains('ovarian') || name.contains('uterine')) {
+      return Icons.woman; // Female symbol
+    } else if (name.contains('colorectal') || name.contains('colon') || name.contains('rectal')) {
+      return Icons.restaurant; // Digestive system
+    } else if (name.contains('skin') || name.contains('melanoma')) {
+      return Icons.wb_sunny; // Sun for skin
+    } else if (name.contains('liver')) {
+      return Icons.water_drop; // Liver filtration
+    } else if (name.contains('pancre')) {
+      return Icons.biotech; // Pancreas/organs
+    } else if (name.contains('kidney') || name.contains('renal')) {
+      return Icons.healing; // Kidneys
+    } else if (name.contains('bladder')) {
+      return Icons.bubble_chart; // Bladder
+    } else if (name.contains('brain') || name.contains('glioma')) {
+      return Icons.psychology; // Brain
+    } else if (name.contains('thyroid')) {
+      return Icons.accessible; // Throat/neck area
+    } else if (name.contains('leukemia') || name.contains('lymphoma') || name.contains('blood')) {
+      return Icons.bloodtype; // Blood
+    } else if (name.contains('stomach') || name.contains('gastric')) {
+      return Icons.set_meal; // Stomach
+    } else if (name.contains('esophag')) {
+      return Icons.local_dining; // Esophagus/throat
+    } else if (name.contains('bone') || name.contains('sarcoma')) {
+      return Icons.accessibility_new; // Bones/skeleton
+    } else if (name.contains('oral') || name.contains('mouth') || name.contains('tongue')) {
+      return Icons.record_voice_over; // Mouth/oral
+    } else {
+      return Icons.medical_information_outlined; // Default
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -198,8 +241,8 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> with AutomaticKeepA
                                                   .withOpacity(0.1),
                                               borderRadius: BorderRadius.circular(10),
                                             ),
-                                            child: const Icon(
-                                              Icons.medical_information_outlined,
+                                            child: Icon(
+                                              _getIconForCancerType(cancer.name),
                                               color: Color(0xFFD81B60),
                                               size: 28,
                                             ),
