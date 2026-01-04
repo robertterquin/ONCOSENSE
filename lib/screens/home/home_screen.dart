@@ -685,14 +685,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: isLoadingSurvivorStory
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(32),
-                              child: CircularProgressIndicator(color: Color(0xFFD81B60)),
-                            ),
-                          )
-                        : survivorStory != null
+                    child: survivorStory != null
                             ? _buildSurvivorStoryCard(survivorStory!)
                             : const SizedBox.shrink(),
                   ),
@@ -734,16 +727,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   // Articles Preview List
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: isLoadingArticles
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CircularProgressIndicator(
-                                color: Color(0xFFD81B60),
-                              ),
-                            ),
-                          )
-                        : articles.isEmpty
+                    child: articles.isEmpty
                             ? Center(
                                 child: Column(
                                   children: [

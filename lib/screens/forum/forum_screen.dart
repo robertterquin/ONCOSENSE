@@ -272,12 +272,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _isLoading
-                      ? const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : _questions.isEmpty
+                  _questions.isEmpty
                           ? _buildEmptyState()
                           : Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),

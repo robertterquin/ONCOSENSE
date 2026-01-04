@@ -117,16 +117,7 @@ class _CancerInfoScreenState extends State<CancerInfoScreen> with AutomaticKeepA
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _isLoading
-                      ? const Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFD81B60),
-                            ),
-                          ),
-                        )
-                      : _errorMessage != null
+                  _errorMessage != null
                           ? _buildErrorView()
                           : _filteredCancerTypes.isEmpty
                           ? Padding(

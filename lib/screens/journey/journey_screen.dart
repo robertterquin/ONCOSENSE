@@ -60,15 +60,6 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     final topPadding = MediaQuery.of(context).padding.top;
     final isDark = AppTheme.isDarkMode(context);
 
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFD81B60)),
-        ),
-      );
-    }
-
     // Show setup screen if journey hasn't started (fallback for edge cases)
     if (!_journeyService.journeyStarted) {
       return const JourneySetupScreen();

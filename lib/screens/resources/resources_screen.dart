@@ -123,16 +123,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
               subtitle: 'Find support, hotlines, and centers',
             ),
             SliverToBoxAdapter(
-              child: isLoading
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFD81B60),
-                        ),
-                      ),
-                    )
-                  : Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 24),

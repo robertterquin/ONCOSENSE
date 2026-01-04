@@ -103,10 +103,7 @@ class _PreventionScreenState extends State<PreventionScreen> with AutomaticKeepA
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: AppTheme.getSurfaceColor(context),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
+      body: _error != null
               ? _buildErrorState()
               : RefreshIndicator(
                   onRefresh: _loadPreventionData,
