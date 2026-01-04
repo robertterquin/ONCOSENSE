@@ -3,6 +3,15 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:cancerapp/models/article.dart';
 
+/// GNews API Service - Cancer-related news articles
+/// 
+/// Attribution: News articles powered by GNews API (https://gnews.io)
+/// 
+/// This service fetches cancer-related news from trusted medical sources
+/// and applies content filtering to ensure safe, accurate information.
+/// 
+/// GNews API Terms: https://gnews.io/terms
+/// Please ensure compliance with GNews API usage terms and attribution requirements.
 class GNewsService {
   static const String _apiKey = 'b141853d87000a59b987df47da50672b';
   static const String _baseUrl = 'https://gnews.io/api/v4';

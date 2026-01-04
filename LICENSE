@@ -1,0 +1,44 @@
+MIT License
+
+Copyright (c) 2024-2026 OncoSense Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+THIRD-PARTY LICENSES AND ATTRIBUTIONS:
+
+This software uses the following open-source packages:
+- Flutter SDK (Copyright Google Inc., BSD License)
+- Supabase Flutter (Copyright Supabase Inc., MIT License)
+- Riverpod (Copyright Remi Rousselet, MIT License)
+- Other dependencies listed in pubspec.yaml
+
+News Content:
+- News articles powered by GNews API (https://gnews.io)
+- Medical information sourced from trusted organizations including:
+  WHO, CDC, Mayo Clinic, NIH, Cancer.org, and other reputable sources
+
+Icons:
+- Material Design Icons (Copyright Google Inc., Apache License 2.0)
+
+MEDICAL DISCLAIMER:
+OncoSense provides educational information about cancer awareness and prevention. 
+It is NOT a substitute for professional medical advice, diagnosis, or treatment. 
+Always consult with a qualified healthcare provider for medical decisions.

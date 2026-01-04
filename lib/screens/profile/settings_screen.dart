@@ -704,6 +704,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 12),
                   _buildSettingsCard([
                     _buildMenuTile(
+                      icon: Icons.health_and_safety_rounded,
+                      title: 'Medical Disclaimer',
+                      subtitle: 'Important health information',
+                      iconColor: const Color(0xFFE53935),
+                      iconBg: const Color(0xFFFFEBEE),
+                      onTap: () => _showTermsAndPrivacy(
+                        'Medical Disclaimer',
+                        _medicalDisclaimerContent,
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildMenuTile(
                       icon: Icons.description_rounded,
                       title: 'Terms of Service',
                       subtitle: 'Read our terms and conditions',
@@ -759,6 +771,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       iconColor: const Color(0xFFD81B60),
                       iconBg: const Color(0xFFFCE4EC),
                       onTap: _showAboutDialog,
+                    ),
+                    _buildDivider(),
+                    _buildMenuTile(
+                      icon: Icons.workspace_premium_rounded,
+                      title: 'Credits & Attributions',
+                      subtitle: 'Third-party services & licenses',
+                      iconColor: const Color(0xFF4CAF50),
+                      iconBg: const Color(0xFFE8F5E9),
+                      onTap: () => _showTermsAndPrivacy(
+                        'Credits & Attributions',
+                        _creditsContent,
+                      ),
                     ),
                     _buildDivider(),
                     _buildMenuTile(
@@ -965,6 +989,159 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   // Content strings
+  static const String _medicalDisclaimerContent = '''
+⚠️ MEDICAL DISCLAIMER
+
+IMPORTANT: Please Read Carefully
+
+OncoSense provides educational information about cancer awareness, prevention, and support resources. This app is designed to increase awareness and provide general health information.
+
+HOWEVER:
+
+• This app is NOT a substitute for professional medical advice, diagnosis, or treatment
+• Always seek the advice of your physician or other qualified healthcare provider with any questions about a medical condition
+• Never disregard professional medical advice or delay seeking it because of something you read in this app
+• If you think you may have a medical emergency, call your doctor or emergency services immediately
+
+The information provided in OncoSense:
+✓ Is for educational purposes only
+✓ Is compiled from trusted sources (WHO, CDC, Mayo Clinic, NIH, Cancer.org)
+✓ Should not be used for self-diagnosis
+✓ Should not replace regular medical check-ups
+✓ May not be suitable for your specific health situation
+
+Community Forum Disclaimer:
+• User-generated content reflects individual opinions
+• We do not endorse or verify medical claims made by users
+• Do not rely on forum advice for medical decisions
+• Report any harmful or dangerous content immediately
+
+Screening & Prevention:
+• Prevention tips are general guidelines
+• Screening recommendations should be discussed with your doctor
+• Individual risk factors may require different approaches
+
+By using OncoSense, you acknowledge that:
+1. You understand this disclaimer
+2. You will consult healthcare professionals for medical advice
+3. You will not use this app as a replacement for medical care
+
+For Medical Emergencies:
+🚨 Call emergency services (911 in USA, 911 in Canada, 112 in EU)
+📞 Contact your local hospital or cancer support hotline
+
+OncoSense Team
+Last Updated: January 2026
+''';
+
+  static const String _creditsContent = '''
+Credits & Attributions
+
+━━━━━━━━━━━━━━━━━━━━━━
+🛠️ BUILT WITH
+━━━━━━━━━━━━━━━━━━━━━━
+
+• Flutter & Dart
+  Framework by Google Inc.
+  Licensed under BSD-3-Clause
+  https://flutter.dev
+
+• Supabase
+  Backend-as-a-Service
+  Copyright © Supabase Inc.
+  Licensed under MIT License
+  https://supabase.com
+
+• Riverpod
+  State Management by Remi Rousselet
+  Licensed under MIT License
+
+• GetIt
+  Service Locator by Thomas Burkhart
+  Licensed under MIT License
+
+━━━━━━━━━━━━━━━━━━━━━━
+📰 NEWS & CONTENT
+━━━━━━━━━━━━━━━━━━━━━━
+
+• GNews API
+  News articles powered by GNews
+  https://gnews.io
+  We aggregate cancer-related news from trusted sources
+
+• Medical Information Sources:
+  - World Health Organization (WHO)
+  - Centers for Disease Control (CDC)
+  - Mayo Clinic
+  - National Institutes of Health (NIH)
+  - American Cancer Society (cancer.org)
+  - National Cancer Institute (cancer.gov)
+  - Cancer Research UK
+  - NHS UK
+  - Harvard Health
+  - Johns Hopkins Medicine
+  - Cleveland Clinic
+
+━━━━━━━━━━━━━━━━━━━━━━
+🎨 DESIGN & ASSETS
+━━━━━━━━━━━━━━━━━━━━━━
+
+• Material Design Icons
+  Copyright © Google Inc.
+  Licensed under Apache License 2.0
+
+• Google Fonts
+  Open-source fonts
+  Licensed under SIL Open Font License
+
+━━━━━━━━━━━━━━━━━━━━━━
+📦 OPEN SOURCE PACKAGES
+━━━━━━━━━━━━━━━━━━━━━━
+
+• supabase_flutter (^2.5.0)
+• flutter_dotenv (^5.1.0)
+• google_fonts (^6.1.0)
+• http (^1.2.0)
+• url_launcher (^6.3.1)
+• image_picker (^1.0.7)
+• shared_preferences (^2.2.2)
+• intl (^0.19.0)
+• flutter_local_notifications (^19.0.0)
+• timezone (^0.10.0)
+• workmanager (^0.9.0)
+• permission_handler (^11.3.1)
+• flutter_riverpod (^2.6.1)
+• get_it (^8.0.3)
+
+All packages are licensed under their respective licenses.
+See pubspec.yaml for complete list.
+
+━━━━━━━━━━━━━━━━━━━━━━
+📄 LICENSE
+━━━━━━━━━━━━━━━━━━━━━━
+
+OncoSense is released under MIT License.
+Copyright © 2024-2026 OncoSense Team
+
+See LICENSE file in repository for full terms.
+
+━━━━━━━━━━━━━━━━━━━━━━
+💖 ACKNOWLEDGMENTS
+━━━━━━━━━━━━━━━━━━━━━━
+
+Special thanks to:
+• The Flutter community
+• Cancer awareness organizations worldwide
+• Medical professionals who review our content
+• Users who provide valuable feedback
+• Open-source contributors
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+Built with 💜 for cancer awareness
+Empowering Awareness. Saving Lives.
+''';
+
   static const String _termsOfServiceContent = '''
 Terms of Service for OncoSense
 
