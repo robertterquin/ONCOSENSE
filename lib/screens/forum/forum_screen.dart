@@ -297,36 +297,42 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
   }
 
   Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          Icon(
-            Icons.forum_outlined,
-            size: 64,
-            color: AppTheme.isDarkMode(context) ? Colors.grey[700] : Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _searchController.text.isNotEmpty
-                ? 'No questions found'
-                : 'No questions yet',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppTheme.getSecondaryTextColor(context),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.forum_outlined,
+              size: 64,
+              color: AppTheme.isDarkMode(context) ? Colors.grey[700] : Colors.grey[300],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _searchController.text.isNotEmpty
-                ? 'Try different search terms'
-                : 'Be the first to ask!',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.getSecondaryTextColor(context),
+            const SizedBox(height: 16),
+            Text(
+              _searchController.text.isNotEmpty
+                  ? 'No questions found'
+                  : 'No questions yet',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppTheme.getSecondaryTextColor(context),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              _searchController.text.isNotEmpty
+                  ? 'Try different search terms'
+                  : 'Be the first to ask!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.getSecondaryTextColor(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
