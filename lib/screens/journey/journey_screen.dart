@@ -204,10 +204,43 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddOptions(context),
-        backgroundColor: const Color(0xFFD81B60),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(right: 16, bottom: 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFD81B60),
+              Color(0xFFC2185B),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD81B60).withValues(alpha: 0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showAddOptions(context),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 64,
+              height: 64,
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
