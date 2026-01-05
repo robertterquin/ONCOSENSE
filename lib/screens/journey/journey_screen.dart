@@ -173,7 +173,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                       fontWeight: FontWeight.bold,
                     ),
                     unselectedLabelStyle: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.normal,
                     ),
                     tabs: const [
