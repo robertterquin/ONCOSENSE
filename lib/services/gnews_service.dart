@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cancerapp/models/article.dart';
+import 'package:cancerapp/utils/constants.dart';
 
 /// GNews API Service - Cancer-related news articles
 /// 
@@ -102,7 +104,7 @@ class GNewsService {
       // Fetch international articles
       final response = await http.get(
         Uri.parse(
-          '$_baseUrl/search?q=$searchQuery&lang=en&max=30&apikey=$_apiKey',
+          '$_baseUrl/search?q=$searchQuery&lang=en&max=${DataLimits.newsArticlesMax}&apikey=$_apiKey',
         ),
       );
 
@@ -179,7 +181,7 @@ class GNewsService {
       // Fetch international health headlines
       final response = await http.get(
         Uri.parse(
-          '$_baseUrl/top-headlines?category=health&lang=en&max=30&apikey=$_apiKey',
+          '$_baseUrl/top-headlines?category=health&lang=en&max=${DataLimits.newsArticlesMax}&apikey=$_apiKey',
         ),
       );
 

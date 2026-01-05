@@ -54,3 +54,41 @@ class AppConstants {
   static const Duration mediumDuration = Duration(milliseconds: 300);
   static const Duration longDuration = Duration(milliseconds: 500);
 }
+
+/// Health reminder frequency constants (in hours)
+class ReminderFrequency {
+  // Frequent reminders
+  static const int hourly = 1;              // Every hour
+  static const int everyTwoHours = 2;       // Every 2 hours
+  static const int everyThreeHours = 3;     // Every 3 hours (hydration)
+  static const int everyFourHours = 4;      // Every 4 hours
+  static const int everySixHours = 6;       // Every 6 hours
+  static const int everyEightHours = 8;     // Every 8 hours
+  static const int everyTwelveHours = 12;   // Every 12 hours (twice daily)
+  
+  // Daily and multi-day reminders
+  static const int daily = 24;              // Once per day
+  static const int everyTwoDays = 48;       // Every 2 days
+  static const int everyThreeDays = 72;     // Every 3 days
+  
+  // Weekly and monthly reminders
+  static const int weekly = 168;            // Once per week (7 days)
+  static const int monthly = 720;           // Once per month (30 days)
+}
+
+/// API and data fetching limits
+class DataLimits {
+  // Health reminders
+  static const int healthRemindersLimit = 100;    // Max reminders to fetch from DB
+  static const int healthRemindersToShow = 2;     // Number of reminders to display
+  
+  // News articles
+  static const int newsArticlesDefault = 10;      // Default articles for home screen
+  static const int newsArticlesMax = 30;          // Max articles to fetch from API
+  static const int survivorStoryCount = 1;        // Number of survivor stories
+  static const int newsArticlesCarousel = 5;      // Articles in carousel
+  
+  // General query limits
+  static const int maxQueryResults = 50;          // Maximum results for any query
+  static const int minQueryResults = 1;           // Minimum results for any query
+}

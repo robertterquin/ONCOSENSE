@@ -8,6 +8,7 @@ import 'package:cancerapp/services/notification_storage_service.dart';
 import 'package:cancerapp/services/notification_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
+import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/models/health_reminder.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -162,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   Future<void> _loadArticles() async {
     try {
-      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: 10);
+      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: DataLimits.newsArticlesDefault);
       setState(() {
         articles = fetchedArticles;
         isLoadingArticles = false;
@@ -232,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     try {
       // Fetch articles with survivor story filters - prioritize Filipino stories
       final stories = await gNewsService.fetchCancerArticles(
-        maxResults: 5,
+        maxResults: DataLimits.newsArticlesCarousel,
         query: '"cancer survivor" OR "cancer journey" OR "cancer recovery story" OR "beating cancer" OR "Filipino cancer survivor" OR "Pinoy cancer fighter"',
       );
       
