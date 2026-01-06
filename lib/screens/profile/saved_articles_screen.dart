@@ -1,56 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/article.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SavedArticlesScreen extends StatefulWidget {
+class SavedArticlesScreen extends ConsumerWidget {
   const SavedArticlesScreen({super.key});
 
-  @override
-  State<SavedArticlesScreen> createState() => _SavedArticlesScreenState();
-}
-
-class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
-  final BookmarkService _bookmarkService = BookmarkService();
-  List<Article> _savedArticles = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedArticles();
-  }
-
-  Future<void> _loadSavedArticles() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final articles = await _bookmarkService.getBookmarkedArticles();
-      setState(() {
-        _savedArticles = articles;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading saved articles: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _removeBookmark(Article article) async {
-    final removed = await _bookmarkService.removeBookmark(article.url);
+  Future<void> _removeBookmark(WidgetRef ref, BuildContext context, Article article) async {
+    // Get bookmark service from provider
+    final bookmarkService = ref.read(bookmarkServiceProvider);
+    final removed = await bookmarkService.removeBookmark(article.url);
     
     if (removed) {
-      setState(() {
-        _savedArticles.removeWhere((a) => a.url == article.url);
-      });
+      // Refresh the bookmarked articles list to show updated data
+      ref.invalidate(bookmarkedArticlesProvider);
       
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Article removed from bookmarks'),
@@ -61,12 +29,12 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
     }
   }
 
-  Future<void> _openArticle(String url) async {
+  Future<void> _openArticle(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open article')),
         );
@@ -75,7 +43,10 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the bookmarked articles provider - it handles loading/error/data automatically
+    final articlesAsync = ref.watch(bookmarkedArticlesProvider);
+    
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
@@ -87,40 +58,75 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
             showBackButton: true,
           ),
 
-          // Content
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFD81B60),
-                    ),
-                  ),
-                )
-              : _savedArticles.isEmpty
-                  ? SliverFillRemaining(
-                      child: _buildEmptyState(),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final article = _savedArticles[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildArticleCard(article),
-                            );
-                          },
-                          childCount: _savedArticles.length,
+          // Provider automatically handles loading, error, and data states
+          articlesAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFD81B60),
+                ),
+              ),
+            ),
+            error: (error, stackTrace) => SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading saved articles',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        error.toString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            data: (articles) => articles.isEmpty
+                ? SliverFillRemaining(
+                    child: _buildEmptyState(context),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final article = articles[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildArticleCard(context, ref, article),
+                          );
+                        },
+                        childCount: articles.length,
+                      ),
                     ),
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -181,10 +187,10 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
     );
   }
 
-  Widget _buildArticleCard(Article article) {
+  Widget _buildArticleCard(BuildContext context, WidgetRef ref, Article article) {
     final isDark = AppTheme.isDarkMode(context);
     return InkWell(
-      onTap: () => _openArticle(article.url),
+      onTap: () => _openArticle(context, article.url),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -292,7 +298,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                           Icons.bookmark,
                           color: Color(0xFFD81B60),
                         ),
-                        onPressed: () => _removeBookmark(article),
+                        onPressed: () => _removeBookmark(ref, context, article),
                         tooltip: 'Remove bookmark',
                       ),
                     ),
@@ -376,7 +382,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                   Row(
                     children: [
                       TextButton.icon(
-                        onPressed: () => _openArticle(article.url),
+                        onPressed: () => _openArticle(context, article.url),
                         icon: const Icon(Icons.open_in_new, size: 16),
                         label: const Text('Read Article'),
                         style: TextButton.styleFrom(
@@ -389,7 +395,7 @@ class _SavedArticlesScreenState extends State<SavedArticlesScreen> {
                       ),
                       const Spacer(),
                       TextButton.icon(
-                        onPressed: () => _removeBookmark(article),
+                        onPressed: () => _removeBookmark(ref, context, article),
                         icon: const Icon(Icons.bookmark_remove, size: 16),
                         label: const Text('Remove'),
                         style: TextButton.styleFrom(
