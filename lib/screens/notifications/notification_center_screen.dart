@@ -1,51 +1,229 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/app_notification.dart';
-import 'package:cancerapp/services/notification_storage_service.dart';
+import 'package:cancerapp/providers/notification_provider.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 
-class NotificationCenterScreen extends StatefulWidget {
+class NotificationCenterScreen extends ConsumerWidget {
   const NotificationCenterScreen({super.key});
 
   @override
-  State<NotificationCenterScreen> createState() => _NotificationCenterScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = AppTheme.isDarkMode(context);
+    final notificationsAsync = ref.watch(notificationsProvider);
+    final notifier = ref.read(notificationsProvider.notifier);
 
-class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
-  final NotificationStorageService _storageService = NotificationStorageService();
-  List<AppNotification> _notifications = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotifications();
+    return Scaffold(
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      body: SafeArea(
+        child: notificationsAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+          ),
+          error: (error, _) => Center(
+            child: Text('Error loading notifications: $error'),
+          ),
+          data: (notifications) => _buildContent(
+            context,
+            ref,
+            notifications,
+            notifier,
+            isDark,
+          ),
+        ),
+      ),
+    );
   }
 
-  Future<void> _loadNotifications() async {
-    setState(() => _isLoading = true);
-    await _storageService.initialize();
-    setState(() {
-      _notifications = _storageService.notifications;
-      _isLoading = false;
-    });
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    List<AppNotification> notifications,
+    NotificationsNotifier notifier,
+    bool isDark,
+  ) {
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
+    return CustomScrollView(
+      slivers: [
+        // App Bar
+        SliverAppBar(
+          floating: true,
+          expandedHeight: 85,
+          backgroundColor: const Color(0xFFD81B60),
+          elevation: 0,
+          leading: const ModernBackButton(),
+          actions: [
+            if (notifications.isNotEmpty) ...[
+              if (unreadCount > 0)
+                IconButton(
+                  icon: const Icon(Icons.done_all, color: Colors.white),
+                  tooltip: 'Mark all as read',
+                  onPressed: () => _markAllAsRead(context, notifier),
+                ),
+              IconButton(
+                icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                tooltip: 'Clear all',
+                onPressed: () => _clearAllNotifications(context, notifier),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ],
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+          ),
+          flexibleSpace: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFD81B60),
+                  Color(0xFFE91E63),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD81B60).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Decorative circles
+                Positioned(
+                  right: -30,
+                  top: -30,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: -20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08),
+                    ),
+                  ),
+                ),
+                // Title
+                Positioned(
+                  left: 60,
+                  right: 100,
+                  top: 0,
+                  bottom: 0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        unreadCount > 0
+                            ? '$unreadCount unread notification${unreadCount > 1 ? 's' : ''}'
+                            : 'All caught up!',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Content
+        if (notifications.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: (isDark ? Colors.white10 : Colors.grey.shade100),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.notifications_off_outlined,
+                      size: 48,
+                      color: isDark ? Colors.white38 : Colors.grey.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'No notifications yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextColor(context),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Your health reminders and updates\nwill appear here',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final notification = notifications[index];
+                  return _buildNotificationCard(context, notification, isDark, notifier);
+                },
+                childCount: notifications.length,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
-  Future<void> _markAsRead(AppNotification notification) async {
-    if (!notification.isRead) {
-      await _storageService.markAsRead(notification.id);
-      setState(() {
-        _notifications = _storageService.notifications;
-      });
-    }
-  }
-
-  Future<void> _markAllAsRead() async {
-    await _storageService.markAllAsRead();
-    setState(() {
-      _notifications = _storageService.notifications;
-    });
-    if (mounted) {
+  void _markAllAsRead(BuildContext context, NotificationsNotifier notifier) async {
+    await notifier.markAllAsRead();
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('All notifications marked as read'),
@@ -55,31 +233,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     }
   }
 
-  Future<void> _deleteNotification(AppNotification notification) async {
-    await _storageService.deleteNotification(notification.id);
-    setState(() {
-      _notifications = _storageService.notifications;
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Notification deleted'),
-          action: SnackBarAction(
-            label: 'Undo',
-            textColor: Colors.white,
-            onPressed: () async {
-              await _storageService.addNotification(notification);
-              setState(() {
-                _notifications = _storageService.notifications;
-              });
-            },
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _clearAllNotifications() async {
+  Future<void> _clearAllNotifications(BuildContext context, NotificationsNotifier notifier) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -100,10 +254,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     );
 
     if (confirm == true) {
-      await _storageService.clearAllNotifications();
-      setState(() {
-        _notifications = _storageService.notifications;
-      });
+      await notifier.clearAll();
     }
   }
 
@@ -157,201 +308,24 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppTheme.isDarkMode(context);
-    final unreadCount = _notifications.where((n) => !n.isRead).length;
-
-    return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // App Bar
-            SliverAppBar(
-              floating: true,
-              expandedHeight: 85,
-              backgroundColor: const Color(0xFFD81B60),
-              elevation: 0,
-              leading: const ModernBackButton(),
-              actions: [
-                if (_notifications.isNotEmpty) ...[
-                  if (unreadCount > 0)
-                    IconButton(
-                      icon: const Icon(Icons.done_all, color: Colors.white),
-                      tooltip: 'Mark all as read',
-                      onPressed: _markAllAsRead,
-                    ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_sweep, color: Colors.white),
-                    tooltip: 'Clear all',
-                    onPressed: _clearAllNotifications,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-              ],
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-              ),
-              flexibleSpace: Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFD81B60),
-                      Color(0xFFE91E63),
-                    ],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFD81B60).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Decorative circles
-                    Positioned(
-                      right: -30,
-                      top: -30,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: -20,
-                      bottom: -20,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.08),
-                        ),
-                      ),
-                    ),
-                    // Title
-                    Positioned(
-                      left: 60,
-                      right: 100,
-                      top: 0,
-                      bottom: 0,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Notifications',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            unreadCount > 0
-                                ? '$unreadCount unread notification${unreadCount > 1 ? 's' : ''}'
-                                : 'All caught up!',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Content
-            if (_isLoading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFD81B60),
-                  ),
-                ),
-              )
-            else if (_notifications.isEmpty)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: (isDark ? Colors.white10 : Colors.grey.shade100),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.notifications_off_outlined,
-                          size: 48,
-                          color: isDark ? Colors.white38 : Colors.grey.shade400,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'No notifications yet',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.getTextColor(context),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your health reminders and updates\nwill appear here',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white54 : Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final notification = _notifications[index];
-                      return _buildNotificationCard(notification, isDark);
-                    },
-                    childCount: _notifications.length,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+  void _markAsRead(AppNotification notification, NotificationsNotifier notifier) {
+    if (!notification.isRead) {
+      notifier.markAsRead(notification.id);
+    }
   }
 
-  Widget _buildNotificationCard(AppNotification notification, bool isDark) {
+  void _deleteNotification(BuildContext context, AppNotification notification, NotificationsNotifier notifier) async {
+    await notifier.deleteNotification(notification.id);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Notification deleted'),
+        ),
+      );
+    }
+  }
+
+  Widget _buildNotificationCard(BuildContext context, AppNotification notification, bool isDark, NotificationsNotifier notifier) {
     final typeColor = _getColorForType(notification.type);
     final iconData = _getIconForType(notification.displayIcon);
 
@@ -372,9 +346,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           size: 28,
         ),
       ),
-      onDismissed: (_) => _deleteNotification(notification),
+      onDismissed: (_) => _deleteNotification(context, notification, notifier),
       child: GestureDetector(
-        onTap: () => _markAsRead(notification),
+        onTap: () => _markAsRead(notification, notifier),
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
@@ -495,7 +469,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     size: 18,
                     color: isDark ? Colors.white38 : Colors.grey.shade400,
                   ),
-                  onPressed: () => _deleteNotification(notification),
+                  onPressed: () => _deleteNotification(context, notification, notifier),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 32,

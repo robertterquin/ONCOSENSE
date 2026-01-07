@@ -4,7 +4,6 @@ import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:cancerapp/screens/auth/widgets/auth_button.dart';
 import 'package:cancerapp/screens/auth/widgets/input_field.dart';
 
 class ChangePasswordScreen extends StatefulWidget {

@@ -1,66 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/models/question.dart';
-import 'package:cancerapp/services/forum_service.dart';
+import 'package:cancerapp/providers/forum_provider.dart';
 import 'package:cancerapp/screens/forum/ask_question_screen.dart';
 import 'package:cancerapp/screens/forum/question_detail_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
 
-class ForumScreen extends StatefulWidget {
+class ForumScreen extends ConsumerStatefulWidget {
   const ForumScreen({super.key});
 
   @override
-  State<ForumScreen> createState() => _ForumScreenState();
+  ConsumerState<ForumScreen> createState() => _ForumScreenState();
 }
 
-class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClientMixin {
+class _ForumScreenState extends ConsumerState<ForumScreen> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   
-  final _forumService = ForumService();
   final _searchController = TextEditingController();
-  
-  List<Question> _questions = [];
-  bool _isLoading = true;
-  String? _selectedCategory;
-  String _sortBy = 'recent';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadQuestions();
-  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadQuestions() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final questions = await _forumService.getQuestions(
-        category: _selectedCategory,
-        searchQuery: _searchController.text,
-        sortBy: _sortBy,
-      );
-
-      if (mounted) {
-        setState(() {
-          _questions = questions;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading questions: $e')),
-        );
-        setState(() => _isLoading = false);
-      }
-    }
   }
 
   Future<void> _navigateToAskQuestion() async {
@@ -72,7 +35,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
     );
 
     if (result == true) {
-      _loadQuestions();
+      ref.read(forumQuestionsProvider.notifier).refresh();
     }
   }
 
@@ -90,20 +53,28 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
   }
 
   void _onCategorySelected(String? category) {
-    setState(() {
-      _selectedCategory = _selectedCategory == category ? null : category;
-    });
-    _loadQuestions();
+    ref.read(forumQuestionsProvider.notifier).setCategory(category);
   }
 
   void _onSortChanged(String sortBy) {
-    setState(() => _sortBy = sortBy);
-    _loadQuestions();
+    ref.read(forumQuestionsProvider.notifier).setSortBy(sortBy);
+  }
+
+  void _onSearchSubmitted() {
+    ref.read(forumQuestionsProvider.notifier).setSearchQuery(
+      _searchController.text.isEmpty ? null : _searchController.text,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
+    final questionsAsync = ref.watch(forumQuestionsProvider);
+    final notifier = ref.read(forumQuestionsProvider.notifier);
+    final selectedCategory = notifier.currentCategory;
+    final sortBy = notifier.currentSortBy;
+    
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
       body: CustomScrollView(
@@ -147,7 +118,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
                                   _searchController.clear();
-                                  _loadQuestions();
+                                  _onSearchSubmitted();
                                 },
                               )
                             : null,
@@ -155,7 +126,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onSubmitted: (_) => _loadQuestions(),
+                      onSubmitted: (_) => _onSearchSubmitted(),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -173,7 +144,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String?>(
-                                value: _selectedCategory,
+                                value: selectedCategory,
                                 hint: Row(
                                   children: [
                                     Icon(Icons.category_outlined, size: 20, color: AppTheme.getSecondaryTextColor(context)),
@@ -207,8 +178,7 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                                   )),
                                 ],
                                 onChanged: (value) {
-                                  setState(() => _selectedCategory = value);
-                                  _loadQuestions();
+                                  _onCategorySelected(value);
                                 },
                               ),
                             ),
@@ -231,9 +201,9 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                                 value: 'recent',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.access_time, size: 20, color: _sortBy == 'recent' ? const Color(0xFFD81B60) : Colors.grey),
+                                    Icon(Icons.access_time, size: 20, color: sortBy == 'recent' ? const Color(0xFFD81B60) : Colors.grey),
                                     const SizedBox(width: 8),
-                                    Text('Most Recent', style: TextStyle(color: _sortBy == 'recent' ? const Color(0xFFD81B60) : null)),
+                                    Text('Most Recent', style: TextStyle(color: sortBy == 'recent' ? const Color(0xFFD81B60) : null)),
                                   ],
                                 ),
                               ),
@@ -241,9 +211,9 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                                 value: 'trending',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.trending_up, size: 20, color: _sortBy == 'trending' ? const Color(0xFFD81B60) : Colors.grey),
+                                    Icon(Icons.trending_up, size: 20, color: sortBy == 'trending' ? const Color(0xFFD81B60) : Colors.grey),
                                     const SizedBox(width: 8),
-                                    Text('Trending', style: TextStyle(color: _sortBy == 'trending' ? const Color(0xFFD81B60) : null)),
+                                    Text('Trending', style: TextStyle(color: sortBy == 'trending' ? const Color(0xFFD81B60) : null)),
                                   ],
                                 ),
                               ),
@@ -251,9 +221,9 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                                 value: 'unanswered',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.help_outline, size: 20, color: _sortBy == 'unanswered' ? const Color(0xFFD81B60) : Colors.grey),
+                                    Icon(Icons.help_outline, size: 20, color: sortBy == 'unanswered' ? const Color(0xFFD81B60) : Colors.grey),
                                     const SizedBox(width: 8),
-                                    Text('Unanswered', style: TextStyle(color: _sortBy == 'unanswered' ? const Color(0xFFD81B60) : null)),
+                                    Text('Unanswered', style: TextStyle(color: sortBy == 'unanswered' ? const Color(0xFFD81B60) : null)),
                                   ],
                                 ),
                               ),
@@ -272,21 +242,35 @@ class _ForumScreenState extends State<ForumScreen> with AutomaticKeepAliveClient
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _questions.isEmpty
-                          ? _buildEmptyState()
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _questions.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 12),
-                                itemBuilder: (context, index) {
-                                  return _buildDiscussionCard(_questions[index]);
-                                },
-                              ),
+                  questionsAsync.when(
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+                      ),
+                    ),
+                    error: (error, _) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Text('Error: $error'),
+                      ),
+                    ),
+                    data: (questions) => questions.isEmpty
+                        ? _buildEmptyState()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: questions.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                return _buildDiscussionCard(questions[index]);
+                              },
                             ),
+                          ),
+                  ),
                   const SizedBox(height: 16),
                 ],
               ),

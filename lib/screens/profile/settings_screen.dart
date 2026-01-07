@@ -23,6 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   bool _dailyTipsEnabled = true;
+  // ignore: unused_field - Reserved for future feature
   bool _healthRemindersEnabled = true;
   bool _hydrationRemindersEnabled = true;
   bool _movementRemindersEnabled = true;
@@ -101,6 +102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  // ignore: unused_element - Reserved for external link launching
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {

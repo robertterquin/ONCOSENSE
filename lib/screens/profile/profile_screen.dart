@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cancerapp/services/supabase_service.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cancerapp/providers/auth_provider.dart';
+import 'package:cancerapp/providers/supabase_provider.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
+import 'package:cancerapp/utils/service_locator.dart';
 import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:cancerapp/screens/profile/edit_profile_screen.dart';
@@ -11,53 +14,10 @@ import 'package:cancerapp/screens/profile/settings_screen.dart';
 import 'package:cancerapp/screens/profile/notifications_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  final supabase = SupabaseService();
-  final _bookmarkService = BookmarkService();
-  String userName = 'Guest';
-  String userEmail = '';
-  String? profilePictureUrl;
-  int _bookmarkCount = 0;
-  int _questionBookmarkCount = 0;
-  int _resourceBookmarkCount = 0;
-  
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-    _loadBookmarkCount();
-  }
-
-  Future<void> _loadBookmarkCount() async {
-    final count = await _bookmarkService.getBookmarkCount();
-    final questionCount = await _bookmarkService.getQuestionBookmarkCount();
-    final resourceCount = await _bookmarkService.getResourceBookmarkCount();
-    setState(() {
-      _bookmarkCount = count;
-      _questionBookmarkCount = questionCount;
-      _resourceBookmarkCount = resourceCount;
-    });
-  }
-
-  void _loadUserData() {
-    final user = supabase.currentUser;
-    if (user != null) {
-      setState(() {
-        userName = user.userMetadata?['full_name'] ?? 'User';
-        userEmail = user.email ?? '';
-        profilePictureUrl = user.userMetadata?['profile_picture_url'];
-      });
-    }
-  }
-
-  Future<void> _handleLogout() async {
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -81,15 +41,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirmed == true) {
       // Reset journey service state before logout
-      JourneyService().reset();
-      await supabase.signOutAndClearSession();
-      if (mounted) {
+      getIt<JourneyService>().reset();
+      await ref.read(supabaseServiceProvider).signOutAndClearSession();
+      if (context.mounted) {
         Navigator.of(context).pushReplacementNamed('/welcome');
       }
     }
   }
 
-  void _showHelpSupportDialog() {
+  void _showHelpSupportDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -155,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showAboutDialog() {
+  void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -216,7 +176,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch user data from providers
+    final userName = ref.watch(userDisplayNameProvider);
+    final userEmail = ref.watch(userEmailProvider);
+    final profilePictureUrl = ref.watch(userProfilePictureProvider);
+    
+    // Watch bookmark counts
+    final articleCountAsync = ref.watch(articleBookmarkCountProvider);
+    final questionCountAsync = ref.watch(questionBookmarkCountProvider);
+    final resourceCountAsync = ref.watch(resourceBookmarkCountProvider);
+    
+    final bookmarkCount = articleCountAsync.value ?? 0;
+    final questionBookmarkCount = questionCountAsync.value ?? 0;
+    final resourceBookmarkCount = resourceCountAsync.value ?? 0;
+    
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: SafeArea(
@@ -340,7 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Profile Header
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildProfileHeader(),
+                    child: _buildProfileHeader(context, userName, userEmail, profilePictureUrl),
                   ),
 
                   const SizedBox(height: 24),
@@ -382,6 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         children: [
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.edit_rounded,
                             title: 'Edit Profile',
                             subtitle: 'Update your personal information',
@@ -394,22 +369,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   builder: (context) => const EditProfileScreen(),
                                 ),
                               );
-                              // Reload user data if changes were made
+                              // Refresh user data if changes were made
                               if (result == true) {
-                                _loadUserData();
+                                ref.invalidate(currentUserProvider);
                               }
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.bookmark_rounded,
                             title: 'Saved Articles',
-                            subtitle: _bookmarkCount > 0 
-                                ? '$_bookmarkCount saved article${_bookmarkCount != 1 ? 's' : ''}'
+                            subtitle: bookmarkCount > 0 
+                                ? '$bookmarkCount saved article${bookmarkCount != 1 ? 's' : ''}'
                                 : 'View your bookmarked articles',
                             iconColor: const Color(0xFFE91E63),
                             iconBg: const Color(0xFFFCE4EC),
-                            badge: _bookmarkCount > 0 ? _bookmarkCount.toString() : null,
+                            badge: bookmarkCount > 0 ? bookmarkCount.toString() : null,
                             onTap: () async {
                               await Navigator.push(
                                 context,
@@ -417,20 +393,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   builder: (context) => const SavedArticlesScreen(),
                                 ),
                               );
-                              // Reload bookmark count when returning
-                              _loadBookmarkCount();
+                              // Invalidate to refresh counts
+                              ref.invalidate(articleBookmarkCountProvider);
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.question_answer_rounded,
                             title: 'Saved Questions',
-                            subtitle: _questionBookmarkCount > 0
-                                ? '$_questionBookmarkCount saved question${_questionBookmarkCount != 1 ? 's' : ''}'
+                            subtitle: questionBookmarkCount > 0
+                                ? '$questionBookmarkCount saved question${questionBookmarkCount != 1 ? 's' : ''}'
                                 : 'Your saved forum discussions',
                             iconColor: const Color(0xFF9C27B0),
                             iconBg: const Color(0xFFF3E5F5),
-                            badge: _questionBookmarkCount > 0 ? _questionBookmarkCount.toString() : null,
+                            badge: questionBookmarkCount > 0 ? questionBookmarkCount.toString() : null,
                             onTap: () async {
                               await Navigator.push(
                                 context,
@@ -438,20 +415,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   builder: (context) => const SavedQuestionsScreen(),
                                 ),
                               );
-                              // Reload bookmark count when returning
-                              _loadBookmarkCount();
+                              // Invalidate to refresh counts
+                              ref.invalidate(questionBookmarkCountProvider);
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.favorite_rounded,
                             title: 'Saved Resources',
-                            subtitle: _resourceBookmarkCount > 0
-                                ? '$_resourceBookmarkCount saved resource${_resourceBookmarkCount != 1 ? 's' : ''}'
+                            subtitle: resourceBookmarkCount > 0
+                                ? '$resourceBookmarkCount saved resource${resourceBookmarkCount != 1 ? 's' : ''}'
                                 : 'Your favorite support resources',
                             iconColor: const Color(0xFFEC407A),
                             iconBg: const Color(0xFFFCE4EC),
-                            badge: _resourceBookmarkCount > 0 ? _resourceBookmarkCount.toString() : null,
+                            badge: resourceBookmarkCount > 0 ? resourceBookmarkCount.toString() : null,
                             onTap: () async {
                               await Navigator.push(
                                 context,
@@ -459,8 +437,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   builder: (context) => const SavedResourcesScreen(),
                                 ),
                               );
-                              // Reload bookmark count when returning
-                              _loadBookmarkCount();
+                              // Invalidate to refresh counts
+                              ref.invalidate(resourceBookmarkCountProvider);
                             },
                             isLast: true,
                           ),
@@ -508,6 +486,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         children: [
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.settings_rounded,
                             title: 'Settings',
                             subtitle: 'App preferences and privacy',
@@ -522,8 +501,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.lock_rounded,
                             title: 'Change Password',
                             subtitle: 'Update your account password',
@@ -533,8 +513,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Navigator.pushNamed(context, '/change-password');
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.notifications_rounded,
                             title: 'Notifications',
                             subtitle: 'Manage your notifications',
@@ -549,26 +530,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.help_rounded,
                             title: 'Help & Support',
                             subtitle: 'Get help and contact us',
                             iconColor: const Color(0xFF4CAF50),
                             iconBg: const Color(0xFFE8F5E9),
                             onTap: () {
-                              _showHelpSupportDialog();
+                              _showHelpSupportDialog(context);
                             },
                           ),
-                          _buildDivider(),
+                          _buildDivider(context),
                           _buildModernMenuItem(
+                            context: context,
                             icon: Icons.info_rounded,
                             title: 'About',
                             subtitle: 'App version and information',
                             iconColor: const Color(0xFF607D8B),
                             iconBg: const Color(0xFFECEFF1),
                             onTap: () {
-                              _showAboutDialog();
+                              _showAboutDialog(context);
                             },
                             isLast: true,
                           ),
@@ -595,13 +578,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                       child: _buildModernMenuItem(
+                        context: context,
                         icon: Icons.logout_rounded,
                         title: 'Log Out',
                         subtitle: 'Sign out of your account',
                         iconColor: const Color(0xFFF44336),
                         iconBg: const Color(0xFFFFEBEE),
                         titleColor: const Color(0xFFF44336),
-                        onTap: _handleLogout,
+                        onTap: () => _handleLogout(context, ref),
                         isLast: true,
                       ),
                     ),
@@ -617,7 +601,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(BuildContext context, String? userName, String? userEmail, String? profilePictureUrl) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -655,12 +639,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: ClipOval(
               child: profilePictureUrl != null
                   ? Image.network(
-                      profilePictureUrl!,
+                      profilePictureUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
                           child: Text(
-                            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                            (userName?.isNotEmpty ?? false) ? userName![0].toUpperCase() : 'U',
                             style: const TextStyle(
                               color: Color(0xFFD81B60),
                               fontSize: 28,
@@ -672,7 +656,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   : Center(
                       child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                        (userName?.isNotEmpty ?? false) ? userName![0].toUpperCase() : 'U',
                         style: const TextStyle(
                           color: Color(0xFFD81B60),
                           fontSize: 28,
@@ -690,7 +674,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userName,
+                  userName ?? 'Guest',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -700,7 +684,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  userEmail,
+                  userEmail ?? 'guest@oncosense.app',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.9),
@@ -748,6 +732,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildModernMenuItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -835,7 +820,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 68),
       child: Divider(

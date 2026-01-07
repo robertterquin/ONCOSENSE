@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/utils/constants.dart';
 
@@ -216,6 +215,7 @@ class GNewsService {
   }
 
   /// Helper to get article count from response body
+  // ignore: unused_element - Utility method for debugging/future use
   int _getArticleCount(String responseBody) {
     try {
       final data = json.decode(responseBody);

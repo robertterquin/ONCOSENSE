@@ -1,7 +1,6 @@
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/models/answer.dart';
 import 'package:cancerapp/services/supabase_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service for handling Q&A Forum operations with Supabase
 class ForumService {

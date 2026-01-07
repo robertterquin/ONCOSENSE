@@ -1,50 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:cancerapp/services/supabase_service.dart';
-import 'package:cancerapp/services/gnews_service.dart';
-import 'package:cancerapp/services/health_tips_service.dart';
-import 'package:cancerapp/services/health_reminders_service.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
-import 'package:cancerapp/services/notification_storage_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cancerapp/providers/providers.dart';
 import 'package:cancerapp/services/notification_service.dart';
+import 'package:cancerapp/services/notification_storage_service.dart';
+import 'package:cancerapp/services/health_reminders_service.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/health_tip.dart';
-import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/models/health_reminder.dart';
 import 'package:cancerapp/utils/theme.dart';
+import 'package:cancerapp/utils/service_locator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cancerapp/screens/profile/profile_screen.dart';
 import 'package:cancerapp/screens/notifications/notification_center_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // Keep state when navigating away
   
-  final supabase = SupabaseService();
-  final gNewsService = GNewsService();
-  final healthRemindersService = HealthRemindersService();
-  final _bookmarkService = BookmarkService();
-  final _notificationStorageService = NotificationStorageService();
-  final _notificationService = NotificationService();
-  String userName = 'Guest';
-  String? profilePictureUrl;
-  String? currentUserId;
-  List<Article> articles = [];
-  List<HealthReminder> healthReminders = [];
-  Article? survivorStory;
-  bool isLoadingArticles = true;
-  bool isLoadingReminders = true;
-  bool isLoadingSurvivorStory = true;
-  HealthTip dailyTip = HealthTipsService.getTipOfTheDay();
-  Map<String, bool> _bookmarkStates = {};
-  int _unreadNotificationCount = 0;
-
+  final _notificationStorageService = getIt<NotificationStorageService>();
+  final _notificationService = getIt<NotificationService>();
+  
   // Get current month's cancer awareness information
   Map<String, String> _getAwarenessMonth() {
     final month = DateTime.now().month;
@@ -69,32 +51,11 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _loadArticles();
-    _loadSurvivorStory();
-    _loadHealthReminders(forceRefresh: true); // Force new reminders on app start
-    _loadNotificationCount();
-    _notificationStorageService.addListener(_onNotificationChange);
+    _addSampleNotificationsIfNeeded();
   }
 
-  @override
-  void dispose() {
-    _notificationStorageService.removeListener(_onNotificationChange);
-    super.dispose();
-  }
-
-  void _onNotificationChange() {
-    _loadNotificationCount();
-  }
-
-  Future<void> _loadNotificationCount() async {
+  Future<void> _addSampleNotificationsIfNeeded() async {
     await _notificationStorageService.initialize();
-    if (mounted) {
-      setState(() {
-        _unreadNotificationCount = _notificationStorageService.unreadCount;
-      });
-    }
-    
     // Add sample notifications for demo (only if empty)
     if (_notificationStorageService.notifications.isEmpty) {
       await _addSampleNotifications();
@@ -128,80 +89,15 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         type: notification['type']!,
       );
     }
-
-    if (mounted) {
-      setState(() {
-        _unreadNotificationCount = _notificationStorageService.unreadCount;
-      });
-    }
-  }
-
-  void _loadUserData() {
-    final user = supabase.currentUser;
-    if (user != null) {
-      final newUserId = user.id;
-      final userChanged = currentUserId != newUserId;
-      
-      setState(() {
-        userName = user.userMetadata?['full_name'] ?? user.email?.split('@')[0] ?? 'User';
-        profilePictureUrl = user.userMetadata?['profile_picture_url'];
-        currentUserId = newUserId;
-      });
-      
-      // Refresh reminders when user logs in or changes
-      if (userChanged) {
-        _loadHealthReminders(forceRefresh: true);
-      }
-    } else {
-      setState(() {
-        userName = 'Guest';
-        profilePictureUrl = null;
-        currentUserId = null;
-      });
-    }
-  }
-
-  Future<void> _loadArticles() async {
-    try {
-      final fetchedArticles = await gNewsService.fetchCancerArticles(maxResults: DataLimits.newsArticlesDefault);
-      setState(() {
-        articles = fetchedArticles;
-        isLoadingArticles = false;
-      });
-      
-      // Load bookmark states for all articles
-      await _loadBookmarkStates();
-    } catch (e) {
-      setState(() {
-        isLoadingArticles = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load articles: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _loadBookmarkStates() async {
-    final states = <String, bool>{};
-    for (final article in articles) {
-      states[article.url] = await _bookmarkService.isBookmarked(article.url);
-    }
-    if (survivorStory != null) {
-      states[survivorStory!.url] = await _bookmarkService.isBookmarked(survivorStory!.url);
-    }
-    setState(() {
-      _bookmarkStates = states;
-    });
+    
+    // Refresh the notification provider
+    ref.invalidate(notificationsProvider);
   }
 
   Future<void> _toggleBookmark(Article article) async {
-    final isBookmarked = await _bookmarkService.toggleBookmark(article);
-    
-    setState(() {
-      _bookmarkStates[article.url] = isBookmarked;
-    });
+    // Use the bookmark notifier - it handles invalidation automatically
+    final notifier = ref.read(bookmarkNotifierProvider.notifier);
+    final isBookmarked = await notifier.toggleArticleBookmark(article);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -229,47 +125,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     }
   }
 
-  Future<void> _loadSurvivorStory() async {
-    try {
-      // Fetch articles with survivor story filters - prioritize Filipino stories
-      final stories = await gNewsService.fetchCancerArticles(
-        maxResults: DataLimits.newsArticlesCarousel,
-        query: '"cancer survivor" OR "cancer journey" OR "cancer recovery story" OR "beating cancer" OR "Filipino cancer survivor" OR "Pinoy cancer fighter"',
-      );
-      
-      if (stories.isNotEmpty) {
-        setState(() {
-          survivorStory = stories.first;
-          isLoadingSurvivorStory = false;
-        });
-      } else {
-        setState(() {
-          isLoadingSurvivorStory = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        isLoadingSurvivorStory = false;
-      });
-      print('Error loading survivor story: $e');
-    }
-  }
-
-  Future<void> _loadHealthReminders({bool forceRefresh = false}) async {
-    try {
-      final reminders = await healthRemindersService.getRemindersToShow(count: 2, forceRefresh: forceRefresh);
-      setState(() {
-        healthReminders = reminders;
-        isLoadingReminders = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoadingReminders = false;
-      });
-      print('Error loading health reminders: $e');
-    }
-  }
-
   Future<void> _openArticle(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -286,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   // For testing: Send test notification and store it
   Future<void> _sendTestNotification() async {
     await _notificationService.showTestNotification();
-    await _loadNotificationCount();
+    ref.invalidate(notificationsProvider);
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -299,10 +154,19 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     final topPadding = MediaQuery.of(context).padding.top;
+    
+    // Watch providers for reactive data
+    final userName = ref.watch(userDisplayNameProvider);
+    final profilePictureUrl = ref.watch(userProfilePictureProvider);
+    final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
+    final articlesAsync = ref.watch(cancerArticlesProvider);
+    final survivorStoryAsync = ref.watch(survivorStoryProvider);
+    final healthRemindersAsync = ref.watch(healthRemindersProvider);
+    final dailyTip = ref.watch(dailyHealthTipProvider);
+    final bookmarkedUrlsAsync = ref.watch(bookmarkedArticleUrlsProvider);
     
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
@@ -449,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   builder: (context) => const NotificationCenterScreen(),
                                 ),
                               ).then((_) {
-                                _loadNotificationCount();
+                                ref.invalidate(notificationsProvider);
                               });
                             },
                             onLongPress: () {
@@ -471,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                       size: 24,
                                     ),
                                   ),
-                                  if (_unreadNotificationCount > 0)
+                                  if (unreadNotificationCount > 0)
                                     Positioned(
                                       right: 6,
                                       top: 6,
@@ -487,9 +351,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         ),
                                         child: Center(
                                           child: Text(
-                                            _unreadNotificationCount > 9
+                                            unreadNotificationCount > 9
                                                 ? '9+'
-                                                : '$_unreadNotificationCount',
+                                                : '$unreadNotificationCount',
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 10,
@@ -513,8 +377,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                   builder: (context) => const ProfileScreen(),
                                 ),
                               ).then((_) {
-                                _loadUserData();
-                                _loadHealthReminders(forceRefresh: true); // Refresh reminders on return
+                                ref.invalidate(currentUserProvider);
+                                ref.invalidate(healthRemindersProvider);
                               });
                             },
                             child: Container(
@@ -538,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                               child: ClipOval(
                                 child: profilePictureUrl != null
                                     ? Image.network(
-                                        profilePictureUrl!,
+                                        profilePictureUrl,
                                         fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) {
                                           return const Icon(
@@ -575,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   // Daily Health Tip
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildDailyTipCard(),
+                    child: _buildDailyTipCard(dailyTip),
                   ),
 
                   const SizedBox(height: 20),
@@ -604,10 +468,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         ),
                         IconButton(
                           onPressed: () {
-                            setState(() {
-                              isLoadingReminders = true;
-                            });
-                            _loadHealthReminders(forceRefresh: true);
+                            ref.invalidate(healthRemindersProvider);
                           },
                           icon: const Icon(
                             Icons.refresh,
@@ -623,32 +484,34 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   const SizedBox(height: 12),
 
                   // Health Reminders List
-                  isLoadingReminders
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : healthReminders.isEmpty
-                          ? const SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                children: healthReminders.map((reminder) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: _buildHealthReminderCard(
-                                      icon: _getIconData(reminder.icon),
-                                      title: reminder.title,
-                                      message: reminder.message,
-                                      color: _getColorFromHex(reminder.color),
-                                      reminder: reminder,
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
+                  healthRemindersAsync.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    error: (error, stack) => const SizedBox.shrink(),
+                    data: (healthReminders) => healthReminders.isEmpty
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: healthReminders.map((reminder) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: _buildHealthReminderCard(
+                                    icon: _getIconData(reminder.icon),
+                                    title: reminder.title,
+                                    message: reminder.message,
+                                    color: _getColorFromHex(reminder.color),
+                                    reminder: reminder,
+                                  ),
+                                );
+                              }).toList(),
                             ),
+                          ),
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -686,9 +549,13 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: survivorStory != null
-                            ? _buildSurvivorStoryCard(survivorStory!)
-                            : const SizedBox.shrink(),
+                    child: survivorStoryAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (survivorStory) => survivorStory != null
+                          ? _buildSurvivorStoryCard(survivorStory, bookmarkedUrlsAsync.value ?? {})
+                          : const SizedBox.shrink(),
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -728,42 +595,65 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   // Articles Preview List
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: articles.isEmpty
-                            ? Center(
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.article_outlined,
-                                      size: 48,
-                                      color: Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'No articles available',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Column(
-                                children: articles
-                                    .take(3) // Show max 3 articles
-                                    .map((article) => Padding(
-                                          padding: const EdgeInsets.only(bottom: 12),
-                                          child: _buildArticlePreview(
-                                            article.title,
-                                            article.description,
-                                            article.readTime,
-                                            article.url,
-                                            article.imageUrl,
-                                            article,
-                                          ),
-                                        ))
-                                    .toList(),
+                    child: articlesAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      error: (error, _) => Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Failed to load articles',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
                               ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      data: (articles) => articles.isEmpty
+                          ? Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.article_outlined,
+                                    size: 48,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No articles available',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Column(
+                              children: articles
+                                  .take(3) // Show max 3 articles
+                                  .map((article) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: _buildArticlePreview(
+                                          article.title,
+                                          article.description,
+                                          article.readTime,
+                                          article.url,
+                                          article.imageUrl,
+                                          article,
+                                          bookmarkedUrlsAsync.value ?? {},
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -776,7 +666,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   // Daily Tip Card Widget
-  Widget _buildDailyTipCard() {
+  Widget _buildDailyTipCard(HealthTip dailyTip) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -989,6 +879,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       onTap: reminder != null
           ? () async {
               // Mark as shown when user interacts
+              final healthRemindersService = getIt<HealthRemindersService>();
               await healthRemindersService.markReminderAsShown(reminder.id);
               // Show source information
               if (reminder.source != null) {
@@ -1116,8 +1007,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   // Survivor Story Card Widget
-  Widget _buildSurvivorStoryCard(Article article) {
-    final isBookmarked = _bookmarkStates[article.url] ?? false;
+  Widget _buildSurvivorStoryCard(Article article, Set<String> bookmarkedUrls) {
+    final isBookmarked = bookmarkedUrls.contains(article.url);
     final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(
@@ -1336,8 +1227,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   // Article Preview Widget
-  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl, Article? article]) {
-    final isBookmarked = article != null ? (_bookmarkStates[article.url] ?? false) : false;
+  Widget _buildArticlePreview(String title, String excerpt, String readTime, [String? url, String? imageUrl, Article? article, Set<String>? bookmarkedUrls]) {
+    final isBookmarked = article != null && bookmarkedUrls != null ? bookmarkedUrls.contains(article.url) : false;
     final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(

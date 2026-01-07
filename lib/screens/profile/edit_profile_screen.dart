@@ -3,7 +3,6 @@ import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 import 'package:cancerapp/utils/theme.dart';
 

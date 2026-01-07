@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/models/answer.dart';
 import 'package:cancerapp/services/forum_service.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/utils/theme.dart';
 
-class QuestionDetailScreen extends StatefulWidget {
+class QuestionDetailScreen extends ConsumerStatefulWidget {
   final String questionId;
   final Question? initialQuestion; // Optional pre-loaded question data
 
@@ -17,12 +18,11 @@ class QuestionDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<QuestionDetailScreen> createState() => _QuestionDetailScreenState();
+  ConsumerState<QuestionDetailScreen> createState() => _QuestionDetailScreenState();
 }
 
-class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
+class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   final _forumService = ForumService();
-  final _bookmarkService = BookmarkService();
   final _answerController = TextEditingController();
   
   Question? _question;
@@ -55,7 +55,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   }
 
   Future<void> _loadBookmarkStatus() async {
-    final isBookmarked = await _bookmarkService.isQuestionBookmarked(widget.questionId);
+    final isBookmarked = await ref.read(questionBookmarkProvider(widget.questionId).future);
     if (mounted) {
       setState(() {
         _isBookmarked = isBookmarked;
@@ -72,7 +72,9 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     });
 
     try {
-      final newStatus = await _bookmarkService.toggleQuestionBookmark(_question!);
+      // Use the bookmark notifier - it handles invalidation automatically
+      final notifier = ref.read(bookmarkNotifierProvider.notifier);
+      final newStatus = await notifier.toggleQuestionBookmark(_question!);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

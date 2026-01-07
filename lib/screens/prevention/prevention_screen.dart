@@ -1,57 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
-import 'package:cancerapp/services/prevention_service.dart';
+import 'package:cancerapp/providers/prevention_provider.dart';
 import 'package:cancerapp/models/prevention_tip.dart';
 import 'package:cancerapp/models/self_check_guide.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PreventionScreen extends StatefulWidget {
+class PreventionScreen extends ConsumerStatefulWidget {
   const PreventionScreen({super.key});
 
   @override
-  State<PreventionScreen> createState() => _PreventionScreenState();
+  ConsumerState<PreventionScreen> createState() => _PreventionScreenState();
 }
 
-class _PreventionScreenState extends State<PreventionScreen> with AutomaticKeepAliveClientMixin {
+class _PreventionScreenState extends ConsumerState<PreventionScreen> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  
-  final _preventionService = PreventionService();
-  List<PreventionTip> _preventionTips = [];
-  List<SelfCheckGuide> _selfCheckGuides = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPreventionData();
-  }
-
-  Future<void> _loadPreventionData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final tips = await _preventionService.getPreventionTips();
-      final guides = await _preventionService.getSelfCheckGuides();
-
-      setState(() {
-        _preventionTips = tips;
-        _selfCheckGuides = guides;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = 'Failed to load prevention data. Please try again.';
-        _isLoading = false;
-      });
-      print('Error loading prevention data: $e');
-    }
-  }
 
   /// Launch URL in browser
   Future<void> _launchUrl(String url) async {
@@ -102,107 +67,101 @@ class _PreventionScreenState extends State<PreventionScreen> with AutomaticKeepA
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
+    // Watch the combined prevention data provider
+    final preventionDataAsync = ref.watch(preventionDataProvider);
+    
     return Scaffold(
-      body: _error != null
-              ? _buildErrorState()
-              : RefreshIndicator(
-                  onRefresh: _loadPreventionData,
-                  child: CustomScrollView(
-                    clipBehavior: Clip.antiAlias,
-                    slivers: [
-                      const CustomAppHeader(
-                        title: 'Prevention & Lifestyle',
-                        subtitle: 'Healthy tips for a cancer-free life',
+      body: preventionDataAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+        ),
+        error: (error, stack) => _buildErrorState(error),
+        data: (data) => RefreshIndicator(
+          onRefresh: () async => ref.invalidate(preventionDataProvider),
+          child: CustomScrollView(
+            clipBehavior: Clip.antiAlias,
+            slivers: [
+              const CustomAppHeader(
+                title: 'Prevention & Lifestyle',
+                subtitle: 'Healthy tips for a cancer-free life',
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Prevention Tips',
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                        SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 24),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Prevention Tips',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Evidence-based tips from trusted medical sources',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _preventionTips.isEmpty
-                                  ? _buildEmptyTips()
-                                  : Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Column(
-                                        children: _preventionTips
-                                            .map((tip) => Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          bottom: 12),
-                                                  child: _buildTipCard(tip),
-                                                ))
-                                            .toList(),
-                                      ),
-                                    ),
-                              const SizedBox(height: 24),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Self-Check Guides',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Learn how to perform self-examinations',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _selfCheckGuides.isEmpty
-                                  ? _buildEmptyGuides()
-                                  : Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Column(
-                                        children: _selfCheckGuides
-                                            .map((guide) => Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          bottom: 12),
-                                                  child: _buildGuideCard(guide),
-                                                ))
-                                            .toList(),
-                                      ),
-                                    ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Evidence-based tips from trusted medical sources',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    data.tips.isEmpty
+                        ? _buildEmptyTips()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: data.tips
+                                  .map((tip) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: _buildTipCard(tip),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Self-Check Guides',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Learn how to perform self-examinations',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    data.guides.isEmpty
+                        ? _buildEmptyGuides()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: data.guides
+                                  .map((guide) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: _buildGuideCard(guide),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(Object error) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -212,13 +171,13 @@ class _PreventionScreenState extends State<PreventionScreen> with AutomaticKeepA
             const Icon(Icons.error_outline, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              _error ?? 'An error occurred',
+              'Failed to load prevention data. Please try again.',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadPreventionData,
+              onPressed: () => ref.invalidate(preventionDataProvider),
               child: const Text('Retry'),
             ),
           ],

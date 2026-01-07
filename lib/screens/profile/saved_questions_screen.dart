@@ -1,68 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/question.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/screens/forum/question_detail_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:intl/intl.dart';
 
-class SavedQuestionsScreen extends StatefulWidget {
+class SavedQuestionsScreen extends ConsumerWidget {
   const SavedQuestionsScreen({super.key});
 
   @override
-  State<SavedQuestionsScreen> createState() => _SavedQuestionsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedQuestionsAsync = ref.watch(bookmarkedQuestionsProvider);
 
-class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
-  final BookmarkService _bookmarkService = BookmarkService();
-  List<Question> _savedQuestions = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedQuestions();
-  }
-
-  Future<void> _loadSavedQuestions() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final questions = await _bookmarkService.getBookmarkedQuestions();
-      setState(() {
-        _savedQuestions = questions;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading saved questions: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _removeBookmark(Question question) async {
-    final removed = await _bookmarkService.removeQuestionBookmark(question.id);
-    
-    if (removed) {
-      setState(() {
-        _savedQuestions.removeWhere((q) => q.id == question.id);
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Question removed from bookmarks'),
-            duration: Duration(seconds: 2),
+    return Scaffold(
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      body: CustomScrollView(
+        slivers: [
+          const CustomAppHeader(
+            title: 'Saved Questions',
+            subtitle: 'Your bookmarked forum discussions',
+            showBackButton: true,
           ),
-        );
-      }
+          savedQuestionsAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+              ),
+            ),
+            error: (error, _) => SliverFillRemaining(
+              child: Center(
+                child: Text('Error loading saved questions: $error'),
+              ),
+            ),
+            data: (savedQuestions) => savedQuestions.isEmpty
+                ? SliverFillRemaining(child: _buildEmptyState(context))
+                : SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildQuestionCard(context, ref, savedQuestions[index]),
+                        ),
+                        childCount: savedQuestions.length,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeBookmark(BuildContext context, WidgetRef ref, Question question) async {
+    // Use the bookmark notifier - it handles invalidation automatically
+    final notifier = ref.read(bookmarkNotifierProvider.notifier);
+    await notifier.toggleQuestionBookmark(question);
+    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Question removed from bookmarks'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
-  Future<void> _openQuestion(Question question) async {
+  Future<void> _openQuestion(BuildContext context, WidgetRef ref, Question question) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -75,7 +82,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
 
     // Reload if the question was unbookmarked from detail screen
     if (result == true) {
-      _loadSavedQuestions();
+      ref.invalidate(bookmarkedQuestionsProvider);
     }
   }
 
@@ -98,53 +105,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.getSurfaceColor(context),
-      body: CustomScrollView(
-        slivers: [
-          // Custom App Header matching main pages
-          CustomAppHeader(
-            title: 'Saved Questions',
-            subtitle: 'Your bookmarked discussions',
-            showBackButton: true,
-          ),
-
-          // Content
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFD81B60),
-                    ),
-                  ),
-                )
-              : _savedQuestions.isEmpty
-                  ? SliverFillRemaining(
-                      child: _buildEmptyState(),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final question = _savedQuestions[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildQuestionCard(question),
-                            );
-                          },
-                          childCount: _savedQuestions.length,
-                        ),
-                      ),
-                    ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -153,8 +114,8 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFCE4EC),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFCE4EC),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -205,10 +166,10 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
     );
   }
 
-  Widget _buildQuestionCard(Question question) {
+  Widget _buildQuestionCard(BuildContext context, WidgetRef ref, Question question) {
     final isDark = AppTheme.isDarkMode(context);
     return InkWell(
-      onTap: () => _openQuestion(question),
+      onTap: () => _openQuestion(context, ref, question),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -310,7 +271,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
                         color: Color(0xFFD81B60),
                         size: 20,
                       ),
-                      onPressed: () => _removeBookmark(question),
+                      onPressed: () => _removeBookmark(context, ref, question),
                       tooltip: 'Remove bookmark',
                       padding: const EdgeInsets.all(6),
                       constraints: const BoxConstraints(),

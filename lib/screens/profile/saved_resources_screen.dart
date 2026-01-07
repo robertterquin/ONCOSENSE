@@ -1,56 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/resource.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
+import 'package:cancerapp/utils/service_locator.dart';
 import 'package:cancerapp/services/bookmark_service.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SavedResourcesScreen extends StatefulWidget {
+class SavedResourcesScreen extends ConsumerWidget {
   const SavedResourcesScreen({super.key});
 
   @override
-  State<SavedResourcesScreen> createState() => _SavedResourcesScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedResourcesAsync = ref.watch(bookmarkedResourcesProvider);
 
-class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
-  final BookmarkService _bookmarkService = BookmarkService();
-  List<Resource> _savedResources = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedResources();
+    return Scaffold(
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      body: CustomScrollView(
+        slivers: [
+          const CustomAppHeader(
+            title: 'Saved Resources',
+            subtitle: 'Your bookmarked support resources',
+            showBackButton: true,
+          ),
+          savedResourcesAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+              ),
+            ),
+            error: (error, _) => SliverFillRemaining(
+              child: Center(
+                child: Text('Error loading saved resources: $error'),
+              ),
+            ),
+            data: (savedResources) => savedResources.isEmpty
+                ? SliverFillRemaining(child: _buildEmptyState(context))
+                : SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildResourceCard(context, ref, savedResources[index]),
+                        ),
+                        childCount: savedResources.length,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _loadSavedResources() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final resources = await _bookmarkService.getBookmarkedResources();
-      setState(() {
-        _savedResources = resources;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading saved resources: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _removeBookmark(Resource resource) async {
-    final removed = await _bookmarkService.removeResourceBookmark(resource.id);
+  Future<void> _removeBookmark(BuildContext context, WidgetRef ref, Resource resource) async {
+    final bookmarkService = getIt<BookmarkService>();
+    final removed = await bookmarkService.removeResourceBookmark(resource.id);
     
     if (removed) {
-      setState(() {
-        _savedResources.removeWhere((r) => r.id == resource.id);
-      });
+      ref.invalidate(bookmarkedResourcesProvider);
+      ref.invalidate(resourceBookmarkCountProvider);
       
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Resource removed from bookmarks'),
@@ -61,12 +74,12 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not make phone call')),
         );
@@ -74,12 +87,12 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     }
   }
 
-  Future<void> _openWebsite(String url) async {
+  Future<void> _openWebsite(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open website')),
         );
@@ -87,12 +100,12 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     }
   }
 
-  Future<void> _sendEmail(String email) async {
+  Future<void> _sendEmail(BuildContext context, String email) async {
     final uri = Uri.parse('mailto:$email');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open email app')),
         );
@@ -145,53 +158,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.getSurfaceColor(context),
-      body: CustomScrollView(
-        slivers: [
-          // Custom App Header matching main pages
-          CustomAppHeader(
-            title: 'Saved Resources',
-            subtitle: 'Your bookmarked support resources',
-            showBackButton: true,
-          ),
-
-          // Content
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFD81B60),
-                    ),
-                  ),
-                )
-              : _savedResources.isEmpty
-                  ? SliverFillRemaining(
-                      child: _buildEmptyState(),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final resource = _savedResources[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildResourceCard(resource),
-                            );
-                          },
-                          childCount: _savedResources.length,
-                        ),
-                      ),
-                    ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -252,7 +219,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
     );
   }
 
-  Widget _buildResourceCard(Resource resource) {
+  Widget _buildResourceCard(BuildContext context, WidgetRef ref, Resource resource) {
     final color = _getResourceColor(resource.type);
     final icon = _getResourceIcon(resource.type);
     final typeLabel = _getResourceTypeLabel(resource.type);
@@ -335,7 +302,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                 ),
                 // Bookmark remove button
                 IconButton(
-                  onPressed: () => _removeBookmark(resource),
+                  onPressed: () => _removeBookmark(context, ref, resource),
                   icon: const Icon(
                     Icons.bookmark,
                     color: Color(0xFFD81B60),
@@ -369,7 +336,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                     icon: Icons.phone_rounded,
                     label: resource.phone!,
                     color: const Color(0xFFD81B60),
-                    onTap: () => _makePhoneCall(resource.phone!),
+                    onTap: () => _makePhoneCall(context, resource.phone!),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -387,7 +354,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                     icon: Icons.email_rounded,
                     label: resource.email!,
                     color: const Color(0xFF4CAF50),
-                    onTap: () => _sendEmail(resource.email!),
+                    onTap: () => _sendEmail(context, resource.email!),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -396,7 +363,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                     icon: Icons.language_rounded,
                     label: resource.website!,
                     color: const Color(0xFF9C27B0),
-                    onTap: () => _openWebsite(resource.website!),
+                    onTap: () => _openWebsite(context, resource.website!),
                   ),
                 ],
 
@@ -435,7 +402,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                     if (resource.phone != null)
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () => _makePhoneCall(resource.phone!),
+                          onPressed: () => _makePhoneCall(context, resource.phone!),
                           icon: const Icon(Icons.call, size: 18),
                           label: const Text('Call'),
                           style: ElevatedButton.styleFrom(
@@ -453,7 +420,7 @@ class _SavedResourcesScreenState extends State<SavedResourcesScreen> {
                     if (resource.website != null)
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => _openWebsite(resource.website!),
+                          onPressed: () => _openWebsite(context, resource.website!),
                           icon: const Icon(Icons.open_in_new, size: 18),
                           label: const Text('Website'),
                           style: OutlinedButton.styleFrom(

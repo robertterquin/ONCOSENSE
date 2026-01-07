@@ -21,9 +21,11 @@ class BookmarkService {
       }
 
       final List<dynamic> bookmarksList = json.decode(bookmarksJson);
-      return bookmarksList
+      final articles = bookmarksList
           .map((json) => Article.fromJson(json as Map<String, dynamic>))
           .toList();
+      
+      return articles;
     } catch (e) {
       print('Error loading bookmarked articles: $e');
       return [];

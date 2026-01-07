@@ -1,58 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
-import 'package:cancerapp/services/resources_service.dart';
-import 'package:cancerapp/services/bookmark_service.dart';
+import 'package:cancerapp/providers/resources_provider.dart';
+import 'package:cancerapp/providers/bookmark_provider.dart';
 import 'package:cancerapp/models/resource.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ResourcesScreen extends StatefulWidget {
+class ResourcesScreen extends ConsumerStatefulWidget {
   const ResourcesScreen({super.key});
 
   @override
-  State<ResourcesScreen> createState() => _ResourcesScreenState();
+  ConsumerState<ResourcesScreen> createState() => _ResourcesScreenState();
 }
 
-class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAliveClientMixin {
+class _ResourcesScreenState extends ConsumerState<ResourcesScreen> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  
-  final resourcesService = ResourcesService();
-  final _bookmarkService = BookmarkService();
-  List<Resource> hotlines = [];
-  List<Resource> screeningCenters = [];
-  List<Resource> financialSupport = [];
-  List<Resource> supportGroups = [];
-  bool isLoading = true;
-  Set<String> _bookmarkedResourceIds = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadResources();
-    _loadBookmarkedResources();
-  }
-
-  Future<void> _loadBookmarkedResources() async {
-    final bookmarked = await _bookmarkService.getBookmarkedResources();
-    setState(() {
-      _bookmarkedResourceIds = bookmarked.map((r) => r.id).toSet();
-    });
-  }
 
   Future<void> _toggleBookmark(Resource resource) async {
-    final wasBookmarked = _bookmarkedResourceIds.contains(resource.id);
+    final bookmarkService = ref.read(bookmarkServiceProvider);
     
-    // Optimistic update
-    setState(() {
-      if (wasBookmarked) {
-        _bookmarkedResourceIds.remove(resource.id);
-      } else {
-        _bookmarkedResourceIds.add(resource.id);
-      }
-    });
-
-    final isNowBookmarked = await _bookmarkService.toggleResourceBookmark(resource);
+    final isNowBookmarked = await bookmarkService.toggleResourceBookmark(resource);
+    
+    // Refresh the bookmarked resources provider
+    ref.invalidate(bookmarkedResourcesProvider);
+    ref.invalidate(bookmarkedResourceIdsProvider);
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,34 +39,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
           backgroundColor: isNowBookmarked ? Colors.green : Colors.grey[700],
         ),
       );
-    }
-  }
-
-  Future<void> _loadResources() async {
-    try {
-      final results = await Future.wait([
-        resourcesService.fetchHotlines(),
-        resourcesService.fetchScreeningCenters(),
-        resourcesService.fetchFinancialSupport(),
-        resourcesService.fetchSupportGroups(),
-      ]);
-
-      setState(() {
-        hotlines = results[0];
-        screeningCenters = results[1];
-        financialSupport = results[2];
-        supportGroups = results[3];
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load resources: $e')),
-        );
-      }
     }
   }
 
@@ -113,11 +58,37 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
+    // Watch all resources provider
+    final resourcesAsync = ref.watch(allResourcesProvider);
+    // Watch bookmarked resource IDs for quick lookup
+    final bookmarkedIdsAsync = ref.watch(bookmarkedResourceIdsProvider);
+    final bookmarkedIds = bookmarkedIdsAsync.value ?? {};
+    
     return Scaffold(
       backgroundColor: AppTheme.getSurfaceColor(context),
-      body: CustomScrollView(
-        clipBehavior: Clip.antiAlias,
-        slivers: [
+      body: resourcesAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFFD81B60)),
+        ),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text('Failed to load resources: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(allResourcesProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (resources) => CustomScrollView(
+          clipBehavior: Clip.antiAlias,
+          slivers: [
             const CustomAppHeader(
               title: 'Resources',
               subtitle: 'Find support, hotlines, and centers',
@@ -137,16 +108,16 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: hotlines.isEmpty
+                    child: resources.hotlines.isEmpty
                         ? Text(
                             'No hotlines available',
                             style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
-                            children: hotlines
+                            children: resources.hotlines
                                 .map((resource) => Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _buildHotlineCard(resource),
+                                      child: _buildHotlineCard(resource, bookmarkedIds),
                                     ))
                                 .toList(),
                           ),
@@ -162,16 +133,16 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: screeningCenters.isEmpty
+                    child: resources.screeningCenters.isEmpty
                         ? Text(
                             'No screening centers available',
                             style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
-                            children: screeningCenters
+                            children: resources.screeningCenters
                                 .map((resource) => Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _buildCenterCard(resource),
+                                      child: _buildCenterCard(resource, bookmarkedIds),
                                     ))
                                 .toList(),
                           ),
@@ -187,16 +158,16 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: financialSupport.isEmpty
+                    child: resources.financialSupport.isEmpty
                         ? Text(
                             'No financial support resources available',
                             style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
-                            children: financialSupport
+                            children: resources.financialSupport
                                 .map((resource) => Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _buildSupportCard(resource),
+                                      child: _buildSupportCard(resource, bookmarkedIds),
                                     ))
                                 .toList(),
                           ),
@@ -212,16 +183,16 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: supportGroups.isEmpty
+                    child: resources.supportGroups.isEmpty
                         ? Text(
                             'No support groups available',
                             style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                           )
                         : Column(
-                            children: supportGroups
+                            children: resources.supportGroups
                                 .map((resource) => Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _buildGroupCard(resource),
+                                      child: _buildGroupCard(resource, bookmarkedIds),
                                     ))
                                 .toList(),
                           ),
@@ -232,11 +203,12 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
             ),
           ],
         ),
+      ),
     );
   }
 
-  Widget _buildHotlineCard(Resource resource) {
-    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+  Widget _buildHotlineCard(Resource resource, Set<String> bookmarkedIds) {
+    final isBookmarked = bookmarkedIds.contains(resource.id);
     final isDark = AppTheme.isDarkMode(context);
     
     return InkWell(
@@ -353,8 +325,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
     );
   }
 
-  Widget _buildCenterCard(Resource resource) {
-    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+  Widget _buildCenterCard(Resource resource, Set<String> bookmarkedIds) {
+    final isBookmarked = bookmarkedIds.contains(resource.id);
     final isDark = AppTheme.isDarkMode(context);
     
     return Container(
@@ -456,8 +428,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
     );
   }
 
-  Widget _buildSupportCard(Resource resource) {
-    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+  Widget _buildSupportCard(Resource resource, Set<String> bookmarkedIds) {
+    final isBookmarked = bookmarkedIds.contains(resource.id);
     final isDark = AppTheme.isDarkMode(context);
     
     return Container(
@@ -536,8 +508,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> with AutomaticKeepAli
     );
   }
 
-  Widget _buildGroupCard(Resource resource) {
-    final isBookmarked = _bookmarkedResourceIds.contains(resource.id);
+  Widget _buildGroupCard(Resource resource, Set<String> bookmarkedIds) {
+    final isBookmarked = bookmarkedIds.contains(resource.id);
     final isDark = AppTheme.isDarkMode(context);
     
     return Container(

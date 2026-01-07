@@ -10,22 +10,17 @@ class SavedArticlesScreen extends ConsumerWidget {
   const SavedArticlesScreen({super.key});
 
   Future<void> _removeBookmark(WidgetRef ref, BuildContext context, Article article) async {
-    // Get bookmark service from provider
-    final bookmarkService = ref.read(bookmarkServiceProvider);
-    final removed = await bookmarkService.removeBookmark(article.url);
+    // Use the bookmark notifier - it handles invalidation automatically
+    final notifier = ref.read(bookmarkNotifierProvider.notifier);
+    await notifier.removeArticleBookmark(article.url);
     
-    if (removed) {
-      // Refresh the bookmarked articles list to show updated data
-      ref.invalidate(bookmarkedArticlesProvider);
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Article removed from bookmarks'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Article removed from bookmarks'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 

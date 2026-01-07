@@ -14,7 +14,6 @@ final cancerArticlesProvider = FutureProvider<List<Article>>((ref) async {
   return await gNewsService.fetchCancerArticles(maxResults: DataLimits.newsArticlesDefault);
 });
 
-/// Survivor story provider
 final survivorStoryProvider = FutureProvider<Article?>((ref) async {
   final gNewsService = getIt<GNewsService>();
   final stories = await gNewsService.fetchCancerArticles(

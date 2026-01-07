@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cancerapp/providers/providers.dart';
 import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/models/journey_entry.dart';
 import 'package:cancerapp/models/treatment.dart';
@@ -7,51 +9,31 @@ import 'package:cancerapp/screens/journey/journey_setup_screen.dart';
 import 'package:cancerapp/screens/journey/add_entry_screen.dart';
 import 'package:cancerapp/screens/journey/add_treatment_screen.dart';
 import 'package:cancerapp/utils/theme.dart';
+import 'package:cancerapp/utils/service_locator.dart';
 
-class JourneyScreen extends StatefulWidget {
+class JourneyScreen extends ConsumerStatefulWidget {
   const JourneyScreen({super.key});
 
   @override
-  State<JourneyScreen> createState() => _JourneyScreenState();
+  ConsumerState<JourneyScreen> createState() => _JourneyScreenState();
 }
 
-class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+class _JourneyScreenState extends ConsumerState<JourneyScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   
-  final JourneyService _journeyService = JourneyService();
   late TabController _tabController;
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadJourneyData();
-    _journeyService.addListener(_onJourneyDataChanged);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _journeyService.removeListener(_onJourneyDataChanged);
     super.dispose();
-  }
-
-  void _onJourneyDataChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _loadJourneyData() async {
-    await _journeyService.initialize();
-    await _journeyService.checkCancerFreeMilestones();
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -59,45 +41,63 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     super.build(context);
     final topPadding = MediaQuery.of(context).padding.top;
     final isDark = AppTheme.isDarkMode(context);
+    
+    // Watch journey data from providers
+    final journeyStartedAsync = ref.watch(journeyStartedProvider);
+    final entriesAsync = ref.watch(journeyEntriesProvider);
+    final treatmentsAsync = ref.watch(journeyTreatmentsProvider);
+    final milestonesAsync = ref.watch(journeyMilestonesProvider);
+    final journeyService = getIt<JourneyService>();
 
     // Show setup screen if journey hasn't started (fallback for edge cases)
-    if (!_journeyService.journeyStarted) {
-      return const JourneySetupScreen();
-    }
+    return journeyStartedAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => const JourneySetupScreen(),
+      data: (journeyStarted) {
+        if (!journeyStarted) {
+          return const JourneySetupScreen();
+        }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBody: true,
-      body: Column(
-        children: [
-          // Fixed Header
-          Container(
-            padding: EdgeInsets.only(
-              top: topPadding + 12,
-              left: 20,
-              right: 20,
-              bottom: 8,
-            ),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFD81B60),
-                  Color(0xFFE91E63),
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        // Get data from providers
+        final entries = entriesAsync.value ?? [];
+        final treatments = treatmentsAsync.value ?? [];
+        final milestones = milestonesAsync.value ?? [];
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: true,
+          body: Column(
+            children: [
+              // Fixed Header
+              Container(
+                padding: EdgeInsets.only(
+                  top: topPadding + 12,
+                  left: 20,
+                  right: 20,
+                  bottom: 8,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFD81B60),
+                      Color(0xFFE91E63),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Row(
+                      children: [
+                        const Icon(
                       Icons.auto_graph,
                       color: Colors.white,
                       size: 28,
@@ -114,7 +114,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                       ),
                     ),
                     // Days cancer-free badge
-                    if (_journeyService.cancerFreeStartDate != null)
+                    if (journeyService.cancerFreeStartDate != null)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -131,7 +131,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${_journeyService.daysCancerFree} days free',
+                              '${journeyService.daysCancerFree} days free',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -194,10 +194,10 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildDashboardTab(isDark),
-                  _buildJournalTab(isDark),
-                  _buildTreatmentTab(isDark),
-                  _buildMilestonesTab(isDark),
+                  _buildDashboardTab(isDark, journeyService, entries, treatments, milestones),
+                  _buildJournalTab(isDark, journeyService, entries),
+                  _buildTreatmentTab(isDark, journeyService, treatments),
+                  _buildMilestonesTab(isDark, journeyService, milestones),
                 ],
               ),
             ),
@@ -243,6 +243,8 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
         ),
       ),
     );
+      },
+    );
   }
 
   void _showAddOptions(BuildContext context) {
@@ -287,7 +289,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AddEntryScreen()),
-                );
+                ).then((_) => ref.invalidate(journeyEntriesProvider));
               },
             ),
             const SizedBox(height: 12),
@@ -302,7 +304,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AddTreatmentScreen()),
-                );
+                ).then((_) => ref.invalidate(journeyTreatmentsProvider));
               },
             ),
             const SizedBox(height: 12),
@@ -420,7 +422,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           ElevatedButton(
             onPressed: () async {
               if (titleController.text.isNotEmpty) {
-                await _journeyService.addMilestone(Milestone(
+                await getIt<JourneyService>().addMilestone(Milestone(
                   id: '${DateTime.now().millisecondsSinceEpoch}_personal',
                   title: titleController.text,
                   description: descController.text.isEmpty 
@@ -429,6 +431,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                   type: MilestoneType.personal,
                   dateAchieved: DateTime.now(),
                 ));
+                ref.invalidate(journeyMilestonesProvider);
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -451,9 +454,8 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
   // Dashboard Tab
   // =====================
 
-  Widget _buildDashboardTab(bool isDark) {
-    final entries = _journeyService.entries;
-    final todayEntry = _journeyService.getEntryForDate(DateTime.now());
+  Widget _buildDashboardTab(bool isDark, JourneyService journeyService, List<JourneyEntry> entries, List<Treatment> treatments, List<Milestone> milestones) {
+    final todayEntry = journeyService.getEntryForDate(DateTime.now());
     
     return Container(
       color: AppTheme.getBackgroundColor(context),
@@ -470,7 +472,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                   isDark,
                   icon: Icons.local_fire_department,
                   iconColor: Colors.orange,
-                  title: '${_journeyService.currentStreak}',
+                  title: '${journeyService.currentStreak}',
                   subtitle: 'Day Streak',
                 ),
               ),
@@ -480,7 +482,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
                   isDark,
                   icon: Icons.emoji_events,
                   iconColor: Colors.amber,
-                  title: '${_journeyService.milestones.length}',
+                  title: '${milestones.length}',
                   subtitle: 'Milestones',
                 ),
               ),
@@ -511,15 +513,15 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           // Weekly Mood Overview
           _buildSectionHeader('Weekly Overview', isDark),
           const SizedBox(height: 12),
-          _buildWeeklyOverview(isDark),
+          _buildWeeklyOverview(isDark, journeyService),
 
           const SizedBox(height: 24),
 
           // Active Treatments
-          if (_journeyService.activeTreatments.isNotEmpty) ...[
+          if (journeyService.activeTreatments.isNotEmpty) ...[
             _buildSectionHeader('Active Treatments', isDark),
             const SizedBox(height: 12),
-            ..._journeyService.activeTreatments.take(2).map(
+            ...journeyService.activeTreatments.take(2).map(
               (t) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _buildTreatmentProgressCard(t, isDark),
@@ -529,10 +531,10 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           ],
 
           // Recent Milestones
-          if (_journeyService.milestones.isNotEmpty) ...[
+          if (milestones.isNotEmpty) ...[
             _buildSectionHeader('Recent Milestones', isDark),
             const SizedBox(height: 12),
-            ..._journeyService.milestones.take(3).map(
+            ...milestones.take(3).map(
               (m) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _buildMilestoneCard(m, isDark, compact: true),
@@ -750,8 +752,8 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildWeeklyOverview(bool isDark) {
-    final trendData = _journeyService.getMoodTrend(7);
+  Widget _buildWeeklyOverview(bool isDark, JourneyService journeyService) {
+    final trendData = journeyService.getMoodTrend(7);
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     
     return Container(
@@ -825,13 +827,13 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             children: [
               _buildOverviewStat(
                 'Avg Mood',
-                _journeyService.getAverageMood(7).toStringAsFixed(1),
+                journeyService.getAverageMood(7).toStringAsFixed(1),
                 '/5',
                 Colors.blue,
               ),
               _buildOverviewStat(
                 'Avg Pain',
-                _journeyService.getAveragePain(7).toStringAsFixed(1),
+                journeyService.getAveragePain(7).toStringAsFixed(1),
                 '/10',
                 Colors.orange,
               ),
@@ -910,9 +912,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
   // Journal Tab
   // =====================
 
-  Widget _buildJournalTab(bool isDark) {
-    final entries = _journeyService.entries;
-    
+  Widget _buildJournalTab(bool isDark, JourneyService journeyService, List<JourneyEntry> entries) {
     if (entries.isEmpty) {
       return Container(
         color: AppTheme.getBackgroundColor(context),
@@ -945,11 +945,12 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AddEntryScreen()),
                 );
+                ref.invalidate(journeyEntriesProvider);
               },
               icon: const Icon(Icons.add),
               label: const Text('Add First Entry'),
@@ -1119,9 +1120,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
   // Treatment Tab
   // =====================
 
-  Widget _buildTreatmentTab(bool isDark) {
-    final treatments = _journeyService.treatments;
-    
+  Widget _buildTreatmentTab(bool isDark, JourneyService journeyService, List<Treatment> treatments) {
     if (treatments.isEmpty) {
       return Container(
         color: AppTheme.getBackgroundColor(context),
@@ -1154,11 +1153,12 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AddTreatmentScreen()),
                 );
+                ref.invalidate(journeyTreatmentsProvider);
               },
               icon: const Icon(Icons.add),
               label: const Text('Add Treatment'),
@@ -1186,14 +1186,14 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
         final treatment = treatments[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: _buildTreatmentProgressCard(treatment, isDark),
+          child: _buildTreatmentProgressCard(treatment, isDark, journeyService),
         );
       },
       ),
     );
   }
 
-  Widget _buildTreatmentProgressCard(Treatment treatment, bool isDark) {
+  Widget _buildTreatmentProgressCard(Treatment treatment, bool isDark, [JourneyService? journeyService]) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1308,7 +1308,11 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _journeyService.incrementSession(treatment.id),
+                  onPressed: () async {
+                    final service = journeyService ?? getIt<JourneyService>();
+                    await service.incrementSession(treatment.id);
+                    ref.invalidate(journeyTreatmentsProvider);
+                  },
                   icon: const Icon(Icons.check, size: 18),
                   label: const Text('Complete Session'),
                   style: OutlinedButton.styleFrom(
@@ -1327,9 +1331,7 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
   // Milestones Tab
   // =====================
 
-  Widget _buildMilestonesTab(bool isDark) {
-    final milestones = _journeyService.milestones;
-    
+  Widget _buildMilestonesTab(bool isDark, JourneyService journeyService, List<Milestone> milestones) {
     if (milestones.isEmpty) {
       return Container(
         color: AppTheme.getBackgroundColor(context),
@@ -1454,11 +1456,15 @@ class _JourneyScreenState extends State<JourneyScreen> with SingleTickerProvider
           if (!milestone.isCelebrated && !compact)
             IconButton(
               icon: const Icon(Icons.celebration, color: Colors.amber),
-              onPressed: () {
-                _journeyService.celebrateMilestone(milestone.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('🎉 Celebrated!')),
-                );
+              onPressed: () async {
+                final service = getIt<JourneyService>();
+                await service.celebrateMilestone(milestone.id);
+                ref.invalidate(journeyMilestonesProvider);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('🎉 Celebrated!')),
+                  );
+                }
               },
             ),
         ],
