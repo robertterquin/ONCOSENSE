@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:cancerapp/services/journey_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/journey_entry.dart';
 import 'package:cancerapp/utils/theme.dart';
+import 'package:cancerapp/providers/providers.dart';
 
-class AddEntryScreen extends StatefulWidget {
+class AddEntryScreen extends ConsumerStatefulWidget {
   final JourneyEntry? existingEntry;
   
   const AddEntryScreen({super.key, this.existingEntry});
 
   @override
-  State<AddEntryScreen> createState() => _AddEntryScreenState();
+  ConsumerState<AddEntryScreen> createState() => _AddEntryScreenState();
 }
 
-class _AddEntryScreenState extends State<AddEntryScreen> {
-  final JourneyService _journeyService = JourneyService();
+class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _appointmentNotesController = TextEditingController();
   
@@ -70,9 +70,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       );
 
       if (widget.existingEntry != null) {
-        await _journeyService.updateEntry(entry);
+        await ref.read(journeyEntriesProvider.notifier).updateEntry(entry);
       } else {
-        await _journeyService.addEntry(entry);
+        await ref.read(journeyEntriesProvider.notifier).addEntry(entry);
       }
 
       if (mounted) {
