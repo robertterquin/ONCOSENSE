@@ -4,7 +4,6 @@ import 'package:cancerapp/utils/constants.dart';
 import 'package:cancerapp/utils/routes.dart';
 import 'package:cancerapp/services/supabase_service.dart';
 import 'package:cancerapp/services/journey_service.dart';
-import 'package:cancerapp/widgets/modern_back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/auth_button.dart';
 import 'widgets/input_field.dart';
@@ -132,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
                   children: [
-                    const ModernBackButtonLight(),
+                    const BackButton(color: Color(0xFFD81B60)),
                     const SizedBox(width: 12.0),
                     Text(
                       'Login',
