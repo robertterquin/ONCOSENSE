@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/widgets/custom_app_header.dart';
@@ -19,10 +20,23 @@ class _ForumScreenState extends ConsumerState<ForumScreen> with AutomaticKeepAli
   bool get wantKeepAlive => true;
   
   final _searchController = TextEditingController();
+  Timer? _updateTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Update time display every 10 seconds for responsive updates
+    _updateTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted) {
+        setState(() {}); // Rebuild to update relative times
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _updateTimer?.cancel();
     super.dispose();
   }
 
