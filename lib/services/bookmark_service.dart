@@ -1,33 +1,53 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cancerapp/models/article.dart';
 import 'package:cancerapp/models/question.dart';
 import 'package:cancerapp/models/resource.dart';
+import 'package:cancerapp/services/supabase_service.dart';
 
-/// Service for managing bookmarked articles, questions, and resources using local storage
+/// Service for managing bookmarked articles, questions, and resources using Supabase
+/// Data persists across sessions and devices for logged-in users
 class BookmarkService {
-  static const String _bookmarksKey = 'bookmarked_articles';
-  static const String _questionsKey = 'bookmarked_questions';
-  static const String _resourcesKey = 'bookmarked_resources';
+  final _supabase = SupabaseService();
 
-  /// Get all bookmarked articles
+  /// Get current user ID, returns null if not authenticated
+  String? get _currentUserId => _supabase.currentUser?.id;
+
+  /// Check if user is authenticated
+  bool get _isAuthenticated => _supabase.isAuthenticated;
+
+  // ==================== ARTICLE BOOKMARKS ====================
+
+  /// Get all bookmarked articles from Supabase
   Future<List<Article>> getBookmarkedArticles() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarksJson = prefs.getString(_bookmarksKey);
-      
-      if (bookmarksJson == null) {
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: User not authenticated, returning empty list');
         return [];
       }
 
-      final List<dynamic> bookmarksList = json.decode(bookmarksJson);
-      final articles = bookmarksList
-          .map((json) => Article.fromJson(json as Map<String, dynamic>))
-          .toList();
+      print('BookmarkService: Loading articles from Supabase...');
       
+      final response = await _supabase.client
+          .from('article_bookmarks')
+          .select()
+          .eq('user_id', _currentUserId!)
+          .order('created_at', ascending: false);
+
+      final articles = (response as List).map((data) {
+        return Article(
+          title: data['title'] ?? '',
+          description: data['description'] ?? '',
+          url: data['url'] ?? '',
+          imageUrl: data['image_url'],
+          publishedAt: data['published_at'] ?? '',
+          sourceName: data['source_name'] ?? 'Unknown',
+        );
+      }).toList();
+
+      print('BookmarkService: Loaded ${articles.length} articles from Supabase');
       return articles;
-    } catch (e) {
+    } catch (e, stack) {
       print('Error loading bookmarked articles: $e');
+      print('Stack trace: $stack');
       return [];
     }
   }
@@ -35,8 +55,16 @@ class BookmarkService {
   /// Check if an article is bookmarked
   Future<bool> isBookmarked(String articleUrl) async {
     try {
-      final bookmarks = await getBookmarkedArticles();
-      return bookmarks.any((article) => article.url == articleUrl);
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      final response = await _supabase.client
+          .from('article_bookmarks')
+          .select('id')
+          .eq('user_id', _currentUserId!)
+          .eq('url', articleUrl)
+          .maybeSingle();
+
+      return response != null;
     } catch (e) {
       print('Error checking bookmark status: $e');
       return false;
@@ -46,26 +74,32 @@ class BookmarkService {
   /// Add an article to bookmarks
   Future<bool> addBookmark(Article article) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedArticles();
-      
-      // Check if already bookmarked
-      if (bookmarks.any((a) => a.url == article.url)) {
-        return false; // Already bookmarked
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: Cannot bookmark - user not authenticated');
+        return false;
       }
 
-      // Add to bookmarks
-      bookmarks.insert(0, article); // Add at the beginning
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((a) => a.toJson()).toList(),
-      );
-      await prefs.setString(_bookmarksKey, bookmarksJson);
-      
+      // Check if already bookmarked
+      if (await isBookmarked(article.url)) {
+        print('BookmarkService: Article already bookmarked');
+        return false;
+      }
+
+      await _supabase.client.from('article_bookmarks').insert({
+        'user_id': _currentUserId,
+        'title': article.title,
+        'description': article.description,
+        'url': article.url,
+        'image_url': article.imageUrl,
+        'published_at': article.publishedAt,
+        'source_name': article.sourceName,
+      });
+
+      print('BookmarkService: Article bookmarked successfully');
       return true;
-    } catch (e) {
+    } catch (e, stack) {
       print('Error adding bookmark: $e');
+      print('Stack trace: $stack');
       return false;
     }
   }
@@ -73,18 +107,15 @@ class BookmarkService {
   /// Remove an article from bookmarks
   Future<bool> removeBookmark(String articleUrl) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedArticles();
-      
-      // Remove the article
-      bookmarks.removeWhere((article) => article.url == articleUrl);
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((a) => a.toJson()).toList(),
-      );
-      await prefs.setString(_bookmarksKey, bookmarksJson);
-      
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      await _supabase.client
+          .from('article_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!)
+          .eq('url', articleUrl);
+
+      print('BookmarkService: Article removed from bookmarks');
       return true;
     } catch (e) {
       print('Error removing bookmark: $e');
@@ -105,11 +136,15 @@ class BookmarkService {
     }
   }
 
-  /// Clear all bookmarks
+  /// Clear all article bookmarks
   Future<void> clearAllBookmarks() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_bookmarksKey);
+      if (!_isAuthenticated || _currentUserId == null) return;
+
+      await _supabase.client
+          .from('article_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!);
     } catch (e) {
       print('Error clearing bookmarks: $e');
     }
@@ -123,22 +158,46 @@ class BookmarkService {
 
   // ==================== QUESTION BOOKMARKS ====================
 
-  /// Get all bookmarked questions
+  /// Get all bookmarked questions from Supabase
   Future<List<Question>> getBookmarkedQuestions() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final questionsJson = prefs.getString(_questionsKey);
-      
-      if (questionsJson == null) {
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: User not authenticated, returning empty list');
         return [];
       }
 
-      final List<dynamic> questionsList = json.decode(questionsJson);
-      return questionsList
-          .map((json) => Question.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
+      print('BookmarkService: Loading questions from Supabase...');
+
+      final response = await _supabase.client
+          .from('question_bookmarks')
+          .select()
+          .eq('user_id', _currentUserId!)
+          .order('created_at', ascending: false);
+
+      final questions = (response as List).map((data) {
+        return Question(
+          id: data['question_id'] ?? '',
+          title: data['title'] ?? '',
+          content: data['content'] ?? '',
+          category: data['category'] ?? '',
+          userId: data['question_user_id'] ?? '',
+          userName: data['question_user_name'],
+          profilePictureUrl: data['profile_picture_url'],
+          isAnonymous: data['is_anonymous'] ?? false,
+          upvotes: data['upvotes'] ?? 0,
+          answerCount: data['answer_count'] ?? 0,
+          createdAt: DateTime.parse(data['question_created_at']),
+          updatedAt: DateTime.parse(data['question_updated_at']),
+          isResolved: data['is_resolved'] ?? false,
+          tags: data['tags'] != null ? List<String>.from(data['tags']) : [],
+        );
+      }).toList();
+
+      print('BookmarkService: Loaded ${questions.length} questions from Supabase');
+      return questions;
+    } catch (e, stack) {
       print('Error loading bookmarked questions: $e');
+      print('Stack trace: $stack');
       return [];
     }
   }
@@ -146,8 +205,16 @@ class BookmarkService {
   /// Check if a question is bookmarked
   Future<bool> isQuestionBookmarked(String questionId) async {
     try {
-      final bookmarks = await getBookmarkedQuestions();
-      return bookmarks.any((question) => question.id == questionId);
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      final response = await _supabase.client
+          .from('question_bookmarks')
+          .select('id')
+          .eq('user_id', _currentUserId!)
+          .eq('question_id', questionId)
+          .maybeSingle();
+
+      return response != null;
     } catch (e) {
       print('Error checking question bookmark status: $e');
       return false;
@@ -157,26 +224,40 @@ class BookmarkService {
   /// Add a question to bookmarks
   Future<bool> addQuestionBookmark(Question question) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedQuestions();
-      
-      // Check if already bookmarked
-      if (bookmarks.any((q) => q.id == question.id)) {
-        return false; // Already bookmarked
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: Cannot bookmark - user not authenticated');
+        return false;
       }
 
-      // Add to bookmarks
-      bookmarks.insert(0, question); // Add at the beginning
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((q) => q.toJson()).toList(),
-      );
-      await prefs.setString(_questionsKey, bookmarksJson);
-      
+      // Check if already bookmarked
+      if (await isQuestionBookmarked(question.id)) {
+        print('BookmarkService: Question already bookmarked');
+        return false;
+      }
+
+      await _supabase.client.from('question_bookmarks').insert({
+        'user_id': _currentUserId,
+        'question_id': question.id,
+        'title': question.title,
+        'content': question.content,
+        'category': question.category,
+        'question_user_id': question.userId,
+        'question_user_name': question.userName,
+        'profile_picture_url': question.profilePictureUrl,
+        'is_anonymous': question.isAnonymous,
+        'upvotes': question.upvotes,
+        'answer_count': question.answerCount,
+        'question_created_at': question.createdAt.toIso8601String(),
+        'question_updated_at': question.updatedAt.toIso8601String(),
+        'is_resolved': question.isResolved,
+        'tags': question.tags,
+      });
+
+      print('BookmarkService: Question bookmarked successfully');
       return true;
-    } catch (e) {
+    } catch (e, stack) {
       print('Error adding question bookmark: $e');
+      print('Stack trace: $stack');
       return false;
     }
   }
@@ -184,18 +265,15 @@ class BookmarkService {
   /// Remove a question from bookmarks
   Future<bool> removeQuestionBookmark(String questionId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedQuestions();
-      
-      // Remove the question
-      bookmarks.removeWhere((question) => question.id == questionId);
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((q) => q.toJson()).toList(),
-      );
-      await prefs.setString(_questionsKey, bookmarksJson);
-      
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      await _supabase.client
+          .from('question_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!)
+          .eq('question_id', questionId);
+
+      print('BookmarkService: Question removed from bookmarks');
       return true;
     } catch (e) {
       print('Error removing question bookmark: $e');
@@ -219,8 +297,12 @@ class BookmarkService {
   /// Clear all question bookmarks
   Future<void> clearAllQuestionBookmarks() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_questionsKey);
+      if (!_isAuthenticated || _currentUserId == null) return;
+
+      await _supabase.client
+          .from('question_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!);
     } catch (e) {
       print('Error clearing question bookmarks: $e');
     }
@@ -234,22 +316,46 @@ class BookmarkService {
 
   // ==================== RESOURCE BOOKMARKS ====================
 
-  /// Get all bookmarked resources
+  /// Get all bookmarked resources from Supabase
   Future<List<Resource>> getBookmarkedResources() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final resourcesJson = prefs.getString(_resourcesKey);
-      
-      if (resourcesJson == null) {
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: User not authenticated, returning empty list');
         return [];
       }
 
-      final List<dynamic> resourcesList = json.decode(resourcesJson);
-      return resourcesList
-          .map((json) => Resource.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
+      print('BookmarkService: Loading resources from Supabase...');
+
+      final response = await _supabase.client
+          .from('resource_bookmarks')
+          .select()
+          .eq('user_id', _currentUserId!)
+          .order('created_at', ascending: false);
+
+      final resources = (response as List).map((data) {
+        return Resource(
+          id: data['resource_id'] ?? '',
+          name: data['name'] ?? '',
+          type: data['type'] ?? '',
+          description: data['description'] ?? '',
+          phone: data['phone'],
+          location: data['location'],
+          address: data['address'],
+          website: data['website'],
+          email: data['email'],
+          isVerified: data['is_verified'] ?? false,
+          isActive: data['is_active'] ?? true,
+          createdAt: data['resource_created_at'] != null
+              ? DateTime.parse(data['resource_created_at'])
+              : DateTime.now(),
+        );
+      }).toList();
+
+      print('BookmarkService: Loaded ${resources.length} resources from Supabase');
+      return resources;
+    } catch (e, stack) {
       print('Error loading bookmarked resources: $e');
+      print('Stack trace: $stack');
       return [];
     }
   }
@@ -257,8 +363,16 @@ class BookmarkService {
   /// Check if a resource is bookmarked
   Future<bool> isResourceBookmarked(String resourceId) async {
     try {
-      final bookmarks = await getBookmarkedResources();
-      return bookmarks.any((resource) => resource.id == resourceId);
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      final response = await _supabase.client
+          .from('resource_bookmarks')
+          .select('id')
+          .eq('user_id', _currentUserId!)
+          .eq('resource_id', resourceId)
+          .maybeSingle();
+
+      return response != null;
     } catch (e) {
       print('Error checking resource bookmark status: $e');
       return false;
@@ -268,26 +382,38 @@ class BookmarkService {
   /// Add a resource to bookmarks
   Future<bool> addResourceBookmark(Resource resource) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedResources();
-      
-      // Check if already bookmarked
-      if (bookmarks.any((r) => r.id == resource.id)) {
-        return false; // Already bookmarked
+      if (!_isAuthenticated || _currentUserId == null) {
+        print('BookmarkService: Cannot bookmark - user not authenticated');
+        return false;
       }
 
-      // Add to bookmarks
-      bookmarks.insert(0, resource); // Add at the beginning
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((r) => r.toJson()).toList(),
-      );
-      await prefs.setString(_resourcesKey, bookmarksJson);
-      
+      // Check if already bookmarked
+      if (await isResourceBookmarked(resource.id)) {
+        print('BookmarkService: Resource already bookmarked');
+        return false;
+      }
+
+      await _supabase.client.from('resource_bookmarks').insert({
+        'user_id': _currentUserId,
+        'resource_id': resource.id,
+        'name': resource.name,
+        'type': resource.type,
+        'description': resource.description,
+        'phone': resource.phone,
+        'location': resource.location,
+        'address': resource.address,
+        'website': resource.website,
+        'email': resource.email,
+        'is_verified': resource.isVerified,
+        'is_active': resource.isActive,
+        'resource_created_at': resource.createdAt.toIso8601String(),
+      });
+
+      print('BookmarkService: Resource bookmarked successfully');
       return true;
-    } catch (e) {
+    } catch (e, stack) {
       print('Error adding resource bookmark: $e');
+      print('Stack trace: $stack');
       return false;
     }
   }
@@ -295,18 +421,15 @@ class BookmarkService {
   /// Remove a resource from bookmarks
   Future<bool> removeResourceBookmark(String resourceId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final bookmarks = await getBookmarkedResources();
-      
-      // Remove the resource
-      bookmarks.removeWhere((resource) => resource.id == resourceId);
-      
-      // Save to storage
-      final bookmarksJson = json.encode(
-        bookmarks.map((r) => r.toJson()).toList(),
-      );
-      await prefs.setString(_resourcesKey, bookmarksJson);
-      
+      if (!_isAuthenticated || _currentUserId == null) return false;
+
+      await _supabase.client
+          .from('resource_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!)
+          .eq('resource_id', resourceId);
+
+      print('BookmarkService: Resource removed from bookmarks');
       return true;
     } catch (e) {
       print('Error removing resource bookmark: $e');
@@ -330,8 +453,12 @@ class BookmarkService {
   /// Clear all resource bookmarks
   Future<void> clearAllResourceBookmarks() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_resourcesKey);
+      if (!_isAuthenticated || _currentUserId == null) return;
+
+      await _supabase.client
+          .from('resource_bookmarks')
+          .delete()
+          .eq('user_id', _currentUserId!);
     } catch (e) {
       print('Error clearing resource bookmarks: $e');
     }
@@ -341,5 +468,15 @@ class BookmarkService {
   Future<int> getResourceBookmarkCount() async {
     final bookmarks = await getBookmarkedResources();
     return bookmarks.length;
+  }
+
+  // ==================== UTILITIES ====================
+
+  /// Get total bookmark count (articles + questions + resources)
+  Future<int> getTotalBookmarkCount() async {
+    final articles = await getBookmarkCount();
+    final questions = await getQuestionBookmarkCount();
+    final resources = await getResourceBookmarkCount();
+    return articles + questions + resources;
   }
 }
