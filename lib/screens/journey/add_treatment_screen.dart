@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cancerapp/services/journey_service.dart';
 import 'package:cancerapp/models/treatment.dart';
 import 'package:cancerapp/utils/theme.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
 
 class AddTreatmentScreen extends StatefulWidget {
   const AddTreatmentScreen({super.key});
@@ -106,36 +107,38 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
     
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      appBar: AppBar(
-        title: const Text('Add Treatment'),
-        backgroundColor: const Color(0xFFD81B60),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Treatment Type Section
-            _buildSection(
-              isDark,
-              title: 'Treatment Type',
-              icon: Icons.medical_services,
-              child: _buildTreatmentTypeSelector(isDark),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Treatment Name Section
-            _buildSection(
-              isDark,
-              title: 'Treatment Name',
-              icon: Icons.label,
-              child: _buildNameField(isDark),
-            ),
-            
-            const SizedBox(height: 24),
+      body: CustomScrollView(
+        slivers: [
+          const CustomAppHeader(
+            title: 'Add Treatment',
+            subtitle: 'Track your treatment journey',
+            showBackButton: true,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Treatment Type Section
+                  _buildSection(
+                    isDark,
+                    title: 'Treatment Type',
+                    icon: Icons.medical_services,
+                    child: _buildTreatmentTypeSelector(isDark),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Treatment Name Section
+                  _buildSection(
+                    isDark,
+                    title: 'Treatment Name',
+                    icon: Icons.label,
+                    child: _buildNameField(isDark),
+                  ),
+                  
+                  const SizedBox(height: 24),
             
             // Start Date Section
             _buildSection(
@@ -182,41 +185,44 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
             
             const SizedBox(height: 32),
             
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _saveTreatment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD81B60),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Add Treatment',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Save Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveTreatment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD81B60),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'Add Treatment',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-            
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

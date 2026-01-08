@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cancerapp/models/journey_entry.dart';
 import 'package:cancerapp/utils/theme.dart';
 import 'package:cancerapp/providers/providers.dart';
+import 'package:cancerapp/widgets/custom_app_header.dart';
 
 class AddEntryScreen extends ConsumerStatefulWidget {
   final JourneyEntry? existingEntry;
@@ -110,45 +111,47 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      appBar: AppBar(
-        title: Text(widget.existingEntry != null ? 'Edit Entry' : 'Daily Check-in'),
-        backgroundColor: const Color(0xFFD81B60),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mood Section
-            _buildSection(
-              isDark,
-              title: 'How are you feeling today?',
-              icon: Icons.sentiment_satisfied_alt,
-              child: _buildMoodSelector(isDark),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Pain Level Section
-            _buildSection(
-              isDark,
-              title: 'Pain Level',
-              icon: Icons.healing,
-              child: _buildSlider(
-                isDark,
-                value: _painLevel,
-                max: 10,
-                color: _getPainColor(_painLevel),
-                label: _painLevel == 0 
-                    ? 'No pain' 
-                    : '$_painLevel/10 ${_getPainLabel(_painLevel)}',
-                onChanged: (value) => setState(() => _painLevel = value.round()),
-              ),
-            ),
-            
-            const SizedBox(height: 24),
+      body: CustomScrollView(
+        slivers: [
+          CustomAppHeader(
+            title: widget.existingEntry != null ? 'Edit Entry' : 'Daily Check-in',
+            subtitle: widget.existingEntry != null ? 'Update your health status' : 'Track your daily wellness',
+            showBackButton: true,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Mood Section
+                  _buildSection(
+                    isDark,
+                    title: 'How are you feeling today?',
+                    icon: Icons.sentiment_satisfied_alt,
+                    child: _buildMoodSelector(isDark),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Pain Level Section
+                  _buildSection(
+                    isDark,
+                    title: 'Pain Level',
+                    icon: Icons.healing,
+                    child: _buildSlider(
+                      isDark,
+                      value: _painLevel,
+                      max: 10,
+                      color: _getPainColor(_painLevel),
+                      label: _painLevel == 0 
+                          ? 'No pain' 
+                          : '$_painLevel/10 ${_getPainLabel(_painLevel)}',
+                      onChanged: (value) => setState(() => _painLevel = value.round()),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
             
             // Energy Level Section
             _buildSection(
@@ -207,41 +210,44 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
             
             const SizedBox(height: 32),
             
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _saveEntry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD81B60),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        widget.existingEntry != null ? 'Update Entry' : 'Save Entry',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Save Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveEntry,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD81B60),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(Colors.white),
+                              ),
+                            )
+                          : Text(
+                              widget.existingEntry != null ? 'Update Entry' : 'Save Entry',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-            
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
