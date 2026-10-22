@@ -19,7 +19,7 @@ Expo Router maps files under `mobile/src/app/` to routes. `(auth)` and `(tabs)` 
 | `main_navigation.dart` | 138 | `/home` (6 bottom tabs) | `(tabs)/_layout.tsx` | 3 |
 | `home/home_screen.dart` | 1398 | Tab: Home | `(tabs)/home.tsx` | 4 |
 | `cancer_info/cancer_info_screen.dart` | 444 | Tab: Info | `(tabs)/info.tsx` | 4 |
-| `cancer_info/cancer_detail_screen.dart` | 324 | Push from Info / itself | `cancer/[id].tsx` | 4 |
+| `cancer_info/cancer_detail_screen.dart` | 324 | Push from Info | `cancer/[id].tsx` | 4 |
 | `prevention/prevention_screen.dart` | 693 | Tab: Prevention | `(tabs)/prevention.tsx` | 4 |
 | `forum/forum_screen.dart` | 507 | Tab: Forum | `(tabs)/forum.tsx` | 4 |
 | `forum/ask_question_screen.dart` | 346 | Push from Forum | `forum/ask.tsx` | 4 |
@@ -31,7 +31,7 @@ Expo Router maps files under `mobile/src/app/` to routes. `(auth)` and `(tabs)` 
 | `journey/journey_setup_screen.dart` | 690 | Push from Journey | `journey/setup.tsx` | 5 |
 | `journey/add_entry_screen.dart` | 631 | Push from Journey | `journey/add-entry.tsx` | 5 |
 | `journey/add_treatment_screen.dart` | 622 | Push from Journey | `journey/add-treatment.tsx` | 5 |
-| `profile/profile_screen.dart` | 731 | Push from Home | `profile/index.tsx` | 5 |
+| `profile/profile_screen.dart` | 731 | Push from Home (avatar) | `profile/index.tsx` | 5 |
 | `profile/edit_profile_screen.dart` | 739 | Push from Profile | `profile/edit.tsx` | 5 |
 | `profile/settings_screen.dart` | 1142 | `/settings`, push from Profile | `profile/settings.tsx` | 5 |
 | `profile/change_password_screen.dart` | 335 | `/change-password` | `profile/change-password.tsx` | 5 |

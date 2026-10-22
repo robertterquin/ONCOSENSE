@@ -33,9 +33,21 @@ export function useQuestions(filters: QuestionFilters = {}) {
 }
 
 export function useQuestion(questionId: string) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: queryKeys.question(questionId),
     queryFn: () => fetchQuestion(questionId),
+    // Opened from a list: show that copy instantly, then refresh (Flutter's initialQuestion).
+    initialData: () => {
+      for (const [, list] of queryClient.getQueriesData<Question[]>({
+        queryKey: queryKeys.allQuestions,
+      })) {
+        const found = list?.find((question) => question.id === questionId);
+        if (found) return found;
+      }
+      return undefined;
+    },
+    initialDataUpdatedAt: 0,
   });
 }
 

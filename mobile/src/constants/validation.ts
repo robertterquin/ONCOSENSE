@@ -127,3 +127,23 @@ export type RegisterForm = z.input<typeof registerSchema>;
 
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 export type ForgotPasswordForm = z.input<typeof forgotPasswordSchema>;
+
+// ---- Forum ----
+
+export const askQuestionSchema = z.object({
+  category: z.string(),
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Please enter a title')
+    .min(10, 'Title must be at least 10 characters')
+    .max(200, 'Title must be 200 characters or less'),
+  content: z
+    .string()
+    .trim()
+    .min(1, 'Please provide details')
+    .min(20, 'Details must be at least 20 characters')
+    .max(2000, 'Details must be 2000 characters or less'),
+  isAnonymous: z.boolean(),
+});
+export type AskQuestionForm = z.input<typeof askQuestionSchema>;

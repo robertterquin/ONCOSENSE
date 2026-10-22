@@ -49,7 +49,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | In progress |
 | 2 | Foundation (types, services, state, theme) | [03-phase-2-foundation.md](03-phase-2-foundation.md) | 1–2 weeks | Done (write paths verified in Phase 3) |
 | 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Done (real sign-in to verify) |
-| 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Not started |
+| 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Done (signed-in actions to verify) |
 | 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Not started |
 | 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Not started |
 | 7 | QA, parity check & release | [08-phase-7-qa-release.md](08-phase-7-qa-release.md) | 1–2 weeks | Not started |
@@ -105,6 +105,8 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-23 | Keep Flutter's "Continue as Guest": guests can open the tabs until the app is closed | Existing behavior; screens that need an account handle signed-out users | — |
 | 2026-10-23 | Home tab route is `/home` (not `/`); `/` is the launch redirect | Matches Flutter's `/home` route and avoids two screens at `/` | — |
 | 2026-10-23 | No extra 3-second animated splash; the native splash shows until fonts and session are ready | Faster start; same logo-on-white look | — |
+| 2026-10-23 | Forum filters as chips; dead Home buttons removed; "Learn More" opens Info; readable article dates; guests asked to sign in when bookmarking | Small UX fixes where Flutter had no-op buttons or silent failures (details in Phase 4 doc) | — |
+| 2026-10-23 | Sign-out lives on the Profile placeholder (reached from the Home avatar) until Phase 5 | Home now shows real content | — |
 | 2026-10-23 | Replaces the 2026-10-22 `react-native-migration` branch decision: each phase branch merges straight into `main` and is deleted; the `react-native-migration` branch is removed | Simpler; no long-lived branch to keep in sync. Safe because `mobile/` is separate from the Flutter code | Robert |
 | 2026-10-23 | `react-hook-form` / `zod` / `@hookform/resolvers` installed in Phase 3, not Phase 1 | `@hookform/resolvers` 6 has a peer-dependency conflict today; forms aren't needed until Phase 3 | — |
 | _pending_ | Port the unused forum/resource notification methods, or drop them | See Phase 6 | — |
