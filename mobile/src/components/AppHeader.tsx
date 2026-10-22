@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,6 +16,10 @@ type AppHeaderProps = {
   showBackButton?: boolean;
   /** Defaults to going back one screen. */
   onBackPress?: () => void;
+  /** Buttons on the right (Home's notifications and profile). */
+  right?: ReactNode;
+  /** Title size; Home's greeting is slightly smaller (18). */
+  titleSize?: number;
 };
 
 /** Pink gradient header with rounded bottom corners (port of CustomAppHeader). */
@@ -23,6 +28,8 @@ export function AppHeader({
   subtitle,
   showBackButton = false,
   onBackPress,
+  right,
+  titleSize = 20,
 }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
 
@@ -39,7 +46,7 @@ export function AppHeader({
           name="favorite"
           size={40}
           color="rgba(255, 255, 255, 0.15)"
-          style={[styles.heart, { top: insets.top + 10 }]}
+          style={[styles.heart, { top: insets.top + 10, right: right ? 70 : 20 }]}
         />
 
         <View style={styles.row}>
@@ -57,7 +64,7 @@ export function AppHeader({
               variant="titleLarge"
               color={brand.white}
               numberOfLines={1}
-              style={styles.title}>
+              style={[styles.title, { fontSize: titleSize }]}>
               {title}
             </AppText>
             <AppText
@@ -69,6 +76,7 @@ export function AppHeader({
             </AppText>
             <View style={styles.accentLine} />
           </View>
+          {right}
         </View>
       </LinearGradient>
     </View>
@@ -111,7 +119,6 @@ const styles = StyleSheet.create({
   },
   heart: {
     position: 'absolute',
-    right: 20,
   },
   row: {
     flexDirection: 'row',
@@ -132,7 +139,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 20,
     letterSpacing: 0.5,
   },
   subtitle: {

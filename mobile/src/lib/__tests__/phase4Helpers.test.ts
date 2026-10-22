@@ -1,0 +1,60 @@
+import { withAlpha } from '@/components/home/HealthReminderCard';
+import { awarenessForMonth } from '@/components/home/TipAndAwareness';
+import { resolveMaterialIconName } from '@/components/MaterialIcon';
+import { askQuestionSchema } from '@/constants/validation';
+import { cancerTypeIcon } from '@/lib/cancerIcons';
+
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+
+describe('cancerTypeIcon', () => {
+  it('matches the Flutter Info screen rules', () => {
+    expect(cancerTypeIcon('Breast Cancer')).toBe('favorite');
+    expect(cancerTypeIcon('Non-Hodgkin Lymphoma')).toBe('bloodtype');
+    expect(cancerTypeIcon('Cervical Cancer')).toBe('woman');
+    expect(cancerTypeIcon('Something Rare')).toBe('medical_information');
+  });
+});
+
+describe('resolveMaterialIconName', () => {
+  it('converts Flutter names and falls back from outlined variants', () => {
+    expect(resolveMaterialIconName('water_drop')).toBe('water-drop');
+    expect(resolveMaterialIconName('restaurant_outlined')).toBe('restaurant');
+    expect(resolveMaterialIconName('warning_amber_rounded')).toBe('warning-amber');
+    expect(resolveMaterialIconName('not_an_icon')).toBeNull();
+  });
+});
+
+describe('home helpers', () => {
+  it('adds alpha to hex colors', () => {
+    expect(withAlpha('2196F3', 0.2)).toBe('#2196F333');
+    expect(withAlpha('#4CAF50', 1)).toBe('#4CAF50ff');
+  });
+
+  it('picks the awareness month', () => {
+    expect(awarenessForMonth(new Date(2026, 9, 1)).title).toBe('Breast Cancer');
+    expect(awarenessForMonth(new Date(2026, 0, 31)).month).toBe('January');
+  });
+});
+
+describe('askQuestionSchema', () => {
+  const base = { category: 'Symptoms', isAnonymous: false };
+  const firstError = (form: object) => {
+    const result = askQuestionSchema.safeParse({ ...base, ...form });
+    return result.success ? null : result.error.issues.map((issue) => issue.message);
+  };
+
+  it('requires a 10+ character title and 20+ character details', () => {
+    expect(firstError({ title: '', content: '' })).toEqual([
+      'Please enter a title',
+      'Title must be at least 10 characters',
+      'Please provide details',
+      'Details must be at least 20 characters',
+    ]);
+    expect(firstError({ title: 'Short one', content: 'x'.repeat(20) })).toEqual([
+      'Title must be at least 10 characters',
+    ]);
+    expect(
+      firstError({ title: 'A good question?', content: 'Enough detail to help others.' }),
+    ).toBeNull();
+  });
+});

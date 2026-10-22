@@ -13,6 +13,9 @@ import { brand } from '@/theme/colors';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
+/** Extra bottom space on tab screens so content clears the floating tab bar. */
+export const TAB_BAR_CLEARANCE = 100;
+
 type ScreenProps = {
   children: ReactNode;
   /** Rendered above the content, outside the scroll view (e.g. `AppHeader`). */
@@ -22,6 +25,10 @@ type ScreenProps = {
   /** Pull-to-refresh handler (scrolling screens only). */
   onRefresh?: () => void;
   refreshing?: boolean;
+  /** `surface` (white in light mode) or the default light-gray `background`. */
+  background?: 'background' | 'surface';
+  /** Set on tab screens to keep content clear of the floating tab bar. */
+  inTabs?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
 };
 
@@ -32,19 +39,22 @@ export function Screen({
   scroll = true,
   onRefresh,
   refreshing = false,
+  background = 'background',
+  inTabs = false,
   contentStyle,
 }: ScreenProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const topInset = header ? 0 : insets.top;
+  const bottom = (inTabs ? TAB_BAR_CLEARANCE : spacing.large) + insets.bottom;
   const padding = [styles.content, { paddingTop: spacing.medium + topInset }, contentStyle];
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors[background] }]}>
       {header}
       {scroll ? (
         <ScrollView
-          contentContainerStyle={[padding, { paddingBottom: spacing.large + insets.bottom }]}
+          contentContainerStyle={[padding, { paddingBottom: bottom }]}
           keyboardShouldPersistTaps="handled"
           refreshControl={
             onRefresh ? (
@@ -59,7 +69,7 @@ export function Screen({
           {children}
         </ScrollView>
       ) : (
-        <View style={[padding, styles.fill, { paddingBottom: insets.bottom }]}>{children}</View>
+        <View style={[padding, styles.fill, { paddingBottom: bottom }]}>{children}</View>
       )}
     </View>
   );

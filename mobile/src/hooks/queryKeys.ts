@@ -11,6 +11,7 @@ export const queryKeys = {
 
   preventionTips: ['prevention', 'tips'] as const,
   selfCheckGuides: ['prevention', 'guides'] as const,
+  selfCheckGuide: (id: string) => ['prevention', 'guide', id] as const,
 
   resourcesByCategory: ['resources', 'byCategory'] as const,
   resourcesByType: (type: ResourceType) => ['resources', 'type', type] as const,
