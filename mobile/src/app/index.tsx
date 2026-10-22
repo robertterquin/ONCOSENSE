@@ -1,16 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
+import { Link } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listCancerTypeNames } from '@/api/cancerInfo';
+import { fetchAllCancerTypes } from '@/api/cancerInfo';
 
 // Temporary Phase 1 screen: proves the app runs and can reach Supabase.
 // Replaced by the launch redirect in Phase 3.
 export default function SetupCheckScreen() {
   const { data, error, isPending } = useQuery({
     queryKey: ['setup-check', 'cancer-types'],
-    queryFn: () => listCancerTypeNames(5),
+    queryFn: async () => (await fetchAllCancerTypes()).slice(0, 5).map((type) => type.name),
   });
 
   return (
@@ -34,6 +35,12 @@ export default function SetupCheckScreen() {
           </>
         )}
       </View>
+
+      {__DEV__ && (
+        <Link href="/dev/components" style={styles.link}>
+          Open component gallery
+        </Link>
+      )}
     </SafeAreaView>
   );
 }
@@ -82,5 +89,10 @@ const styles = StyleSheet.create({
   },
   item: {
     color: '#212121',
+  },
+  link: {
+    marginTop: 16,
+    color: '#E91E63',
+    fontWeight: '600',
   },
 });

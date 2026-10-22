@@ -37,7 +37,7 @@ Rule: screens in `src/app/` call hooks; hooks call `src/api`; only `src/api` tal
 
 ### 1.3 Configuration
 
-- [x] `app.json`: name `OncoSense`, slug `oncosense`, `scheme: "oncosense"`, `android.package` and `ios.bundleIdentifier` `com.oncosense.app`, icon and splash from `assets/images/logo.png` (copy of `oncosense_logoo.png`), splash background `#FFFFFF`, Poppins via the `expo-font` plugin.
+- [x] `app.json`: name `OncoSense`, slug `oncosense`, `scheme: "oncosense"`, `android.package` and `ios.bundleIdentifier` `com.oncosense.app`, icon and splash from `assets/images/logo.png` (copy of `oncosense_logoo.png`), splash background `#FFFFFF`. (Fonts: Phase 2 replaced the bundled Poppins file with `@expo-google-fonts/poppins`.)
 - [x] `tsconfig.json`: `"strict": true`, the `@/*` → `src/*` path alias, and `"types": ["jest"]` (TypeScript 6 no longer includes `@types/*` automatically).
 - [x] `.env.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Only the Supabase **anon** key goes here — it's designed to be public; RLS protects data. No other secrets in the app.
 - [x] `mobile/.env` filled in from the Flutter app's root `.env` and git-ignored.

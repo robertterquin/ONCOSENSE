@@ -1,16 +1,29 @@
 import { supabase } from '@/lib/supabase';
+import { cancerTypeFromRow, type CancerType } from '@/types/cancerType';
 
-// Phase 1 connection check only. The full port of
-// lib/services/cancer_info_service.dart replaces this in Phase 2.
-export async function listCancerTypeNames(limit = 5): Promise<string[]> {
+import { check } from './errors';
+
+// Port of lib/services/cancer_info_service.dart
+
+export async function fetchAllCancerTypes(): Promise<CancerType[]> {
+  const { data, error } = await supabase.from('cancer_types').select().order('name');
+  check(error, 'Failed to fetch cancer types');
+  return (data ?? []).map(cancerTypeFromRow);
+}
+
+export async function fetchCancerTypeById(id: string): Promise<CancerType> {
+  const { data, error } = await supabase.from('cancer_types').select().eq('id', id).single();
+  check(error, 'Failed to fetch cancer type');
+  return cancerTypeFromRow(data);
+}
+
+export async function searchCancerTypes(query: string): Promise<CancerType[]> {
+  if (!query) return fetchAllCancerTypes();
   const { data, error } = await supabase
     .from('cancer_types')
-    .select('name')
-    .order('name')
-    .limit(limit);
-
-  if (error) {
-    throw new Error(`Failed to load cancer types: ${error.message}`);
-  }
-  return data.map((row) => row.name as string);
+    .select()
+    .ilike('name', `%${query}%`)
+    .order('name');
+  check(error, 'Failed to search cancer types');
+  return (data ?? []).map(cancerTypeFromRow);
 }
