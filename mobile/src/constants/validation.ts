@@ -52,3 +52,78 @@ export const ageSchema = z
     const age = Number(value);
     return age >= MIN_AGE && age <= MAX_AGE;
   }, AGE_RANGE_MESSAGE);
+
+/** Rules for new passwords, shown as a checklist on the register screen (same as Flutter). */
+export const PASSWORD_REQUIREMENTS = [
+  {
+    label: 'At least 8 characters',
+    message: 'Password must be at least 8 characters',
+    test: (password: string) => password.length >= 8,
+  },
+  {
+    label: 'One uppercase letter',
+    message: 'Password must contain at least one uppercase letter',
+    test: (password: string) => /[A-Z]/.test(password),
+  },
+  {
+    label: 'One lowercase letter',
+    message: 'Password must contain at least one lowercase letter',
+    test: (password: string) => /[a-z]/.test(password),
+  },
+  {
+    label: 'One number',
+    message: 'Password must contain at least one number',
+    test: (password: string) => /[0-9]/.test(password),
+  },
+  {
+    label: 'One special character',
+    message: 'Password must contain at least one special character',
+    test: (password: string) => /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  },
+] as const;
+
+export const newPasswordSchema = z
+  .string()
+  .min(1, MESSAGES.passwordEmpty)
+  .superRefine((password, ctx) => {
+    if (!password) return;
+    const failed = PASSWORD_REQUIREMENTS.find((rule) => !rule.test(password));
+    if (failed) ctx.addIssue({ code: 'custom', message: failed.message });
+  });
+
+// ---- Form schemas ----
+
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, MESSAGES.passwordEmpty),
+});
+export type LoginForm = z.input<typeof loginSchema>;
+
+const registerFields = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  password: newPasswordSchema,
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+  age: ageSchema,
+  gender: z.string().nullable(),
+});
+
+export const registerSchema = registerFields.refine(
+  (form) => form.password === form.confirmPassword,
+  {
+    path: ['confirmPassword'],
+    message: MESSAGES.passwordMismatch,
+    // Check the match whenever a confirmation was typed, even while other fields
+    // (including the password's own rules) still have errors — like Flutter.
+    when: (payload) => {
+      const { password, confirmPassword } = payload.value as Record<string, unknown>;
+      return (
+        typeof password === 'string' && typeof confirmPassword === 'string' && !!confirmPassword
+      );
+    },
+  },
+);
+export type RegisterForm = z.input<typeof registerSchema>;
+
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+export type ForgotPasswordForm = z.input<typeof forgotPasswordSchema>;

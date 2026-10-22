@@ -3,7 +3,12 @@ import type { User } from '@supabase/supabase-js';
 import { parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
 import { supabase } from '@/lib/supabase';
 
-import { check } from './errors';
+import { ApiError } from './errors';
+
+/** Auth errors are shown to the user as-is (e.g. "Invalid login credentials"), like Flutter. */
+function throwIfAuthError(error: { message: string } | null): void {
+  if (error) throw new ApiError(error.message, error);
+}
 
 // Port of the auth parts of lib/services/supabase_service.dart. "Remember me" lives
 // in src/stores/authStore.ts.
@@ -23,35 +28,35 @@ export async function signUp(email: string, password: string, metadata: ProfileM
     password,
     options: { data: metadata },
   });
-  check(error, 'Sign up failed');
+  throwIfAuthError(error);
   return data;
 }
 
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  check(error, 'Sign in failed');
+  throwIfAuthError(error);
   return data;
 }
 
 export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
-  check(error, 'Sign out failed');
+  throwIfAuthError(error);
 }
 
 export async function resetPassword(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(email);
-  check(error, 'Password reset failed');
+  throwIfAuthError(error);
 }
 
 export async function updateProfile(metadata: Record<string, unknown>): Promise<User> {
   const { data, error } = await supabase.auth.updateUser({ data: metadata });
-  check(error, 'Failed to update profile');
+  throwIfAuthError(error);
   return data.user!;
 }
 
 export async function updatePassword(password: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password });
-  check(error, 'Failed to change password');
+  throwIfAuthError(error);
 }
 
 /** Stores journey setup in user metadata so it follows the user across devices. */
