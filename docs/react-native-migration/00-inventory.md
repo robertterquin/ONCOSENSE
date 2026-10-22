@@ -7,9 +7,9 @@ Size: ~24,700 lines of Dart in `lib/` — 28 screen files (including the splash 
 
 ## 1. Screens and target routes
 
-Expo Router maps files under `mobile/app/` to routes. `(auth)` and `(tabs)` are route groups (they don't appear in the URL).
+Expo Router maps files under `mobile/src/app/` to routes. `(auth)` and `(tabs)` are route groups (they don't appear in the URL).
 
-| Flutter screen | Lines | How it's reached today | Target file in `mobile/app/` | Phase |
+| Flutter screen | Lines | How it's reached today | Target file in `mobile/src/app/` | Phase |
 |---|---|---|---|---|
 | `splash/splash_screen.dart` | 137 | `/` (initial route) | `index.tsx` (redirect) + `expo-splash-screen` | 3 |
 | `auth/welcome_screen.dart` | 154 | `/welcome` | `(auth)/welcome.tsx` | 3 |
@@ -83,7 +83,7 @@ These live in `SharedPreferences` today. They **do not transfer** to the React N
 
 | Key | Purpose | Plan |
 |---|---|---|
-| `dark_mode_enabled` | Theme | Re-create in Zustand + AsyncStorage |
+| `dark_mode_enabled` | Theme | Re-create in Zustand + `localStorage` |
 | remember-me + active-session flags | Login persistence | Re-create |
 | `notifications_enabled`, `health_reminders_enabled`, `notifications_setup_complete` | Notification setup | Re-create |
 | `notification_health_tips`, `_hydration`, `_movement`, `_sun_protection`, `_self_check`, `_weekly_checkin`, `_forum` | Per-type toggles | Re-create |

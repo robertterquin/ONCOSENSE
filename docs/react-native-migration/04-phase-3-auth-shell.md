@@ -7,7 +7,7 @@
 
 ### 3.1 Launch & routing
 
-- [ ] `app/_layout.tsx`: load fonts, restore the session (`supabase.auth.getSession()`), restore theme, then hide the splash screen.
+- [ ] `src/app/_layout.tsx`: load fonts, restore the session (`supabase.auth.getSession()`), restore theme, then hide the splash screen.
 - [ ] `app/index.tsx` replaces `splash_screen.dart`: redirect to `(tabs)` when signed in (respecting the remember-me rule in `supabase_service.dart → hasActiveSession`), otherwise to `(auth)/welcome`.
 - [ ] Port the first-launch notification setup check (`notifications_setup_complete`) as a no-op flag for now; Phase 6 wires it up.
 - [ ] Auth guard: `(tabs)` and all signed-in routes redirect to `(auth)/welcome` when the session ends (replaces `auth_state_listener.dart`).

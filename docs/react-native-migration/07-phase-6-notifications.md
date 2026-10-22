@@ -30,7 +30,7 @@ Good news from the inventory: everything is **local** scheduling (no push server
 
 ## 6.3 Preferences & settings screens
 
-- [ ] `notificationStore` (Zustand + AsyncStorage) holds the master switch, health-reminders switch and the seven per-type toggles (`health_tips`, `hydration`, `movement`, `sun_protection`, `self_check`, `weekly_checkin`, `forum`).
+- [ ] `notificationStore` (Zustand + `localStorage`) holds the master switch, health-reminders switch and the seven per-type toggles (`health_tips`, `hydration`, `movement`, `sun_protection`, `self_check`, `weekly_checkin`, `forum`).
 - [ ] Port `enableAllNotifications`, `disableAllNotifications` and `toggleNotificationType` — toggling a type cancels or schedules only that type's identifiers.
 - [ ] First-launch flow (`notifications_setup_complete` in the splash screen): ask for permission once, then schedule defaults.
 - [ ] Wire the switches in `profile/settings.tsx` and `profile/notifications.tsx`, plus "Send test notification".
@@ -38,7 +38,7 @@ Good news from the inventory: everything is **local** scheduling (no push server
 
 ## 6.4 Notification center — `notification_center_screen.dart`, `notification_storage_service.dart`
 
-- [ ] Store history in AsyncStorage under `stored_notifications` with the same `AppNotification` shape.
+- [ ] Store history in `localStorage` under `stored_notifications` with the same `AppNotification` shape.
 - [ ] Add a history entry when a notification is received (`addNotificationReceivedListener`) and when shown in-app.
 - [ ] `notifications.tsx`: list, filter by type, mark one/all as read, delete one, clear all, clear read. Unread badge on the Home header.
 - [ ] Tapping a notification (`addNotificationResponseReceivedListener`) opens the relevant screen.

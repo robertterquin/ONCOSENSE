@@ -45,8 +45,8 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | # | Phase | Doc | Est. effort | Status |
 |---|---|---|---|---|
 | — | Inventory of the current app | [00-inventory.md](00-inventory.md) | — | Done |
-| 0 | Preparation & safety net | [01-phase-0-preparation.md](01-phase-0-preparation.md) | 2–3 days | Not started |
-| 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | Not started |
+| 0 | Preparation & safety net | [01-phase-0-preparation.md](01-phase-0-preparation.md) | 2–3 days | In progress |
+| 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | In progress |
 | 2 | Foundation (types, services, state, theme) | [03-phase-2-foundation.md](03-phase-2-foundation.md) | 1–2 weeks | Not started |
 | 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Not started |
 | 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Not started |
@@ -93,6 +93,9 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-22 | Rewrite in Expo + TypeScript, keep Supabase backend | Backend is framework-neutral; only the client changes | — |
 | 2026-10-22 | React Native app lives in `mobile/` in this repo | Keeps history and SQL/docs together; Flutter stays untouched until cutover | — |
 | 2026-10-22 | All migration work on `react-native-migration`, merged into `main` once at the end (not force-pushed) | Keeps `main` purely Flutter until the new app is ready; merging keeps both histories | — |
-| _pending_ | Final app ID / bundle ID (current is `com.example.cancerapp`) | Google Play rejects `com.example.*`; see Phase 0 | — |
-| _pending_ | Separate Supabase dev project, or production only | See Phase 0 | — |
+| 2026-10-23 | App ID / bundle ID `com.oncosense.app` (Android and iOS) | Google Play rejects `com.example.*`; the Flutter app was never published under another ID | Robert |
+| 2026-10-23 | Develop against the current (production) Supabase project for now | Simplest start; switch by changing `mobile/.env` if a dev project is created later. Clean up test data made during development | Robert |
+| 2026-10-23 | Expo SDK 58 (React Native 0.88, React 19.3, TypeScript 6) | Latest stable at setup time | — |
+| 2026-10-23 | Session and local data stored with `expo-sqlite`'s `localStorage`, not AsyncStorage | Expo's current Supabase guide recommends it; one storage API on iOS, Android and web | — |
+| 2026-10-23 | `react-hook-form` / `zod` / `@hookform/resolvers` installed in Phase 3, not Phase 1 | `@hookform/resolvers` 6 has a peer-dependency conflict today; forms aren't needed until Phase 3 | — |
 | _pending_ | Port the unused forum/resource notification methods, or drop them | See Phase 6 | — |

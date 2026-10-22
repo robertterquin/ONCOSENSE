@@ -14,7 +14,7 @@
 ### 0.1 Baseline the Flutter app
 
 - [ ] Confirm `main` builds and runs: `flutter pub get && flutter run`.
-- [ ] Tag the starting point so it can always be restored:
+- [x] Tag the starting point so it can always be restored (done: tag on `651c52d`):
   ```bash
   git tag flutter-baseline-2026-10 && git push origin flutter-baseline-2026-10
   ```
@@ -24,9 +24,9 @@
 
 The key in `lib/services/gnews_service.dart` is committed to git (since `47ccd8d`) and pushed to GitHub, so treat it as compromised — anyone with access to the repo or its history has it.
 
-- [ ] Create a Supabase Edge Function `news` that calls GNews server-side. Store the key as a function secret (`supabase secrets set GNEWS_API_KEY=...`), never in the client.
+- [x] Create a Supabase Edge Function `news` that calls GNews server-side. Store the key as a function secret (`supabase secrets set GNEWS_API_KEY=...`), never in the client.
 - [ ] Rotate the key in the GNews dashboard (generate a new one, revoke the old one).
-- [ ] On `fix/gnews-key` (from `main`), change `gnews_service.dart` to call the `news` function instead of GNews directly, and open a PR **into `main`**. Test the Home screen news section on a device before merging. Then merge `main` into `react-native-migration`.
+- [ ] On `fix/gnews-key` (from `main`), change `gnews_service.dart` to call the `news` function instead of GNews directly, and open a PR **into `main`**. Test the Home screen news section on a device before merging. Then merge `main` into `react-native-migration`. _(Code done and pushed; deploy, test and merge pending.)_
 - [ ] The React Native app will call the same `news` function — it never sees the key.
 
 ### 0.3 Back up the database
@@ -38,8 +38,8 @@ The key in `lib/services/gnews_service.dart` is committed to git (since `47ccd8d
 
 Record each in the [decision log](README.md#decision-log).
 
-- [ ] **App ID / bundle ID.** `com.example.cancerapp` can't be published to Google Play. Pick the final one now (e.g. `com.oncosense.app`). If the Flutter app is already in a store under another ID, reuse that ID so the React Native app ships as an update.
-- [ ] **Supabase environments.** Recommended: a second free Supabase project as `dev`, seeded from the backup in 0.3, used for all development. Production is only used in Phase 7.
+- [x] **App ID / bundle ID.** Chosen: `com.oncosense.app`. `com.example.cancerapp` can't be published to Google Play. Pick the final one now (e.g. `com.oncosense.app`). If the Flutter app is already in a store under another ID, reuse that ID so the React Native app ships as an update.
+- [x] **Supabase environments.** Chosen: current project for now. Recommended: a second free Supabase project as `dev`, seeded from the backup in 0.3, used for all development. Production is only used in Phase 7.
 - [ ] **Who reviews PRs** and the minimum review rule (at least one approval for every `mobile/` PR).
 
 ### 0.5 Repo hygiene

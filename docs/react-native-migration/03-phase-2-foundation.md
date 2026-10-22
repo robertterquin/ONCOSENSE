@@ -53,7 +53,7 @@ One module per service in `src/api/`. Each exports plain async functions; no UI 
 ## 2.3 State (replace Riverpod + GetIt)
 
 - **TanStack Query** for anything from Supabase or the network. One hook per Riverpod provider, e.g. `forum_provider.dart` → `src/hooks/useForum.ts` exporting `useQuestions`, `useQuestion(id)`, `useAskQuestion` (mutation), `useVote` (mutation with optimistic update).
-- **Zustand** for app/device state: theme mode, notification preferences, remember-me, journey onboarding flag. Persist with AsyncStorage.
+- **Zustand** for app/device state: theme mode, notification preferences, remember-me, journey onboarding flag. Persist with `localStorage` (provided by `expo-sqlite/localStorage/install`).
 - **GetIt is not needed**: modules are imported directly.
 
 | Riverpod provider | Replacement |
@@ -69,7 +69,7 @@ One module per service in `src/api/`. Each exports plain async functions; no UI 
 | `resources_provider.dart` | `src/hooks/useResources.ts` |
 | `theme_provider.dart` | `src/stores/themeStore.ts` |
 
-- [ ] Wrap the app in `QueryClientProvider` in `app/_layout.tsx`.
+- [ ] Wrap the app in `QueryClientProvider` in `src/app/_layout.tsx` (done in Phase 1).
 - [ ] Clear the query cache and per-user stores on sign-out.
 
 ## 2.4 Theme
@@ -85,7 +85,7 @@ One module per service in `src/api/`. Each exports plain async functions; no UI 
 - [ ] `Button` (from `auth_button.dart`), `InputField` (from `input_field.dart`)
 - [ ] `Screen` wrapper (safe area, background, scroll), `Card`, `EmptyState`, `ErrorState`, `LoadingState`
 - [ ] Port validation from `constants.dart` into `zod` schemas in `src/constants/validation.ts`, reusing the same error messages.
-- [ ] A dev-only `app/_dev/components.tsx` screen showing every component in light and dark mode.
+- [ ] A dev-only `src/app/_dev/components.tsx` screen showing every component in light and dark mode.
 
 ## Done when
 

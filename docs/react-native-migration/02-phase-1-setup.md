@@ -7,64 +7,79 @@
 
 ### 1.1 Create the project
 
-- [ ] From the repo root:
+- [x] From the repo root:
   ```bash
   npx create-expo-app@latest mobile --template default
   ```
-- [ ] Record the Expo SDK version in the [decision log](README.md#decision-log). Upgrade SDKs deliberately, never mid-phase.
-- [ ] Remove the template's example screens; keep `app/_layout.tsx`.
+- [x] Record the Expo SDK version in the [decision log](README.md#decision-log) (SDK 58). Upgrade SDKs deliberately, never mid-phase.
+- [x] Remove the template's example screens, components and images; keep `src/app/_layout.tsx` and `src/app/index.tsx`.
+- [x] Keep the template's `AGENTS.md` / `CLAUDE.md` (AI-assistant notes for Expo) and drop its `LICENSE` (the repo has its own).
 
 ### 1.2 Folder structure
 
 ```
 mobile/
-  app/                 # Expo Router screens (routes only, thin)
   src/
+    app/               # Expo Router screens (routes only, thin)
     api/               # Supabase + Edge Function calls (one file per service)
     hooks/             # TanStack Query hooks (replace Riverpod providers)
     stores/            # Zustand stores (theme, settings, notification prefs)
     types/             # TypeScript types (replace lib/models)
     components/        # Shared UI (AppHeader, Button, InputField, cards)
     theme/             # Colors, spacing, radius, typography
-    lib/               # supabase client, storage helpers, notifications
+    lib/               # supabase client, env, storage helpers, notifications
     constants/         # Ported from lib/utils/constants.dart
   assets/              # Logo, Poppins font
   .env.example
 ```
 
-Rule: screens in `app/` call hooks; hooks call `src/api`; only `src/api` talks to Supabase. This mirrors today's screen → provider → service layering.
+Rule: screens in `src/app/` call hooks; hooks call `src/api`; only `src/api` talks to Supabase. This mirrors today's screen → provider → service layering. Folders are created when their first file is added; Phase 1 has `app/`, `api/` and `lib/`.
 
 ### 1.3 Configuration
 
-- [ ] `app.json` / `app.config.ts`: name `OncoSense`, slug, `scheme: "oncosense"`, `android.package` and `ios.bundleIdentifier` from Phase 0, icon and splash from `assets/images/oncosense_logoo.png`, splash background `#FFFFFF`.
-- [ ] `tsconfig.json`: `"strict": true` and the `@/*` → `src/*` path alias.
-- [ ] `.env.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Only the Supabase **anon** key goes here — it's designed to be public; RLS protects data. No other secrets in the app.
+- [x] `app.json`: name `OncoSense`, slug `oncosense`, `scheme: "oncosense"`, `android.package` and `ios.bundleIdentifier` `com.oncosense.app`, icon and splash from `assets/images/logo.png` (copy of `oncosense_logoo.png`), splash background `#FFFFFF`, Poppins via the `expo-font` plugin.
+- [x] `tsconfig.json`: `"strict": true`, the `@/*` → `src/*` path alias, and `"types": ["jest"]` (TypeScript 6 no longer includes `@types/*` automatically).
+- [x] `.env.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Only the Supabase **anon** key goes here — it's designed to be public; RLS protects data. No other secrets in the app.
+- [x] `mobile/.env` filled in from the Flutter app's root `.env` and git-ignored.
 
 ### 1.4 Dependencies
 
+Installed in Phase 1:
+
 ```bash
 cd mobile
-npx expo install @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill \
-  expo-notifications expo-image-picker expo-image expo-linking expo-web-browser expo-font expo-splash-screen expo-dev-client
-npm install @tanstack/react-query zustand react-hook-form zod @hookform/resolvers date-fns
-npm install -D jest-expo jest @testing-library/react-native @types/jest eslint prettier
+npx expo install @supabase/supabase-js expo-sqlite expo-dev-client
+npm install @tanstack/react-query zustand date-fns
+npx expo install jest-expo jest @types/jest @testing-library/react-native eslint eslint-config-expo prettier --dev
 ```
 
-Use `npx expo install` for anything native so versions match the SDK.
+The template already includes `expo-font`, `expo-image`, `expo-linking`, `expo-splash-screen` and `expo-web-browser`.
+Added later, in the phase that first needs them (so the app doesn't ask for permissions it doesn't use yet):
+
+| Package | Phase |
+|---|---|
+| `react-hook-form`, `zod`, `@hookform/resolvers` | 3 |
+| `@react-native-community/datetimepicker`, `@react-native-community/slider`, `expo-image-picker`, `expo-image-manipulator` | 5 |
+| `expo-notifications` | 6 |
+
+Use `npx expo install` for anything native so versions match the SDK, and run `npx expo-doctor` after adding packages.
 
 ### 1.5 Supabase client
 
-- [ ] `src/lib/supabase.ts`: create the client with AsyncStorage for session storage, `autoRefreshToken: true`, `persistSession: true`, `detectSessionInUrl: false`, and the `AppState` listener that starts/stops token refresh (as in the Supabase React Native guide).
-- [ ] Smoke test: a temporary screen that reads 5 rows from `cancer_types` from the dev project.
+- [x] `src/lib/env.ts`: reads and validates the two `EXPO_PUBLIC_*` variables with a clear setup error (unit-tested).
+- [x] `src/lib/supabase.ts`: client with `expo-sqlite`'s `localStorage` for session storage, `autoRefreshToken: true`, `persistSession: true`, `detectSessionInUrl: false`, and the `AppState` listener that starts/stops token refresh (per the [Expo Supabase guide](https://docs.expo.dev/guides/using-supabase/)).
+- [x] Smoke test: temporary `src/app/index.tsx` reads 5 rows from `cancer_types` through `src/api/cancerInfo.ts`. Verified in the browser against the current Supabase project.
 
 ### 1.6 Tooling
 
-- [ ] ESLint + Prettier configs; `npm run lint`, `npm run typecheck` (`tsc --noEmit`), `npm test` scripts.
-- [ ] GitHub Actions workflow `.github/workflows/mobile.yml` that runs lint, typecheck and tests on PRs touching `mobile/**` only (so the Flutter side is unaffected).
-- [ ] `eas.json` with `development`, `preview` and `production` profiles. Make one development build each for Android and iOS and install them.
+- [x] ESLint (`eslint-config-expo`) + Prettier configs; `npm run lint`, `npm run typecheck`, `npm test`, `npm run format` scripts.
+- [x] GitHub Actions workflow `.github/workflows/mobile.yml` runs lint, typecheck and tests on PRs and pushes touching `mobile/**` only (so the Flutter side is unaffected).
+- [x] `eas.json` with `development`, `preview` and `production` profiles.
+- [ ] Create the EAS project: `npx eas-cli@latest login` then `npx eas-cli@latest init` (adds the project ID to `app.json`).
+- [ ] Make one development build each for Android and iOS and install them: `npx eas-cli@latest build --profile development --platform all`, or locally with `npm run ios` / `npm run android` (needs Xcode + CocoaPods / Android Studio).
 
 ## Done when
 
 - [ ] `mobile/` runs on an Android emulator and iOS simulator via the development build.
-- [ ] The smoke test screen shows real `cancer_types` rows from the dev Supabase project.
+- [x] The smoke test screen shows real `cancer_types` rows from Supabase (checked on web; iOS and Android bundles build with `npx expo export`).
 - [ ] CI passes on the PR; `git diff origin/main...HEAD --stat` shows no changes outside `mobile/`, `.github/workflows/mobile.yml`, `.gitignore` and `docs/`.
