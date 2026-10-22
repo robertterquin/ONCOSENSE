@@ -1,30 +1,25 @@
-# Phase 8 — Cutover: Merge into `main` & Retire Flutter
+# Phase 8 — Cutover & Flutter Retirement
 
-**Goal:** merge `react-native-migration` into `main` so React Native becomes the only app in the repo, with the Flutter code safely archived.
-**Effort:** 2–3 days. **Branch:** `rn/phase-8-cutover` (from `react-native-migration`).
+**Goal:** make React Native the only app in the repo, with the Flutter code safely archived.
+**Effort:** 2–3 days. **Branch:** `rn/phase-8-cutover` (from `main`).
 
-Only start this after Phase 7's internal testing and closed beta are signed off. The public store release (Phase 7.4 step 3) is built from `main` **after** this merge.
+Because every phase has already been merged into `main` (see [Branching](README.md#branching)), there is no big final merge. This phase is one ordinary branch that removes the Flutter app.
 
-## Merge, don't override
-
-The migration branch is merged into `main` with a normal pull request. Never force-push it over `main` or reset `main` to it:
-
-- A force-push deletes `main`'s history from GitHub, including any Flutter fixes made during the migration (such as the GNews key fix).
-- Anyone else's clone of the repo breaks.
-- It isn't needed: step 8.2 deletes the Flutter files anyway, so a merge gives the same final result **and** keeps all history.
+Only start this after Phase 7 is done and the React Native release has been stable at 100% rollout for at least two weeks.
 
 ## 8.1 Archive Flutter
 
-- [ ] On `main`, tag the last Flutter commit:
+- [ ] On `main`, tag the last commit that still contains the Flutter app:
   ```bash
   git checkout main && git pull && git tag flutter-final && git push origin flutter-final
   ```
 - [ ] Optionally create a long-lived branch `archive/flutter` from that tag for easy browsing on GitHub.
 
-## 8.2 Remove Flutter (on the migration branch)
+## 8.2 Remove Flutter
 
-- [ ] Bring in the last `main` changes first: `git checkout react-native-migration && git merge origin/main`.
-- [ ] On `rn/phase-8-cutover`, delete: `lib/`, `test/`, `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `devtools_options.yaml`, `.metadata`, `.flutter-plugins-dependencies`, `build/`, `.dart_tool/`.
+On `rn/phase-8-cutover`:
+
+- [ ] Delete: `lib/`, `test/`, `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `devtools_options.yaml`, `.metadata`, `.flutter-plugins-dependencies`, `build/`, `.dart_tool/`.
 - [ ] Move Flutter-only docs to `docs/archive/flutter/`: `RIVERPOD_MIGRATION_GUIDE.md`, `RIVERPOD_QUICK_REFERENCE.md`, `IMPLEMENTATION_SUMMARY.md`, `JOURNEY_SETUP_GUIDE.md`.
 - [ ] Keep at the root (still valid for Supabase): `BOOKMARK_TABLES_SETUP.sql`, `JOURNEY_TABLES_SETUP.sql`, `CANCER_DATA_SETUP.md` — or move them into `supabase/`.
 - [ ] Remove Flutter entries from `.gitignore`.
@@ -38,16 +33,12 @@ Pick one and record it in the decision log:
 - **Move `mobile/` to the repo root** with `git mv` so history is preserved. Update CI paths and EAS config afterwards.
 
 - [ ] Rewrite the root `README.md` for the React Native app: setup, env vars, running, building, releasing.
-- [ ] Merge `rn/phase-8-cutover` into `react-native-migration`.
 
-## 8.4 Final merge into `main`
+## 8.4 Merge
 
-- [ ] Open a PR from `react-native-migration` into `main` titled "Migrate OncoSense to React Native".
-- [ ] Check the diff: only Flutter deletions, `mobile/`, `docs/`, CI and config files. Nothing unexpected.
-- [ ] CI is green and at least one person approves.
-- [ ] Merge with **"Create a merge commit"** (not squash), so every phase's commits stay in history.
-- [ ] Build the production release from `main` and continue with Phase 7.4 step 3 (store release).
-- [ ] Delete the `react-native-migration` branch once the release is out. `rn/*` branches can be deleted too.
+- [ ] Check the diff: only Flutter deletions, moved docs, README and config changes. Nothing unexpected.
+- [ ] `mobile/` checks pass.
+- [ ] Merge into `main` with a merge commit (never force-push), then delete `rn/phase-8-cutover`.
 
 ## 8.5 After release
 

@@ -14,7 +14,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 
 1. **The Flutter app stays untouched and releasable until cutover.** No edits to `lib/`, `android/`, `ios/`, `web/`, `pubspec.yaml` or `pubspec.lock` during Phases 1–7. The only planned exception is the GNews key fix in [Phase 0](01-phase-0-preparation.md), shipped as its own small PR.
 2. **The React Native app lives in its own folder, `mobile/`.** Nothing is moved or renamed at the repo root until [Phase 8](09-phase-8-cutover.md).
-3. **All migration work lives on the `react-native-migration` branch until it's finished.** `main` keeps only the Flutter app (plus urgent Flutter fixes) and is never committed to directly. The migration branch is merged into `main` once, in [Phase 8](09-phase-8-cutover.md) — never force-pushed over it.
+3. **Each phase is a short-lived branch merged into `main`, then deleted.** Because the new app lives only in `mobile/`, merging it into `main` never affects the Flutter app. `main` is never force-pushed.
 4. **The database changes only additively while both apps exist.** Both apps talk to the same Supabase project, so no table/column renames, no drops, no changes to RLS policies or RPC signatures that the Flutter app depends on. New columns must be nullable or have defaults.
 5. **Develop against a non-production Supabase project when possible.** Test sign-ups, forum posts and journey entries should not land in real user data.
 6. **Secrets never go into git.** `mobile/.env` is git-ignored; only `mobile/.env.example` is committed.
@@ -27,7 +27,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | Framework | Expo (latest stable SDK at setup time), development builds — not Expo Go |
 | Language | TypeScript, `strict: true` |
 | Navigation | Expo Router (file-based) |
-| Backend client | `@supabase/supabase-js` + `@react-native-async-storage/async-storage` for session persistence |
+| Backend client | `@supabase/supabase-js` + `expo-sqlite`'s `localStorage` for session persistence |
 | Server data (fetch/cache) | TanStack Query |
 | App state (theme, settings, auth session) | Zustand |
 | Forms & validation | `react-hook-form` + `zod` |
@@ -60,29 +60,30 @@ Estimates assume one developer working full time. Update the **Status** column (
 ## Branching
 
 ```
-main ─────●──────────●───────────────────────────────●  (Flutter; merge target at the end)
-           \          \ (merge main in regularly)    /
-react-native-migration ●──●──●──●──●──●──●──●──●──●──   (all React Native work)
-                         \  /  \  /
-            rn/phase-1-setup    rn/phase-4-forum …       (one short branch per phase/screen group)
+main ──●────────●────────●────────●──── …   (Flutter app + mobile/ growing phase by phase)
+        \      /  \      /  \      /
+   rn/phase-1-setup  rn/phase-2-…  rn/phase-3-…   (one short branch per phase; deleted after merge)
 ```
 
-- Create the migration branch once, from `main`: `git checkout -b react-native-migration && git push -u origin react-native-migration`.
-- Each phase (or screen group) gets a short branch **from `react-native-migration`**, e.g. `rn/phase-4-forum`, and a PR **into `react-native-migration`**.
-- Flutter fixes (like the GNews key fix in Phase 0) go on their own branch from `main` and a PR into `main`, as usual.
-- At least every week, bring `main` into the migration branch so the final merge stays small:
-  ```bash
-  git checkout react-native-migration && git pull && git merge origin/main && git push
-  ```
-  Because the new app lives only in `mobile/`, these merges should have no conflicts.
+- Each phase (or screen group) gets a short branch **from `main`**, e.g. `rn/phase-4-forum`, merged **into `main`** and then deleted.
+- Flutter fixes (like the GNews key fix in Phase 0) work the same way on their own branch, e.g. `fix/gnews-key`.
+- Optional: turn on GitHub **Settings → General → Automatically delete head branches** so merged branches are removed for you.
 
 ## How to work through a phase
 
 1. Read the phase doc fully before starting.
-2. Create a branch from `react-native-migration`: `rn/phase-N-short-name` (for example `rn/phase-4-forum`).
-3. Work through the checklist; tick boxes in the doc in the same PR.
-4. A phase is done only when every item in its **Done when** section is true.
-5. Merge the PR into `react-native-migration`, update the status table above, and start the next phase.
+2. Start from the latest `main`:
+   ```bash
+   git checkout main && git pull && git checkout -b rn/phase-N-short-name
+   ```
+3. Work through the checklist; tick boxes in the doc in the same branch.
+4. A phase is done only when every item in its **Done when** section is true and the `mobile/` checks (lint, typecheck, tests) pass.
+5. Merge into `main` (PR, or from the terminal), push, and delete the branch:
+   ```bash
+   git checkout main && git pull && git merge --no-ff rn/phase-N-short-name && git push
+   git branch -d rn/phase-N-short-name && git push origin --delete rn/phase-N-short-name
+   ```
+6. Update the status table above and start the next phase.
 
 ## Decision log
 
@@ -97,5 +98,6 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-23 | Develop against the current (production) Supabase project for now | Simplest start; switch by changing `mobile/.env` if a dev project is created later. Clean up test data made during development | Robert |
 | 2026-10-23 | Expo SDK 58 (React Native 0.88, React 19.3, TypeScript 6) | Latest stable at setup time | — |
 | 2026-10-23 | Session and local data stored with `expo-sqlite`'s `localStorage`, not AsyncStorage | Expo's current Supabase guide recommends it; one storage API on iOS, Android and web | — |
+| 2026-10-23 | Replaces the 2026-10-22 `react-native-migration` branch decision: each phase branch merges straight into `main` and is deleted; the `react-native-migration` branch is removed | Simpler; no long-lived branch to keep in sync. Safe because `mobile/` is separate from the Flutter code | Robert |
 | 2026-10-23 | `react-hook-form` / `zod` / `@hookform/resolvers` installed in Phase 3, not Phase 1 | `@hookform/resolvers` 6 has a peer-dependency conflict today; forms aren't needed until Phase 3 | — |
 | _pending_ | Port the unused forum/resource notification methods, or drop them | See Phase 6 | — |

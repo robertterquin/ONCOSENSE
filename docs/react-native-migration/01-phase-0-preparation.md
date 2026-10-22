@@ -1,7 +1,7 @@
 # Phase 0 — Preparation & Safety Net
 
 **Goal:** make the migration safe to start: a restorable baseline, no leaked secrets, and the open decisions made.
-**Effort:** 2–3 days. **Branches:** create `react-native-migration` from `main` (see [Branching](README.md#branching)); prep work on `rn/phase-0-prep` from it. The GNews fix (0.2) goes on `fix/gnews-key` from `main`.
+**Effort:** 2–3 days. **Branches:** `rn/phase-0-prep` and `fix/gnews-key`, both from `main` (see [Branching](README.md#branching)).
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ The key in `lib/services/gnews_service.dart` is committed to git (since `47ccd8d
 
 - [x] Create a Supabase Edge Function `news` that calls GNews server-side. Store the key as a function secret (`supabase secrets set GNEWS_API_KEY=...`), never in the client.
 - [ ] Rotate the key in the GNews dashboard (generate a new one, revoke the old one).
-- [ ] On `fix/gnews-key` (from `main`), change `gnews_service.dart` to call the `news` function instead of GNews directly, and open a PR **into `main`**. Test the Home screen news section on a device before merging. Then merge `main` into `react-native-migration`. _(Code done and pushed; deploy, test and merge pending.)_
+- [ ] On `fix/gnews-key` (from `main`), change `gnews_service.dart` to call the `news` function instead of GNews directly, and open a PR **into `main`**. Test the Home screen news section on a device before merging. _(Code done and pushed; deploy, test and merge pending.)_
 - [ ] The React Native app will call the same `news` function — it never sees the key.
 
 ### 0.3 Back up the database

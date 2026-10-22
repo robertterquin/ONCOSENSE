@@ -6,7 +6,7 @@ on:
       - 'mobile/**'
       - '.github/workflows/mobile.yml'
   push:
-    branches: [main, react-native-migration]
+    branches: [main]
     paths:
       - 'mobile/**'
       - '.github/workflows/mobile.yml'
