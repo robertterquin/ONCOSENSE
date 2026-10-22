@@ -11,13 +11,13 @@ Expo Router maps files under `mobile/src/app/` to routes. `(auth)` and `(tabs)` 
 
 | Flutter screen | Lines | How it's reached today | Target file in `mobile/src/app/` | Phase |
 |---|---|---|---|---|
-| `splash/splash_screen.dart` | 137 | `/` (initial route) | `index.tsx` (redirect) + `expo-splash-screen` | 3 |
+| `splash/splash_screen.dart` | 137 | `/` (initial route) | `index.tsx` (redirect) + native splash | 3 |
 | `auth/welcome_screen.dart` | 154 | `/welcome` | `(auth)/welcome.tsx` | 3 |
 | `auth/login_screen.dart` | 329 | `/login` | `(auth)/login.tsx` | 3 |
 | `auth/register_screen.dart` | 539 | `/register` | `(auth)/register.tsx` | 3 |
 | `auth/forgot_password_screen.dart` | 338 | `/forgot-password` | `(auth)/forgot-password.tsx` | 3 |
 | `main_navigation.dart` | 138 | `/home` (6 bottom tabs) | `(tabs)/_layout.tsx` | 3 |
-| `home/home_screen.dart` | 1398 | Tab: Home | `(tabs)/index.tsx` | 4 |
+| `home/home_screen.dart` | 1398 | Tab: Home | `(tabs)/home.tsx` | 4 |
 | `cancer_info/cancer_info_screen.dart` | 444 | Tab: Info | `(tabs)/info.tsx` | 4 |
 | `cancer_info/cancer_detail_screen.dart` | 324 | Push from Info / itself | `cancer/[id].tsx` | 4 |
 | `prevention/prevention_screen.dart` | 693 | Tab: Prevention | `(tabs)/prevention.tsx` | 4 |

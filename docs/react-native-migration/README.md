@@ -48,7 +48,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | 0 | Preparation & safety net | [01-phase-0-preparation.md](01-phase-0-preparation.md) | 2–3 days | In progress |
 | 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | In progress |
 | 2 | Foundation (types, services, state, theme) | [03-phase-2-foundation.md](03-phase-2-foundation.md) | 1–2 weeks | Done (write paths verified in Phase 3) |
-| 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Not started |
+| 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Done (real sign-in to verify) |
 | 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Not started |
 | 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Not started |
 | 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Not started |
@@ -102,6 +102,9 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-23 | Journey deletes remove the Supabase row; saves write only the changed row | Flutter's deletes only affected the device, so deleted items reappeared | — |
 | 2026-10-23 | Notification storage and preferences move to Phase 6 | They only matter once notifications are scheduled | — |
 | 2026-10-23 | Poppins from `@expo-google-fonts/poppins` (4 weights), loaded at startup; Material icons from `@expo/vector-icons` | Flutter used Google Fonts Poppins and Material icons; the database stores Material icon names | — |
+| 2026-10-23 | Keep Flutter's "Continue as Guest": guests can open the tabs until the app is closed | Existing behavior; screens that need an account handle signed-out users | — |
+| 2026-10-23 | Home tab route is `/home` (not `/`); `/` is the launch redirect | Matches Flutter's `/home` route and avoids two screens at `/` | — |
+| 2026-10-23 | No extra 3-second animated splash; the native splash shows until fonts and session are ready | Faster start; same logo-on-white look | — |
 | 2026-10-23 | Replaces the 2026-10-22 `react-native-migration` branch decision: each phase branch merges straight into `main` and is deleted; the `react-native-migration` branch is removed | Simpler; no long-lived branch to keep in sync. Safe because `mobile/` is separate from the Flutter code | Robert |
 | 2026-10-23 | `react-hook-form` / `zod` / `@hookform/resolvers` installed in Phase 3, not Phase 1 | `@hookform/resolvers` 6 has a peer-dependency conflict today; forms aren't needed until Phase 3 | — |
 | _pending_ | Port the unused forum/resource notification methods, or drop them | See Phase 6 | — |

@@ -4,9 +4,11 @@ import { DEFAULT_REMINDERS } from '@/constants/defaultReminders';
 import {
   ageSchema,
   emailSchema,
+  loginSchema,
   MESSAGES,
   nameSchema,
   passwordSchema,
+  registerSchema,
 } from '@/constants/validation';
 
 const firstError = (result: { success: boolean; error?: { issues: { message: string }[] } }) =>
@@ -46,5 +48,51 @@ describe('built-in data', () => {
     expect(getTipOfTheDay(new Date(2026, 0, 3, 22))).toBe(morning);
     expect(morning).toBe(HEALTH_TIPS[2]);
     expect(getTipOfTheDay(new Date(2026, 0, 4, 8))).toBe(HEALTH_TIPS[3]);
+  });
+});
+
+describe('form schemas', () => {
+  const valid = {
+    name: 'Ana Cruz',
+    email: 'ana@example.com',
+    password: 'Abcdefg1!',
+    confirmPassword: 'Abcdefg1!',
+    age: '',
+    gender: null,
+  };
+  const errorFor = (form: object, field: string) => {
+    const result = registerSchema.safeParse(form);
+    return result.success
+      ? null
+      : (result.error.issues.find((issue) => issue.path[0] === field)?.message ?? null);
+  };
+
+  it('accepts a complete registration', () => {
+    expect(registerSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it('applies the register password rules in order', () => {
+    expect(errorFor({ ...valid, password: 'Abc1!' }, 'password')).toBe(
+      'Password must be at least 8 characters',
+    );
+    expect(errorFor({ ...valid, password: 'Abcdefg1' }, 'password')).toBe(
+      'Password must contain at least one special character',
+    );
+  });
+
+  it('reports a mismatch even while other fields are invalid', () => {
+    expect(
+      errorFor(
+        { ...valid, name: '', password: 'Abcdefg1', confirmPassword: 'Abcdefg2' },
+        'confirmPassword',
+      ),
+    ).toBe(MESSAGES.passwordMismatch);
+    expect(errorFor({ ...valid, confirmPassword: '' }, 'confirmPassword')).toBe(
+      'Please confirm your password',
+    );
+  });
+
+  it('only requires a non-empty password to log in', () => {
+    expect(loginSchema.safeParse({ email: 'ana@example.com', password: 'x' }).success).toBe(true);
   });
 });

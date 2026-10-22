@@ -4,9 +4,11 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 
+import { ToastHost } from '@/components/Toast';
 import { queryClient } from '@/lib/queryClient';
-import { startAuthListener } from '@/stores/authStore';
+import { startAuthListener, useAuthStore } from '@/stores/authStore';
 import { fontAssets } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
 
@@ -14,21 +16,26 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fontAssets);
-  const { isDark } = useTheme();
+  const sessionRestored = useAuthStore((state) => state.isRestored);
+  const { isDark, colors } = useTheme();
+  const ready = (fontsLoaded || !!fontError) && sessionRestored;
 
   useEffect(() => startAuthListener(), []);
 
   useEffect(() => {
-    // Phase 3 also waits for the restored session before hiding the splash.
-    if (fontsLoaded || fontError) SplashScreen.hideAsync();
-  }, [fontsLoaded, fontError]);
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
 
-  if (!fontsLoaded && !fontError) return null;
+  // Keep the native splash screen (logo on white) until fonts and the session are ready.
+  if (!ready) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <Stack screenOptions={{ headerShown: false }} />
+        <ToastHost />
+      </View>
     </QueryClientProvider>
   );
 }

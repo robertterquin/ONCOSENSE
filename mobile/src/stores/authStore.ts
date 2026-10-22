@@ -15,8 +15,13 @@ type AuthState = {
   isRestored: boolean;
   /** "Remember me" from the login screen; persisted on the device. */
   rememberMe: boolean;
+  /** "Continue as Guest" from the login screen; lasts until the app is closed. */
+  isGuest: boolean;
   setRememberMe: (rememberMe: boolean) => void;
   setSession: (session: Session | null) => void;
+  continueAsGuest: () => void;
+  /** Forget the device-side sign-in state (call after signing out). */
+  clear: () => void;
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -26,8 +31,18 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isRestored: false,
       rememberMe: false,
+      isGuest: false,
       setRememberMe: (rememberMe) => set({ rememberMe }),
-      setSession: (session) => set({ session, user: session?.user ?? null, isRestored: true }),
+      setSession: (session) =>
+        set((state) => ({
+          session,
+          user: session?.user ?? null,
+          isRestored: true,
+          // Signing in ends guest mode.
+          isGuest: session ? false : state.isGuest,
+        })),
+      continueAsGuest: () => set({ isGuest: true }),
+      clear: () => set({ rememberMe: false, isGuest: false }),
     }),
     {
       name: 'auth',
@@ -57,3 +72,5 @@ export function hasRememberedSession(state: AuthState = useAuthStore.getState())
 export const useUser = () => useAuthStore((state) => state.user);
 export const useUserId = () => useAuthStore((state) => state.user?.id ?? null);
 export const useIsSignedIn = () => useAuthStore((state) => state.user !== null);
+/** Signed in, or browsing as a guest. */
+export const useCanUseApp = () => useAuthStore((state) => state.user !== null || state.isGuest);
