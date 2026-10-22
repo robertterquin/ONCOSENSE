@@ -33,12 +33,6 @@
           "imageWidth": 160
         }
       ],
-      [
-        "expo-font",
-        {
-          "fonts": ["./assets/fonts/Poppins-Regular.ttf"]
-        }
-      ],
       "expo-sqlite"
     ],
     "experiments": {

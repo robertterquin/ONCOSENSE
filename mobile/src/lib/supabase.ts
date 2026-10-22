@@ -1,10 +1,9 @@
-// Provides a persistent `localStorage` on iOS and Android for the auth session.
-import 'expo-sqlite/localStorage/install';
-
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
 import { getSupabaseConfig } from '@/lib/env';
+// Installs the persistent `localStorage` used for the auth session.
+import '@/lib/storage';
 
 const { url, anonKey } = getSupabaseConfig();
 
