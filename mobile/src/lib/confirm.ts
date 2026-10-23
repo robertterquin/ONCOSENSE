@@ -4,6 +4,7 @@ type ConfirmOptions = {
   title: string;
   message: string;
   confirmText?: string;
+  cancelText?: string;
   /** Shows the confirm button in red on iOS. */
   destructive?: boolean;
 };
@@ -16,6 +17,7 @@ export function confirm({
   title,
   message,
   confirmText = 'OK',
+  cancelText = 'Cancel',
   destructive = false,
 }: ConfirmOptions): Promise<boolean> {
   if (Platform.OS === 'web') {
@@ -26,7 +28,7 @@ export function confirm({
       title,
       message,
       [
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+        { text: cancelText, style: 'cancel', onPress: () => resolve(false) },
         {
           text: confirmText,
           style: destructive ? 'destructive' : 'default',

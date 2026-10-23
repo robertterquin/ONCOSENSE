@@ -179,9 +179,9 @@ export function useIncrementSession() {
   const save = useSaveTreatment();
   return {
     ...save,
-    increment: (treatment: Treatment) => {
+    increment: (treatment: Treatment, options?: Parameters<typeof save.mutate>[1]) => {
       if (treatment.completedSessions >= treatment.totalSessions) return;
-      save.mutate({ ...treatment, completedSessions: treatment.completedSessions + 1 });
+      save.mutate({ ...treatment, completedSessions: treatment.completedSessions + 1 }, options);
     },
   };
 }

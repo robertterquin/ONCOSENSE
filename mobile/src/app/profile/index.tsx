@@ -1,65 +1,310 @@
-import { Link } from 'expo-router';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { userDisplayName } from '@/api/auth';
+import { userDisplayName, userProfilePictureUrl } from '@/api/auth';
 import { AppHeader } from '@/components/AppHeader';
 import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { InfoDialog } from '@/components/InfoDialog';
+import { MaterialIcon } from '@/components/MaterialIcon';
+import { MenuGroup, MenuHeading, MenuItem } from '@/components/profile/ProfileMenu';
 import { Screen } from '@/components/Screen';
-import { EmptyState } from '@/components/StateViews';
+import { APP_TAGLINE, APP_VERSION } from '@/constants/app';
 import { useSignOut } from '@/hooks/useAuth';
+import {
+  useBookmarkedArticles,
+  useBookmarkedQuestions,
+  useBookmarkedResources,
+} from '@/hooks/useBookmarks';
+import { confirm } from '@/lib/confirm';
 import { useAuthStore } from '@/stores/authStore';
-import { brand } from '@/theme/colors';
+import { brand, gradients } from '@/theme/colors';
+import { radius } from '@/theme/tokens';
 
-// Placeholder until Phase 5 (profile_screen.dart). Keeps sign-out reachable.
+// Port of lib/screens/profile/profile_screen.dart
+
+const RED = '#F44336';
+
+function countLabel(count: number, noun: string, empty: string) {
+  return count > 0 ? `${count} saved ${noun}${count !== 1 ? 's' : ''}` : empty;
+}
 
 export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
-  const isGuest = useAuthStore((state) => state.isGuest);
   const signOut = useSignOut();
+  const articles = useBookmarkedArticles().data?.length ?? 0;
+  const questions = useBookmarkedQuestions().data?.length ?? 0;
+  const resources = useBookmarkedResources().data?.length ?? 0;
+  const [dialog, setDialog] = useState<'help' | 'about' | null>(null);
+
+  const logout = async () => {
+    if (!user) {
+      signOut.mutate();
+      return;
+    }
+    const ok = await confirm({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+      destructive: true,
+    });
+    if (ok) signOut.mutate();
+  };
 
   return (
-    <Screen header={<AppHeader title="Profile" subtitle="Your account" showBackButton />}>
-      <Card>
-        <AppText variant="titleMedium">
-          {user ? userDisplayName(user) : 'Browsing as a guest'}
-        </AppText>
-        {user?.email ? <AppText secondary>{user.email}</AppText> : null}
-        <Button
-          title={isGuest ? 'Back to Welcome' : 'Logout'}
-          outlined
-          loading={signOut.isPending}
-          onPress={() => signOut.mutate()}
-        />
-      </Card>
-      <EmptyState
-        icon="person"
-        title="Profile is coming soon"
-        message="Editing your profile, saved items and settings are being rebuilt in migration Phase 5."
+    <Screen
+      header={
+        <AppHeader title="Profile" subtitle="Manage your account and preferences" showBackButton />
+      }>
+      <ProfileHeader
+        name={user ? userDisplayName(user) : 'Guest'}
+        email={user?.email ?? 'guest@oncosense.app'}
+        pictureUrl={userProfilePictureUrl(user)}
+        isGuest={!user}
       />
-      {__DEV__ ? (
-        <View style={styles.devLinks}>
-          <Link href="/dev/components" style={styles.link}>
-            Component gallery
-          </Link>
-          <Link href="/dev/data" style={styles.link}>
-            Data check
-          </Link>
-        </View>
-      ) : null}
+
+      <MenuHeading>Your Content</MenuHeading>
+      <MenuGroup>
+        {user ? (
+          <MenuItem
+            icon="edit"
+            iconColor={brand.headerPink}
+            iconBackground={brand.lightPink}
+            title="Edit Profile"
+            subtitle="Update your personal information"
+            onPress={() => router.push('/profile/edit')}
+          />
+        ) : null}
+        <MenuItem
+          icon="bookmark"
+          iconColor="#E91E63"
+          iconBackground={brand.lightPink}
+          title="Saved Articles"
+          subtitle={countLabel(articles, 'article', 'View your bookmarked articles')}
+          badge={articles}
+          onPress={() => router.push('/profile/saved/articles')}
+        />
+        <MenuItem
+          icon="question_answer"
+          iconColor="#9C27B0"
+          iconBackground="#F3E5F5"
+          title="Saved Questions"
+          subtitle={countLabel(questions, 'question', 'Your saved forum discussions')}
+          badge={questions}
+          onPress={() => router.push('/profile/saved/questions')}
+        />
+        <MenuItem
+          icon="favorite"
+          iconColor="#EC407A"
+          iconBackground={brand.lightPink}
+          title="Saved Resources"
+          subtitle={countLabel(resources, 'resource', 'Your favorite support resources')}
+          badge={resources}
+          onPress={() => router.push('/profile/saved/resources')}
+        />
+      </MenuGroup>
+
+      <MenuHeading>Preferences</MenuHeading>
+      <MenuGroup>
+        <MenuItem
+          icon="settings"
+          iconColor="#2196F3"
+          iconBackground="#E3F2FD"
+          title="Settings"
+          subtitle="App preferences and privacy"
+          onPress={() => router.push('/profile/settings')}
+        />
+        {user ? (
+          <MenuItem
+            icon="lock"
+            iconColor="#FF7043"
+            iconBackground="#FFE0B2"
+            title="Change Password"
+            subtitle="Update your account password"
+            onPress={() => router.push('/profile/change-password')}
+          />
+        ) : null}
+        <MenuItem
+          icon="notifications"
+          iconColor="#FF9800"
+          iconBackground="#FFF3E0"
+          title="Notifications"
+          subtitle="Manage your notifications"
+          onPress={() => router.push('/profile/notifications')}
+        />
+        <MenuItem
+          icon="help"
+          iconColor="#4CAF50"
+          iconBackground="#E8F5E9"
+          title="Help & Support"
+          subtitle="Get help and contact us"
+          onPress={() => setDialog('help')}
+        />
+        <MenuItem
+          icon="info"
+          iconColor="#607D8B"
+          iconBackground="#ECEFF1"
+          title="About"
+          subtitle="App version and information"
+          onPress={() => setDialog('about')}
+        />
+      </MenuGroup>
+
+      <MenuGroup>
+        <MenuItem
+          icon={user ? 'logout' : 'login'}
+          iconColor={user ? RED : brand.headerPink}
+          iconBackground={user ? '#FFEBEE' : brand.lightPink}
+          titleColor={user ? RED : brand.headerPink}
+          title={user ? 'Log Out' : 'Sign In'}
+          subtitle={user ? 'Sign out of your account' : 'Save your journey, bookmarks and posts'}
+          onPress={logout}
+        />
+      </MenuGroup>
+
+      <InfoDialog
+        visible={dialog === 'help'}
+        onClose={() => setDialog(null)}
+        title="Help & Support"
+        icon="help"
+        iconColor="#4CAF50"
+        iconBackground="#E8F5E9">
+        <AppText variant="titleMedium">Need assistance?</AppText>
+        <AppText secondary>For questions, feedback, or support, please contact us:</AppText>
+        <ContactItem icon="email" text="support@oncosense.app" />
+        <ContactItem icon="phone" text="+63 123 456 7890" />
+        <AppText variant="bodySmall" secondary>
+          You can also visit our FAQ section for common questions.
+        </AppText>
+      </InfoDialog>
+
+      <InfoDialog
+        visible={dialog === 'about'}
+        onClose={() => setDialog(null)}
+        title="OncoSense"
+        icon="favorite"
+        iconColor={brand.white}
+        iconBackground={brand.headerPink}>
+        <AppText variant="label" secondary>
+          Version {APP_VERSION}
+        </AppText>
+        <AppText>
+          OncoSense is a cancer awareness and education app designed to provide reliable information
+          about cancer types, prevention strategies, and support resources.
+        </AppText>
+        <AppText color={brand.headerPink} style={styles.italic}>
+          {APP_TAGLINE}
+        </AppText>
+        <AppText variant="bodySmall" secondary>
+          © 2024 OncoSense Team. All rights reserved.
+        </AppText>
+      </InfoDialog>
     </Screen>
   );
 }
 
+function ContactItem({ icon, text }: { icon: string; text: string }) {
+  return (
+    <View style={styles.contact}>
+      <MaterialIcon name={icon} size={18} color="#4CAF50" />
+      <AppText variant="label">{text}</AppText>
+    </View>
+  );
+}
+
+function ProfileHeader({
+  name,
+  email,
+  pictureUrl,
+  isGuest,
+}: {
+  name: string;
+  email: string;
+  pictureUrl: string | null;
+  isGuest: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <LinearGradient
+      colors={gradients.header}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.profileCard}>
+      <View style={styles.avatar}>
+        {pictureUrl && !failed ? (
+          <Image
+            source={{ uri: pictureUrl }}
+            style={styles.avatarImage}
+            contentFit="cover"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <AppText variant="headlineMedium" color={brand.headerPink} style={styles.bold}>
+            {(name[0] ?? 'U').toUpperCase()}
+          </AppText>
+        )}
+      </View>
+      <View style={styles.profileText}>
+        <AppText variant="titleLarge" color={brand.white} numberOfLines={1} style={styles.bold}>
+          {name}
+        </AppText>
+        <AppText variant="bodySmall" color="rgba(255,255,255,0.9)" numberOfLines={1}>
+          {email}
+        </AppText>
+        {!isGuest ? (
+          <View style={styles.memberBadge}>
+            <MaterialIcon name="verified" size={14} color={brand.white} />
+            <AppText style={styles.memberText}>Active Member</AppText>
+          </View>
+        ) : null}
+      </View>
+    </LinearGradient>
+  );
+}
+
 const styles = StyleSheet.create({
-  devLinks: {
+  bold: { fontFamily: 'Poppins_700Bold' },
+  italic: { fontStyle: 'italic' },
+  contact: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  profileCard: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 20,
+    borderRadius: radius.large,
+    shadowColor: brand.headerPink,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: brand.white,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
+    overflow: 'hidden',
   },
-  link: {
-    color: brand.primaryPink,
-    fontFamily: 'Poppins_600SemiBold',
+  avatarImage: { width: '100%', height: '100%' },
+  profileText: { flex: 1, gap: 4 },
+  memberBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
+  memberText: { fontSize: 11, color: brand.white, fontFamily: 'Poppins_600SemiBold' },
 });

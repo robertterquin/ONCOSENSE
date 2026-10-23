@@ -114,3 +114,20 @@ export function diagnosisDateFromMetadata(user: User | null): Date | null {
 export function cancerFreeDateFromMetadata(user: User | null): Date | null {
   return metadataDate(user, 'cancer_free_date');
 }
+
+/**
+ * Permanently deletes the account through the `delete-account` Edge Function
+ * (supabase/functions/delete-account). The Flutter app only cleared local data.
+ */
+export async function deleteAccount(): Promise<void> {
+  const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error) {
+    const status = (error as { context?: { status?: number } }).context?.status;
+    throw new ApiError(
+      status === 404
+        ? 'Account deletion is not set up yet. Please contact support@oncosense.app.'
+        : `Failed to delete account: ${error.message}`,
+      error,
+    );
+  }
+}
