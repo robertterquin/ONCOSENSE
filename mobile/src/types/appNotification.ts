@@ -53,3 +53,20 @@ const TYPE_ICONS: Record<string, string> = {
 export function appNotificationIcon(notification: AppNotification): string {
   return notification.iconName ?? TYPE_ICONS[notification.type] ?? 'notifications';
 }
+
+const TYPE_COLORS: Record<string, string> = {
+  health_tip: '#FFB300',
+  hydration: '#2196F3',
+  movement: '#4CAF50',
+  sun_protection: '#FF9800',
+  self_check: '#D81B60',
+  screening: '#9C27B0',
+  forum_reply: '#00BCD4',
+  forum_upvote: '#8BC34A',
+  weekly_check_in: '#3F51B5',
+};
+
+/** Accent color for the notification center card. */
+export function appNotificationColor(notification: AppNotification): string {
+  return TYPE_COLORS[notification.type] ?? '#D81B60';
+}
