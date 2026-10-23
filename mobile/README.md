@@ -10,7 +10,7 @@ The React Native (Expo) rewrite of OncoSense. The migration plan and progress li
    cd mobile
    npm install
    ```
-3. Copy `.env.example` to `.env` and fill in the Supabase URL and anon key (the same values as `SUPABASE_URL` / `SUPABASE_ANON_KEY` in the Flutter app's root `.env`).
+3. Copy `.env.example` to `.env` and fill in the Supabase project URL and anon key (Supabase dashboard → Project Settings → API).
 
 ## Run
 
