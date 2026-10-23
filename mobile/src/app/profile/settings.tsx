@@ -7,87 +7,25 @@ import { AppText } from '@/components/AppText';
 import { InfoDialog } from '@/components/InfoDialog';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PinkSwitch } from '@/components/PinkSwitch';
+import {
+  MasterSwitchItem,
+  ReminderSwitchItem,
+  TestNotificationItem,
+} from '@/components/profile/NotificationSwitches';
 import { MenuGroup, MenuHeading, MenuItem } from '@/components/profile/ProfileMenu';
 import { Screen } from '@/components/Screen';
 import { APP_TAGLINE, APP_VERSION } from '@/constants/app';
 import { CREDITS, MEDICAL_DISCLAIMER, PRIVACY_POLICY, TERMS_OF_SERVICE } from '@/constants/legal';
 import { useDeleteAccount } from '@/hooks/useAuth';
 import { useIsSignedIn } from '@/stores/authStore';
-import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
+import { NOTIFICATION_TYPES } from '@/stores/notificationStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { showToast } from '@/stores/toastStore';
 import { brand } from '@/theme/colors';
 import { radius } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-// Port of lib/screens/profile/settings_screen.dart. The notification switches are
-// saved now; Phase 6 schedules reminders from them and adds "Test Notification".
-
-const REMINDER_ROWS: {
-  type: NotificationType;
-  icon: string;
-  color: string;
-  background: string;
-  title: string;
-  subtitle: string;
-}[] = [
-  {
-    type: 'health_tips',
-    icon: 'lightbulb',
-    color: '#FF9800',
-    background: '#FFF3E0',
-    title: 'Daily Health Tips',
-    subtitle: 'Get daily cancer prevention tips at 9 AM',
-  },
-  {
-    type: 'hydration',
-    icon: 'water_drop',
-    color: '#2196F3',
-    background: '#E3F2FD',
-    title: 'Hydration Reminders',
-    subtitle: 'Stay hydrated throughout the day',
-  },
-  {
-    type: 'movement',
-    icon: 'directions_walk',
-    color: '#4CAF50',
-    background: '#E8F5E9',
-    title: 'Movement Reminders',
-    subtitle: 'Get reminders to stay active',
-  },
-  {
-    type: 'sun_protection',
-    icon: 'wb_sunny',
-    color: '#FFC107',
-    background: '#FFF8E1',
-    title: 'Sun Protection',
-    subtitle: 'Daily reminder at 10 AM',
-  },
-  {
-    type: 'self_check',
-    icon: 'favorite',
-    color: '#E91E63',
-    background: '#FCE4EC',
-    title: 'Self-Check Reminders',
-    subtitle: 'Monthly breast self-exam reminder',
-  },
-  {
-    type: 'weekly_checkin',
-    icon: 'spa',
-    color: '#9C27B0',
-    background: '#F3E5F5',
-    title: 'Weekly Wellness Check',
-    subtitle: 'Sunday morning wellness reminder',
-  },
-  {
-    type: 'forum',
-    icon: 'forum',
-    color: '#D81B60',
-    background: '#FCE4EC',
-    title: 'Forum Notifications',
-    subtitle: 'Replies and upvotes on your posts',
-  },
-];
+// Port of lib/screens/profile/settings_screen.dart.
 
 const LEGAL = {
   'Medical Disclaimer': MEDICAL_DISCLAIMER,
@@ -102,7 +40,6 @@ export default function SettingsScreen() {
   const signedIn = useIsSignedIn();
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const setDarkMode = useThemeStore((state) => state.setDarkMode);
-  const prefs = useNotificationPrefs();
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -112,37 +49,11 @@ export default function SettingsScreen() {
       header={<AppHeader title="Settings" subtitle="App preferences and privacy" showBackButton />}>
       <MenuHeading>Notifications</MenuHeading>
       <MenuGroup>
-        <MenuItem
-          icon="notifications"
-          iconColor="#2196F3"
-          iconBackground="#E3F2FD"
-          title="Push Notifications"
-          subtitle="Master switch for all notifications"
-          right={
-            <PinkSwitch
-              accessibilityLabel="Push Notifications"
-              value={prefs.enabled}
-              onValueChange={prefs.setEnabled}
-            />
-          }
-        />
-        {REMINDER_ROWS.map((row) => (
-          <MenuItem
-            key={row.type}
-            icon={row.icon}
-            iconColor={row.color}
-            iconBackground={row.background}
-            title={row.title}
-            subtitle={row.subtitle}
-            right={
-              <PinkSwitch
-                accessibilityLabel={row.title}
-                value={prefs.types[row.type]}
-                onValueChange={(value) => prefs.setType(row.type, value)}
-              />
-            }
-          />
+        <MasterSwitchItem />
+        {NOTIFICATION_TYPES.map((type) => (
+          <ReminderSwitchItem key={type} type={type} />
         ))}
+        <TestNotificationItem />
       </MenuGroup>
 
       <MenuHeading>Appearance</MenuHeading>

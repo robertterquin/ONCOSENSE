@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { userDisplayName, userProfilePictureUrl } from '@/api/auth';
@@ -18,12 +18,14 @@ import {
   useHealthReminders,
   useSurvivorStory,
 } from '@/hooks/useHome';
+import { addSampleNotificationsOnce, sendTestNotification } from '@/lib/notifications/service';
 import { useUser } from '@/stores/authStore';
+import { useUnreadNotificationCount } from '@/stores/notificationHistoryStore';
+import { showToast } from '@/stores/toastStore';
 import { brand } from '@/theme/colors';
 import { useTheme } from '@/theme/useTheme';
 
-// Port of lib/screens/home/home_screen.dart. Notification-center features (badge
-// count, sample notifications, long-press test notification) arrive in Phase 6.
+// Port of lib/screens/home/home_screen.dart.
 
 export default function HomeTab() {
   const user = useUser();
@@ -31,6 +33,8 @@ export default function HomeTab() {
   const reminders = useHealthReminders();
   const story = useSurvivorStory();
   const articles = useCancerArticles();
+
+  useEffect(() => addSampleNotificationsOnce(), []);
 
   const refresh = () => Promise.all([reminders.refetch(), story.refetch(), articles.refetch()]);
 
@@ -117,14 +121,31 @@ function ArticlesMessage({ icon, text }: { icon: string; text: string }) {
 function HeaderActions({ pictureUrl }: { pictureUrl: string | null }) {
   const [pictureFailed, setPictureFailed] = useState(false);
   const { isDark } = useTheme();
+  const unread = useUnreadNotificationCount();
+
+  // Long-press sends a test notification, like the Flutter app.
+  const onLongPress = async () => {
+    await sendTestNotification();
+    showToast('✅ Test notification sent! Check the notification center.', 'success');
+  };
+
   return (
     <View style={styles.actions}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Notifications"
+        accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+        accessibilityHint="Long-press to send a test notification"
         onPress={() => router.push('/notifications')}
+        onLongPress={onLongPress}
         style={styles.bell}>
         <MaterialIcon name="notifications_none" size={24} color={brand.white} />
+        {unread > 0 ? (
+          <View style={styles.badge}>
+            <AppText style={styles.badgeText} color={brand.white}>
+              {unread > 9 ? '9+' : String(unread)}
+            </AppText>
+          </View>
+        ) : null}
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -174,6 +195,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  badge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: '#FF5252',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10,
+    lineHeight: 14,
   },
   avatar: {
     width: 45,

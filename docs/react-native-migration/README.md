@@ -51,7 +51,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Done (real sign-in to verify) |
 | 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Done (signed-in actions to verify) |
 | 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Done (signed-in checks + deploy `delete-account`) |
-| 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Not started |
+| 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Done (device checks to do) |
 | 7 | QA, parity check & release | [08-phase-7-qa-release.md](08-phase-7-qa-release.md) | 1–2 weeks | Not started |
 | 8 | Cutover & Flutter retirement | [09-phase-8-cutover.md](09-phase-8-cutover.md) | 2–3 days | Not started |
 
@@ -112,4 +112,6 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-23 | Notification preferences stored now (Phase 5); scheduling in Phase 6 | Settings needs the switches; reminders come with expo-notifications | — |
 | 2026-10-23 | Replaces the 2026-10-22 `react-native-migration` branch decision: each phase branch merges straight into `main` and is deleted; the `react-native-migration` branch is removed | Simpler; no long-lived branch to keep in sync. Safe because `mobile/` is separate from the Flutter code | Robert |
 | 2026-10-23 | `react-hook-form` / `zod` / `@hookform/resolvers` installed in Phase 3, not Phase 1 | `@hookform/resolvers` 6 has a peer-dependency conflict today; forms aren't needed until Phase 3 | — |
-| _pending_ | Port the unused forum/resource notification methods, or drop them | See Phase 6 | — |
+| 2026-10-23 | Drop Flutter's forum/resource notification methods; keep the Forum switch | They were never called; real forum alerts need push notifications, which is new scope for after cutover | — |
+| 2026-10-23 | Reminders use `bestEffort` delivery instead of exact alarms | Exact alarms need `SCHEDULE_EXACT_ALARM`, denied by default on Android 14 and limited by Google Play; reminders may be a few minutes late | — |
+| 2026-10-23 | Delivered reminders are kept in the notification center, and tapping one opens a related screen | Flutter never stored scheduled reminders and its tap handler was a TODO | — |

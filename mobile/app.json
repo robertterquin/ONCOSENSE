@@ -41,6 +41,12 @@
           "photosPermission": "OncoSense uses your photos to set your profile picture.",
           "cameraPermission": "OncoSense uses the camera to take your profile picture."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#D81B60"
+        }
       ]
     ],
     "experiments": {
