@@ -53,7 +53,7 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Done (signed-in checks + deploy `delete-account`) |
 | 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Done (device checks to do) |
 | 7 | QA, parity check & release | [08-phase-7-qa-release.md](08-phase-7-qa-release.md) | 1–2 weeks | In progress |
-| 8 | Cutover & Flutter retirement | [09-phase-8-cutover.md](09-phase-8-cutover.md) | 2–3 days | Not started |
+| 8 | Cutover & Flutter retirement | [09-phase-8-cutover.md](09-phase-8-cutover.md) | 2–3 days | In progress (Flutter removed; release and cleanup after it) |
 
 Estimates assume one developer working full time. Update the **Status** column (`Not started` / `In progress` / `Done`) as each phase finishes.
 
@@ -118,3 +118,6 @@ Record every decision that changes this plan. Add new rows at the bottom.
 | 2026-10-23 | Light-mode secondary text darkened from Flutter's `#BDBDBD` to `#757575` | `#BDBDBD` on white is 1.9:1; WCAG AA needs 4.5:1 | — |
 | 2026-10-23 | `mobile/ios` and `mobile/android` are generated (Continuous Native Generation) and not committed | Native settings live in `app.json`; avoids hand-edited native projects drifting | — |
 | 2026-10-23 | Maestro's signed-in flow starts from login with a test account; registration isn't automated | Development uses the production Supabase project, so each run would create a real account | — |
+| 2026-10-23 | Cut over (remove Flutter from `main`) before the React Native release, not two weeks after it | Robert's call. Flutter stays restorable from the `flutter-final` tag and `archive/flutter` branch; any Flutter hotfix is built there until the new app ships | Robert |
+| 2026-10-23 | After cutover the app stays in `mobile/` | No path changes for CI, EAS or docs; room for `supabase/` alongside | Robert |
+| 2026-10-23 | The `news` Edge Function moves to `main` in Phase 8; `fix/gnews-key`'s Flutter change is dropped | The React Native app calls `news`; the Flutter service it changed no longer exists on `main` | — |
