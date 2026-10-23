@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppHeader } from '@/components/AppHeader';
+import { PinkSwitch } from '@/components/PinkSwitch';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { FormField } from '@/components/FormField';
@@ -116,12 +117,10 @@ export default function AskQuestionScreen() {
                   Your name won&apos;t be shown
                 </AppText>
               </View>
-              <Switch
+              <PinkSwitch
                 accessibilityLabel="Post anonymously"
                 value={field.value}
                 onValueChange={field.onChange}
-                trackColor={{ true: brand.mediumPink }}
-                thumbColor={field.value ? brand.headerPink : undefined}
               />
             </View>
           )}

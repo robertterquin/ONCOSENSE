@@ -111,3 +111,23 @@ export function formatTimeAgo(date: Date, now: Date = new Date()): string {
   if (minutes > 0) return `${minutes}m ago`;
   return 'Just now';
 }
+
+const LONG_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+/** "October 22, 2026" */
+export function formatLongDate(date: Date): string {
+  return `${LONG_MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}

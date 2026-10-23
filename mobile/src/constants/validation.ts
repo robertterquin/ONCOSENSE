@@ -147,3 +147,45 @@ export const askQuestionSchema = z.object({
   isAnonymous: z.boolean(),
 });
 export type AskQuestionForm = z.input<typeof askQuestionSchema>;
+
+// ---- Profile ----
+
+export const PROFILE_GENDER_OPTIONS = ['Male', 'Female', 'Other', 'Prefer not to say'] as const;
+
+export const editProfileSchema = z.object({
+  fullName: z.string().trim().min(1, 'Please enter your name'),
+  // Edit Profile accepts 1–150 (the register screen uses 13–120), same as Flutter.
+  age: z
+    .string()
+    .trim()
+    .refine((value) => {
+      if (value === '') return true;
+      if (!/^[+-]?\d+$/.test(value)) return false;
+      const age = Number(value);
+      return age >= 1 && age <= 150;
+    }, 'Please enter a valid age'),
+  gender: z.string().nullable(),
+});
+export type EditProfileForm = z.input<typeof editProfileSchema>;
+
+const changePasswordFields = z.object({
+  email: emailSchema,
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: newPasswordSchema,
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+});
+
+export const changePasswordSchema = changePasswordFields.refine(
+  (form) => form.newPassword === form.confirmPassword,
+  {
+    path: ['confirmPassword'],
+    message: MESSAGES.passwordMismatch,
+    when: (payload) => {
+      const { newPassword, confirmPassword } = payload.value as Record<string, unknown>;
+      return (
+        typeof newPassword === 'string' && typeof confirmPassword === 'string' && !!confirmPassword
+      );
+    },
+  },
+);
+export type ChangePasswordForm = z.input<typeof changePasswordSchema>;

@@ -10,17 +10,12 @@ import { Button } from '@/components/Button';
 import { Checkbox } from '@/components/Checkbox';
 import { FormField } from '@/components/FormField';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PasswordChecklist } from '@/components/PasswordChecklist';
 import { GENDER_OPTIONS } from '@/constants/app';
-import {
-  MESSAGES,
-  PASSWORD_REQUIREMENTS,
-  registerSchema,
-  type RegisterForm,
-} from '@/constants/validation';
+import { MESSAGES, registerSchema, type RegisterForm } from '@/constants/validation';
 import { useSignUp } from '@/hooks/useAuth';
 import { showToast } from '@/stores/toastStore';
 import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
 
 // Port of lib/screens/auth/register_screen.dart
 
@@ -93,26 +88,7 @@ export default function RegisterScreen() {
         leftIcon={<MaterialIcon name="lock-outline" size={22} color="#757575" />}
       />
 
-      <View style={styles.requirements} accessibilityLabel="Password requirements">
-        <AppText variant="label" color="#424242">
-          Password must have:
-        </AppText>
-        {PASSWORD_REQUIREMENTS.map((rule) => {
-          const met = rule.test(password ?? '');
-          return (
-            <View key={rule.label} style={styles.requirement}>
-              <MaterialIcon
-                name={met ? 'check_circle' : 'radio_button_unchecked'}
-                size={16}
-                color={met ? '#43A047' : '#BDBDBD'}
-              />
-              <AppText variant="bodySmall" color={met ? '#43A047' : '#757575'}>
-                {rule.label}
-              </AppText>
-            </View>
-          );
-        })}
-      </View>
+      <PasswordChecklist password={password ?? ''} />
 
       <FormField
         control={control}
@@ -192,18 +168,6 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  requirements: {
-    gap: 4,
-    padding: 12,
-    borderRadius: radius.medium,
-    backgroundColor: '#FAFAFA',
-    marginTop: -4,
-  },
-  requirement: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   gender: {
     gap: 8,
   },

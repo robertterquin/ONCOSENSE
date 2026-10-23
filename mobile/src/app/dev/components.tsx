@@ -1,8 +1,9 @@
 import { Redirect } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Switch, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppHeader } from '@/components/AppHeader';
+import { PinkSwitch } from '@/components/PinkSwitch';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -28,13 +29,7 @@ export default function ComponentGalleryScreen() {
       header={<AppHeader title="Component Gallery" subtitle="Phase 2 shared UI" showBackButton />}>
       <Card style={styles.row}>
         <AppText variant="titleMedium">Dark mode</AppText>
-        <Switch
-          accessibilityLabel="Dark mode"
-          value={isDarkMode}
-          onValueChange={setDarkMode}
-          trackColor={{ true: brand.mediumPink }}
-          thumbColor={isDarkMode ? brand.primaryPink : undefined}
-        />
+        <PinkSwitch accessibilityLabel="Dark mode" value={isDarkMode} onValueChange={setDarkMode} />
       </Card>
 
       <Card>

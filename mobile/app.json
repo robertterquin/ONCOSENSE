@@ -33,7 +33,15 @@
           "imageWidth": 160
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "OncoSense uses your photos to set your profile picture.",
+          "cameraPermission": "OncoSense uses the camera to take your profile picture."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
