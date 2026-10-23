@@ -35,7 +35,8 @@ export const lightColors: ColorScheme = {
   surface: '#FFFFFF',
   card: '#FFFFFF',
   text: '#212121',
-  textSecondary: '#BDBDBD',
+  // Flutter used #BDBDBD (1.9:1 on white); darkened to meet WCAG AA contrast (4.6:1).
+  textSecondary: '#757575',
   divider: '#F5F5F5',
   inputFill: '#F5F5F5',
   inputPlaceholder: 'rgba(189, 189, 189, 0.6)',

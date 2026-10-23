@@ -76,7 +76,7 @@ export default function LoginScreen() {
 
       <View style={styles.divider}>
         <View style={styles.line} />
-        <AppText color="#BDBDBD">OR</AppText>
+        <AppText color="#757575">OR</AppText>
         <View style={styles.line} />
       </View>
 

@@ -172,7 +172,7 @@ function NotificationCard({ notification }: { notification: AppNotification }) {
             <AppText
               variant="bodySmall"
               style={styles.time}
-              color={isDark ? 'rgba(255,255,255,0.54)' : '#9E9E9E'}>
+              color={isDark ? 'rgba(255,255,255,0.54)' : '#757575'}>
               {appNotificationTimeAgo(notification)}
             </AppText>
           </View>

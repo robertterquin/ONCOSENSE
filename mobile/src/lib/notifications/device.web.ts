@@ -35,6 +35,10 @@ export async function scheduledIdentifiers(): Promise<string[]> {
   return [];
 }
 
+export async function scheduledSummary(): Promise<{ identifier: string; trigger: string }[]> {
+  return [];
+}
+
 export async function cancelReminders(_identifiers: string[]): Promise<void> {}
 
 export async function cancelAllReminders(): Promise<void> {}

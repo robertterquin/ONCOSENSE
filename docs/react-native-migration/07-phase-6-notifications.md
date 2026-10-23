@@ -76,7 +76,7 @@ Good news from the inventory: everything is **local** scheduling (no push server
 - [x] Everything builds, typechecks, lints, and the iOS/Android bundles export; `expo-doctor` passes.
 - [x] 76 unit tests pass (new: weekday mapping, schedule times/count/identifiers, first launch, toggles, master switch, history, persistence, tap routes).
 - [x] Notification center, badge, settings switches and test notification checked on web.
-- [ ] With all types on, `getAllScheduledNotificationsAsync` lists the 14 reminders above (device check).
+- [x] With all types on, `getAllScheduledNotificationsAsync` lists the 14 reminders above — checked in the iOS Simulator (iPhone 17 Pro) on the development screen `/dev/notifications`: correct times, half-past movement slots, day 1 for the self-exam, `weekday: 1` (Sunday) for the check-in. Still to check on an Android device.
 - [ ] Reminders fire on a real Android device (including after reboot) and a real iPhone, with the app closed.
 - [ ] Toggling any type in Settings adds/removes only that type's reminders on the device.
 - [ ] Tapping a delivered reminder opens the right screen, from the background and from a closed app.

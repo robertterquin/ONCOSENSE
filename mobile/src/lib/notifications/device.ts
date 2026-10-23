@@ -136,6 +136,18 @@ export async function scheduledIdentifiers(): Promise<string[]> {
   return requests.map((request) => request.identifier);
 }
 
+/** Pending reminders with a readable trigger, for the development check screen. */
+export async function scheduledSummary(): Promise<{ identifier: string; trigger: string }[]> {
+  const requests = await Notifications.getAllScheduledNotificationsAsync();
+  return requests.map((request) => {
+    const { channelId: _channelId, ...trigger } = (request.trigger ?? {}) as Record<
+      string,
+      unknown
+    >;
+    return { identifier: request.identifier, trigger: JSON.stringify(trigger) };
+  });
+}
+
 export async function cancelReminders(identifiers: string[]): Promise<void> {
   await Promise.all(
     identifiers.map((identifier) => Notifications.cancelScheduledNotificationAsync(identifier)),

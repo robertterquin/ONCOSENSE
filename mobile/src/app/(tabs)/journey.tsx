@@ -19,7 +19,7 @@ import {
 import { JourneySetupFlow } from '@/components/journey/JourneySetupFlow';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { TAB_BAR_CLEARANCE } from '@/components/Screen';
-import { EmptyState, LoadingState } from '@/components/StateViews';
+import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
 import {
   useJourneyEntries,
   useJourneySetup,
@@ -70,6 +70,8 @@ function JourneyTracker() {
   const [adding, setAdding] = useState(false);
 
   const loading = entries.isPending || treatments.isPending || milestones.isPending;
+  // Offline or a failed request: say so instead of showing an empty journey.
+  const failed = [entries, treatments, milestones].some((query) => query.isError && !query.data);
   const refreshing = entries.isRefetching || treatments.isRefetching || milestones.isRefetching;
   const refresh = () => {
     entries.refetch();
@@ -141,6 +143,11 @@ function JourneyTracker() {
         }>
         {loading ? (
           <LoadingState />
+        ) : failed ? (
+          <ErrorState
+            message="Couldn't load your journey. Check your connection and try again."
+            onRetry={refresh}
+          />
         ) : tab === 'Dashboard' ? (
           <>
             <View style={styles.stats}>

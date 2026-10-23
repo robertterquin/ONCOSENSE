@@ -35,7 +35,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: brand.headerPink,
-        tabBarInactiveTintColor: isDark ? colors.textSecondary : '#9E9E9E',
+        tabBarInactiveTintColor: isDark ? colors.textSecondary : '#757575',
         tabBarStyle: {
           position: 'absolute',
           marginHorizontal: 12,
