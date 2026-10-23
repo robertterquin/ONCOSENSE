@@ -85,7 +85,7 @@ export function EmojiScale({
             <AppText
               style={[
                 styles.scaleLabel,
-                { color: selected ? color : isDark ? 'rgba(255,255,255,0.6)' : '#9E9E9E' },
+                { color: selected ? color : isDark ? 'rgba(255,255,255,0.6)' : '#757575' },
               ]}>
               {option.label}
             </AppText>
@@ -115,7 +115,7 @@ export function LevelSlider({
   accessibilityLabel: string;
 }) {
   const { isDark } = useTheme();
-  const muted = isDark ? 'rgba(255,255,255,0.6)' : '#9E9E9E';
+  const muted = isDark ? 'rgba(255,255,255,0.6)' : '#757575';
   return (
     <FormBox>
       <View style={styles.sliderLabels}>

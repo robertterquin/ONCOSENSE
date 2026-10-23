@@ -16,7 +16,8 @@ import { useTheme } from '@/theme/useTheme';
 
 // Port of lib/screens/profile/notifications_screen.dart.
 
-const BLUE = '#2196F3';
+// Flutter used #2196F3; white text on it is only 3.1:1, so a darker blue (4.6:1).
+const BLUE = '#1976D2';
 
 export default function NotificationSettingsScreen() {
   const { isDark } = useTheme();

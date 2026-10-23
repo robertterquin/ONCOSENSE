@@ -1,0 +1,58 @@
+# Signed-in flow with a throwaway TEST account (never a real user's). It writes to the
+# Supabase project in .env: a journal entry, a question, an answer, an upvote and a
+# bookmark. Delete the test data afterwards.
+#
+#   maestro test -e EMAIL=test@example.com -e PASSWORD='…' .maestro/signed-in.yaml
+appId: com.oncosense.app
+---
+- launchApp:
+    clearState: true
+- tapOn: 'I already have an account'
+- tapOn: 'Enter your email'
+- inputText: ${EMAIL}
+- tapOn: 'Enter your password'
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn: 'Login'
+- assertVisible: 'Hello, .*'
+
+# Journey: add today's entry
+- tapOn: 'Journey'
+- tapOn: 'Add to journey'
+- tapOn: 'Daily Journal Entry'
+- scrollUntilVisible:
+    element: 'Save Entry|Update Entry'
+- tapOn: 'Save Entry|Update Entry'
+
+# Forum: ask, answer, upvote, bookmark
+- tapOn: 'Forum'
+- tapOn: 'Ask a Question'
+- tapOn: 'What would you like to know?'
+- inputText: 'Maestro test question'
+- tapOn: 'Provide more details.*'
+- inputText: 'Automated test post. Safe to delete.'
+- hideKeyboard
+- tapOn: 'Post Question'
+- tapOn: 'Maestro test question.*'
+- tapOn: 'Write your answer'
+- inputText: 'Automated test answer.'
+- tapOn: 'Post answer'
+- tapOn: 'Upvote.*'
+- tapOn: 'Save question'
+- assertVisible: 'Remove saved question'
+- tapOn: 'Go back'
+
+# Saved questions
+- tapOn: 'Home'
+- tapOn: 'Profile'
+- tapOn: 'Saved Questions'
+- assertVisible: 'Maestro test question.*'
+- tapOn: 'Go back'
+
+# Theme and sign out
+- tapOn: 'Settings'
+- tapOn: 'Dark Mode'
+- tapOn: 'Go back'
+- tapOn: 'Log Out'
+- tapOn: 'Logout'
+- assertVisible: 'Create an account'
