@@ -11,6 +11,7 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 | `mobile/` | The app (Expo, TypeScript, Expo Router). Its own [README](mobile/README.md) has every command. |
 | `supabase/` | Edge Functions (`news`, `delete-account`) and the Supabase CLI config |
 | `*_SETUP.sql`, `CANCER_DATA_SETUP.md` | SQL and notes for the Supabase tables |
+| `docs/redesign/` | The approved redesign and narrowed scope, phase by phase |
 | `docs/react-native-migration/` | How the app was migrated from Flutter, phase by phase, with the decision log |
 | `docs/archive/flutter/` | Notes from the Flutter era, kept for reference |
 | `.github/workflows/mobile.yml` | CI: lint, typecheck and tests on every pull request and push to `main` |
