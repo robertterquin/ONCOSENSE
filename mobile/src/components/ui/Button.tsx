@@ -1,0 +1,163 @@
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+
+import type { Palette } from '@/theme/palette';
+import { radii, sizes, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
+
+import { Icon, type IconName } from './Icon';
+import { Text } from './Text';
+
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'quiet'
+  | 'help'
+  | 'destructive'
+  /** White button on the night-violet panel. */
+  | 'onPanel'
+  /** Text-only button on the night-violet panel. */
+  | 'onPanelQuiet';
+
+type ButtonProps = {
+  title: string;
+  onPress: () => void;
+  variant?: ButtonVariant;
+  icon?: IconName;
+  loading?: boolean;
+  disabled?: boolean;
+  /** Stretches to the container's width (default) or hugs the label. */
+  fullWidth?: boolean;
+  accessibilityHint?: string;
+  style?: StyleProp<ViewStyle>;
+};
+
+type Look = {
+  background: keyof Palette | 'transparent';
+  text: keyof Palette;
+  border?: keyof Palette;
+};
+
+const LOOKS: Record<ButtonVariant, Look> = {
+  primary: { background: 'action', text: 'onAction' },
+  secondary: { background: 'surface', text: 'action', border: 'border' },
+  quiet: { background: 'transparent', text: 'action' },
+  help: { background: 'help', text: 'surface' },
+  destructive: { background: 'surface', text: 'danger', border: 'border' },
+  onPanel: { background: 'onPanel', text: 'panel' },
+  onPanelQuiet: { background: 'transparent', text: 'onPanel' },
+};
+
+/** Labeled button, 54 pt tall (a touch target that is easy to hit when tired). */
+export function Button({
+  title,
+  onPress,
+  variant = 'primary',
+  icon,
+  loading = false,
+  disabled = false,
+  fullWidth = true,
+  accessibilityHint,
+  style,
+}: ButtonProps) {
+  const { palette } = useDesign();
+  const look = LOOKS[variant];
+  const inactive = disabled || loading;
+  const textColor = palette[look.text];
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        !fullWidth && styles.hug,
+        {
+          backgroundColor:
+            look.background === 'transparent' ? 'transparent' : palette[look.background],
+          borderColor: look.border ? palette[look.border] : 'transparent',
+        },
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+        style,
+      ]}>
+      {loading ? (
+        <ActivityIndicator color={textColor} />
+      ) : (
+        <View style={styles.content}>
+          {icon ? <Icon name={icon} size={20} color={textColor} /> : null}
+          <Text variant="strong" color={textColor} numberOfLines={1}>
+            {title}
+          </Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+type IconButtonProps = {
+  icon: IconName;
+  /** Read by screen readers ("Call Philippine Cancer Society, (02) 8508-7777"). */
+  accessibilityLabel: string;
+  onPress: () => void;
+  /** `plain`: no background; `tinted`: lavender; `help`: teal tint for calling. */
+  look?: 'plain' | 'tinted' | 'help';
+  size?: number;
+  style?: StyleProp<ViewStyle>;
+};
+
+/** Round icon-only button, at least 44 pt. */
+export function IconButton({
+  icon,
+  accessibilityLabel,
+  onPress,
+  look = 'plain',
+  size = 48,
+  style,
+}: IconButtonProps) {
+  const { palette } = useDesign();
+  const background =
+    look === 'tinted' ? palette.raised : look === 'help' ? palette.helpTint : 'transparent';
+  const color = look === 'help' ? palette.help : palette.action;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      hitSlop={Math.max(0, (sizes.touch - size) / 2)}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.iconButton,
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: background },
+        pressed && styles.pressed,
+        style,
+      ]}>
+      <Icon name={icon} size={Math.round(size * 0.44)} color={color} />
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    minHeight: sizes.button,
+    paddingHorizontal: space.xl,
+    borderRadius: radii.control,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hug: { alignSelf: 'flex-start' },
+  content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  pressed: { opacity: 0.8 },
+  disabled: { opacity: 0.45 },
+  iconButton: { alignItems: 'center', justifyContent: 'center' },
+});

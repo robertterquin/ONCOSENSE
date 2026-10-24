@@ -1,21 +1,29 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { brand } from '@/theme/colors';
-import { spacing } from '@/theme/tokens';
-import { useTheme } from '@/theme/useTheme';
+import { radii, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
 
-import { AppText } from './AppText';
-import { Button } from './Button';
 import { MaterialIcon } from './MaterialIcon';
+import { Button } from './ui/Button';
+import { Icon, ICON_NAMES, type IconName } from './ui/Icon';
+import { Text } from './ui/Text';
+
+// Loading, error and empty states in the redesign style. Screens not yet redesigned
+// pass Material icon names; those still render until every screen uses Lucide names.
 
 export function LoadingState({ message }: { message?: string }) {
+  const { palette } = useDesign();
   return (
     <View
       style={styles.container}
       accessibilityRole="progressbar"
       accessibilityLabel={message ?? 'Loading'}>
-      <ActivityIndicator size="large" color={brand.primaryPink} />
-      {message ? <AppText secondary>{message}</AppText> : null}
+      <ActivityIndicator size="large" color={palette.action} />
+      {message ? (
+        <Text variant="supporting" tone="muted">
+          {message}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -28,10 +36,20 @@ type ErrorStateProps = {
 
 export function ErrorState({ message = 'Something went wrong.', onRetry }: ErrorStateProps) {
   return (
-    <View style={styles.container}>
-      <MaterialIcon name="error_outline" size={48} color={brand.error} />
-      <AppText style={styles.centered}>{message}</AppText>
-      {onRetry ? <Button title="Retry" onPress={onRetry} outlined style={styles.button} /> : null}
+    <View style={styles.container} accessibilityLiveRegion="polite">
+      <StateIcon name="circle-alert" tone="danger" />
+      <Text variant="body" style={styles.centered}>
+        {message}
+      </Text>
+      {onRetry ? (
+        <Button
+          title="Try again"
+          onPress={onRetry}
+          variant="secondary"
+          fullWidth={false}
+          style={styles.button}
+        />
+      ) : null}
     </View>
   );
 }
@@ -39,23 +57,36 @@ export function ErrorState({ message = 'Something went wrong.', onRetry }: Error
 type EmptyStateProps = {
   title: string;
   message?: string;
-  /** Material icon name. */
-  icon?: string;
+  /** Lucide icon name (or, on older screens, a Material icon name). */
+  icon?: IconName | string;
 };
 
-export function EmptyState({ title, message, icon = 'inbox' }: EmptyStateProps) {
-  const { colors } = useTheme();
+export function EmptyState({ title, message, icon = 'info' }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <MaterialIcon name={icon} size={56} color={colors.textSecondary} />
-      <AppText variant="titleMedium" style={styles.centered}>
+      <StateIcon name={icon} tone="muted" />
+      <Text variant="section" style={styles.centered}>
         {title}
-      </AppText>
+      </Text>
       {message ? (
-        <AppText secondary style={styles.centered}>
+        <Text variant="body" tone="muted" style={styles.centered}>
           {message}
-        </AppText>
+        </Text>
       ) : null}
+    </View>
+  );
+}
+
+function StateIcon({ name, tone }: { name: string; tone: 'muted' | 'danger' }) {
+  const { palette } = useDesign();
+  const isLucide = (ICON_NAMES as string[]).includes(name);
+  return (
+    <View style={[styles.iconCircle, { backgroundColor: palette.raised }]}>
+      {isLucide ? (
+        <Icon name={name as IconName} size={36} tone={tone} />
+      ) : (
+        <MaterialIcon name={name} size={36} color={palette[tone]} />
+      )}
     </View>
   );
 }
@@ -64,14 +95,17 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.large,
-    gap: spacing.small,
+    padding: space.xxl,
+    gap: space.md,
   },
-  centered: {
-    textAlign: 'center',
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: space.xs,
   },
-  button: {
-    alignSelf: 'center',
-    marginTop: spacing.small,
-  },
+  centered: { textAlign: 'center', maxWidth: 320 },
+  button: { alignSelf: 'center', marginTop: space.xs },
 });
