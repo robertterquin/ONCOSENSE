@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
 
 import {
@@ -28,9 +28,12 @@ export default function LearnTab() {
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const [riskY, setRiskY] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (section === 'risk' && riskY !== null) scrollRef.current?.scrollTo({ y: riskY });
-  }, [section, riskY]);
+  // On every visit with `?section=risk` (the tab stays mounted), once it's laid out.
+  useFocusEffect(
+    useCallback(() => {
+      if (section === 'risk' && riskY !== null) scrollRef.current?.scrollTo({ y: riskY });
+    }, [section, riskY]),
+  );
 
   const queries = [cancers, tips, checks.query];
   const failed = queries.find((query) => query.isError);

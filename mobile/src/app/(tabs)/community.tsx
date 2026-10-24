@@ -1,196 +1,132 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import type { QuestionSort } from '@/api/forum';
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { QuestionListCard } from '@/components/forum/ForumParts';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { Screen } from '@/components/Screen';
-import { SearchBar } from '@/components/SearchBar';
+import { QuestionRow } from '@/components/forum/QuestionRow';
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
+import { Banner, Button, Chip, Screen, SearchField, Section } from '@/components/ui';
 import { useQuestions } from '@/hooks/useForum';
 import { useNow } from '@/hooks/useNow';
-import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
-import { useTheme } from '@/theme/useTheme';
-import { FORUM_CATEGORIES, forumCategoryIcon } from '@/types/question';
+import { confirm } from '@/lib/confirm';
+import { useIsSignedIn } from '@/stores/authStore';
+import { space } from '@/theme/tokens';
+import { FORUM_CATEGORIES } from '@/types/question';
 
-// Port of lib/screens/forum/forum_screen.dart. Flutter's category dropdown and sort
-// menu are shown as chips here, which are quicker to tap on a phone.
+// The Community tab (redesign Phase 5): questions by topic, with the guard banner and
+// an "Ask a question" button above the tab bar. Guests can read but are asked to sign
+// in before posting.
 
-const SORTS: { value: QuestionSort; label: string; icon: string }[] = [
-  { value: 'recent', label: 'Most Recent', icon: 'access_time' },
-  { value: 'trending', label: 'Trending', icon: 'trending_up' },
-  { value: 'unanswered', label: 'Unanswered', icon: 'help_outline' },
-];
+/** Opens the composer, or asks a guest to sign in first. */
+async function askQuestion(signedIn: boolean) {
+  if (signedIn) {
+    router.push('/community/ask');
+    return;
+  }
+  const ok = await confirm({
+    title: 'Sign in to ask',
+    message: 'Questions are posted from your account, so you can follow the answers.',
+    confirmText: 'Sign in',
+    cancelText: 'Not now',
+  });
+  if (ok) router.push('/login');
+}
 
-export default function ForumTab() {
+export default function CommunityTab() {
+  const signedIn = useIsSignedIn();
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<QuestionSort>('recent');
-  // Refresh relative times ("2 minutes ago") every 10 seconds, like Flutter.
+  // Keep "2 minutes ago" fresh.
   const now = useNow(10_000);
+  const questions = useQuestions({ category, searchQuery, sortBy: 'recent' });
 
-  const questions = useQuestions({ category, searchQuery, sortBy });
-
-  // Search runs on submit, and clearing the box resets it (same as Flutter).
+  // Search runs on submit, and clearing the box resets it.
   const onChangeSearch = (text: string) => {
     setSearchText(text);
     if (!text) setSearchQuery(null);
   };
 
   return (
-    <Screen
-      inTabs
-      background="surface"
-      onRefresh={() => questions.refetch()}
-      refreshing={questions.isRefetching}
-      header={<AppHeader title="Q&A Forum" subtitle="Ask questions, share experiences" />}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push('/community/ask')}
-        style={({ pressed }) => [styles.askButton, pressed && styles.pressed]}>
-        <MaterialIcon name="add" size={22} color={brand.white} />
-        <AppText variant="button" color={brand.white}>
-          Ask a Question
-        </AppText>
-      </Pressable>
-
-      <SearchBar
-        value={searchText}
-        onChangeText={onChangeSearch}
-        onSubmit={() => setSearchQuery(searchText.trim() || null)}
-        placeholder="Search discussions..."
-      />
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}>
-        <Chip
-          label="All Categories"
-          icon="category"
-          selected={!category}
-          onPress={() => setCategory(null)}
+    <View style={styles.fill}>
+      <Screen
+        inTabs
+        title="Community"
+        subtitle="Questions and experiences from people who've been there"
+        onRefresh={() => questions.refetch()}
+        refreshing={questions.isRefetching}>
+        <SearchField
+          accessibilityLabel="Search questions"
+          placeholder="Search questions"
+          value={searchText}
+          onChangeText={onChangeSearch}
+          onSubmitEditing={() => setSearchQuery(searchText.trim() || null)}
         />
-        {FORUM_CATEGORIES.map((option) => (
-          <Chip
-            key={option}
-            label={`${forumCategoryIcon(option)} ${option}`}
-            selected={category === option}
-            onPress={() => setCategory(option)}
-          />
-        ))}
-      </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.topics}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Topic">
+          {[null, ...FORUM_CATEGORIES].map((topic) => (
+            <Chip
+              key={topic ?? 'all'}
+              kind="radio"
+              label={topic ?? 'All'}
+              selected={category === topic}
+              onPress={() => setCategory(topic)}
+            />
+          ))}
+        </ScrollView>
+        <Banner tone="guard">
+          Share experiences, not diagnoses. Answers here are from members, not doctors.
+        </Banner>
 
-      <View style={styles.sortRow} accessibilityRole="radiogroup" accessibilityLabel="Sort by">
-        {SORTS.map((sort) => (
-          <Chip
-            key={sort.value}
-            label={sort.label}
-            icon={sort.icon}
-            selected={sortBy === sort.value}
-            onPress={() => setSortBy(sort.value)}
-            radio
+        {questions.isPending ? (
+          <LoadingState message="Loading questions" />
+        ) : questions.isError ? (
+          <ErrorState
+            message="Couldn't load questions. Check your connection and try again."
+            onRetry={() => questions.refetch()}
           />
-        ))}
+        ) : questions.data.length === 0 ? (
+          <EmptyState
+            icon="message"
+            title={searchQuery ? `No questions about "${searchQuery}"` : 'No questions yet'}
+            message={searchQuery ? 'Try other words, or ask it yourself.' : 'Be the first to ask.'}
+          />
+        ) : (
+          <Section>
+            {questions.data.map((question) => (
+              <QuestionRow key={question.id} question={question} now={now} />
+            ))}
+          </Section>
+        )}
+        {/* Room for the floating button over the last question. */}
+        <View style={styles.fabSpace} />
+      </Screen>
+      <View style={styles.fab} pointerEvents="box-none">
+        <Button
+          title="Ask a question"
+          icon="plus"
+          fullWidth={false}
+          onPress={() => askQuestion(signedIn)}
+          style={styles.fabButton}
+        />
       </View>
-
-      <AppText variant="titleLarge">Recent Discussions</AppText>
-
-      {questions.isPending ? (
-        <LoadingState />
-      ) : questions.isError ? (
-        <ErrorState
-          message={`Error: ${questions.error.message}`}
-          onRetry={() => questions.refetch()}
-        />
-      ) : questions.data.length === 0 ? (
-        <EmptyState
-          icon="forum"
-          title={searchQuery ? 'No questions found' : 'No questions yet'}
-          message={searchQuery ? 'Try different search terms' : 'Be the first to ask!'}
-        />
-      ) : (
-        questions.data.map((question) => (
-          <QuestionListCard key={question.id} question={question} now={now} />
-        ))
-      )}
-    </Screen>
-  );
-}
-
-function Chip({
-  label,
-  icon,
-  selected,
-  onPress,
-  radio = false,
-}: {
-  label: string;
-  icon?: string;
-  selected: boolean;
-  onPress: () => void;
-  radio?: boolean;
-}) {
-  const { colors } = useTheme();
-  const color = selected ? brand.white : colors.text;
-  return (
-    <Pressable
-      accessibilityRole={radio ? 'radio' : 'button'}
-      accessibilityState={radio ? { checked: selected } : { selected }}
-      onPress={onPress}
-      style={[
-        styles.chip,
-        selected
-          ? { backgroundColor: brand.headerPink, borderColor: brand.headerPink }
-          : { backgroundColor: colors.card, borderColor: colors.divider },
-      ]}>
-      {icon ? (
-        <MaterialIcon name={icon} size={16} color={selected ? brand.white : brand.headerPink} />
-      ) : null}
-      <AppText variant="bodySmall" color={color} style={styles.chipText}>
-        {label}
-      </AppText>
-    </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  askButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    minHeight: 48,
-    borderRadius: radius.medium,
-    backgroundColor: brand.headerPink,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  chips: {
-    gap: 8,
-    paddingRight: 8,
-  },
-  sortRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontFamily: 'Poppins_500Medium',
+  fill: { flex: 1 },
+  topics: { gap: space.sm, paddingRight: space.xl },
+  fabSpace: { height: 56 },
+  fab: { position: 'absolute', right: space.xl, bottom: space.lg },
+  fabButton: {
+    shadowColor: '#2E1F66',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
 });

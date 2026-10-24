@@ -15,6 +15,9 @@ type SelfCheckStore = SelfCheckState & {
   /** "Remind me tomorrow" on Today's next-step panel. */
   snoozeUntilTomorrow: (now?: Date) => void;
   setChosen: (guideIds: string[] | null) => void;
+  /** Guides saved to Profile → Saved (on the device; redesign Phase 5). */
+  savedGuides: string[];
+  toggleSavedGuide: (guideId: string) => void;
 };
 
 export const useSelfCheckStore = create<SelfCheckStore>()(
@@ -31,6 +34,13 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
       snoozeUntilTomorrow: (now = new Date()) =>
         set({ snoozedUntil: toDbTimestamp(addDays(startOfDay(now), 1)) }),
       setChosen: (chosen) => set({ chosen }),
+      savedGuides: [],
+      toggleSavedGuide: (guideId) =>
+        set((state) => ({
+          savedGuides: state.savedGuides.includes(guideId)
+            ? state.savedGuides.filter((id) => id !== guideId)
+            : [...state.savedGuides, guideId],
+        })),
     }),
     { name: 'self-checks', storage: persistStorage, version: 1 },
   ),
