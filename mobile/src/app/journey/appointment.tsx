@@ -22,7 +22,7 @@ import {
   useTreatments,
 } from '@/hooks/useJourney';
 import { confirm } from '@/lib/confirm';
-import { formatLongDate, formatShortDate, formatTime } from '@/lib/dates';
+import { formatLongDate, formatTime } from '@/lib/dates';
 import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -118,7 +118,7 @@ function AppointmentForm({ existing }: { existing?: Appointment }) {
     <Screen
       back={{ label: 'Journey', onPress: close }}
       title={existing ? 'Edit appointment' : 'New appointment'}
-      subtitle="We'll remind you at 6 PM the evening before."
+      subtitle="We'll remind you the evening before."
       bottomBar={
         <BottomActionBar>
           <Button title="Save" loading={save.isPending} onPress={submit} />
@@ -138,7 +138,7 @@ function AppointmentForm({ existing }: { existing?: Appointment }) {
       <View style={styles.row}>
         <PickerBox
           label="Date"
-          value={formatShortDate(startsAt)}
+          value={formatLongDate(startsAt)}
           icon="calendar"
           style={styles.flex1}>
           {(children) => (
@@ -246,7 +246,7 @@ function PickerBox({
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
-  row: { flexDirection: 'row', gap: space.md },
+  row: { gap: space.md },
   picker: { gap: space.sm },
   box: {
     flexDirection: 'row',

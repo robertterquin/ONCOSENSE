@@ -130,16 +130,23 @@ export function chooseNextStep<T extends SelfCheckGuide>(
   return { kind: 'learn' };
 }
 
-/** When the self-check reminder should fire: the soonest due day (or the snooze), at 9 AM, never in the past. */
+/** When the self-check reminder should fire: the soonest due day (or the snooze), at the chosen time (9 AM by default), never in the past. */
 export function selfCheckReminderDate(
   due: Date,
   snoozedUntil: Date | null,
   now: Date = new Date(),
+  time: { hour: number; minute: number } = { hour: 9, minute: 0 },
 ): Date {
   let day = startOfDay(due);
   if (snoozedUntil && snoozedUntil.getTime() > day.getTime()) day = startOfDay(snoozedUntil);
-  const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9, 0);
+  const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), time.hour, time.minute);
   if (at.getTime() > now.getTime()) return at;
   const tomorrow = addDays(startOfDay(now), 1);
-  return new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 9, 0);
+  return new Date(
+    tomorrow.getFullYear(),
+    tomorrow.getMonth(),
+    tomorrow.getDate(),
+    time.hour,
+    time.minute,
+  );
 }

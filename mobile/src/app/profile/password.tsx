@@ -1,21 +1,19 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useForm, useWatch } from 'react-hook-form';
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { Button } from '@/components/Button';
-import { FormField } from '@/components/FormField';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { PasswordChecklist } from '@/components/PasswordChecklist';
-import { Screen } from '@/components/Screen';
+import { FormTextField } from '@/components/account/FormTextField';
+import { PasswordRules } from '@/components/account/PasswordRules';
+import { BottomActionBar, Button, Screen } from '@/components/ui';
 import { changePasswordSchema, type ChangePasswordForm } from '@/constants/validation';
 import { useChangePassword } from '@/hooks/useAuth';
 import { useUser } from '@/stores/authStore';
 import { showToast } from '@/stores/toastStore';
 
-// Port of lib/screens/profile/change_password_screen.dart
+// Change password (redesign Phase 6): confirms the current password, then sets the new one.
 
-const lockIcon = <MaterialIcon name="lock-outline" size={22} color="#757575" />;
+const back = () => (router.canGoBack() ? router.back() : router.replace('/profile/settings'));
 
 export default function ChangePasswordScreen() {
   const user = useUser();
@@ -34,58 +32,64 @@ export default function ChangePasswordScreen() {
   const onSubmit = handleSubmit((form) =>
     change.mutate(form, {
       onSuccess: () => {
-        showToast('Password changed successfully!', 'success');
-        router.back();
+        showToast('Password changed', 'success');
+        back();
       },
       onError: (error) => showToast(error.message, 'error'),
     }),
   );
 
   return (
-    <Screen
-      background="surface"
-      header={
-        <AppHeader title="Change Password" subtitle="Update your account password" showBackButton />
-      }>
-      <FormField
-        control={control}
-        name="email"
-        label="Email"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        leftIcon={<MaterialIcon name="mail-outline" size={22} color="#757575" />}
-      />
-      <FormField
-        control={control}
-        name="currentPassword"
-        label="Current Password"
-        placeholder="Enter current password"
-        isPassword
-        autoComplete="current-password"
-        leftIcon={lockIcon}
-      />
-      <FormField
-        control={control}
-        name="newPassword"
-        label="New Password"
-        placeholder="Enter a strong password"
-        isPassword
-        autoComplete="new-password"
-        leftIcon={lockIcon}
-      />
-      <PasswordChecklist password={newPassword ?? ''} />
-      <FormField
-        control={control}
-        name="confirmPassword"
-        label="Confirm New Password"
-        placeholder="Confirm new password"
-        isPassword
-        autoComplete="new-password"
-        leftIcon={lockIcon}
-      />
-      <Button title="Change Password" onPress={onSubmit} loading={change.isPending} />
-    </Screen>
+    <KeyboardAvoidingView
+      style={styles.fill}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Screen
+        back={{ label: 'Settings', onPress: back }}
+        title="Change password"
+        bottomBar={
+          <BottomActionBar>
+            <Button title="Change password" loading={change.isPending} onPress={onSubmit} />
+          </BottomActionBar>
+        }>
+        <FormTextField
+          control={control}
+          name="email"
+          label="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+        />
+        <FormTextField
+          control={control}
+          name="currentPassword"
+          label="Current password"
+          secure
+          autoComplete="current-password"
+          textContentType="password"
+        />
+        <FormTextField
+          control={control}
+          name="newPassword"
+          label="New password"
+          secure
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+        <PasswordRules password={newPassword ?? ''} />
+        <FormTextField
+          control={control}
+          name="confirmPassword"
+          label="Confirm new password"
+          secure
+          autoComplete="new-password"
+          textContentType="newPassword"
+          onSubmitEditing={() => onSubmit()}
+        />
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+});

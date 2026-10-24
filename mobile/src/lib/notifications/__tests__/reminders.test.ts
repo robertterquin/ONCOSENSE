@@ -10,7 +10,7 @@ import {
   toExpoWeekday,
 } from '../reminders';
 
-const all = SCHEDULED_PREF_TYPES.flatMap((type) => remindersForType(type));
+const all = SCHEDULED_PREF_TYPES.flatMap((type) => remindersForType(type, { tip: 'Drink water' }));
 
 describe('toExpoWeekday', () => {
   it('maps Dart weekdays (1 = Monday) to expo weekdays (1 = Sunday)', () => {
@@ -27,9 +27,19 @@ describe('toExpoWeekday', () => {
 });
 
 describe('reminder schedule', () => {
-  it('keeps only the self-check and check-in reminders', () => {
-    expect(SCHEDULED_PREF_TYPES).toEqual(['self_check', 'daily_checkin']);
-    expect(all.map((r) => r.identifier)).toEqual(['self-check-monthly', 'daily-checkin']);
+  it('schedules self-checks, check-ins, appointments and the weekly tip', () => {
+    expect(SCHEDULED_PREF_TYPES).toEqual([
+      'self_check',
+      'daily_checkin',
+      'appointments',
+      'weekly_tip',
+    ]);
+    // Appointment reminders come from the appointments themselves, so none here.
+    expect(all.map((r) => r.identifier)).toEqual([
+      'self-check-monthly',
+      'daily-checkin',
+      'weekly-tip',
+    ]);
     expect(all.length).toBeLessThan(IOS_PENDING_LIMIT);
   });
 
@@ -46,7 +56,7 @@ describe('reminder schedule', () => {
     expect(new Set(all.map((r) => r.identifier)).size).toBe(all.length);
     for (const type of SCHEDULED_PREF_TYPES) {
       const prefix = IDENTIFIER_PREFIX[type];
-      const own = remindersForType(type).map((r) => r.identifier);
+      const own = remindersForType(type, { tip: 'Drink water' }).map((r) => r.identifier);
       expect(all.filter((r) => r.identifier.startsWith(prefix)).map((r) => r.identifier)).toEqual(
         own,
       );

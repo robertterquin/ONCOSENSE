@@ -1,5 +1,9 @@
 import { formatTime } from '@/lib/dates';
-import type { NotificationType as PrefType } from '@/stores/notificationStore';
+import {
+  DEFAULT_TIMES,
+  type NotificationType as PrefType,
+  type ReminderTime,
+} from '@/stores/notificationStore';
 
 // The reminder schedule, as pure data so it can be unit tested; device.ts hands it to
 // expo-notifications. Started as a port of lib/services/notification_service.dart; the
@@ -14,6 +18,7 @@ export const NotificationKind = {
   /** Before redesign Phase 4; still routed for notifications already delivered. */
   weeklyCheckIn: 'weekly_check_in',
   dailyCheckIn: 'daily_check_in',
+  weeklyTip: 'weekly_tip',
   test: 'test',
 } as const;
 
@@ -83,7 +88,10 @@ export function toExpoWeekday(dartWeekday: number): number {
   return (dartWeekday % 7) + 1;
 }
 
-export function monthlySelfExamReminder(dayOfMonth = 1): ReminderRequest {
+export function monthlySelfExamReminder(
+  dayOfMonth = 1,
+  time: ReminderTime = DEFAULT_TIMES.self_check,
+): ReminderRequest {
   return {
     identifier: 'self-check-monthly',
     title: '🩺 Monthly Self-Exam Reminder',
@@ -91,7 +99,7 @@ export function monthlySelfExamReminder(dayOfMonth = 1): ReminderRequest {
     channelId: 'screening_reminders',
     color: '#D81B60',
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
-    trigger: { kind: 'monthly', day: dayOfMonth, hour: 9, minute: 0 },
+    trigger: { kind: 'monthly', day: dayOfMonth, hour: time.hour, minute: time.minute },
   };
 }
 
@@ -112,7 +120,9 @@ export function selfCheckReminder(guideTitle: string, date: Date): ReminderReque
 export type SelfCheckPlan = { guideTitle: string; date: Date };
 
 /** Every evening for Journey users (redesign Phase 4; replaced the weekly check-in). */
-export function dailyCheckInReminder(hour = 20): ReminderRequest {
+export function dailyCheckInReminder(
+  time: ReminderTime = DEFAULT_TIMES.daily_checkin,
+): ReminderRequest {
   return {
     identifier: 'daily-checkin',
     title: 'How was today?',
@@ -120,7 +130,28 @@ export function dailyCheckInReminder(hour = 20): ReminderRequest {
     channelId: 'wellness_check_in',
     color: '#5236B5',
     data: { type: NotificationKind.dailyCheckIn, payload: NotificationKind.dailyCheckIn },
-    trigger: { kind: 'daily', hour, minute: 0 },
+    trigger: { kind: 'daily', hour: time.hour, minute: time.minute },
+  };
+}
+
+/** A health tip once a week (redesign Phase 6; off unless turned on in Settings). */
+export function weeklyTipReminder(
+  tip: string,
+  time: ReminderTime = DEFAULT_TIMES.weekly_tip,
+): ReminderRequest {
+  return {
+    identifier: 'weekly-tip',
+    title: 'Tip of the week',
+    body: tip,
+    channelId: 'health_reminders',
+    color: '#5236B5',
+    data: { type: NotificationKind.weeklyTip, payload: NotificationKind.weeklyTip },
+    trigger: {
+      kind: 'weekly',
+      weekday: time.weekday ?? 7,
+      hour: time.hour,
+      minute: time.minute,
+    },
   };
 }
 
@@ -142,9 +173,19 @@ export function screeningReminder(
   };
 }
 
-/** 6:00 PM the day before an appointment, or null when that time has passed. */
-export function appointmentReminderDate(startsAt: Date, now: Date = new Date()): Date | null {
-  const at = new Date(startsAt.getFullYear(), startsAt.getMonth(), startsAt.getDate() - 1, 18, 0);
+/** The evening before an appointment (6:00 PM unless changed), or null once that has passed. */
+export function appointmentReminderDate(
+  startsAt: Date,
+  now: Date = new Date(),
+  time: ReminderTime = DEFAULT_TIMES.appointments,
+): Date | null {
+  const at = new Date(
+    startsAt.getFullYear(),
+    startsAt.getMonth(),
+    startsAt.getDate() - 1,
+    time.hour,
+    time.minute,
+  );
   return at.getTime() > now.getTime() ? at : null;
 }
 
@@ -172,6 +213,8 @@ export function appointmentReminder(
 export const SCHEDULED_PREF_TYPES = [
   'self_check',
   'daily_checkin',
+  'appointments',
+  'weekly_tip',
 ] as const satisfies readonly PrefType[];
 
 export type ScheduledPrefType = (typeof SCHEDULED_PREF_TYPES)[number];
@@ -180,23 +223,44 @@ export function isScheduledPrefType(type: PrefType): type is ScheduledPrefType {
   return (SCHEDULED_PREF_TYPES as readonly PrefType[]).includes(type);
 }
 
+type AppointmentLike = { id: string; title: string; startsAt: Date; location: string | null };
+
+/** What scheduling needs beyond the type: times from Settings and the person's data. */
+export type ReminderContext = {
+  times?: Partial<Record<PrefType, ReminderTime>>;
+  /** The soonest chosen self-check (when the guides have loaded). */
+  selfCheckPlan?: SelfCheckPlan | null;
+  appointments?: AppointmentLike[];
+  /** The weekly tip's text. */
+  tip?: string;
+  now?: Date;
+};
+
 /**
  * The reminders a preference type schedules. Self-checks remind on the next due day
  * when the guides are known, else on the 1st of each month.
  */
 export function remindersForType(
   type: ScheduledPrefType,
-  selfCheckPlan: SelfCheckPlan | null = null,
+  context: ReminderContext = {},
 ): ReminderRequest[] {
+  const time = context.times?.[type] ?? DEFAULT_TIMES[type];
   switch (type) {
     case 'self_check':
       return [
-        selfCheckPlan
-          ? selfCheckReminder(selfCheckPlan.guideTitle, selfCheckPlan.date)
-          : monthlySelfExamReminder(),
+        context.selfCheckPlan
+          ? selfCheckReminder(context.selfCheckPlan.guideTitle, context.selfCheckPlan.date)
+          : monthlySelfExamReminder(1, time),
       ];
     case 'daily_checkin':
-      return [dailyCheckInReminder()];
+      return [dailyCheckInReminder(time)];
+    case 'appointments':
+      return (context.appointments ?? []).flatMap((appointment) => {
+        const date = appointmentReminderDate(appointment.startsAt, context.now, time);
+        return date ? [appointmentReminder(appointment, date)] : [];
+      });
+    case 'weekly_tip':
+      return context.tip ? [weeklyTipReminder(context.tip, time)] : [];
   }
 }
 
@@ -204,6 +268,8 @@ export function remindersForType(
 export const IDENTIFIER_PREFIX: Record<ScheduledPrefType, string> = {
   self_check: 'self-check-',
   daily_checkin: 'daily-checkin',
+  appointments: 'appointment-',
+  weekly_tip: 'weekly-tip',
 };
 
 /**
@@ -213,8 +279,7 @@ export const IDENTIFIER_PREFIX: Record<ScheduledPrefType, string> = {
 export function isCurrentReminder(identifier: string): boolean {
   return (
     Object.values(IDENTIFIER_PREFIX).some((prefix) => identifier.startsWith(prefix)) ||
-    identifier.startsWith('screening-') ||
-    identifier.startsWith('appointment-')
+    identifier.startsWith('screening-')
   );
 }
 

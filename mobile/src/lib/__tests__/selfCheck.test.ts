@@ -128,8 +128,7 @@ describe('self-check reminder', () => {
 
   it('names the guide on its due day, and keeps the monthly fallback before guides load', () => {
     const [next] = remindersForType('self_check', {
-      guideTitle: 'Breast Self-Exam',
-      date: new Date(2026, 10, 10, 9),
+      selfCheckPlan: { guideTitle: 'Breast Self-Exam', date: new Date(2026, 10, 10, 9) },
     });
     expect(next.identifier).toBe('self-check-next');
     expect(next.body).toBe('Breast Self-Exam is due today. It takes about 10 minutes.');

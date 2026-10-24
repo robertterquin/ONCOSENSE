@@ -2,131 +2,98 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
-import { AppText } from '@/components/AppText';
-import { AuthLayout } from '@/components/AuthLayout';
-import { Button } from '@/components/Button';
-import { Checkbox } from '@/components/Checkbox';
-import { FormField } from '@/components/FormField';
-import { MaterialIcon } from '@/components/MaterialIcon';
+import { FormTextField } from '@/components/account/FormTextField';
+import { Button, ListRow, Screen, Section, Switch, Text } from '@/components/ui';
 import { loginSchema, type LoginForm } from '@/constants/validation';
 import { continueAsGuest, useSignIn } from '@/hooks/useAuth';
-import { brand } from '@/theme/colors';
+import { space } from '@/theme/tokens';
 
-// Port of lib/screens/auth/login_screen.dart
+// Sign in (redesign Phase 6). "Keep me signed in" is the existing remember-me.
 
-export default function LoginScreen() {
-  const [rememberMe, setRememberMe] = useState(false);
+const back = () => (router.canGoBack() ? router.back() : router.replace('/welcome'));
+
+export default function SignInScreen() {
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
   const signIn = useSignIn();
   const { control, handleSubmit } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
-
-  const onSubmit = handleSubmit((form) => signIn.mutate({ ...form, rememberMe }));
+  const onSubmit = handleSubmit((form) => signIn.mutate({ ...form, rememberMe: keepSignedIn }));
 
   return (
-    <AuthLayout title="Login">
-      <View style={styles.intro}>
-        <AppText variant="displayMedium" color={brand.darkPink}>
-          Welcome Back!
-        </AppText>
-        <AppText variant="bodyLarge" color="#424242">
-          Login to continue your journey
-        </AppText>
-      </View>
-
-      <FormField
-        control={control}
-        name="email"
-        label="Email"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        textContentType="emailAddress"
-        leftIcon={<MaterialIcon name="mail-outline" size={22} color="#757575" />}
-      />
-      <FormField
-        control={control}
-        name="password"
-        label="Password"
-        placeholder="Enter your password"
-        isPassword
-        autoComplete="current-password"
-        textContentType="password"
-        onSubmitEditing={() => onSubmit()}
-        leftIcon={<MaterialIcon name="lock-outline" size={22} color="#757575" />}
-      />
-
-      <View style={styles.optionsRow}>
-        <Checkbox checked={rememberMe} onChange={setRememberMe} label="Remember me" />
-        <Pressable
-          accessibilityRole="link"
-          hitSlop={8}
-          onPress={() => router.push('/forgot-password')}>
-          <AppText variant="label" color={brand.primaryPink}>
-            Forgot Password?
-          </AppText>
-        </Pressable>
-      </View>
-
-      <Button title="Login" onPress={onSubmit} loading={signIn.isPending} style={styles.gap} />
-
-      <View style={styles.divider}>
-        <View style={styles.line} />
-        <AppText color="#757575">OR</AppText>
-        <View style={styles.line} />
-      </View>
-
-      <Button title="Continue as Guest" outlined onPress={continueAsGuest} />
-
-      <View style={styles.footer}>
-        <AppText>Don&apos;t have an account? </AppText>
-        <Pressable accessibilityRole="link" hitSlop={8} onPress={() => router.replace('/register')}>
-          <AppText variant="label" color={brand.primaryPink} style={styles.bold}>
-            Register
-          </AppText>
-        </Pressable>
-      </View>
-    </AuthLayout>
+    <KeyboardAvoidingView
+      style={styles.fill}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Screen back={{ label: 'Welcome', onPress: back }} title="Sign in" subtitle="Welcome back.">
+        <FormTextField
+          control={control}
+          name="email"
+          label="Email"
+          placeholder="you@example.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+        />
+        <FormTextField
+          control={control}
+          name="password"
+          label="Password"
+          secure
+          autoComplete="current-password"
+          textContentType="password"
+          onSubmitEditing={() => onSubmit()}
+        />
+        <Section divided={false}>
+          <ListRow
+            title="Keep me signed in"
+            subtitle="On this phone"
+            accessory={
+              <Switch
+                accessibilityLabel="Keep me signed in"
+                value={keepSignedIn}
+                onValueChange={setKeepSignedIn}
+              />
+            }
+          />
+        </Section>
+        <Button title="Sign in" loading={signIn.isPending} onPress={onSubmit} />
+        <Button
+          title="Forgot your password?"
+          variant="quiet"
+          onPress={() => router.push('/forgot-password')}
+        />
+        <View style={styles.divider}>
+          <Text variant="supporting" tone="muted">
+            or
+          </Text>
+        </View>
+        <Button
+          title="Look around without an account"
+          variant="secondary"
+          onPress={continueAsGuest}
+        />
+        <View style={styles.footer}>
+          <Text variant="supporting" tone="muted">
+            New to OncoSense?
+          </Text>
+          <Button
+            title="Create an account"
+            variant="quiet"
+            fullWidth={false}
+            onPress={() => router.replace('/register')}
+          />
+        </View>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  intro: {
-    gap: 8,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  gap: {
-    marginTop: 8,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginVertical: 8,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(189, 189, 189, 0.5)',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bold: {
-    fontFamily: 'Poppins_700Bold',
-  },
+  fill: { flex: 1 },
+  divider: { alignItems: 'center' },
+  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },
 });

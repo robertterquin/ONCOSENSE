@@ -23,7 +23,9 @@ export type ButtonVariant =
   /** White button on the night-violet panel. */
   | 'onPanel'
   /** Text-only button on the night-violet panel. */
-  | 'onPanelQuiet';
+  | 'onPanelQuiet'
+  /** Outlined button on the night-violet panel (Welcome's "Sign in"). */
+  | 'onPanelOutline';
 
 type ButtonProps = {
   title: string;
@@ -52,6 +54,7 @@ const LOOKS: Record<ButtonVariant, Look> = {
   destructive: { background: 'surface', text: 'danger', border: 'border' },
   onPanel: { background: 'onPanel', text: 'panel' },
   onPanelQuiet: { background: 'transparent', text: 'onPanel' },
+  onPanelOutline: { background: 'transparent', text: 'onPanel', border: 'onPanelMuted' },
 };
 
 /** Labeled button, 54 pt tall (a touch target that is easy to hit when tired). */
@@ -96,7 +99,8 @@ export function Button({
       ) : (
         <View style={styles.content}>
           {icon ? <Icon name={icon} size={20} color={textColor} /> : null}
-          <Text variant="strong" color={textColor} numberOfLines={1}>
+          {/* Two lines rather than "…" for long labels at large text sizes. */}
+          <Text variant="strong" color={textColor} numberOfLines={2} style={styles.label}>
             {title}
           </Text>
         </View>
@@ -156,7 +160,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   hug: { alignSelf: 'flex-start' },
-  content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  content: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
+  label: { flexShrink: 1, textAlign: 'center' },
   pressed: { opacity: 0.8 },
   disabled: { opacity: 0.45 },
   iconButton: { alignItems: 'center', justifyContent: 'center' },
