@@ -43,10 +43,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Stack screenOptions={{ headerShown: false }}>
-          {/* Flutter showed guide details in a bottom sheet. */}
-          <Stack.Screen name="prevention/guide/[id]" options={{ presentation: 'modal' }} />
-        </Stack>
+        <Stack screenOptions={{ headerShown: false }} />
         <ToastHost />
       </View>
     </QueryClientProvider>

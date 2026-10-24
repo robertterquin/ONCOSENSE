@@ -22,7 +22,7 @@ import { showToast } from '@/stores/toastStore';
 
 /** Where a signed-in user goes: journey setup until it's done, then the Home tab. */
 export function homeRouteFor(user: User | null): Href {
-  return hasCompletedJourneySetup(user) ? '/home' : '/journey/onboarding';
+  return hasCompletedJourneySetup(user) ? '/today' : '/journey/onboarding';
 }
 
 export function useSignIn() {
@@ -83,7 +83,7 @@ export function useSignOut() {
 /** "Continue as Guest": browse without an account until the app is closed. */
 export function continueAsGuest() {
   useAuthStore.getState().continueAsGuest();
-  router.replace('/home');
+  router.replace('/today');
 }
 
 /** Saves name/age/gender and, if chosen, a new or removed photo (edit_profile_screen.dart). */

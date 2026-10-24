@@ -98,20 +98,6 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   return 'Just now';
 }
 
-/** "3d ago", "5h ago", or "22/10/2026" after a week — used by the notification center. */
-export function formatTimeAgo(date: Date, now: Date = new Date()): string {
-  const elapsed = now.getTime() - date.getTime();
-  const days = Math.trunc(elapsed / MS_PER_DAY);
-  const hours = Math.trunc(elapsed / MS_PER_HOUR);
-  const minutes = Math.trunc(elapsed / MS_PER_MINUTE);
-
-  if (days > 7) return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
-  return 'Just now';
-}
-
 const LONG_MONTHS = [
   'January',
   'February',

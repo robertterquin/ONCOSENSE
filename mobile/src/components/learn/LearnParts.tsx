@@ -1,73 +1,22 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { Screen } from '@/components/Screen';
-import { ErrorState, LoadingState } from '@/components/StateViews';
-import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';
+import { cancerTypeIcon } from '@/lib/cancerIcons';
 import { openWebPage } from '@/lib/links';
 import { brand } from '@/theme/colors';
 import { radius } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
+import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
-// Port of lib/screens/prevention/prevention_screen.dart. Guide details open in
-// src/app/prevention/guide/[id].tsx (a modal, like Flutter's bottom sheet).
+import { AppText } from '../AppText';
+import { MaterialIcon } from '../MaterialIcon';
 
-export default function PreventionTab() {
-  const tips = usePreventionTips();
-  const guides = useSelfCheckGuides();
-  const isPending = tips.isPending || guides.isPending;
-  const isError = tips.isError || guides.isError;
-  const refetch = () => Promise.all([tips.refetch(), guides.refetch()]);
+// Cards for the Learn tab, from cancer_info_screen.dart and prevention_screen.dart.
+// Restyled in redesign Phase 3.
 
-  return (
-    <Screen
-      inTabs
-      onRefresh={refetch}
-      refreshing={tips.isRefetching || guides.isRefetching}
-      header={
-        <AppHeader title="Prevention & Lifestyle" subtitle="Healthy tips for a cancer-free life" />
-      }>
-      {isPending ? (
-        <LoadingState />
-      ) : isError ? (
-        <ErrorState message="Failed to load prevention data. Please try again." onRetry={refetch} />
-      ) : (
-        <>
-          <SectionHeading
-            title="Prevention Tips"
-            subtitle="Evidence-based tips from trusted medical sources"
-          />
-          {tips.data!.length === 0 ? (
-            <AppText secondary style={styles.empty}>
-              No prevention tips available at this time.
-            </AppText>
-          ) : (
-            tips.data!.map((tip) => <TipCard key={tip.id} tip={tip} />)
-          )}
-
-          <SectionHeading
-            title="Self-Check Guides"
-            subtitle="Learn how to perform self-examinations"
-          />
-          {guides.data!.length === 0 ? (
-            <AppText secondary style={styles.empty}>
-              No self-check guides available at this time.
-            </AppText>
-          ) : (
-            guides.data!.map((guide) => <GuideCard key={guide.id} guide={guide} />)
-          )}
-        </>
-      )}
-    </Screen>
-  );
-}
-
-function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
+export function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <View style={styles.heading}>
       <AppText variant="titleLarge">{title}</AppText>
@@ -91,7 +40,7 @@ function SourceLink({ name, url, size = 11 }: { name: string; url: string; size?
   );
 }
 
-function TipCard({ tip }: { tip: PreventionTip }) {
+export function TipCard({ tip }: { tip: PreventionTip }) {
   const { colors, isDark } = useTheme();
   return (
     <View
@@ -126,13 +75,13 @@ function TipCard({ tip }: { tip: PreventionTip }) {
   );
 }
 
-function GuideCard({ guide }: { guide: SelfCheckGuide }) {
+export function GuideCard({ guide }: { guide: SelfCheckGuide }) {
   const { isDark } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${guide.title}. Open guide`}
-      onPress={() => router.push({ pathname: '/prevention/guide/[id]', params: { id: guide.id } })}
+      onPress={() => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } })}
       style={({ pressed }) => [
         styles.card,
         styles.guideCard,
@@ -260,5 +209,67 @@ const styles = StyleSheet.create({
   guideSource: {
     fontSize: 10,
     color: '#616161',
+  },
+});
+
+export function CancerTypeCard({ cancer }: { cancer: CancerType }) {
+  const { colors, isDark } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={cancer.name}
+      onPress={() => router.push({ pathname: '/learn/cancer/[id]', params: { id: cancer.id } })}
+      style={({ pressed }) => [
+        typeStyles.card,
+        { backgroundColor: colors.card, borderColor: colors.divider },
+        !isDark && typeStyles.shadow,
+        pressed && typeStyles.pressed,
+      ]}>
+      <View style={typeStyles.iconChip}>
+        <MaterialIcon name={cancerTypeIcon(cancer.name)} size={28} color={brand.headerPink} />
+      </View>
+      <AppText variant="label" numberOfLines={2} style={typeStyles.name}>
+        {cancer.name}
+      </AppText>
+    </Pressable>
+  );
+}
+
+const typeStyles = StyleSheet.create({
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 12,
+  },
+  card: {
+    // Two columns.
+    width: '48.3%',
+    aspectRatio: 1.2,
+    borderRadius: radius.medium,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 8,
+  },
+  shadow: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  pressed: {
+    backgroundColor: 'rgba(216, 27, 96, 0.1)',
+  },
+  iconChip: {
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: 'rgba(216, 27, 96, 0.1)',
+  },
+  name: {
+    fontSize: 13,
+    textAlign: 'center',
   },
 });

@@ -16,10 +16,6 @@ export const queryKeys = {
   resourcesByCategory: ['resources', 'byCategory'] as const,
   resourcesByType: (type: ResourceType) => ['resources', 'type', type] as const,
 
-  cancerArticles: ['home', 'articles'] as const,
-  survivorStory: ['home', 'survivorStory'] as const,
-  healthReminders: ['home', 'reminders'] as const,
-
   questions: (filters: QuestionFilters = {}) => ['forum', 'questions', filters] as const,
   allQuestions: ['forum', 'questions'] as const,
   question: (id: string) => ['forum', 'question', id] as const,
@@ -29,7 +25,6 @@ export const queryKeys = {
   answerUpvoted: (userId: string | null, id: string) =>
     ['forum', 'upvoted', userId, 'answer', id] as const,
 
-  bookmarkedArticles: (userId: string | null) => ['bookmarks', userId, 'articles'] as const,
   bookmarkedQuestions: (userId: string | null) => ['bookmarks', userId, 'questions'] as const,
   bookmarkedResources: (userId: string | null) => ['bookmarks', userId, 'resources'] as const,
 

@@ -47,8 +47,8 @@ export function AddToJourneySheet({ visible, onClose }: { visible: boolean; onCl
 
   const choose = (key: (typeof OPTIONS)[number]['key']) => {
     onClose();
-    if (key === 'entry') router.push('/journey/add-entry');
-    else if (key === 'treatment') router.push('/journey/add-treatment');
+    if (key === 'entry') router.push('/journey/check-in');
+    else if (key === 'treatment') router.push('/journey/treatment');
     else setAddingMilestone(true);
   };
 

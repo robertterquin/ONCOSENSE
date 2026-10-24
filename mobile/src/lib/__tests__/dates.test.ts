@@ -2,7 +2,6 @@ import {
   differenceInWholeDays,
   formatRelativeTime,
   formatShortDate,
-  formatTimeAgo,
   parseDbTimestamp,
   toDbTimestamp,
 } from '@/lib/dates';
@@ -50,13 +49,6 @@ describe('formatting', () => {
     expect(formatRelativeTime(ago(30 * DAY), now)).toBe('30 days ago');
     expect(formatRelativeTime(ago(62 * DAY), now)).toBe('2 months ago');
     expect(formatRelativeTime(ago(400 * DAY), now)).toBe('1 year ago');
-  });
-
-  it('formats notification times like the Flutter notification center', () => {
-    expect(formatTimeAgo(ago(10 * MINUTE), now)).toBe('10m ago');
-    expect(formatTimeAgo(ago(3 * HOUR), now)).toBe('3h ago');
-    expect(formatTimeAgo(ago(7 * DAY), now)).toBe('7d ago');
-    expect(formatTimeAgo(new Date(2026, 0, 2), now)).toBe('2/1/2026');
   });
 
   it('formats short dates and whole-day differences', () => {

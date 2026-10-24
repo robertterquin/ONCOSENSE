@@ -2,22 +2,26 @@ import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { CHANNELS, toExpoWeekday, type ReminderRequest, type ReminderTrigger } from './reminders';
+import {
+  CHANNELS,
+  OBSOLETE_CHANNEL_IDS,
+  toExpoWeekday,
+  type ReminderRequest,
+  type ReminderTrigger,
+} from './reminders';
 
 // The only module that talks to expo-notifications (device.web.ts replaces it on the web,
 // where local notifications aren't supported). Replaces flutter_local_notifications.
 
 /** A notification that was shown on the device. */
 export type DeliveredNotification = {
-  /** The request identifier (e.g. `hydration-08`); one per reminder slot. */
+  /** The request identifier (e.g. `self-check-monthly`); one per reminder slot. */
   identifier: string;
   date: Date;
   title: string;
   body: string;
   type: string | null;
   payload: string | null;
-  /** Set on one-off notifications that were already added to the history when sent. */
-  historyId: string | null;
 };
 
 let configured = false;
@@ -45,6 +49,9 @@ export async function configureNotifications(): Promise<void> {
           enableVibrate: true,
         }),
       ),
+    );
+    await Promise.all(
+      OBSOLETE_CHANNEL_IDS.map((id) => Notifications.deleteNotificationChannelAsync(id)),
     );
   }
 }
@@ -168,23 +175,7 @@ function toDelivered(notification: Notifications.Notification): DeliveredNotific
     body: content.body ?? '',
     type: typeof data.type === 'string' ? data.type : null,
     payload: typeof data.payload === 'string' ? data.payload : null,
-    historyId: typeof data.historyId === 'string' ? data.historyId : null,
   };
-}
-
-/** Notifications still in the system tray (delivered while the app was closed). */
-export async function presentedNotifications(): Promise<DeliveredNotification[]> {
-  return (await Notifications.getPresentedNotificationsAsync()).map(toDelivered);
-}
-
-/** Calls `listener` for each notification received while the app is open. */
-export function onNotificationReceived(
-  listener: (notification: DeliveredNotification) => void,
-): () => void {
-  const subscription = Notifications.addNotificationReceivedListener((notification) =>
-    listener(toDelivered(notification)),
-  );
-  return () => subscription.remove();
 }
 
 /** Calls `listener` when the user taps a notification, including the one that opened the app. */

@@ -113,7 +113,7 @@ export function AwarenessBanner() {
       {/* Flutter's button did nothing yet; it opens the Info tab here. */}
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.navigate('/info')}
+        onPress={() => router.navigate('/learn')}
         style={({ pressed }) => [styles.learnMore, pressed && styles.pressed]}>
         <AppText variant="bodySmall" color={brand.white} style={styles.semiBold}>
           Learn More

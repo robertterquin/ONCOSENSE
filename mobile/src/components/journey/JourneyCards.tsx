@@ -97,7 +97,7 @@ function SymptomChips({ symptoms }: { symptoms: string[] }) {
 }
 
 const editEntry = (entry: JourneyEntry) =>
-  router.push({ pathname: '/journey/add-entry', params: { id: entry.id } });
+  router.push({ pathname: '/journey/check-in', params: { id: entry.id } });
 
 export function TodayEntryCard({ entry }: { entry: JourneyEntry }) {
   const muted = useMuted();
@@ -130,7 +130,7 @@ export function NoEntryCard() {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Log today's check-in"
-      onPress={() => router.push('/journey/add-entry')}>
+      onPress={() => router.push('/journey/check-in')}>
       <JourneyCard style={[styles.row, styles.dashed]}>
         <View style={styles.pinkIcon}>
           <MaterialIcon name="add_circle_outline" size={28} color={brand.headerPink} />

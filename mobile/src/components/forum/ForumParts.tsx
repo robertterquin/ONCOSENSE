@@ -114,7 +114,7 @@ export function QuestionListCard({ question, now }: { question: Question; now: D
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={question.title}
-      onPress={() => router.push({ pathname: '/forum/[id]', params: { id: question.id } })}
+      onPress={() => router.push({ pathname: '/community/[id]', params: { id: question.id } })}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card, borderColor: colors.divider },

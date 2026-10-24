@@ -51,7 +51,7 @@ export default function ForumTab() {
       header={<AppHeader title="Q&A Forum" subtitle="Ask questions, share experiences" />}>
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.push('/forum/ask')}
+        onPress={() => router.push('/community/ask')}
         style={({ pressed }) => [styles.askButton, pressed && styles.pressed]}>
         <MaterialIcon name="add" size={22} color={brand.white} />
         <AppText variant="button" color={brand.white}>

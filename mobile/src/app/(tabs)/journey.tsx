@@ -199,7 +199,7 @@ function JourneyTracker() {
               title="No journal entries yet"
               message="Start tracking your daily progress"
               action="Add First Entry"
-              onPress={() => router.push('/journey/add-entry')}
+              onPress={() => router.push('/journey/check-in')}
             />
           ) : (
             entryList.map((entry) => <JournalEntryCard key={entry.id} entry={entry} />)
@@ -211,7 +211,7 @@ function JourneyTracker() {
               title="No treatments added"
               message="Track your treatment progress here"
               action="Add Treatment"
-              onPress={() => router.push('/journey/add-treatment')}
+              onPress={() => router.push('/journey/treatment')}
             />
           ) : (
             treatmentList.map((treatment) => (

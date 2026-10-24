@@ -1,18 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  addArticleBookmark,
   addQuestionBookmark,
   addResourceBookmark,
-  fetchBookmarkedArticles,
   fetchBookmarkedQuestions,
   fetchBookmarkedResources,
-  removeArticleBookmark,
   removeQuestionBookmark,
   removeResourceBookmark,
 } from '@/api/bookmarks';
 import { useUserId } from '@/stores/authStore';
-import type { Article } from '@/types/article';
 import type { Question } from '@/types/question';
 import type { Resource } from '@/types/resource';
 
@@ -20,14 +16,6 @@ import { queryKeys } from './queryKeys';
 
 // Replaces lib/providers/bookmark_provider.dart. Each list is loaded once; "is this
 // bookmarked?" and counts are derived from it instead of extra requests.
-
-export function useBookmarkedArticles() {
-  const userId = useUserId();
-  return useQuery({
-    queryKey: queryKeys.bookmarkedArticles(userId),
-    queryFn: fetchBookmarkedArticles,
-  });
-}
 
 export function useBookmarkedQuestions() {
   const userId = useUserId();
@@ -45,10 +33,6 @@ export function useBookmarkedResources() {
   });
 }
 
-export function useIsArticleBookmarked(url: string): boolean {
-  return useBookmarkedArticles().data?.some((article) => article.url === url) ?? false;
-}
-
 export function useIsQuestionBookmarked(questionId: string): boolean {
   return useBookmarkedQuestions().data?.some((question) => question.id === questionId) ?? false;
 }
@@ -58,10 +42,9 @@ export function useIsResourceBookmarked(resourceId: string): boolean {
 }
 
 export function useTotalBookmarkCount(): number {
-  const articles = useBookmarkedArticles().data?.length ?? 0;
   const questions = useBookmarkedQuestions().data?.length ?? 0;
   const resources = useBookmarkedResources().data?.length ?? 0;
-  return articles + questions + resources;
+  return questions + resources;
 }
 
 /**
@@ -102,16 +85,6 @@ function useToggleBookmark<T>(options: {
   };
 
   return { ...mutation, toggle };
-}
-
-export function useToggleArticleBookmark() {
-  const userId = useUserId();
-  return useToggleBookmark<Article>({
-    queryKey: queryKeys.bookmarkedArticles(userId),
-    sameItem: (a, b) => a.url === b.url,
-    add: addArticleBookmark,
-    remove: (article) => removeArticleBookmark(article.url),
-  });
 }
 
 export function useToggleQuestionBookmark() {

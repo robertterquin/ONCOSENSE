@@ -56,7 +56,7 @@ export function JourneySetupFlow({ mode }: { mode: Mode }) {
       confirmText: 'Skip',
       cancelText: 'Continue Setup',
     });
-    if (ok) router.replace('/home');
+    if (ok) router.replace('/today');
   };
 
   const finish = () =>
@@ -66,7 +66,7 @@ export function JourneySetupFlow({ mode }: { mode: Mode }) {
         onSuccess: () => {
           if (onboarding) {
             showToast("🎉 Your journey has begun! Let's do this together!", 'success');
-            router.replace('/home');
+            router.replace('/today');
           }
           // In the Journey tab the screen switches to the tracker by itself.
         },

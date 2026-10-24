@@ -2,20 +2,15 @@ import {
   CHANNELS,
   IDENTIFIER_PREFIX,
   IOS_PENDING_LIMIT,
+  OBSOLETE_CHANNEL_IDS,
   SCHEDULED_PREF_TYPES,
+  isCurrentReminder,
   remindersForType,
+  screeningReminder,
   toExpoWeekday,
-  type ReminderRequest,
 } from '../reminders';
 
-const tip = {
-  id: 'hydration_1',
-  title: 'Stay Hydrated',
-  message: 'Drink 8 glasses of water daily',
-};
-const all = SCHEDULED_PREF_TYPES.flatMap((type) => remindersForType(type, tip));
-const time = (r: ReminderRequest) =>
-  'hour' in r.trigger ? `${r.trigger.hour}:${String(r.trigger.minute).padStart(2, '0')}` : null;
+const all = SCHEDULED_PREF_TYPES.flatMap((type) => remindersForType(type));
 
 describe('toExpoWeekday', () => {
   it('maps Dart weekdays (1 = Monday) to expo weekdays (1 = Sunday)', () => {
@@ -31,68 +26,47 @@ describe('toExpoWeekday', () => {
   });
 });
 
-describe('reminder schedule (same as notification_service.dart)', () => {
-  it('schedules the daily tip at 9:00 with the tip as content', () => {
-    const [daily] = remindersForType('health_tips', tip);
-    expect(daily).toMatchObject({
-      identifier: 'daily-tip',
-      title: '💡 Stay Hydrated',
-      body: 'Drink 8 glasses of water daily',
-      channelId: 'health_reminders',
-      data: { type: 'health_tip', payload: 'health_tip:hydration_1' },
-    });
-    expect(time(daily)).toBe('9:00');
+describe('reminder schedule', () => {
+  it('keeps only the self-check and check-in reminders', () => {
+    expect(SCHEDULED_PREF_TYPES).toEqual(['self_check', 'weekly_checkin']);
+    expect(all.map((r) => r.identifier)).toEqual(['self-check-monthly', 'weekly-checkin']);
+    expect(all.length).toBeLessThan(IOS_PENDING_LIMIT);
   });
 
-  it('schedules hydration every 2 hours from 8:00 (six messages, so the last is 18:00)', () => {
-    const hydration = remindersForType('hydration', tip);
-    expect(hydration.map(time)).toEqual(['8:00', '10:00', '12:00', '14:00', '16:00', '18:00']);
-    expect(hydration[0].identifier).toBe('hydration-08');
-    expect(hydration[0].data.payload).toBe('hydration:8');
-    expect(hydration[0].body).toBe("💧 Don't forget to drink water!");
-  });
-
-  it('schedules movement every 3 hours from 9:30', () => {
-    const movement = remindersForType('movement', tip);
-    expect(movement.map(time)).toEqual(['9:30', '12:30', '15:30', '18:30']);
-    expect(movement.map((r) => r.data.payload)).toEqual([
-      'movement:9',
-      'movement:12',
-      'movement:15',
-      'movement:18',
-    ]);
-  });
-
-  it('schedules sun protection daily, self-exam monthly and the check-in on Sundays', () => {
-    const [sun] = remindersForType('sun_protection', tip);
-    expect(sun.trigger).toEqual({ kind: 'daily', hour: 10, minute: 0 });
-    const [selfExam] = remindersForType('self_check', tip);
+  it('schedules the self-exam monthly and the check-in on Sundays', () => {
+    const [selfExam] = remindersForType('self_check');
     expect(selfExam.trigger).toEqual({ kind: 'monthly', day: 1, hour: 9, minute: 0 });
     expect(selfExam.channelId).toBe('screening_reminders');
-    const [checkIn] = remindersForType('weekly_checkin', tip);
+    const [checkIn] = remindersForType('weekly_checkin');
     expect(checkIn.trigger).toEqual({ kind: 'weekly', weekday: 7, hour: 10, minute: 0 });
     expect(checkIn.data.type).toBe('weekly_check_in');
-  });
-
-  it('stays far below the iOS limit of 64 pending notifications', () => {
-    expect(all).toHaveLength(14);
-    expect(all.length).toBeLessThan(IOS_PENDING_LIMIT);
   });
 
   it('uses unique identifiers, each matching only its own type', () => {
     expect(new Set(all.map((r) => r.identifier)).size).toBe(all.length);
     for (const type of SCHEDULED_PREF_TYPES) {
       const prefix = IDENTIFIER_PREFIX[type];
-      const own = remindersForType(type, tip).map((r) => r.identifier);
+      const own = remindersForType(type).map((r) => r.identifier);
       expect(all.filter((r) => r.identifier.startsWith(prefix)).map((r) => r.identifier)).toEqual(
         own,
       );
     }
   });
 
-  it('only uses the six Flutter channels', () => {
-    const ids = CHANNELS.map((channel) => channel.id);
-    expect(ids).toHaveLength(6);
+  it('uses only current channels', () => {
+    const ids = CHANNELS.map((channel) => channel.id) as string[];
     for (const reminder of all) expect(ids).toContain(reminder.channelId);
+    for (const obsolete of OBSOLETE_CHANNEL_IDS) expect(ids).not.toContain(obsolete);
+  });
+});
+
+describe('isCurrentReminder', () => {
+  it('keeps current reminders and flags removed ones', () => {
+    for (const reminder of all) expect(isCurrentReminder(reminder.identifier)).toBe(true);
+    const screening = screeningReminder('s1', 'Mammogram', 'Tomorrow', new Date(2026, 10, 1));
+    expect(isCurrentReminder(screening.identifier)).toBe(true);
+    for (const removed of ['daily-tip', 'hydration-08', 'movement-12', 'sun-protection']) {
+      expect(isCurrentReminder(removed)).toBe(false);
+    }
   });
 });

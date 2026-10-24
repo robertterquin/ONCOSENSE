@@ -9,17 +9,17 @@ import { brand } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
 
-// Port of lib/screens/main_navigation.dart: six tabs in a floating rounded bar.
+// Five tabs from the redesign (docs/redesign). The floating bar is the Flutter
+// main_navigation.dart look until redesign Phase 2 replaces it.
 
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
 const TABS: { name: string; title: string; icon: IconName }[] = [
-  { name: 'home', title: 'Home', icon: 'home' },
-  { name: 'info', title: 'Info', icon: 'medical-information' },
-  { name: 'prevention', title: 'Prevention', icon: 'health-and-safety' },
-  { name: 'forum', title: 'Forum', icon: 'forum' },
-  { name: 'resources', title: 'Resources', icon: 'support-agent' },
+  { name: 'today', title: 'Today', icon: 'home' },
+  { name: 'learn', title: 'Learn', icon: 'menu-book' },
   { name: 'journey', title: 'Journey', icon: 'auto-graph' },
+  { name: 'community', title: 'Community', icon: 'forum' },
+  { name: 'help', title: 'Help', icon: 'support-agent' },
 ];
 
 export default function TabsLayout() {
@@ -62,14 +62,14 @@ export default function TabsLayout() {
           name={tab.name}
           options={{
             title: tab.title,
-            // Flutter: 9px labels, semi-bold when selected. Six labels only just fit.
+            // Semi-bold when selected, like Flutter. Five tabs leave room for 11px labels.
             tabBarLabel: ({ color, focused }) => (
               <Text
                 numberOfLines={1}
                 style={{
                   color: color as string,
                   fontFamily: focused ? fonts.semiBold : fonts.regular,
-                  fontSize: 9,
+                  fontSize: 11,
                 }}>
                 {tab.title}
               </Text>

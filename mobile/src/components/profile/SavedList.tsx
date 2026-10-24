@@ -12,7 +12,7 @@ import { MaterialIcon } from '../MaterialIcon';
 import { Screen } from '../Screen';
 import { ErrorState, LoadingState } from '../StateViews';
 
-// Shared layout for the three saved-items screens (saved_*_screen.dart).
+// Layout for the Saved screen (from the Flutter saved_*_screen.dart screens).
 
 type SavedListProps<T> = {
   title: string;
@@ -28,6 +28,8 @@ type SavedListProps<T> = {
   errorPrefix: string;
   empty: { icon: string; title: string; message: string; action: string; href: Href };
   renderItem: (item: T) => ReactNode;
+  /** Shown above the list (the Saved screen's Questions / Help contacts switch). */
+  top?: ReactNode;
 };
 
 export function SavedList<T>({
@@ -37,6 +39,7 @@ export function SavedList<T>({
   errorPrefix,
   empty,
   renderItem,
+  top,
 }: SavedListProps<T>) {
   const { colors } = useTheme();
   return (
@@ -44,6 +47,7 @@ export function SavedList<T>({
       onRefresh={() => query.refetch()}
       refreshing={query.isRefetching}
       header={<AppHeader title={title} subtitle={subtitle} showBackButton />}>
+      {top}
       {query.isPending ? (
         <LoadingState />
       ) : query.isError ? (
