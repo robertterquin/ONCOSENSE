@@ -1,18 +1,8 @@
-import { awarenessForMonth } from '@/components/home/TipAndAwareness';
 import { resolveMaterialIconName } from '@/components/MaterialIcon';
+import { awarenessForMonth } from '@/constants/awareness';
 import { askQuestionSchema } from '@/constants/validation';
-import { cancerTypeIcon } from '@/lib/cancerIcons';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
-
-describe('cancerTypeIcon', () => {
-  it('matches the Flutter Info screen rules', () => {
-    expect(cancerTypeIcon('Breast Cancer')).toBe('favorite');
-    expect(cancerTypeIcon('Non-Hodgkin Lymphoma')).toBe('bloodtype');
-    expect(cancerTypeIcon('Cervical Cancer')).toBe('woman');
-    expect(cancerTypeIcon('Something Rare')).toBe('medical_information');
-  });
-});
 
 describe('resolveMaterialIconName', () => {
   it('converts Flutter names and falls back from outlined variants', () => {

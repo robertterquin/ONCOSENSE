@@ -1,9 +1,16 @@
 import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
+import { userGender } from '@/api/auth';
+import { queryKeys } from '@/hooks/queryKeys';
+import { parseDbTimestamp } from '@/lib/dates';
+import { queryClient } from '@/lib/queryClient';
+import { chosenGuides, isSnoozed, selfCheckReminderDate, soonestGuide } from '@/lib/selfCheck';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
+import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
+import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import * as device from './device';
 import type { DeliveredNotification } from './device';
@@ -16,6 +23,7 @@ import {
   remindersForType,
   screeningReminder,
   type ScheduledPrefType,
+  type SelfCheckPlan,
 } from './reminders';
 
 // Scheduling started as a port of lib/services/notification_service.dart and the
@@ -31,10 +39,37 @@ async function cancelType(type: ScheduledPrefType): Promise<void> {
   await device.cancelReminders(identifiers);
 }
 
-/** Replaces a type's reminders with its default schedule. */
+/** The soonest of the person's chosen self-checks, once the guides have loaded. */
+function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
+  const guides = queryClient.getQueryData<SelfCheckGuide[]>(queryKeys.selfCheckGuides);
+  if (!guides?.length) return null;
+  const state = useSelfCheckStore.getState();
+  const mine = chosenGuides(guides, state.chosen, userGender(useAuthStore.getState().user));
+  const soonest = soonestGuide(mine, state, now);
+  if (!soonest) return null;
+  const snoozed = isSnoozed(state, now) ? parseDbTimestamp(state.snoozedUntil!) : null;
+  return {
+    guideTitle: soonest.guide.title,
+    date: selfCheckReminderDate(soonest.due, snoozed, now),
+  };
+}
+
+/** Replaces a type's reminders with its current schedule. */
 async function scheduleType(type: ScheduledPrefType): Promise<void> {
   await cancelType(type);
-  for (const reminder of remindersForType(type)) await device.scheduleReminder(reminder);
+  const plan = type === 'self_check' ? selfCheckPlan() : null;
+  for (const reminder of remindersForType(type, plan)) await device.scheduleReminder(reminder);
+}
+
+/** Moves the self-check reminder after a check is done or snoozed (if it is on). */
+export async function rescheduleSelfCheckReminder(): Promise<void> {
+  const prefs = useNotificationPrefs.getState();
+  if (!REMINDERS_SUPPORTED || !prefs.enabled || !prefs.types.self_check) return;
+  try {
+    if (await device.hasPermission()) await scheduleType('self_check');
+  } catch (error) {
+    console.warn('Failed to reschedule the self-check reminder', error);
+  }
 }
 
 /** Schedules every type that is switched on. */

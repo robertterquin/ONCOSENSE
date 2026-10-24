@@ -43,3 +43,12 @@ export function energyLabel(level: number) {
             : 'Full Energy';
   return `${level}/10 (${word})`;
 }
+
+/** Mood choices for a check-in (`moodLevel` 1–5); also Today's quick mood buttons. */
+export const MOODS = [
+  { emoji: '😢', label: 'Awful', value: 1 },
+  { emoji: '😞', label: 'Bad', value: 2 },
+  { emoji: '😐', label: 'Okay', value: 3 },
+  { emoji: '🙂', label: 'Good', value: 4 },
+  { emoji: '😄', label: 'Great', value: 5 },
+];

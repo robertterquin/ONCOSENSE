@@ -1,84 +1,78 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { userDisplayName, userProfilePictureUrl } from '@/api/auth';
-import { AppHeader } from '@/components/AppHeader';
-import { AwarenessBanner, DailyTipCard } from '@/components/home/TipAndAwareness';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { Screen } from '@/components/Screen';
+import { hasCompletedJourneySetup, userDisplayName, userProfilePictureUrl } from '@/api/auth';
+import {
+  AwarenessRow,
+  HelpRow,
+  MoodCard,
+  ProfileButton,
+  TipCard,
+} from '@/components/today/TodayParts';
+import { NextStepPanel, Screen, Text } from '@/components/ui';
 import { useDailyHealthTip } from '@/hooks/useHome';
+import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
+import { useNow } from '@/hooks/useNow';
+import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import { useUser } from '@/stores/authStore';
-import { brand } from '@/theme/colors';
-import { useTheme } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 
-// The Today tab, from lib/screens/home/home_screen.dart. The news, stories and
-// wellness cards were removed in redesign Phase 1; Phase 3 builds the new Today
-// (next step, check-in, coming up, tip, help).
+// The Today tab (redesign Phase 3): one next step, a quick mood check-in for Journey
+// users, the tip of the day, the awareness month and a pointer to Help. "Coming up"
+// (appointments and treatment sessions) arrives with Journey in Phase 4.
 
 export default function TodayTab() {
   const user = useUser();
+  const now = useNow(60_000);
   const tip = useDailyHealthTip();
+  const { nextStep, snoozed } = useSelfChecks(now);
+  const name = user ? userDisplayName(user) : '';
 
   return (
-    <Screen
-      inTabs
-      background="surface"
-      header={
-        <AppHeader
-          title={`Hello, ${userDisplayName(user)} 👋`}
-          subtitle="Your wellness journey starts here"
-          titleSize={18}
-          right={<ProfileButton pictureUrl={userProfilePictureUrl(user)} />}
+    <Screen inTabs>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text variant="supporting" tone="muted">
+            {formatTodayDate(now)}
+          </Text>
+          <Text variant="title" accessibilityRole="header">
+            {greeting(now, user ? firstName(name) : null)}
+          </Text>
+        </View>
+        <ProfileButton pictureUrl={userProfilePictureUrl(user)} name={name} />
+      </View>
+
+      {nextStep.kind === 'self-check' ? (
+        <NextStepPanel
+          status="Due today"
+          title={nextStep.guide.title}
+          body={`Your ${nextStep.guide.frequency.toLowerCase()} check. About 10 minutes, one step at a time.`}
+          primary={{
+            label: 'Start self-check',
+            onPress: () =>
+              router.push({ pathname: '/learn/check/[id]', params: { id: nextStep.guide.id } }),
+          }}
+          secondary={{ label: 'Remind me tomorrow', onPress: snoozeSelfCheck }}
         />
-      }>
-      <DailyTipCard tip={tip} />
-      <AwarenessBanner />
+      ) : (
+        <NextStepPanel
+          status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
+          statusIcon={snoozed ? 'bell' : 'circle-check'}
+          title="Learn the early signs"
+          body="Knowing what's normal for you makes changes easier to spot."
+          primary={{ label: 'Explore Learn', onPress: () => router.navigate('/learn') }}
+        />
+      )}
+
+      {user && hasCompletedJourneySetup(user) ? <MoodCard now={now} /> : null}
+      <TipCard tip={tip} />
+      <AwarenessRow now={now} />
+      <HelpRow />
     </Screen>
   );
 }
 
-function ProfileButton({ pictureUrl }: { pictureUrl: string | null }) {
-  const [pictureFailed, setPictureFailed] = useState(false);
-  const { isDark } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Profile"
-      onPress={() => router.push('/profile')}
-      style={[styles.avatar, isDark && styles.avatarDark]}>
-      {pictureUrl && !pictureFailed ? (
-        <Image
-          source={{ uri: pictureUrl }}
-          style={styles.avatarImage}
-          contentFit="cover"
-          onError={() => setPictureFailed(true)}
-        />
-      ) : (
-        <MaterialIcon name="person" size={24} color={brand.headerPink} />
-      )}
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 23,
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    backgroundColor: brand.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarDark: {
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  headerText: { flex: 1, gap: 2 },
 });

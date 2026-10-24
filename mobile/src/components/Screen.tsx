@@ -13,8 +13,8 @@ import { brand } from '@/theme/colors';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-/** Extra bottom space on tab screens so content clears the floating tab bar. */
-export const TAB_BAR_CLEARANCE = 100;
+/** Space above the tab bar (redesign Phase 3: the bar no longer floats over screens). */
+export const TAB_BAR_CLEARANCE = 16;
 
 type ScreenProps = {
   children: ReactNode;
@@ -46,7 +46,7 @@ export function Screen({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const topInset = header ? 0 : insets.top;
-  const bottom = (inTabs ? TAB_BAR_CLEARANCE : spacing.large) + insets.bottom;
+  const bottom = inTabs ? TAB_BAR_CLEARANCE : spacing.large + insets.bottom;
   const padding = [styles.content, { paddingTop: spacing.medium + topInset }, contentStyle];
 
   return (

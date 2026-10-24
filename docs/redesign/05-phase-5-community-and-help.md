@@ -28,6 +28,7 @@ Artboards: **Community**, **Question**, **Get help**, **Get help (dark)**.
 - [ ] **Feeling overwhelmed?** panel with the NCMH Crisis Hotline (0917-899-8727) as a full-width call button. The number lives in one constant with a test, so it can't be lost if the `resources` row changes.
 - [ ] **Near** filter: a static map from each resource's `location` to a region (Metro Manila, Central Luzon, Cebu, Davao, Nationwide, Online); "All of the Philippines" by default.
 - [ ] Sections: Hotlines, Screening centers, Help with costs, Support groups; each shows 3–4 rows and "Show N more".
+- [ ] Open at a section from a link (`/help?section=screening`): Learn's cancer type page and the self-check's "Noticed a change?" link there (they open Help at the top until then).
 - [ ] Each row: name, location and number, round call button (`tel:` link) with a full accessible label ("Call Philippine Cancer Society, (02) 8508-7777"); rows without a phone show their website instead.
 - [ ] Long-press or a More menu on a row: Save, Copy number.
 

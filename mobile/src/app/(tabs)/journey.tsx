@@ -129,10 +129,7 @@ function JourneyTracker() {
       </LinearGradient>
 
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: TAB_BAR_CLEARANCE + 60 + insets.bottom },
-        ]}
+        contentContainerStyle={[styles.content, { paddingBottom: TAB_BAR_CLEARANCE + 60 }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -235,7 +232,7 @@ function JourneyTracker() {
         accessibilityRole="button"
         accessibilityLabel="Add to journey"
         onPress={() => setAdding(true)}
-        style={[styles.fab, { bottom: TAB_BAR_CLEARANCE + insets.bottom }]}>
+        style={[styles.fab, { bottom: TAB_BAR_CLEARANCE }]}>
         <LinearGradient
           colors={[brand.headerPink, brand.darkPink]}
           start={{ x: 0, y: 0 }}

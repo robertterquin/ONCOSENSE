@@ -1,216 +1,206 @@
+import * as Speech from 'expo-speech';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
-import { MaterialIcon } from '@/components/MaterialIcon';
 import { ErrorState, LoadingState } from '@/components/StateViews';
+import {
+  Banner,
+  BottomActionBar,
+  Button,
+  IconButton,
+  ProgressSegments,
+  Screen,
+  Section,
+  StepList,
+  Text,
+} from '@/components/ui';
 import { useSelfCheckGuide } from '@/hooks/usePrevention';
+import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
 import { openWebPage } from '@/lib/links';
-import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
-import { useTheme } from '@/theme/useTheme';
+import { formatMonthDay } from '@/lib/selfCheck';
+import { space } from '@/theme/tokens';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
-// Guide details: the Flutter Prevention screen's bottom sheet, as a full screen in Learn.
+// The guided self-check (redesign Phase 3): one step at a time with the rest as a list,
+// read aloud on request, ending with "Mark as done" which sets the next due date and
+// moves the reminder. Illustrations are not part of v1.
 
-const close = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
+const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
 
-export default function GuideScreen() {
+export default function SelfCheckScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useSelfCheckGuide(id);
-  const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+
+  if (!query.data) {
+    return (
+      <Screen back={{ label: 'Back', onPress: back }}>
+        {query.isError ? (
+          <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
+        ) : (
+          <LoadingState message="Loading the guide" />
+        )}
+      </Screen>
+    );
+  }
+  return <GuidedCheck guide={query.data} />;
+}
+
+function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
+  const [current, setCurrent] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  const [nextCheck, setNextCheck] = useState<Date | null>(null);
+  const status = useSelfChecks().status(guide);
+  const steps = guide.steps;
+  const step = steps[current];
+  const last = current === steps.length - 1;
+
+  // Stop reading when leaving the screen.
+  useEffect(() => () => void Speech.stop(), []);
+
+  const stopReading = () => {
+    void Speech.stop();
+    setSpeaking(false);
+  };
+  /** Moving to another step stops reading the last one. */
+  const goTo = (index: number) => {
+    stopReading();
+    setCurrent(index);
+  };
+
+  const listen = () => {
+    if (speaking) return stopReading();
+    if (!step) return;
+    setSpeaking(true);
+    const done = () => setSpeaking(false);
+    Speech.speak(`Step ${current + 1}. ${step.instruction}. ${step.detail}`, {
+      onDone: done,
+      onStopped: done,
+      onError: done,
+    });
+  };
+
+  const finish = () => {
+    stopReading();
+    setNextCheck(markSelfCheckDone(guide));
+  };
+
+  const bottomBar = nextCheck ? (
+    <BottomActionBar>
+      <Button title="Back to Learn" onPress={() => router.navigate('/learn')} />
+    </BottomActionBar>
+  ) : steps.length ? (
+    <BottomActionBar>
+      {current > 0 ? (
+        <Button
+          title="Back"
+          variant="secondary"
+          onPress={() => goTo(current - 1)}
+          style={styles.flex1}
+        />
+      ) : null}
+      <Button
+        title={last ? 'Mark as done' : 'Next step'}
+        icon={last ? 'check' : undefined}
+        onPress={last ? finish : () => goTo(current + 1)}
+        style={styles.flex2}
+      />
+    </BottomActionBar>
+  ) : null;
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.surface }]}>
-      <AppHeader title="Self-check guide" subtitle="" showBackButton onBackPress={close} />
-      {query.data ? (
-        <GuideDetails guide={query.data} bottomInset={insets.bottom} />
-      ) : query.isError ? (
-        <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
+    <Screen
+      back={{ label: 'Back', onPress: back }}
+      actions={
+        steps.length && !nextCheck ? (
+          <IconButton
+            icon={speaking ? 'close' : 'volume'}
+            look="tinted"
+            accessibilityLabel={speaking ? 'Stop reading' : 'Listen to this step'}
+            onPress={listen}
+          />
+        ) : null
+      }
+      title={guide.title}
+      subtitle={[guide.frequency, guide.ageRecommendation].filter(Boolean).join(' · ')}
+      background="surface"
+      bottomBar={bottomBar}>
+      {nextCheck ? (
+        <Banner tone="info" title="Done">
+          {`Nice work. Your next check is on ${formatMonthDay(nextCheck)}. We'll remind you.`}
+        </Banner>
       ) : (
-        <LoadingState />
-      )}
-    </View>
-  );
-}
-
-function Chip({ text }: { text: string }) {
-  return (
-    <View style={styles.chip}>
-      <AppText style={styles.chipText}>{text}</AppText>
-    </View>
-  );
-}
-
-function GuideDetails({ guide, bottomInset }: { guide: SelfCheckGuide; bottomInset: number }) {
-  return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + bottomInset }]}>
-      <AppText variant="headlineMedium" color={brand.headerPink} style={styles.bold}>
-        {guide.title}
-      </AppText>
-      <AppText variant="bodyLarge" secondary>
-        {guide.description}
-      </AppText>
-      <View style={styles.chips}>
-        <Chip text={`Type: ${guide.cancerType}`} />
-        <Chip text={`Frequency: ${guide.frequency}`} />
-        {guide.ageRecommendation ? (
-          <Chip text={`Recommended for: ${guide.ageRecommendation}`} />
-        ) : null}
-      </View>
-
-      <AppText variant="titleLarge" style={[styles.bold, styles.sectionTitle]}>
-        Steps to Follow
-      </AppText>
-      {guide.steps.map((step) => (
-        <View key={step.step} style={styles.step}>
-          <View style={styles.row}>
-            <View style={styles.stepNumber}>
-              <AppText variant="titleMedium" color={brand.white} style={styles.bold}>
-                {step.step}
-              </AppText>
-            </View>
-            <AppText variant="label" color="#424242" style={styles.flex}>
-              {step.instruction}
-            </AppText>
+        <>
+          <Text variant="reading">{guide.description}</Text>
+          <View style={styles.progress}>
+            <Text variant="caption" tone="muted">
+              {steps.length
+                ? `Step ${current + 1} of ${steps.length} · ${status.label}`
+                : status.label}
+            </Text>
+            {steps.length ? (
+              <ProgressSegments
+                total={steps.length}
+                done={current + 1}
+                tone="rose"
+                accessibilityLabel="Self-check steps"
+              />
+            ) : null}
           </View>
-          <AppText color="#616161" style={styles.stepDetail}>
-            {step.detail}
-          </AppText>
-        </View>
-      ))}
+          {step ? (
+            <StepList steps={steps.map((s) => ({ title: s.instruction }))} current={current}>
+              <Text variant="reading">{step.detail}</Text>
+            </StepList>
+          ) : null}
+        </>
+      )}
 
       {guide.warningSigns?.length ? (
-        <>
-          <AppText variant="titleLarge" color="#F57C00" style={[styles.bold, styles.sectionTitle]}>
-            ⚠️ Warning Signs
-          </AppText>
+        <Section
+          title="Warning signs"
+          subtitle="See a doctor if you notice any of these"
+          divided={false}>
           {guide.warningSigns.map((sign) => (
-            <View key={sign} style={styles.warning}>
-              <MaterialIcon name="warning_amber" size={20} color="#F57C00" />
-              <AppText style={styles.flex}>{sign}</AppText>
+            <View key={sign} style={styles.sign}>
+              <Text variant="body" tone="rose" accessibilityElementsHidden>
+                •
+              </Text>
+              <Text variant="body" style={styles.flex1}>
+                {sign}
+              </Text>
             </View>
           ))}
-        </>
+        </Section>
       ) : null}
 
-      <View style={styles.doctor}>
-        <View style={styles.row}>
-          <MaterialIcon name="medical_services" size={22} color={brand.headerPink} />
-          <AppText variant="titleMedium" color={brand.headerPink} style={styles.bold}>
-            When to See a Doctor
-          </AppText>
-        </View>
-        <AppText color="#424242" style={styles.doctorText}>
-          {guide.whenToSeeDoctor}
-        </AppText>
-      </View>
+      <Banner
+        tone="help"
+        title="Noticed a change?"
+        action={
+          <Button
+            title="Find a screening center"
+            variant="quiet"
+            fullWidth={false}
+            onPress={() => router.navigate('/help')}
+          />
+        }>
+        {guide.whenToSeeDoctor}
+      </Banner>
 
-      <Pressable
-        accessibilityRole="link"
+      <Button
+        title={`Source: ${guide.sourceName}`}
+        icon="external-link"
+        variant="quiet"
+        fullWidth={false}
         onPress={() => openWebPage(guide.sourceUrl)}
-        style={styles.row}>
-        <MaterialIcon name="verified" size={16} color="#4CAF50" />
-        <AppText variant="bodySmall" style={styles.sourceText}>
-          Source: {guide.sourceName}
-        </AppText>
-      </Pressable>
-
-      <Button title="Close" onPress={close} style={styles.close} />
-    </ScrollView>
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  content: {
-    padding: 24,
-    gap: 12,
-    width: '100%',
-    maxWidth: 640,
-    alignSelf: 'center',
-  },
-  bold: {
-    fontFamily: 'Poppins_700Bold',
-  },
-  sectionTitle: {
-    marginTop: 12,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#E1BEE7',
-  },
-  chipText: {
-    fontSize: 12,
-    fontFamily: 'Poppins_500Medium',
-    color: '#6A1B9A',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  flex: {
-    flex: 1,
-  },
-  step: {
-    padding: 16,
-    borderRadius: radius.medium,
-    borderWidth: 1,
-    borderColor: '#CE93D8',
-    backgroundColor: '#F3E5F5',
-    gap: 8,
-  },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: brand.accentPurple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 4,
-  },
-  stepDetail: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  warning: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  doctor: {
-    marginTop: 12,
-    padding: 16,
-    borderRadius: radius.medium,
-    borderWidth: 1,
-    borderColor: brand.headerPink,
-    backgroundColor: '#FFEBEE',
-    gap: 8,
-  },
-  doctorText: {
-    lineHeight: 21,
-  },
-  sourceText: {
-    flex: 1,
-    color: '#1976D2',
-    textDecorationLine: 'underline',
-  },
-  close: {
-    marginTop: 12,
-  },
+  flex1: { flex: 1 },
+  flex2: { flex: 2 },
+  progress: { gap: space.sm },
+  sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
 });

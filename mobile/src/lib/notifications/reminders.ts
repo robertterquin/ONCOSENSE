@@ -91,6 +91,22 @@ export function monthlySelfExamReminder(dayOfMonth = 1): ReminderRequest {
   };
 }
 
+/** The next self-check, on the day it is due (redesign Phase 3). */
+export function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
+  return {
+    identifier: 'self-check-next',
+    title: 'Time for a self-check',
+    body: `${guideTitle} is due today. It takes about 10 minutes.`,
+    channelId: 'screening_reminders',
+    color: '#D81B60',
+    data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
+    trigger: { kind: 'date', date },
+  };
+}
+
+/** What the self-check reminder needs: the soonest chosen guide and when to remind. */
+export type SelfCheckPlan = { guideTitle: string; date: Date };
+
 /** `dayOfWeek` uses Dart numbering (7 = Sunday). */
 export function weeklyCheckInReminder(dayOfWeek = 7, hour = 10): ReminderRequest {
   return {
@@ -134,11 +150,21 @@ export function isScheduledPrefType(type: PrefType): type is ScheduledPrefType {
   return (SCHEDULED_PREF_TYPES as readonly PrefType[]).includes(type);
 }
 
-/** The reminders a preference type schedules. */
-export function remindersForType(type: ScheduledPrefType): ReminderRequest[] {
+/**
+ * The reminders a preference type schedules. Self-checks remind on the next due day
+ * when the guides are known, else on the 1st of each month.
+ */
+export function remindersForType(
+  type: ScheduledPrefType,
+  selfCheckPlan: SelfCheckPlan | null = null,
+): ReminderRequest[] {
   switch (type) {
     case 'self_check':
-      return [monthlySelfExamReminder()];
+      return [
+        selfCheckPlan
+          ? selfCheckReminder(selfCheckPlan.guideTitle, selfCheckPlan.date)
+          : monthlySelfExamReminder(),
+      ];
     case 'weekly_checkin':
       return [weeklyCheckInReminder()];
   }

@@ -1,5 +1,5 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { radii, space } from '@/theme/tokens';
@@ -27,7 +27,9 @@ export const TAB_ICONS: Record<string, IconName> = {
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const { palette, textSize } = useDesign();
-  const labelSize = Math.round(13 * TEXT_SIZES[textSize]);
+  // Phones shrink a long label to fit (`adjustsFontSizeToFit`); browsers can't, so the
+  // web keeps labels at the default size ("Community" would be cut off at 375 px).
+  const labelSize = Platform.OS === 'web' ? 13 : Math.round(13 * TEXT_SIZES[textSize]);
   const insets = useSafeAreaInsets();
 
   return (
