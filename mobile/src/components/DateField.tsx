@@ -8,6 +8,8 @@ export type DateFieldProps = {
   minimumDate?: Date;
   maximumDate?: Date;
   accessibilityLabel: string;
+  /** Pick a day (default) or a time of day; the other part of `value` is kept. */
+  mode?: 'date' | 'time';
   /** What to show; tapping it opens the picker. */
   children: ReactNode;
 };
@@ -23,6 +25,7 @@ export function DateField({
   minimumDate,
   maximumDate,
   accessibilityLabel,
+  mode = 'date',
   children,
 }: DateFieldProps) {
   if (Platform.OS === 'ios') {
@@ -31,7 +34,7 @@ export function DateField({
         {children}
         <DateTimePicker
           value={value}
-          mode="date"
+          mode={mode}
           display="compact"
           minimumDate={minimumDate}
           maximumDate={maximumDate}
@@ -51,7 +54,7 @@ export function DateField({
       onPress={() =>
         DateTimePickerAndroid.open({
           value,
-          mode: 'date',
+          mode,
           minimumDate,
           maximumDate,
           onChange: (event, date) => {

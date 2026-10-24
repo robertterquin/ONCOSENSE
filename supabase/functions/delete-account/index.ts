@@ -106,9 +106,14 @@ Deno.serve(async (req) => {
       'journey_entries',
       'journey_treatments',
       'journey_milestones',
+      'journey_appointments',
       'reports',
     ]) {
-      check(`delete ${table}`, (await admin.from(table).delete().eq('user_id', userId)).error);
+      const { error } = await admin.from(table).delete().eq('user_id', userId);
+      // A table this project hasn't created yet (journey_appointments before its
+      // migration is applied) has nothing to delete.
+      if (error && (error.code === '42P01' || error.code === 'PGRST205')) continue;
+      check(`delete ${table}`, error);
     }
 
     // Profile picture (ignore "not found").

@@ -1,54 +1,48 @@
-// Slider colors and labels from add_entry_screen.dart.
+// Words for check-in values (redesign Phase 4). Started from add_entry_screen.dart.
 
-export function painColor(level: number) {
-  if (level <= 2) return '#4CAF50';
-  if (level <= 4) return '#FBC02D';
-  if (level <= 6) return '#FF9800';
-  return '#F44336';
+function painWord(level: number): string {
+  if (level <= 2) return 'mild';
+  if (level <= 4) return 'moderate';
+  if (level <= 6) return 'significant';
+  if (level <= 8) return 'severe';
+  return 'extreme';
 }
 
-export function painLabel(level: number) {
-  if (level === 0) return 'No pain';
-  const word =
-    level <= 2
-      ? 'Mild'
-      : level <= 4
-        ? 'Moderate'
-        : level <= 6
-          ? 'Significant'
-          : level <= 8
-            ? 'Severe'
-            : 'Extreme';
-  return `${level}/10 (${word})`;
+function energyWord(level: number): string {
+  if (level <= 2) return 'exhausted';
+  if (level <= 4) return 'tired';
+  if (level <= 6) return 'moderate';
+  if (level <= 8) return 'energized';
+  return 'full of energy';
 }
 
-export function energyColor(level: number) {
-  if (level <= 2) return '#F44336';
-  if (level <= 4) return '#FF9800';
-  if (level <= 6) return '#FBC02D';
-  if (level <= 8) return '#8BC34A';
-  return '#4CAF50';
+/** "No pain", "3 of 10, moderate": shown beside the slider and read aloud. */
+export function painValueText(level: number): string {
+  return level === 0 ? 'No pain' : `${level} of 10, ${painWord(level)}`;
 }
 
-export function energyLabel(level: number) {
-  const word =
-    level <= 2
-      ? 'Exhausted'
-      : level <= 4
-        ? 'Tired'
-        : level <= 6
-          ? 'Moderate'
-          : level <= 8
-            ? 'Energized'
-            : 'Full Energy';
-  return `${level}/10 (${word})`;
+/** "6 of 10, moderate" */
+export function energyValueText(level: number): string {
+  return `${level} of 10, ${energyWord(level)}`;
 }
 
-/** Mood choices for a check-in (`moodLevel` 1–5); also Today's quick mood buttons. */
+/**
+ * Mood choices for a check-in (`moodLevel` 1–5); also Today's quick mood buttons.
+ * The redesign's gentler labels; stored values are unchanged.
+ */
 export const MOODS = [
-  { emoji: '😢', label: 'Awful', value: 1 },
-  { emoji: '😞', label: 'Bad', value: 2 },
+  { emoji: '😣', label: 'Rough', value: 1 },
+  { emoji: '😔', label: 'Low', value: 2 },
   { emoji: '😐', label: 'Okay', value: 3 },
   { emoji: '🙂', label: 'Good', value: 4 },
   { emoji: '😄', label: 'Great', value: 5 },
+];
+
+/** How someone slept (`sleepQuality` 1–5). */
+export const SLEEP = [
+  { label: 'Very poor', value: 1 },
+  { label: 'Poor', value: 2 },
+  { label: 'Fair', value: 3 },
+  { label: 'Good', value: 4 },
+  { label: 'Very good', value: 5 },
 ];

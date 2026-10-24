@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import { appointmentFromRow, appointmentToRow, type Appointment } from '@/types/appointment';
 import { journeyEntryFromRow, journeyEntryToRow, type JourneyEntry } from '@/types/journeyEntry';
 import { milestoneFromRow, milestoneToRow, type Milestone } from '@/types/milestone';
 import { treatmentFromRow, treatmentToRow, type Treatment } from '@/types/treatment';
 
-import { check, currentUserId, requireUserId } from './errors';
+import { ApiError, check, currentUserId, requireUserId } from './errors';
 
 // Port of the Supabase parts of lib/services/journey_service.dart. Supabase is the
 // source of truth; journey setup (diagnosis and cancer-free dates) is in user
@@ -111,4 +112,48 @@ export async function deleteMilestone(milestoneId: string): Promise<void> {
     .eq('id', milestoneId)
     .eq('user_id', userId);
   check(error, 'Failed to delete milestone');
+}
+
+// ---- Appointments (redesign Phase 4; supabase/migrations/*_journey_appointments.sql) ----
+
+/** True when the project doesn't have the `journey_appointments` table yet. */
+export function isMissingTable(error: { code?: string } | null): boolean {
+  return error?.code === '42P01' || error?.code === 'PGRST205';
+}
+
+export const APPOINTMENTS_NOT_SET_UP =
+  "Appointments aren't available yet. They'll work once the app's database is updated.";
+
+/** Upcoming and past appointments; empty until the table exists. */
+export async function fetchAppointments(): Promise<Appointment[]> {
+  const userId = await currentUserId();
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('journey_appointments')
+    .select()
+    .eq('user_id', userId)
+    .order('starts_at', { ascending: true });
+  if (isMissingTable(error)) return [];
+  check(error, 'Failed to load appointments');
+  return (data ?? []).map(appointmentFromRow);
+}
+
+export async function saveAppointment(appointment: Appointment): Promise<void> {
+  const userId = await requireUserId('save appointments');
+  const { error } = await supabase
+    .from('journey_appointments')
+    .upsert({ ...appointmentToRow(appointment), user_id: userId });
+  if (isMissingTable(error)) throw new ApiError(APPOINTMENTS_NOT_SET_UP, error);
+  check(error, 'Failed to save appointment');
+}
+
+export async function deleteAppointment(appointmentId: string): Promise<void> {
+  const userId = await requireUserId('delete appointments');
+  const { error } = await supabase
+    .from('journey_appointments')
+    .delete()
+    .eq('id', appointmentId)
+    .eq('user_id', userId);
+  if (isMissingTable(error)) return;
+  check(error, 'Failed to delete appointment');
 }

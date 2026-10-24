@@ -1,71 +1,86 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
-import { AppHeader } from '@/components/AppHeader';
-import { PinkSwitch } from '@/components/PinkSwitch';
-import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
+import { MoodPicker } from '@/components/journey/MoodPicker';
+import { LoadingState } from '@/components/StateViews';
 import {
-  ChipSelect,
-  EmojiScale,
-  FormBox,
-  FormSection,
-  LevelSlider,
-} from '@/components/journey/FormSection';
-import { Screen } from '@/components/Screen';
-import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import { energyColor, energyLabel, MOODS, painColor, painLabel } from '@/lib/journeyLabels';
+  BottomActionBar,
+  Button,
+  Chip,
+  Screen,
+  Section,
+  SliderRow,
+  Text,
+  TextField,
+} from '@/components/ui';
+import { useFocus } from '@/hooks/useFocus';
+import { useDeleteJourneyEntry, useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
+import { confirm } from '@/lib/confirm';
+import { formatLongDate, isSameDay } from '@/lib/dates';
+import { forFocus } from '@/lib/focus';
+import { energyValueText, painValueText, SLEEP } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
-import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
-import { fonts } from '@/theme/typography';
-import { useTheme } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 import { COMMON_SYMPTOMS, type JourneyEntry } from '@/types/journeyEntry';
 
-// Port of lib/screens/journey/add_entry_screen.dart. Opened with `?id=` to edit.
+// The daily check-in (redesign Phase 4). Opened with `?id=` to edit an older entry;
+// without it, today's entry is edited if there is one. Voice notes use the keyboard's
+// dictation key.
 
-const SLEEP = [
-  { emoji: '😫', label: 'Terrible', value: 1 },
-  { emoji: '😴', label: 'Poor', value: 2 },
-  { emoji: '😑', label: 'Fair', value: 3 },
-  { emoji: '😊', label: 'Good', value: 4 },
-  { emoji: '🌟', label: 'Excellent', value: 5 },
-];
+const close = () => (router.canGoBack() ? router.back() : router.replace('/journey'));
 
-export default function AddEntryScreen() {
+/** Shown before "More symptoms". */
+const FIRST_SYMPTOMS = 10;
+
+export default function CheckInScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const existing = useJourneyEntries().data?.find((entry) => entry.id === id);
-  // Mount the form once the entry being edited is available.
-  if (id && !existing) return <Screen header={<Header editing />}>{null}</Screen>;
-  return <EntryForm existing={existing} />;
+  const entries = useJourneyEntries();
+  if (entries.isPending) {
+    return (
+      <Screen back={{ label: 'Journey', onPress: close }}>
+        <LoadingState message="Loading your check-ins" />
+      </Screen>
+    );
+  }
+  const list = entries.data ?? [];
+  const existing = id
+    ? list.find((entry) => entry.id === id)
+    : list.find((entry) => isSameDay(entry.date, new Date()));
+  // Mount the form once the entry being edited is known, so it starts with its values.
+  return <CheckInForm key={existing?.id ?? 'new'} existing={existing} />;
 }
 
-function Header({ editing }: { editing: boolean }) {
-  return (
-    <AppHeader
-      title={editing ? 'Edit Entry' : 'Daily Check-in'}
-      subtitle={editing ? 'Update your health status' : 'Track your daily wellness'}
-      showBackButton
-    />
-  );
-}
-
-function EntryForm({ existing }: { existing?: JourneyEntry }) {
-  const { colors, isDark } = useTheme();
+function CheckInForm({ existing }: { existing?: JourneyEntry }) {
+  const focus = useFocus();
   const save = useSaveJourneyEntry();
-  const [mood, setMood] = useState(existing?.moodLevel ?? 3);
+  const remove = useDeleteJourneyEntry();
+  const [mood, setMood] = useState<number | null>(existing?.moodLevel ?? null);
   const [pain, setPain] = useState(existing?.painLevel ?? 0);
-  // The database requires energy 1–10 (Flutter's slider allowed 0, which failed to save).
+  // The database requires energy 1–10.
   const [energy, setEnergy] = useState(Math.max(1, existing?.energyLevel ?? 5));
   const [sleep, setSleep] = useState(existing?.sleepQuality ?? 3);
   const [symptoms, setSymptoms] = useState<string[]>(existing?.symptoms ?? []);
-  const [hasAppointment, setHasAppointment] = useState(existing?.hasAppointment ?? false);
-  const [appointmentNotes, setAppointmentNotes] = useState(existing?.appointmentNotes ?? '');
   const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [allSymptoms, setAllSymptoms] = useState(
+    () =>
+      existing?.symptoms.some((s) => !COMMON_SYMPTOMS.slice(0, FIRST_SYMPTOMS).includes(s)) ??
+      false,
+  );
+  const isToday = !existing || isSameDay(existing.date, new Date());
+  const they = (self: string, caregiver: string) => forFocus(focus, self, caregiver);
 
-  const submit = () =>
+  const toggleSymptom = (name: string) =>
+    setSymptoms((list) =>
+      list.includes(name) ? list.filter((item) => item !== name) : [...list, name],
+    );
+
+  const submit = () => {
+    if (mood === null) {
+      showToast(they('Choose how you feel first', 'Choose how they feel first'), 'error');
+      return;
+    }
     save.mutate(
       {
         id: existing?.id ?? newJourneyId(),
@@ -76,125 +91,141 @@ function EntryForm({ existing }: { existing?: JourneyEntry }) {
         sleepQuality: sleep,
         symptoms,
         notes: notes.trim() || null,
-        hasAppointment,
-        appointmentNotes: appointmentNotes.trim() || null,
+        // Kept from older entries; the redesign tracks appointments separately.
+        hasAppointment: existing?.hasAppointment ?? false,
+        appointmentNotes: existing?.appointmentNotes ?? null,
       },
       {
         onSuccess: () => {
-          router.back();
-          showToast(
-            existing ? 'Entry updated!' : 'Entry added! Keep up the great work! 💪',
-            'success',
-          );
+          showToast('Check-in saved', 'success');
+          close();
         },
-        onError: (error) => showToast(`Error saving entry: ${error.message}`, 'error'),
+        onError: (error) => showToast(`Couldn't save: ${error.message}`, 'error'),
       },
     );
+  };
 
-  const muted = isDark ? 'rgba(255,255,255,0.6)' : '#757575';
-  const inputStyle = [styles.input, { color: colors.text, borderColor: colors.divider }];
+  const onDelete = async () => {
+    if (!existing) return;
+    const ok = await confirm({
+      title: 'Delete this check-in?',
+      message: `The check-in from ${formatLongDate(existing.date)} will be removed.`,
+      confirmText: 'Delete',
+      cancelText: 'Keep',
+      destructive: true,
+    });
+    if (!ok) return;
+    remove.mutate(existing.id, {
+      onSuccess: () => {
+        showToast('Check-in deleted');
+        close();
+      },
+      onError: (error) => showToast(error.message, 'error'),
+    });
+  };
+
+  const shownSymptoms = allSymptoms ? COMMON_SYMPTOMS : COMMON_SYMPTOMS.slice(0, FIRST_SYMPTOMS);
 
   return (
-    <Screen header={<Header editing={!!existing} />}>
-      <FormSection title="How are you feeling today?" icon="sentiment_satisfied_alt">
-        <EmojiScale options={MOODS} value={mood} onChange={setMood} color={brand.headerPink} />
-      </FormSection>
-      <FormSection title="Pain Level" icon="healing">
-        <LevelSlider
-          value={pain}
-          min={0}
-          max={10}
-          color={painColor(pain)}
-          label={painLabel(pain)}
-          onChange={setPain}
-          accessibilityLabel="Pain level"
-        />
-      </FormSection>
-      <FormSection title="Energy Level" icon="battery_charging_full">
-        <LevelSlider
-          value={energy}
-          min={1}
-          max={10}
-          color={energyColor(energy)}
-          label={energyLabel(energy)}
-          onChange={setEnergy}
-          accessibilityLabel="Energy level"
-        />
-      </FormSection>
-      <FormSection title="Sleep Quality Last Night" icon="bedtime">
-        <EmojiScale
-          options={SLEEP}
-          value={sleep}
-          onChange={setSleep}
-          color="#9C27B0"
-          showEmoji={false}
-        />
-      </FormSection>
-      <FormSection title="Any symptoms today?" icon="medical_information">
-        <ChipSelect options={COMMON_SYMPTOMS} selected={symptoms} onChange={setSymptoms} />
-      </FormSection>
-      <FormSection title="Doctor's Appointment" icon="event">
-        <FormBox style={styles.gap}>
-          <View style={styles.row}>
-            <View style={styles.flex}>
-              <AppText variant="label">Had a doctor&apos;s appointment today?</AppText>
-              <AppText variant="bodySmall" color={muted}>
-                Add notes from your visit
-              </AppText>
-            </View>
-            <PinkSwitch
-              accessibilityLabel="Had a doctor's appointment today"
-              value={hasAppointment}
-              onValueChange={setHasAppointment}
-            />
-          </View>
-          {hasAppointment ? (
-            <TextInput
-              accessibilityLabel="Appointment notes"
-              placeholder="What did the doctor say?"
-              placeholderTextColor={colors.inputPlaceholder}
-              value={appointmentNotes}
-              onChangeText={setAppointmentNotes}
-              multiline
-              style={inputStyle}
-            />
-          ) : null}
-        </FormBox>
-      </FormSection>
-      <FormSection title="Additional Notes" icon="notes">
-        <FormBox>
-          <TextInput
-            accessibilityLabel="Additional notes"
-            placeholder="How was your day? Any thoughts or feelings you want to record?"
-            placeholderTextColor={colors.inputPlaceholder}
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            style={[...inputStyle, styles.notes]}
+    <Screen
+      back={{ label: 'Journey', onPress: close }}
+      title={isToday ? 'Daily check-in' : 'Edit check-in'}
+      subtitle={formatLongDate(existing?.date ?? new Date())}
+      bottomBar={
+        <BottomActionBar>
+          <Button title="Save check-in" loading={save.isPending} onPress={submit} />
+        </BottomActionBar>
+      }>
+      <Section title={they('How are you feeling?', 'How are they feeling?')} divided={false}>
+        <View style={styles.padded}>
+          <MoodPicker value={mood} onChange={setMood} />
+        </View>
+      </Section>
+
+      <Section title="Pain and energy" divided={false}>
+        <View style={styles.padded}>
+          <SliderRow
+            label="Pain"
+            value={pain}
+            min={0}
+            max={10}
+            onChange={setPain}
+            valueText={painValueText(pain)}
+            minLabel="No pain"
+            maxLabel="Worst pain"
           />
-        </FormBox>
-      </FormSection>
-      <Button
-        title={existing ? 'Update Entry' : 'Save Entry'}
-        onPress={submit}
-        loading={save.isPending}
+          <SliderRow
+            label="Energy"
+            value={energy}
+            min={1}
+            max={10}
+            onChange={setEnergy}
+            valueText={energyValueText(energy)}
+            minLabel="Exhausted"
+            maxLabel="Full of energy"
+          />
+        </View>
+      </Section>
+
+      <Section title={they('How did you sleep?', 'How did they sleep?')} look="plain">
+        <View style={styles.chips} accessibilityRole="radiogroup">
+          {SLEEP.map((option) => (
+            <Chip
+              key={option.value}
+              kind="radio"
+              label={option.label}
+              selected={sleep === option.value}
+              onPress={() => setSleep(option.value)}
+            />
+          ))}
+        </View>
+      </Section>
+
+      <Section title="Any symptoms?" subtitle="Choose all that apply" look="plain">
+        <View style={styles.chips}>
+          {shownSymptoms.map((name) => (
+            <Chip
+              key={name}
+              label={name}
+              selected={symptoms.includes(name)}
+              onPress={() => toggleSymptom(name)}
+            />
+          ))}
+        </View>
+        {allSymptoms ? null : (
+          <Button
+            title="More symptoms"
+            variant="quiet"
+            fullWidth={false}
+            onPress={() => setAllSymptoms(true)}
+          />
+        )}
+      </Section>
+
+      <TextField
+        label="Notes (optional)"
+        placeholder="Anything you want to remember or tell your doctor"
+        multiline
+        value={notes}
+        onChangeText={setNotes}
       />
+      <Text variant="caption" tone="muted">
+        Tip: use the microphone on your keyboard to speak your notes.
+      </Text>
+
+      {existing ? (
+        <Button
+          title="Delete check-in"
+          variant="destructive"
+          loading={remove.isPending}
+          onPress={onDelete}
+        />
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  gap: { gap: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  input: {
-    borderWidth: 1,
-    borderRadius: radius.medium,
-    padding: 12,
-    minHeight: 70,
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    textAlignVertical: 'top',
-  },
-  notes: { minHeight: 100 },
+  padded: { paddingVertical: space.lg, gap: space.xl },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 });

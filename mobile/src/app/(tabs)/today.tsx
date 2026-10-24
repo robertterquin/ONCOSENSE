@@ -4,29 +4,40 @@ import { StyleSheet, View } from 'react-native';
 import { hasCompletedJourneySetup, userDisplayName, userProfilePictureUrl } from '@/api/auth';
 import {
   AwarenessRow,
+  ComingUpToday,
   HelpRow,
   MoodCard,
   ProfileButton,
   TipCard,
 } from '@/components/today/TodayParts';
 import { NextStepPanel, Screen, Text } from '@/components/ui';
+import { useFocus } from '@/hooks/useFocus';
 import { useDailyHealthTip } from '@/hooks/useHome';
+import { useAppointments } from '@/hooks/useJourney';
 import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
 import { useNow } from '@/hooks/useNow';
+import { formatTime, isSameDay } from '@/lib/dates';
+import { usesJourney } from '@/lib/focus';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import { useUser } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
+import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment';
 
-// The Today tab (redesign Phase 3): one next step, a quick mood check-in for Journey
-// users, the tip of the day, the awareness month and a pointer to Help. "Coming up"
-// (appointments and treatment sessions) arrives with Journey in Phase 4.
+// The Today tab (redesign Phase 3, appointments from Phase 4): one next step, a quick
+// mood check-in and what's coming up for Journey users, the tip of the day, the
+// awareness month and a pointer to Help.
 
 export default function TodayTab() {
   const user = useUser();
   const now = useNow(60_000);
   const tip = useDailyHealthTip();
   const { nextStep, snoozed } = useSelfChecks(now);
+  const focus = useFocus();
+  const appointments = useAppointments();
   const name = user ? userDisplayName(user) : '';
+  const journeyUser = user !== null && usesJourney(focus) && hasCompletedJourneySetup(user);
+  const upcoming = journeyUser ? upcomingAppointments(appointments.data ?? [], now) : [];
+  const soon = journeyUser ? appointmentWithinDay(upcoming, now) : null;
 
   return (
     <Screen inTabs>
@@ -54,6 +65,18 @@ export default function TodayTab() {
           }}
           secondary={{ label: 'Remind me tomorrow', onPress: snoozeSelfCheck }}
         />
+      ) : soon ? (
+        <NextStepPanel
+          status={`${isSameDay(soon.startsAt, now) ? 'Today' : 'Tomorrow'} at ${formatTime(soon.startsAt)}`}
+          statusIcon="calendar-check"
+          title={soon.title}
+          body={soon.location ?? 'Bring your questions and any notes for your doctor.'}
+          primary={{
+            label: 'See details',
+            onPress: () =>
+              router.push({ pathname: '/journey/appointment', params: { id: soon.id } }),
+          }}
+        />
       ) : (
         <NextStepPanel
           status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
@@ -64,7 +87,8 @@ export default function TodayTab() {
         />
       )}
 
-      {user && hasCompletedJourneySetup(user) ? <MoodCard now={now} /> : null}
+      {journeyUser ? <MoodCard now={now} /> : null}
+      {journeyUser ? <ComingUpToday appointments={upcoming.slice(0, 2)} /> : null}
       <TipCard tip={tip} />
       <AwarenessRow now={now} />
       <HelpRow />

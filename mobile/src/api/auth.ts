@@ -62,11 +62,14 @@ export async function updatePassword(password: string): Promise<void> {
 /** Stores journey setup in user metadata so it follows the user across devices. */
 export async function saveJourneySetupStatus(setup: {
   journeyStarted: boolean;
+  /** "What brings you here?" (`lib/focus.ts`). */
+  focus?: string;
   diagnosisDate?: Date | null;
   cancerFreeDate?: Date | null;
 }): Promise<void> {
   await updateProfile({
     journey_started: setup.journeyStarted,
+    ...(setup.focus && { journey_focus: setup.focus }),
     ...(setup.diagnosisDate && { diagnosis_date: toDbTimestamp(setup.diagnosisDate) }),
     ...(setup.cancerFreeDate && { cancer_free_date: toDbTimestamp(setup.cancerFreeDate) }),
   });

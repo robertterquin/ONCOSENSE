@@ -4,7 +4,6 @@ import { router, type Href } from 'expo-router';
 
 import {
   deleteAccount,
-  hasCompletedJourneySetup,
   resetPassword,
   signIn,
   signOut,
@@ -14,15 +13,16 @@ import {
   type ProfileMetadata,
 } from '@/api/auth';
 import { uploadProfilePicture } from '@/api/profilePicture';
+import { focusFromMetadata } from '@/lib/focus';
 import { queryClient } from '@/lib/queryClient';
 import { useAuthStore } from '@/stores/authStore';
 import { showToast } from '@/stores/toastStore';
 
 // Sign-in flows from the Flutter login, register and forgot-password screens.
 
-/** Where a signed-in user goes: journey setup until it's done, then the Home tab. */
+/** Where a signed-in user goes: "What brings you here?" until they've answered, then Today. */
 export function homeRouteFor(user: User | null): Href {
-  return hasCompletedJourneySetup(user) ? '/today' : '/journey/onboarding';
+  return focusFromMetadata(user) ? '/today' : '/journey/focus';
 }
 
 export function useSignIn() {
@@ -47,7 +47,7 @@ export function useSignUp() {
     onSuccess: ({ session }) => {
       if (session) {
         showToast('🎉 Welcome to OncoSense!', 'success');
-        router.replace('/journey/onboarding');
+        router.replace('/journey/focus');
       } else {
         // The project requires email confirmation before the first sign-in.
         showToast('Account created! Check your email to confirm it, then log in.', 'success');

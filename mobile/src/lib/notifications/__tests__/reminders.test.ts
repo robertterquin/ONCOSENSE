@@ -28,18 +28,18 @@ describe('toExpoWeekday', () => {
 
 describe('reminder schedule', () => {
   it('keeps only the self-check and check-in reminders', () => {
-    expect(SCHEDULED_PREF_TYPES).toEqual(['self_check', 'weekly_checkin']);
-    expect(all.map((r) => r.identifier)).toEqual(['self-check-monthly', 'weekly-checkin']);
+    expect(SCHEDULED_PREF_TYPES).toEqual(['self_check', 'daily_checkin']);
+    expect(all.map((r) => r.identifier)).toEqual(['self-check-monthly', 'daily-checkin']);
     expect(all.length).toBeLessThan(IOS_PENDING_LIMIT);
   });
 
-  it('schedules the self-exam monthly and the check-in on Sundays', () => {
+  it('schedules the self-exam monthly and the check-in every evening', () => {
     const [selfExam] = remindersForType('self_check');
     expect(selfExam.trigger).toEqual({ kind: 'monthly', day: 1, hour: 9, minute: 0 });
     expect(selfExam.channelId).toBe('screening_reminders');
-    const [checkIn] = remindersForType('weekly_checkin');
-    expect(checkIn.trigger).toEqual({ kind: 'weekly', weekday: 7, hour: 10, minute: 0 });
-    expect(checkIn.data.type).toBe('weekly_check_in');
+    const [checkIn] = remindersForType('daily_checkin');
+    expect(checkIn.trigger).toEqual({ kind: 'daily', hour: 20, minute: 0 });
+    expect(checkIn.data.type).toBe('daily_check_in');
   });
 
   it('uses unique identifiers, each matching only its own type', () => {

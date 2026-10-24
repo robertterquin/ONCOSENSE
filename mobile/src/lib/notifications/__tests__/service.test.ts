@@ -36,9 +36,13 @@ jest.mock('../device', () => {
 const scheduled = (device as unknown as { scheduled: Map<string, unknown> }).scheduled;
 const ids = () => [...scheduled.keys()].sort();
 
+/** A signed-in person going through treatment, so the daily check-in applies. */
+const inTreatment = { id: 'u1', user_metadata: { journey_focus: 'treatment' } } as never;
+
 beforeEach(() => {
   scheduled.clear();
   jest.clearAllMocks();
+  useAuthStore.setState({ user: inTreatment, isGuest: false });
   useNotificationPrefs.setState({ enabled: true, setupComplete: false });
   useNotificationPrefs.getState().setAllTypes(true);
 });
@@ -47,7 +51,7 @@ describe('first launch and app start', () => {
   it('asks once, then schedules every reminder', async () => {
     await initializeNotifications();
     expect(device.requestPermission).toHaveBeenCalledTimes(1);
-    expect(ids()).toEqual(['self-check-monthly', 'weekly-checkin']);
+    expect(ids()).toEqual(['daily-checkin', 'self-check-monthly']);
     expect(useNotificationPrefs.getState().setupComplete).toBe(true);
   });
 
@@ -60,7 +64,7 @@ describe('first launch and app start', () => {
 
   it('reschedules switched-on types when the OS dropped them', async () => {
     useNotificationPrefs.setState({ setupComplete: true });
-    useNotificationPrefs.getState().setType('weekly_checkin', false);
+    useNotificationPrefs.getState().setType('daily_checkin', false);
     await initializeNotifications();
     expect(device.requestPermission).not.toHaveBeenCalled();
     expect(ids()).toEqual(['self-check-monthly']);
@@ -76,12 +80,32 @@ describe('first launch and app start', () => {
   });
 });
 
+describe('daily check-in and focus', () => {
+  it('is not scheduled for Learning or for guests', async () => {
+    useAuthStore.setState({
+      user: { id: 'u1', user_metadata: { journey_focus: 'learning' } } as never,
+    });
+    await initializeNotifications();
+    expect(ids()).toEqual(['self-check-monthly']);
+  });
+
+  it('treats an older account with a started journey as using Journey', async () => {
+    useAuthStore.setState({
+      user: { id: 'u1', user_metadata: { journey_started: true } } as never,
+    });
+    await initializeNotifications();
+    expect(ids()).toEqual(['daily-checkin', 'self-check-monthly']);
+  });
+});
+
 describe('app start for anyone', () => {
   it('cancels removed reminders without signing in', async () => {
-    for (const id of ['hydration-08', 'sun-protection', 'weekly-checkin']) scheduled.set(id, {});
+    for (const id of ['hydration-08', 'sun-protection', 'weekly-checkin', 'daily-checkin']) {
+      scheduled.set(id, {});
+    }
     startNotificationListeners();
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    expect(ids()).toEqual(['weekly-checkin']);
+    expect(ids()).toEqual(['daily-checkin']);
     expect(device.requestPermission).not.toHaveBeenCalled();
   });
 });
@@ -89,10 +113,10 @@ describe('app start for anyone', () => {
 describe('switches', () => {
   it('toggling a type only adds or removes that type', async () => {
     await initializeNotifications();
-    await setNotificationTypeEnabled('weekly_checkin', false);
+    await setNotificationTypeEnabled('daily_checkin', false);
     expect(ids()).toEqual(['self-check-monthly']);
-    await setNotificationTypeEnabled('weekly_checkin', true);
-    expect(ids()).toEqual(['self-check-monthly', 'weekly-checkin']);
+    await setNotificationTypeEnabled('daily_checkin', true);
+    expect(ids()).toEqual(['daily-checkin', 'self-check-monthly']);
   });
 
   it('the master switch cancels everything and turns every type off', async () => {
@@ -112,7 +136,7 @@ describe('switches', () => {
   });
 });
 
-describe('saved preferences from before the redesign', () => {
+describe('saved preferences from earlier versions', () => {
   it('drops removed types and keeps the remaining choices', () => {
     const migrated = migrateNotificationPrefs(
       {
@@ -125,13 +149,19 @@ describe('saved preferences from before the redesign', () => {
     expect(migrated).toEqual({
       enabled: true,
       setupComplete: true,
-      types: { self_check: false, weekly_checkin: true },
+      types: { self_check: false, daily_checkin: true },
     });
   });
 
+  it('carries the weekly check-in choice over to the daily check-in', () => {
+    expect(
+      migrateNotificationPrefs({ types: { self_check: true, weekly_checkin: false } }, 1),
+    ).toEqual({ types: { self_check: true, daily_checkin: false } });
+  });
+
   it('leaves current preferences alone', () => {
-    const current = { types: { self_check: true, weekly_checkin: false } };
-    expect(migrateNotificationPrefs(current, 1)).toBe(current);
+    const current = { types: { self_check: true, daily_checkin: false } };
+    expect(migrateNotificationPrefs(current, 2)).toBe(current);
   });
 });
 
@@ -140,6 +170,8 @@ describe('taps', () => {
     expect(routeForNotification('self_check')).toBe('/learn');
     expect(routeForNotification('screening')).toBe('/learn');
     expect(routeForNotification('weekly_check_in')).toBe('/journey');
+    expect(routeForNotification('daily_check_in')).toBe('/journey');
+    expect(routeForNotification('appointment')).toBe('/journey');
     expect(routeForNotification(null)).toBe('/today');
   });
 
@@ -147,7 +179,7 @@ describe('taps', () => {
     const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
     useAuthStore.setState({ isGuest: true });
     handleNotificationTap({
-      identifier: 'weekly-checkin',
+      identifier: 'daily-checkin',
       date: new Date(2026, 9, 26, 10, 0),
       title: 'Check-in',
       body: '',

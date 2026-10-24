@@ -117,3 +117,10 @@ const LONG_MONTHS = [
 export function formatLongDate(date: Date): string {
   return `${LONG_MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
+
+/** "9:00 AM" */
+export function formatTime(date: Date): string {
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours % 12 || 12}:${minutes} ${hours < 12 ? 'AM' : 'PM'}`;
+}

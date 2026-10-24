@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -106,8 +106,18 @@ export function Banner({ tone = 'info', title, children, action }: BannerProps) 
   );
 }
 
-/** Sticky actions at the bottom of a screen (Save, Next step), above the home bar. */
+/**
+ * Sticky actions at the bottom of a screen (Save, Next step), above the home bar.
+ * Buttons share the width equally unless they set their own `flex`.
+ */
 export function BottomActionBar({ children }: { children: ReactNode }) {
+  const items = Children.map(children, (child) =>
+    isValidElement(child)
+      ? cloneElement(child as ReactElement<{ style?: unknown }>, {
+          style: [styles.barItem, (child as ReactElement<{ style?: unknown }>).props.style],
+        })
+      : child,
+  );
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
   return (
@@ -120,7 +130,7 @@ export function BottomActionBar({ children }: { children: ReactNode }) {
           paddingBottom: Math.max(insets.bottom, space.lg) + space.sm,
         },
       ]}>
-      {children}
+      {items}
     </View>
   );
 }
@@ -140,6 +150,7 @@ const styles = StyleSheet.create({
   panelActions: { gap: space.sm, marginTop: space.sm + 2 },
   banner: { flexDirection: 'row', gap: space.md, padding: space.lg, borderRadius: radii.control },
   bannerText: { flex: 1, gap: space.xs },
+  barItem: { flex: 1 },
   bottomBar: {
     flexDirection: 'row',
     gap: space.md - 2,

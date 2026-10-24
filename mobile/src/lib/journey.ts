@@ -88,6 +88,68 @@ export function daysSince(date: Date | null, now: Date = new Date()): number {
   return date ? differenceInWholeDays(now, date) : 0;
 }
 
+// ---- Dashboard (redesign Phase 4) ----
+
+export type WeekDay = { date: Date; label: string; isToday: boolean; checkedIn: boolean };
+
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** Monday to Sunday of this week, marking today and the days with a check-in. */
+export function weekStrip(entries: JourneyEntry[], now: Date = new Date()): WeekDay[] {
+  const sinceMonday = (now.getDay() + 6) % 7;
+  const monday = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -sinceMonday);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(monday, index);
+    return {
+      date,
+      label: SHORT_DAYS[date.getDay()],
+      isToday: isSameDay(date, now),
+      checkedIn: entryForDate(entries, date) !== undefined,
+    };
+  });
+}
+
+export type WeekSummary = {
+  /** One point per day, oldest first; `null` on days without a check-in. */
+  days: { date: Date; energy: number | null; pain: number | null }[];
+  checkIns: number;
+  averageEnergy: number | null;
+  averagePain: number | null;
+  /** Up to three, most common first. */
+  topSymptoms: [string, number][];
+};
+
+/** Energy, pain and symptoms over the last 7 days (today included). */
+export function lastSevenDays(entries: JourneyEntry[], now: Date = new Date()): WeekSummary {
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(now, index - 6);
+    const entry = entryForDate(entries, date);
+    return { date, energy: entry?.energyLevel ?? null, pain: entry?.painLevel ?? null, entry };
+  });
+  const logged = days.filter((day) => day.entry).map((day) => day.entry!);
+  const average = (values: number[]) =>
+    values.length
+      ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+      : null;
+  return {
+    days: days.map(({ date, energy, pain }) => ({ date, energy, pain })),
+    checkIns: logged.length,
+    averageEnergy: average(logged.map((entry) => entry.energyLevel)),
+    averagePain: average(logged.map((entry) => entry.painLevel)),
+    topSymptoms: mostCommonSymptoms(logged).slice(0, 3),
+  };
+}
+
+/** The chart in words, for screen readers and anyone who prefers text. */
+export function weekSummaryText(summary: WeekSummary): string {
+  if (summary.checkIns === 0) return 'No check-ins in the last 7 days.';
+  const checkIns = `${summary.checkIns} check-in${summary.checkIns === 1 ? '' : 's'}`;
+  return (
+    `Last 7 days, ${checkIns}: energy averaged ${summary.averageEnergy} of 10 ` +
+    `and pain ${summary.averagePain} of 10.`
+  );
+}
+
 // ---- Milestones ----
 
 /** Flutter skips a milestone if one with the same title was already achieved that day. */
