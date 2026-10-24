@@ -4,7 +4,6 @@ import { answerFromRow, type Answer } from '@/types/answer';
 import { questionFromRow, type Question } from '@/types/question';
 
 import { userForumName, userProfilePictureUrl } from './auth';
-import { isMissingTable } from './journey';
 import {
   check,
   currentUser,
@@ -35,16 +34,6 @@ const QUESTION_COLUMNS =
 const ANSWER_COLUMNS =
   'id,question_id,content,user_name,is_anonymous,upvotes,created_at,updated_at,is_accepted,parent_answer_id';
 
-/** shortcut: falls back to the table until the migration is applied; remove once it is. */
-async function readPublic<T extends { error: { code?: string } | null }>(
-  run: (source: string) => PromiseLike<T>,
-  view: string,
-  table: string,
-): Promise<T> {
-  const result = await run(view);
-  return isMissingTable(result.error) ? run(table) : result;
-}
-
 export async function fetchQuestions({
   category,
   searchQuery,
@@ -52,25 +41,22 @@ export async function fetchQuestions({
   limit = 20,
   offset = 0,
 }: QuestionFilters = {}): Promise<Question[]> {
-  const run = (source: string) => {
-    let query = supabase.from(source).select('*');
-    if (category) query = query.eq('category', category);
-    if (searchQuery) {
-      const value = ilikeValue(searchQuery);
-      query = query.or(`title.ilike.${value},content.ilike.${value}`);
-    }
+  let query = supabase.from('questions_public').select('*');
+  if (category) query = query.eq('category', category);
+  if (searchQuery) {
+    const value = ilikeValue(searchQuery);
+    query = query.or(`title.ilike.${value},content.ilike.${value}`);
+  }
 
-    if (sortBy === 'trending') {
-      query = query.order('upvotes', { ascending: false });
-    } else if (sortBy === 'unanswered') {
-      query = query.eq('answer_count', 0).order('created_at', { ascending: false });
-    } else {
-      query = query.order('created_at', { ascending: false });
-    }
-    return query.range(offset, offset + limit - 1);
-  };
+  if (sortBy === 'trending') {
+    query = query.order('upvotes', { ascending: false });
+  } else if (sortBy === 'unanswered') {
+    query = query.eq('answer_count', 0).order('created_at', { ascending: false });
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
 
-  const { data, error } = await readPublic(run, 'questions_public', 'questions');
+  const { data, error } = await query.range(offset, offset + limit - 1);
   check(error, 'Failed to load questions');
 
   // Older questions may lack the author's name or photo; fill them in for the
@@ -95,11 +81,11 @@ export async function fetchQuestions({
 }
 
 export async function fetchQuestion(questionId: string): Promise<Question | null> {
-  const { data, error } = await readPublic(
-    (source) => supabase.from(source).select('*').eq('id', questionId).maybeSingle(),
-    'questions_public',
-    'questions',
-  );
+  const { data, error } = await supabase
+    .from('questions_public')
+    .select('*')
+    .eq('id', questionId)
+    .maybeSingle();
   check(error, 'Failed to load question');
   return data ? questionFromRow(data) : null;
 }
@@ -214,18 +200,13 @@ export async function hasUpvotedQuestion(questionId: string): Promise<boolean> {
 // ---- Answers ----
 
 export async function fetchAnswers(questionId: string): Promise<Answer[]> {
-  const { data, error } = await readPublic(
-    (source) =>
-      supabase
-        .from(source)
-        .select('*')
-        .eq('question_id', questionId)
-        .order('is_accepted', { ascending: false })
-        .order('upvotes', { ascending: false })
-        .order('created_at', { ascending: false }),
-    'answers_public',
-    'answers',
-  );
+  const { data, error } = await supabase
+    .from('answers_public')
+    .select('*')
+    .eq('question_id', questionId)
+    .order('is_accepted', { ascending: false })
+    .order('upvotes', { ascending: false })
+    .order('created_at', { ascending: false });
   check(error, 'Failed to load answers');
   return (data ?? []).map(answerFromRow);
 }
