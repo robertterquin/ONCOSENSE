@@ -72,7 +72,7 @@ Routes: `/today`, `/learn`, `/journey`, `/community`, `/help` (tabs); `/learn/ca
 
 | # | Phase | Doc | Est. effort | Status |
 |---|---|---|---|---|
-| 1 | Scope cleanup and new navigation | [01-phase-1-scope-and-navigation.md](01-phase-1-scope-and-navigation.md) | 3–4 days | In progress (Simulator checks left) |
+| 1 | Scope cleanup and new navigation | [01-phase-1-scope-and-navigation.md](01-phase-1-scope-and-navigation.md) | 3–4 days | Done |
 | 2 | Design foundations | [02-phase-2-foundations.md](02-phase-2-foundations.md) | 1 week | Not started |
 | 3 | Today and Learn | [03-phase-3-today-and-learn.md](03-phase-3-today-and-learn.md) | 1–1.5 weeks | Not started |
 | 4 | Journey | [04-phase-4-journey.md](04-phase-4-journey.md) | 1–1.5 weeks | Not started |

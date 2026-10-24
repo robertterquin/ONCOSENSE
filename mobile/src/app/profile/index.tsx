@@ -77,7 +77,11 @@ export default function ProfileScreen() {
           iconColor="#E91E63"
           iconBackground={brand.lightPink}
           title="Saved"
-          subtitle={countLabel(questions + resources, 'item', 'Questions and help contacts you saved')}
+          subtitle={countLabel(
+            questions + resources,
+            'item',
+            'Questions and help contacts you saved',
+          )}
           badge={questions + resources}
           onPress={() => router.push('/profile/saved')}
         />

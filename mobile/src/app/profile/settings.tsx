@@ -7,10 +7,7 @@ import { AppText } from '@/components/AppText';
 import { InfoDialog } from '@/components/InfoDialog';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PinkSwitch } from '@/components/PinkSwitch';
-import {
-  MasterSwitchItem,
-  ReminderSwitchItem,
-} from '@/components/profile/NotificationSwitches';
+import { MasterSwitchItem, ReminderSwitchItem } from '@/components/profile/NotificationSwitches';
 import { MenuGroup, MenuHeading, MenuItem } from '@/components/profile/ProfileMenu';
 import { Screen } from '@/components/Screen';
 import { APP_TAGLINE, APP_VERSION } from '@/constants/app';

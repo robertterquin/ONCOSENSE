@@ -184,6 +184,10 @@ export function handleNotificationTap(notification: DeliveredNotification): void
 /** Listeners for the root layout. Returns a cleanup function. */
 export function startNotificationListeners(): () => void {
   if (!REMINDERS_SUPPORTED) return () => {};
-  device.configureNotifications().catch((error) => console.warn(error));
+  // Also for guests: they can switch reminders on in Settings without signing in.
+  device
+    .configureNotifications()
+    .then(cancelRemovedReminders)
+    .catch((error) => console.warn(error));
   return device.onNotificationTapped(handleNotificationTap);
 }

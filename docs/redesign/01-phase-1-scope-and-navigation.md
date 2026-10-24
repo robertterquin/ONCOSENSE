@@ -42,5 +42,10 @@ Doing the cuts first means Phases 2–6 restyle only what stays.
 
 - [x] `grep` finds no references to the removed modules, routes or notification types.
 - [x] Lint, typecheck and tests pass; `expo export` for iOS and Android succeeds.
-- [ ] On web and the iOS Simulator: five tabs, every old screen reachable at its new route, nothing removed is reachable. (Web checked 2026-10-24; Simulator still to do.)
-- [ ] `/dev/notifications` on the simulator lists only self-check and weekly check-in reminders after an app restart on a device that had the old set.
+- [x] On web and the iOS Simulator: five tabs, every old screen reachable at its new route, nothing removed is reachable. (Web 2026-10-24; iPhone 17 Pro Simulator 2026-10-25: all five tabs, a guide, a question and Saved open at their new routes; `/notifications` is an unmatched route.)
+- [x] `/dev/notifications` on the simulator lists only self-check and weekly check-in reminders after an app restart on a device that had the old set. (2026-10-25: a guest's 14 old reminders → the 12 removed ones cancelled on start, 2 kept.)
+
+**Found during the checks and fixed:**
+
+- Removed reminders were only cancelled for signed-in users. The cleanup now runs on every app start, guests included (with a test).
+- The selected "Community" tab label was cut off ("Communi…") on a 390 pt phone; tab labels now shrink slightly to fit.

@@ -7,6 +7,7 @@ import {
   initializeNotifications,
   routeForNotification,
   setNotificationsEnabled,
+  startNotificationListeners,
   setNotificationTypeEnabled,
 } from '../service';
 
@@ -72,6 +73,16 @@ describe('first launch and app start', () => {
     }
     await initializeNotifications();
     expect(ids()).toEqual(['self-check-monthly']);
+  });
+});
+
+describe('app start for anyone', () => {
+  it('cancels removed reminders without signing in', async () => {
+    for (const id of ['hydration-08', 'sun-protection', 'weekly-checkin']) scheduled.set(id, {});
+    startNotificationListeners();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(ids()).toEqual(['weekly-checkin']);
+    expect(device.requestPermission).not.toHaveBeenCalled();
   });
 });
 

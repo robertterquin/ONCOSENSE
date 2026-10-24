@@ -66,6 +66,9 @@ export default function TabsLayout() {
             tabBarLabel: ({ color, focused }) => (
               <Text
                 numberOfLines={1}
+                // "Community" in semi-bold is wider than its tab on a 390pt phone.
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
                 style={{
                   color: color as string,
                   fontFamily: focused ? fonts.semiBold : fonts.regular,

@@ -29,8 +29,16 @@ export default function SavedScreen() {
 
   const tabs = (
     <View accessibilityRole="tablist" style={styles.tabs}>
-      <TabButton label="Questions" selected={tab === 'questions'} onPress={() => setTab('questions')} />
-      <TabButton label="Help contacts" selected={tab === 'contacts'} onPress={() => setTab('contacts')} />
+      <TabButton
+        label="Questions"
+        selected={tab === 'questions'}
+        onPress={() => setTab('questions')}
+      />
+      <TabButton
+        label="Help contacts"
+        selected={tab === 'contacts'}
+        onPress={() => setTab('contacts')}
+      />
     </View>
   );
 

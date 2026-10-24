@@ -26,7 +26,9 @@ export default function LearnTab() {
       inTabs
       onRefresh={refetch}
       refreshing={refreshing}
-      header={<AppHeader title="Learn" subtitle="Signs, self-checks and ways to lower your risk" />}>
+      header={
+        <AppHeader title="Learn" subtitle="Signs, self-checks and ways to lower your risk" />
+      }>
       <SectionHeading title="Check yourself" subtitle="Short, guided checks you can do at home" />
       {guides.isPending ? (
         <LoadingState />
@@ -59,7 +61,10 @@ export default function LearnTab() {
         </View>
       )}
 
-      <SectionHeading title="Lower your risk" subtitle="Everyday habits backed by health agencies" />
+      <SectionHeading
+        title="Lower your risk"
+        subtitle="Everyday habits backed by health agencies"
+      />
       {tips.isPending ? (
         <LoadingState />
       ) : tips.isError ? (
