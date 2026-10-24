@@ -111,3 +111,6 @@ Same as the migration:
 | 2026-10-24 | Voice notes use the phone keyboard's dictation, not a custom mic button | Works on iOS and Android with no extra native module | — |
 | 2026-10-24 | Icons move to Lucide (`lucide-react-native` + `react-native-svg`) | Matches the approved stroke style; also draws the ribbon mark | — |
 | 2026-10-24 | Community topics: the five existing categories plus "Treatment" | Treatment questions had no fitting category | — |
+| 2026-10-25 | Self-check history and saved guides move to the account (`self_check_progress`); guests keep them on the phone until they sign in | Data should follow the person to a new phone; replaces the 2026-10-24 "on the device" decision | Robert |
+| 2026-10-25 | Anonymous questions and answers are read through `questions_public` and `answers_public`, which hide the author; votes are visible only to the voter; anonymous posts show "Anonymous" | The author's ID on anonymous posts linked them to the person's named posts | Robert |
+| 2026-10-25 | Create the missing `reports` table (people can send reports, not read them) | The Report button wrote to a table that never existed | — |

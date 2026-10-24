@@ -1,6 +1,8 @@
 import { useCommunityStore } from '../communityStore';
 import { useSelfCheckStore } from '../selfCheckStore';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+
 describe('self-check store', () => {
   beforeEach(() =>
     useSelfCheckStore.setState({ lastDone: {}, snoozedUntil: null, savedGuides: [] }),

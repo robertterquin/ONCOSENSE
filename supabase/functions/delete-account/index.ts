@@ -5,7 +5,7 @@
 //   - their votes (and lowers the upvote counts they added)
 //   - their answers (and lowers answer counts on other people's questions)
 //   - their questions, with the answers and votes on them
-//   - their bookmarks, journey data and reports
+//   - their bookmarks, journey data, reports and self-checks
 //   - their profile picture
 //   - the auth user itself
 //
@@ -108,10 +108,11 @@ Deno.serve(async (req) => {
       'journey_milestones',
       'journey_appointments',
       'reports',
+      'self_check_progress',
     ]) {
       const { error } = await admin.from(table).delete().eq('user_id', userId);
-      // A table this project hasn't created yet (journey_appointments before its
-      // migration is applied) has nothing to delete.
+      // A table this project hasn't created yet (before its migration is applied) has
+      // nothing to delete.
       if (error && (error.code === '42P01' || error.code === 'PGRST205')) continue;
       check(`delete ${table}`, error);
     }

@@ -2,11 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { persistStorage } from '@/lib/storage';
+import { useAuthStore } from '@/stores/authStore';
 import { addDays, toDbTimestamp } from '@/lib/dates';
 import { startOfDay, type SelfCheckState } from '@/lib/selfCheck';
 
-// Self-checks done on this phone (redesign Phase 3). Kept on the device, guests included:
-// it is a private reminder aid, not health data for the server.
+// Self-checks: when each guide was last done, saved guides and reminder choices. Signed
+// in, history and saved guides belong to the account (src/lib/selfCheckSync.ts) and
+// aren't written to the phone; guests keep them on the phone until they sign in.
 
 type SelfCheckStore = SelfCheckState & {
   /** Guide IDs the person picked; null means the defaults for their profile. */
@@ -42,6 +44,14 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
             : [...state.savedGuides, guideId],
         })),
     }),
-    { name: 'self-checks', storage: persistStorage, version: 1 },
+    {
+      name: 'self-checks',
+      storage: persistStorage,
+      version: 1,
+      partialize: (state) =>
+        useAuthStore.getState().user
+          ? { chosen: state.chosen, snoozedUntil: state.snoozedUntil }
+          : state,
+    },
   ),
 );

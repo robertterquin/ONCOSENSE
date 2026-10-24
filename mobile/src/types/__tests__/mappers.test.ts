@@ -37,12 +37,10 @@ describe('questionFromRow', () => {
     expect(questionDisplayName(questionFromRow({ ...questionRow, user_name: 'Rosa' }))).toBe(
       'Rosa',
     );
-    const anonymous = questionDisplayName(questionFromRow({ ...questionRow, is_anonymous: true }));
-    expect(anonymous).toMatch(/^Anonymous /);
-    // Same user always gets the same anonymous name.
-    expect(questionDisplayName(questionFromRow({ ...questionRow, is_anonymous: true }))).toBe(
-      anonymous,
-    );
+    // The database hides the author of other people's anonymous questions.
+    const anonymous = questionFromRow({ ...questionRow, is_anonymous: true, user_id: null });
+    expect(anonymous.userId).toBe('');
+    expect(questionDisplayName(anonymous)).toBe('Anonymous');
     expect(forumCategoryIcon('Lifestyle')).toBe('💪');
     expect(forumCategoryIcon('Other')).toBe('💬');
   });

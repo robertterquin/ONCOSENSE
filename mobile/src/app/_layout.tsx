@@ -8,7 +8,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -16,6 +16,7 @@ import { ToastHost } from '@/components/Toast';
 import { focusFromMetadata } from '@/lib/focus';
 import { initializeNotifications, startNotificationListeners } from '@/lib/notifications/service';
 import { queryClient } from '@/lib/queryClient';
+import { clearSelfChecks, startSelfCheckSync, syncSelfChecks } from '@/lib/selfCheckSync';
 import { startAuthListener, useAuthStore, useUserId } from '@/stores/authStore';
 import { useDesign } from '@/theme/useTheme';
 
@@ -35,6 +36,15 @@ export default function RootLayout() {
   const ready = (fontsLoaded || !!fontError) && sessionRestored;
 
   useEffect(() => startAuthListener(), []);
+  useEffect(() => startSelfCheckSync(), []);
+
+  // Self-checks follow the account: load them at sign-in, drop them at sign-out.
+  const wasSignedIn = useRef(false);
+  useEffect(() => {
+    if (userId) void syncSelfChecks();
+    else if (wasSignedIn.current) clearSelfChecks();
+    wasSignedIn.current = userId !== null;
+  }, [userId]);
 
   // Web: the browser's 1px focus ring is hard to see, so keyboard focus gets a two-tone
   // ring (surface inside, action outside) that shows on light, dark and the violet panel.

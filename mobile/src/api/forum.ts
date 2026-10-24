@@ -4,6 +4,7 @@ import { answerFromRow, type Answer } from '@/types/answer';
 import { questionFromRow, type Question } from '@/types/question';
 
 import { userForumName, userProfilePictureUrl } from './auth';
+import { isMissingTable } from './journey';
 import {
   check,
   currentUser,
@@ -27,6 +28,23 @@ export type QuestionFilters = {
 
 // ---- Questions ----
 
+// Reads go through views that hide the author of anonymous posts (migration
+// 20261025000000); the tables no longer return `user_id`, so writes ask only for these.
+const QUESTION_COLUMNS =
+  'id,title,content,category,user_name,profile_picture_url,is_anonymous,upvotes,answer_count,created_at,updated_at,is_resolved,tags';
+const ANSWER_COLUMNS =
+  'id,question_id,content,user_name,is_anonymous,upvotes,created_at,updated_at,is_accepted,parent_answer_id';
+
+/** shortcut: falls back to the table until the migration is applied; remove once it is. */
+async function readPublic<T extends { error: { code?: string } | null }>(
+  run: (source: string) => PromiseLike<T>,
+  view: string,
+  table: string,
+): Promise<T> {
+  const result = await run(view);
+  return isMissingTable(result.error) ? run(table) : result;
+}
+
 export async function fetchQuestions({
   category,
   searchQuery,
@@ -34,22 +52,25 @@ export async function fetchQuestions({
   limit = 20,
   offset = 0,
 }: QuestionFilters = {}): Promise<Question[]> {
-  let query = supabase.from('questions').select('*');
-  if (category) query = query.eq('category', category);
-  if (searchQuery) {
-    const value = ilikeValue(searchQuery);
-    query = query.or(`title.ilike.${value},content.ilike.${value}`);
-  }
+  const run = (source: string) => {
+    let query = supabase.from(source).select('*');
+    if (category) query = query.eq('category', category);
+    if (searchQuery) {
+      const value = ilikeValue(searchQuery);
+      query = query.or(`title.ilike.${value},content.ilike.${value}`);
+    }
 
-  if (sortBy === 'trending') {
-    query = query.order('upvotes', { ascending: false });
-  } else if (sortBy === 'unanswered') {
-    query = query.eq('answer_count', 0).order('created_at', { ascending: false });
-  } else {
-    query = query.order('created_at', { ascending: false });
-  }
+    if (sortBy === 'trending') {
+      query = query.order('upvotes', { ascending: false });
+    } else if (sortBy === 'unanswered') {
+      query = query.eq('answer_count', 0).order('created_at', { ascending: false });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+    return query.range(offset, offset + limit - 1);
+  };
 
-  const { data, error } = await query.range(offset, offset + limit - 1);
+  const { data, error } = await readPublic(run, 'questions_public', 'questions');
   check(error, 'Failed to load questions');
 
   // Older questions may lack the author's name or photo; fill them in for the
@@ -74,11 +95,11 @@ export async function fetchQuestions({
 }
 
 export async function fetchQuestion(questionId: string): Promise<Question | null> {
-  const { data, error } = await supabase
-    .from('questions')
-    .select('*')
-    .eq('id', questionId)
-    .maybeSingle();
+  const { data, error } = await readPublic(
+    (source) => supabase.from(source).select('*').eq('id', questionId).maybeSingle(),
+    'questions_public',
+    'questions',
+  );
   check(error, 'Failed to load question');
   return data ? questionFromRow(data) : null;
 }
@@ -111,10 +132,10 @@ export async function createQuestion(input: {
       tags: input.tags ?? [],
       ...(profilePictureUrl && { profile_picture_url: profilePictureUrl }),
     })
-    .select()
+    .select(QUESTION_COLUMNS)
     .single();
   check(error, 'Failed to post question');
-  return questionFromRow(data);
+  return questionFromRow({ ...data, user_id: user.id });
 }
 
 export async function updateQuestion(
@@ -131,10 +152,11 @@ export async function updateQuestion(
       ...(changes.isResolved !== undefined && { is_resolved: changes.isResolved }),
     })
     .eq('id', questionId)
-    .select()
+    .select(QUESTION_COLUMNS)
     .single();
   check(error, 'Failed to update question');
-  return questionFromRow(data);
+  // Only the author can change a question.
+  return questionFromRow({ ...data, user_id: await currentUserId() });
 }
 
 export async function deleteQuestion(questionId: string): Promise<void> {
@@ -192,13 +214,18 @@ export async function hasUpvotedQuestion(questionId: string): Promise<boolean> {
 // ---- Answers ----
 
 export async function fetchAnswers(questionId: string): Promise<Answer[]> {
-  const { data, error } = await supabase
-    .from('answers')
-    .select('*')
-    .eq('question_id', questionId)
-    .order('is_accepted', { ascending: false })
-    .order('upvotes', { ascending: false })
-    .order('created_at', { ascending: false });
+  const { data, error } = await readPublic(
+    (source) =>
+      supabase
+        .from(source)
+        .select('*')
+        .eq('question_id', questionId)
+        .order('is_accepted', { ascending: false })
+        .order('upvotes', { ascending: false })
+        .order('created_at', { ascending: false }),
+    'answers_public',
+    'answers',
+  );
   check(error, 'Failed to load answers');
   return (data ?? []).map(answerFromRow);
 }
@@ -228,7 +255,7 @@ export async function createAnswer(input: {
       is_accepted: false,
       parent_answer_id: input.parentAnswerId ?? null,
     })
-    .select()
+    .select(ANSWER_COLUMNS)
     .single();
   check(error, 'Failed to post answer');
 
@@ -236,7 +263,7 @@ export async function createAnswer(input: {
     question_id_param: input.questionId,
   });
   check(rpc.error, 'Failed to update answer count');
-  return answerFromRow(data);
+  return answerFromRow({ ...data, user_id: user.id });
 }
 
 export async function updateAnswer(answerId: string, content: string): Promise<Answer> {
@@ -244,10 +271,11 @@ export async function updateAnswer(answerId: string, content: string): Promise<A
     .from('answers')
     .update({ content, updated_at: toDbTimestamp(new Date()) })
     .eq('id', answerId)
-    .select()
+    .select(ANSWER_COLUMNS)
     .single();
   check(error, 'Failed to update answer');
-  return answerFromRow(data);
+  // Only the author can change an answer.
+  return answerFromRow({ ...data, user_id: await currentUserId() });
 }
 
 export async function deleteAnswer(answerId: string, questionId: string): Promise<void> {

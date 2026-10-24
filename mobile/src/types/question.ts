@@ -7,6 +7,7 @@ export type Question = {
   title: string;
   content: string;
   category: string;
+  /** Empty on other people's anonymous questions (the database hides it). */
   userId: string;
   /** `null` when anonymous. */
   userName: string | null;
@@ -27,7 +28,7 @@ export function questionFromRow(row: Row): Question {
     title: requireString(row, 'title'),
     content: requireString(row, 'content'),
     category: requireString(row, 'category'),
-    userId: requireString(row, 'user_id'),
+    userId: optionalString(row, 'user_id') ?? '',
     userName: optionalString(row, 'user_name'),
     profilePictureUrl: optionalString(row, 'profile_picture_url'),
     isAnonymous: booleanOr(row, 'is_anonymous', false),
@@ -40,33 +41,8 @@ export function questionFromRow(row: Row): Question {
   };
 }
 
-const ANONYMOUS_NAMES = [
-  'Anonymous User',
-  'Anonymous Helper',
-  'Anonymous Friend',
-  'Anonymous Supporter',
-  'Anonymous Warrior',
-  'Anonymous Hope',
-  'Anonymous Light',
-  'Anonymous Care',
-  'Anonymous Heart',
-  'Anonymous Soul',
-];
-
-/**
- * Same anonymous name for the same user every time. Dart's `String.hashCode` isn't
- * reproducible in JavaScript, so the name may differ from the one Flutter shows.
- */
-function anonymousName(userId: string): string {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) | 0;
-  }
-  return ANONYMOUS_NAMES[Math.abs(hash) % ANONYMOUS_NAMES.length];
-}
-
 export function questionDisplayName(question: Question): string {
-  if (question.isAnonymous) return anonymousName(question.userId);
+  if (question.isAnonymous) return 'Anonymous';
   if (!question.userName) return `User ${question.userId.slice(0, 8)}`;
   return question.userName;
 }

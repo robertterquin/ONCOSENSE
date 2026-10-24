@@ -6,6 +6,7 @@ export type Answer = {
   id: string;
   questionId: string;
   content: string;
+  /** Empty on other people's anonymous answers (the database hides it). */
   userId: string;
   userName: string | null;
   isAnonymous: boolean;
@@ -23,7 +24,7 @@ export function answerFromRow(row: Row): Answer {
     id: requireString(row, 'id'),
     questionId: requireString(row, 'question_id'),
     content: requireString(row, 'content'),
-    userId: requireString(row, 'user_id'),
+    userId: optionalString(row, 'user_id') ?? '',
     userName: optionalString(row, 'user_name'),
     isAnonymous: booleanOr(row, 'is_anonymous', false),
     upvotes: numberOr(row, 'upvotes', 0),
