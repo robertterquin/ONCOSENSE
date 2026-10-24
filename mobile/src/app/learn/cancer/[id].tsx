@@ -110,8 +110,8 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           icon="map-pin"
           iconTone="help"
           title="Find a screening center"
-          subtitle="Centers and hotlines in Help"
-          onPress={() => router.navigate('/help')}
+          subtitle="Screening centers near you, in Help"
+          onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
         />
       </Section>
 

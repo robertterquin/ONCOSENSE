@@ -1,31 +1,42 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { PinkSwitch } from '@/components/PinkSwitch';
-import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
-import { FormField } from '@/components/FormField';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { Screen } from '@/components/Screen';
+import {
+  Banner,
+  BottomActionBar,
+  Button,
+  Chip,
+  ListRow,
+  Screen,
+  Section,
+  Switch,
+  TextField,
+} from '@/components/ui';
 import { askQuestionSchema, type AskQuestionForm } from '@/constants/validation';
 import { useAskQuestion } from '@/hooks/useForum';
+import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
-import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
-import { useTheme } from '@/theme/useTheme';
-import { FORUM_CATEGORIES, forumCategoryIcon } from '@/types/question';
+import { space } from '@/theme/tokens';
+import { FORUM_CATEGORIES } from '@/types/question';
 
-// Port of lib/screens/forum/ask_question_screen.dart
+// Ask the community (redesign Phase 5). Anonymous by default; the guard reminder sits
+// right above the Post button.
 
-export default function AskQuestionScreen() {
-  const { colors, isDark } = useTheme();
+const close = () => (router.canGoBack() ? router.back() : router.replace('/community'));
+
+export default function AskScreen() {
   const ask = useAskQuestion();
+  const anonymousByDefault = useCommunityStore((state) => state.anonymousByDefault);
   const { control, handleSubmit } = useForm<AskQuestionForm>({
     resolver: zodResolver(askQuestionSchema),
-    defaultValues: { category: 'Symptoms', title: '', content: '', isAnonymous: false },
+    defaultValues: {
+      category: 'Symptoms',
+      title: '',
+      content: '',
+      isAnonymous: anonymousByDefault,
+    },
   });
 
   const onSubmit = handleSubmit((form) =>
@@ -38,10 +49,10 @@ export default function AskQuestionScreen() {
       },
       {
         onSuccess: () => {
-          showToast('✅ Question posted successfully!', 'success');
-          router.back();
+          showToast('Question posted', 'success');
+          close();
         },
-        onError: (error) => showToast(`❌ Error posting question: ${error.message}`, 'error'),
+        onError: (error) => showToast(`Couldn't post: ${error.message}`, 'error'),
       },
     ),
   );
@@ -51,138 +62,93 @@ export default function AskQuestionScreen() {
       style={styles.fill}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen
-        background="surface"
-        header={
-          <AppHeader
-            title="Ask a Question"
-            subtitle="Share your concerns with the community"
-            showBackButton
-          />
+        back={{ label: 'Community', onPress: close }}
+        title="Ask a question"
+        subtitle="Members answer from their own experience."
+        bottomBar={
+          <BottomActionBar>
+            <Button title="Post question" loading={ask.isPending} onPress={onSubmit} />
+          </BottomActionBar>
         }>
-        <AppText variant="label">Category</AppText>
         <Controller
           control={control}
           name="category"
           render={({ field }) => (
-            <View style={styles.chips} accessibilityRole="radiogroup">
-              {FORUM_CATEGORIES.map((category) => {
-                const selected = field.value === category;
-                return (
-                  <Pressable
-                    key={category}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
-                    onPress={() => field.onChange(category)}
-                    style={[
-                      styles.chip,
-                      selected
-                        ? { backgroundColor: brand.headerPink, borderColor: brand.headerPink }
-                        : { backgroundColor: colors.card, borderColor: colors.divider },
-                    ]}>
-                    <AppText variant="bodySmall" color={selected ? brand.white : colors.text}>
-                      {forumCategoryIcon(category)} {category}
-                    </AppText>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <Section title="Topic" look="plain">
+              <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Topic">
+                {FORUM_CATEGORIES.map((topic) => (
+                  <Chip
+                    key={topic}
+                    kind="radio"
+                    label={topic}
+                    selected={field.value === topic}
+                    onPress={() => field.onChange(topic)}
+                  />
+                ))}
+              </View>
+            </Section>
           )}
         />
-
-        <FormField
+        <Controller
           control={control}
           name="title"
-          label="Title"
-          placeholder="What would you like to know?"
-          maxLength={200}
+          render={({ field, fieldState }) => (
+            <TextField
+              label="Your question"
+              placeholder="What would you like to ask?"
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+              error={fieldState.error?.message ?? null}
+              maxLength={200}
+            />
+          )}
         />
-        <FormField
+        <Controller
           control={control}
           name="content"
-          label="Details"
-          placeholder="Provide more details to help others understand your question..."
-          multiline
-          numberOfLines={8}
-          maxLength={2000}
+          render={({ field, fieldState }) => (
+            <TextField
+              label="Details"
+              placeholder="Share what's going on, so people can answer well"
+              multiline
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+              error={fieldState.error?.message ?? null}
+              maxLength={2000}
+            />
+          )}
         />
-
         <Controller
           control={control}
           name="isAnonymous"
           render={({ field }) => (
-            <View style={[styles.anonymous, { backgroundColor: isDark ? colors.card : '#F5F5F5' }]}>
-              <View style={styles.flex}>
-                <AppText variant="label">Post Anonymously</AppText>
-                <AppText variant="bodySmall" secondary>
-                  Your name won&apos;t be shown
-                </AppText>
-              </View>
-              <PinkSwitch
-                accessibilityLabel="Post anonymously"
-                value={field.value}
-                onValueChange={field.onChange}
+            <Section divided={false}>
+              <ListRow
+                title="Post anonymously"
+                subtitle={field.value ? 'Your name is hidden' : 'Your name is shown'}
+                accessory={
+                  <Switch
+                    accessibilityLabel="Post anonymously"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                }
               />
-            </View>
+            </Section>
           )}
         />
-
-        <View
-          style={[styles.guidelines, { backgroundColor: isDark ? '#3D1F2B' : brand.lightPink }]}>
-          <View style={styles.row}>
-            <MaterialIcon name="info_outline" size={18} color={brand.headerPink} />
-            <AppText variant="label" color={brand.headerPink}>
-              Community Guidelines
-            </AppText>
-          </View>
-          <AppText variant="bodySmall" secondary style={styles.guidelineText}>
-            • Be respectful and supportive{'\n'}• Don&apos;t share personal medical information
-            {'\n'}• Seek professional medical advice{'\n'}• No spam or promotional content
-          </AppText>
-        </View>
-
-        <Button title="Post Question" onPress={onSubmit} loading={ask.isPending} />
+        <Banner tone="guard">
+          Share experiences, not diagnoses. For anything urgent, call your doctor or a hotline in
+          Help.
+        </Banner>
       </Screen>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: {
-    flex: 1,
-  },
-  flex: {
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: -8,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  anonymous: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
-    borderRadius: radius.medium,
-  },
-  guidelines: {
-    padding: 16,
-    borderRadius: radius.medium,
-    gap: 8,
-  },
-  guidelineText: {
-    lineHeight: 20,
-  },
+  fill: { flex: 1 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 });

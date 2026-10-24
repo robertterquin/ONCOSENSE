@@ -19,6 +19,8 @@ import { useSelfCheckGuide } from '@/hooks/usePrevention';
 import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
 import { openWebPage } from '@/lib/links';
 import { formatMonthDay } from '@/lib/selfCheck';
+import { useSelfCheckStore } from '@/stores/selfCheckStore';
+import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
@@ -51,6 +53,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
   const [speaking, setSpeaking] = useState(false);
   const [nextCheck, setNextCheck] = useState<Date | null>(null);
   const status = useSelfChecks().status(guide);
+  const saved = useSelfCheckStore((state) => state.savedGuides.includes(guide.id));
+  const toggleSaved = useSelfCheckStore((state) => state.toggleSavedGuide);
   const steps = guide.steps;
   const step = steps[current];
   const last = current === steps.length - 1;
@@ -112,14 +116,25 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     <Screen
       back={{ label: 'Back', onPress: back }}
       actions={
-        steps.length && !nextCheck ? (
+        <>
           <IconButton
-            icon={speaking ? 'close' : 'volume'}
-            look="tinted"
-            accessibilityLabel={speaking ? 'Stop reading' : 'Listen to this step'}
-            onPress={listen}
+            icon="bookmark"
+            look={saved ? 'tinted' : 'plain'}
+            accessibilityLabel={saved ? 'Saved. Remove from saved' : 'Save guide'}
+            onPress={() => {
+              toggleSaved(guide.id);
+              showToast(saved ? 'Removed from saved' : 'Saved to Profile');
+            }}
           />
-        ) : null
+          {steps.length && !nextCheck ? (
+            <IconButton
+              icon={speaking ? 'close' : 'volume'}
+              look="tinted"
+              accessibilityLabel={speaking ? 'Stop reading' : 'Listen to this step'}
+              onPress={listen}
+            />
+          ) : null}
+        </>
       }
       title={guide.title}
       subtitle={[guide.frequency, guide.ageRecommendation].filter(Boolean).join(' · ')}
@@ -181,7 +196,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
             title="Find a screening center"
             variant="quiet"
             fullWidth={false}
-            onPress={() => router.navigate('/help')}
+            onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
           />
         }>
         {guide.whenToSeeDoctor}

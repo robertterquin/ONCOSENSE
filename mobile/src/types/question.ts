@@ -78,6 +78,7 @@ export function questionRelativeTime(question: Question, now?: Date): string {
 export const FORUM_CATEGORIES = [
   'Symptoms',
   'Diagnosis',
+  'Treatment',
   'Mental Health',
   'Lifestyle',
   'Family Support',
@@ -91,6 +92,8 @@ export function forumCategoryIcon(category: string): string {
       return '🩺';
     case 'Diagnosis':
       return '🔬';
+    case 'Treatment':
+      return '💊';
     case 'Mental Health':
       return '🧠';
     case 'Lifestyle':
