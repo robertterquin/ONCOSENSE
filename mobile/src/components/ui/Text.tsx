@@ -11,8 +11,19 @@ export type TextProps = RNTextProps & {
   color?: string;
 };
 
+// How far the phone's own text size may enlarge text. At the largest accessibility sizes
+// (about 3x) headings break mid-word, so they stop at 1.5x and other text at 2x.
+const HEADINGS: TypeVariant[] = ['display', 'title', 'panel', 'heading', 'section'];
+export const MAX_FONT_SCALE = 2;
+
 /** Atkinson Hyperlegible Next at the user's text size, in the active theme. */
 export function Text({ variant = 'body', tone = 'ink', color, style, ...rest }: TextProps) {
   const { palette, type } = useDesign();
-  return <RNText style={[type(variant), { color: color ?? palette[tone] }, style]} {...rest} />;
+  return (
+    <RNText
+      maxFontSizeMultiplier={HEADINGS.includes(variant) ? 1.5 : MAX_FONT_SCALE}
+      style={[type(variant), { color: color ?? palette[tone] }, style]}
+      {...rest}
+    />
+  );
 }

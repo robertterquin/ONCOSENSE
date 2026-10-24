@@ -29,9 +29,7 @@ export function migrateThemeState(persisted: unknown, version: number): unknown 
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      // Light until every screen is redesigned: the older screens draw fixed light
-      // backgrounds and break in dark. Redesign Phase 7 switches this to 'system'.
-      mode: 'light',
+      mode: 'system',
       setMode: (mode) => set({ mode }),
       textSize: 'default',
       setTextSize: (textSize) => set({ textSize }),

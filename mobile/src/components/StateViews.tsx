@@ -3,13 +3,11 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-import { MaterialIcon } from './MaterialIcon';
 import { Button } from './ui/Button';
-import { Icon, ICON_NAMES, type IconName } from './ui/Icon';
+import { Icon, type IconName } from './ui/Icon';
 import { Text } from './ui/Text';
 
-// Loading, error and empty states in the redesign style. Screens not yet redesigned
-// pass Material icon names; those still render until every screen uses Lucide names.
+// Loading, error and empty states in the redesign style.
 
 export function LoadingState({ message }: { message?: string }) {
   const { palette } = useDesign();
@@ -57,8 +55,7 @@ export function ErrorState({ message = 'Something went wrong.', onRetry }: Error
 type EmptyStateProps = {
   title: string;
   message?: string;
-  /** Lucide icon name (or, on older screens, a Material icon name). */
-  icon?: IconName | string;
+  icon?: IconName;
 };
 
 export function EmptyState({ title, message, icon = 'info' }: EmptyStateProps) {
@@ -77,16 +74,11 @@ export function EmptyState({ title, message, icon = 'info' }: EmptyStateProps) {
   );
 }
 
-function StateIcon({ name, tone }: { name: string; tone: 'muted' | 'danger' }) {
+function StateIcon({ name, tone }: { name: IconName; tone: 'muted' | 'danger' }) {
   const { palette } = useDesign();
-  const isLucide = (ICON_NAMES as string[]).includes(name);
   return (
     <View style={[styles.iconCircle, { backgroundColor: palette.raised }]}>
-      {isLucide ? (
-        <Icon name={name as IconName} size={36} tone={tone} />
-      ) : (
-        <MaterialIcon name={name} size={36} color={palette[tone]} />
-      )}
+      <Icon name={name} size={36} tone={tone} />
     </View>
   );
 }

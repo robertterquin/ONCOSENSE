@@ -1,58 +1,83 @@
 # Signed-in flow with a throwaway TEST account (never a real user's). It writes to the
-# Supabase project in .env: a journal entry, a question, an answer, an upvote and a
-# bookmark. Delete the test data afterwards.
+# Supabase project in .env: a check-in, an appointment, a question, an answer, a
+# "helpful" mark and a bookmark. Delete the test data afterwards.
 #
 #   maestro test -e EMAIL=test@example.com -e PASSWORD='…' .maestro/signed-in.yaml
 appId: com.oncosense.app
 ---
 - launchApp:
     clearState: true
-- tapOn: 'I already have an account'
-- tapOn: 'Enter your email'
+- tapOn: 'Sign in'
+- tapOn:
+    text: 'Email'
+    index: 1
 - inputText: ${EMAIL}
-- tapOn: 'Enter your password'
+- tapOn:
+    text: 'Password'
+    index: 1
 - inputText: ${PASSWORD}
 - hideKeyboard
-- tapOn: 'Login'
-- assertVisible: 'Hello, .*'
+- tapOn:
+    text: 'Sign in'
+    index: 1
 
-# Journey: add today's entry
+# "What brings you here?" only shows for an account without a focus yet
+- runFlow:
+    when:
+      visible: 'What brings you here?'
+    commands:
+      - tapOn: 'Going through treatment.*'
+      - tapOn: 'Continue'
+      - tapOn: 'Finish'
+- assertVisible: 'Hello.*'
+
+# Journey: check in, add an appointment, share a summary
 - tapOn: 'Journey'
-- tapOn: 'Add to journey'
-- tapOn: 'Daily Journal Entry'
+- tapOn: 'Check in|Edit today’s check-in'
+- tapOn: 'Okay'
 - scrollUntilVisible:
-    element: 'Save Entry|Update Entry'
-- tapOn: 'Save Entry|Update Entry'
+    element: 'Save check-in'
+- tapOn: 'Save check-in'
+- tapOn: 'Add an appointment'
+- tapOn: 'What is it for?'
+- inputText: 'Maestro test appointment'
+- hideKeyboard
+- tapOn: 'Save'
+- scrollUntilVisible:
+    element: 'Share a summary with my doctor'
+- tapOn: 'Share a summary with my doctor'
+- assertVisible: 'Summary for your doctor'
+- tapOn: 'Journey'
 
-# Community: ask, answer, upvote, bookmark
+# Community: ask, answer, mark helpful, save
 - tapOn: 'Community'
-- tapOn: 'Ask a Question'
-- tapOn: 'What would you like to know?'
+- tapOn: 'Ask a question'
+- tapOn: 'Your question'
 - inputText: 'Maestro test question'
-- tapOn: 'Provide more details.*'
+- tapOn: 'Details'
 - inputText: 'Automated test post. Safe to delete.'
 - hideKeyboard
-- tapOn: 'Post Question'
-- tapOn: 'Maestro test question.*'
-- tapOn: 'Write your answer'
+- tapOn: 'Post question'
+- tapOn: '.*Maestro test question.*'
+- tapOn: 'Your answer'
 - inputText: 'Automated test answer.'
-- tapOn: 'Post answer'
-- tapOn: 'Upvote.*'
+- hideKeyboard
+- tapOn: 'Post'
+- tapOn: 'Helpful.*'
 - tapOn: 'Save question'
-- assertVisible: 'Remove saved question'
-- tapOn: 'Go back'
+- assertVisible: 'Saved. Remove from saved'
+- tapOn: 'Community'
 
-# Saved questions
+# Saved, theme and log out
 - tapOn: 'Today'
-- tapOn: 'Profile'
+- tapOn: 'Profile and settings'
 - tapOn: 'Saved'
-- assertVisible: 'Maestro test question.*'
-- tapOn: 'Go back'
-
-# Theme and sign out
+- assertVisible: '.*Maestro test question.*'
+- tapOn: 'Profile'
 - tapOn: 'Settings'
-- tapOn: 'Dark Mode'
-- tapOn: 'Go back'
-- tapOn: 'Log Out'
-- tapOn: 'Logout'
+- tapOn: 'Dark'
+- tapOn: 'Phone'
+- tapOn: 'Profile'
+- tapOn: 'Log out'
+- tapOn: 'Log out'
 - assertVisible: 'Create an account'

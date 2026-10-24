@@ -5,7 +5,7 @@ import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon } from './Icon';
-import { Text } from './Text';
+import { MAX_FONT_SCALE, Text } from './Text';
 
 type TextFieldProps = Omit<TextInputProps, 'style' | 'secureTextEntry'> & {
   /** Always visible above the field (placeholders vanish while typing). */
@@ -30,6 +30,7 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
       </Text>
       <View>
         <TextInput
+          maxFontSizeMultiplier={MAX_FONT_SCALE}
           accessibilityLabel={label}
           accessibilityLabelledBy={`${id}-label`}
           accessibilityHint={error ?? undefined}
@@ -99,6 +100,7 @@ export function SearchField({ accessibilityLabel, ...input }: SearchFieldProps) 
         <Icon name="search" size={22} tone="muted" />
       </View>
       <TextInput
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
         accessibilityLabel={accessibilityLabel}
         placeholderTextColor={palette.muted}
         returnKeyType="search"

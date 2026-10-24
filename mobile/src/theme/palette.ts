@@ -1,7 +1,6 @@
 // Redesign color tokens (docs/redesign/02-phase-2-foundations.md and the Foundations
 // artboard). Lavender is the awareness color for all cancers; rose marks self-checks,
 // teal marks help and calling. Every text pair passes WCAG AA (palette.test.ts).
-// Screens move from `colors.ts` to these tokens phase by phase.
 
 export type Palette = {
   /** Screen background. */
@@ -111,6 +110,12 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['onHelpTint', 'helpTint'],
   ['sunInk', 'sun'],
   ['danger', 'surface'],
+  ['danger', 'ground'],
+  ['rose', 'ground'],
+  ['help', 'ground'],
+  ['muted', 'helpTint'],
+  ['surface', 'help'],
+  ['panel', 'onPanel'],
 ];
 
 /** Non-text marks (chart bars, switch tracks, borders that carry meaning): 3:1. */
@@ -118,4 +123,6 @@ export const MARK_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['chartPain', 'surface'],
   ['action', 'surface'],
   ['help', 'helpTint'],
+  ['onAction', 'rose'],
+  ['danger', 'raised'],
 ];

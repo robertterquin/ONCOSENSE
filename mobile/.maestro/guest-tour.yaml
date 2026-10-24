@@ -1,27 +1,34 @@
 # Guest tour: no account needed and nothing is written to Supabase.
-# Welcome → login → Continue as Guest → every tab → settings.
+# Welcome → Today → Learn → guided self-check → Help → Community → Settings.
 appId: com.oncosense.app
 ---
 - launchApp:
     clearState: true
-- tapOn: 'I already have an account'
-- tapOn: 'Continue as Guest'
-- assertVisible: 'Hello, Guest.*'
+- tapOn: 'Look around without an account'
+- assertVisible: 'Hello.*'
 
-# Tabs
+# Learn → a guided self-check, step by step
 - tapOn: 'Learn'
 - assertVisible: 'Check yourself'
-- tapOn: 'Journey'
-- assertVisible: 'Track your journey'
-- tapOn: 'Community'
-- assertVisible: 'Q&A Forum'
-- tapOn: 'Help'
-- assertVisible: 'Resources.*'
-- tapOn: 'Today'
+- tapOn: 'Skin Cancer ABCDE Check.*'
+- repeat:
+    while:
+      notVisible: 'Mark as done'
+    commands:
+      - tapOn: 'Next step'
+- tapOn: 'Mark as done'
+- assertVisible: 'Done'
+- tapOn: 'Back to Learn'
 
-# Profile → Settings
-- tapOn: 'Profile'
+# Help and Community
+- tapOn: 'Help'
+- assertVisible: 'Get help'
+- tapOn: 'Community'
+- assertVisible: 'Ask a question'
+
+# Profile → Settings → theme
+- tapOn: 'Today'
+- tapOn: 'Profile and settings'
 - tapOn: 'Settings'
-- assertVisible: 'Push Notifications'
-- tapOn: 'Dark Mode'
-- tapOn: 'Dark Mode'
+- tapOn: 'Dark'
+- tapOn: 'Phone'

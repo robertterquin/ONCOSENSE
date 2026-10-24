@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { ErrorState, LoadingState } from '@/components/StateViews';
@@ -24,14 +25,16 @@ export default function HelpTab() {
   const resources = useAllResources();
   const [region, setRegion] = useState<Region | null>(null);
   const scrollRef = useRef<ScrollViewInstance | null>(null);
+  const reduceMotion = useReducedMotion();
   const [offsets, setOffsets] = useState<Record<string, number>>({});
 
   // On every visit with `?section=` (the tab stays mounted), once the sections are laid out.
   useFocusEffect(
     useCallback(() => {
       const y = section ? offsets[section] : undefined;
-      if (y !== undefined) scrollRef.current?.scrollTo({ y: Math.max(0, y - space.md) });
-    }, [section, offsets]),
+      if (y !== undefined)
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - space.md), animated: !reduceMotion });
+    }, [section, offsets, reduceMotion]),
   );
 
   return (

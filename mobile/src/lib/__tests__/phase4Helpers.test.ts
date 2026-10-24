@@ -1,17 +1,7 @@
-import { resolveMaterialIconName } from '@/components/MaterialIcon';
 import { awarenessForMonth } from '@/constants/awareness';
 import { askQuestionSchema } from '@/constants/validation';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
-
-describe('resolveMaterialIconName', () => {
-  it('converts Flutter names and falls back from outlined variants', () => {
-    expect(resolveMaterialIconName('water_drop')).toBe('water-drop');
-    expect(resolveMaterialIconName('restaurant_outlined')).toBe('restaurant');
-    expect(resolveMaterialIconName('warning_amber_rounded')).toBe('warning-amber');
-    expect(resolveMaterialIconName('not_an_icon')).toBeNull();
-  });
-});
 
 describe('home helpers', () => {
   it('picks the awareness month', () => {

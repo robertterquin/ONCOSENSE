@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { radii, space } from '@/theme/tokens';
@@ -19,11 +20,12 @@ type SheetProps = {
 export function Sheet({ visible, onClose, title, children }: SheetProps) {
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
+  const reduceMotion = useReducedMotion();
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={reduceMotion ? 'fade' : 'slide'}
       onRequestClose={onClose}
       statusBarTranslucent>
       <View style={styles.root}>

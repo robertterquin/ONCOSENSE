@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,9 +15,11 @@ import { useDesign } from '@/theme/useTheme';
 export default function WelcomeScreen() {
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
+  const focused = useIsFocused();
   return (
     <View style={[styles.root, { backgroundColor: palette.panel }]}>
-      <StatusBar style="light" />
+      {/* Only while shown: Welcome stays mounted under Sign in and Create account. */}
+      {focused ? <StatusBar style="light" /> : null}
       <ScrollView
         contentContainerStyle={[
           styles.content,

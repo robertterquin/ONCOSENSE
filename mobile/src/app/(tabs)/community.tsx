@@ -36,6 +36,8 @@ export default function CommunityTab() {
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
+  // Room under the last question for the floating button, which grows with text size.
+  const [fabHeight, setFabHeight] = useState(56);
   // Keep "2 minutes ago" fresh.
   const now = useNow(10_000);
   const questions = useQuestions({ category, searchQuery, sortBy: 'recent' });
@@ -101,10 +103,12 @@ export default function CommunityTab() {
             ))}
           </Section>
         )}
-        {/* Room for the floating button over the last question. */}
-        <View style={styles.fabSpace} />
+        <View style={{ height: fabHeight }} />
       </Screen>
-      <View style={styles.fab} pointerEvents="box-none">
+      <View
+        style={styles.fab}
+        pointerEvents="box-none"
+        onLayout={(event) => setFabHeight(event.nativeEvent.layout.height)}>
         <Button
           title="Ask a question"
           icon="plus"
@@ -120,7 +124,6 @@ export default function CommunityTab() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   topics: { gap: space.sm, paddingRight: space.xl },
-  fabSpace: { height: 56 },
   fab: { position: 'absolute', right: space.xl, bottom: space.lg },
   fabButton: {
     shadowColor: '#2E1F66',
