@@ -1,6 +1,5 @@
 import { getTipOfTheDay } from '@/api/healthTips';
 import { HEALTH_TIPS } from '@/constants/healthTips';
-import { DEFAULT_REMINDERS } from '@/constants/defaultReminders';
 import {
   ageSchema,
   emailSchema,
@@ -37,10 +36,8 @@ describe('validation (same rules and messages as Flutter)', () => {
 });
 
 describe('built-in data', () => {
-  it('has all tips and reminders from the Flutter app', () => {
+  it('has all tips from the Flutter app', () => {
     expect(HEALTH_TIPS).toHaveLength(31);
-    expect(DEFAULT_REMINDERS).toHaveLength(55);
-    expect(new Set(DEFAULT_REMINDERS.map((r) => r.id)).size).toBe(55);
   });
 
   it('picks the same tip all day, changing daily', () => {

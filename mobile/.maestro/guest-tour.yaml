@@ -1,5 +1,5 @@
 # Guest tour: no account needed and nothing is written to Supabase.
-# Welcome → login → Continue as Guest → every tab → notification center → settings.
+# Welcome → login → Continue as Guest → every tab → settings.
 appId: com.oncosense.app
 ---
 - launchApp:
@@ -8,25 +8,16 @@ appId: com.oncosense.app
 - tapOn: 'Continue as Guest'
 - assertVisible: 'Hello, Guest.*'
 
-# Notification center (sample notifications on first use)
-- tapOn: 'Notifications.*'
-- assertVisible: 'Daily Health Tip'
-- tapOn: 'Mark all as read'
-- assertVisible: 'All caught up!'
-- tapOn: 'Go back'
-
 # Tabs
-- tapOn: 'Info'
-- assertVisible: 'Cancer Information'
-- tapOn: 'Prevention'
-- assertVisible: 'Prevention.*'
-- tapOn: 'Forum'
-- assertVisible: 'Q&A Forum'
-- tapOn: 'Resources'
-- assertVisible: 'Resources.*'
+- tapOn: 'Learn'
+- assertVisible: 'Check yourself'
 - tapOn: 'Journey'
 - assertVisible: 'Track your journey'
-- tapOn: 'Home'
+- tapOn: 'Community'
+- assertVisible: 'Q&A Forum'
+- tapOn: 'Help'
+- assertVisible: 'Resources.*'
+- tapOn: 'Today'
 
 # Profile → Settings
 - tapOn: 'Profile'

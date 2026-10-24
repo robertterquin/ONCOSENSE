@@ -1,6 +1,4 @@
 import { answerDisplayName, answerFromRow } from '@/types/answer';
-import { articleFromGNews, articleReadTime } from '@/types/article';
-import { healthReminderFromRow, shouldShowReminder } from '@/types/healthReminder';
 import { journeyEntryFromRow, journeyEntryToRow, moodLabel } from '@/types/journeyEntry';
 import { milestoneFromRow } from '@/types/milestone';
 import { forumCategoryIcon, questionDisplayName, questionFromRow } from '@/types/question';
@@ -68,22 +66,6 @@ describe('answerFromRow', () => {
     });
     expect(answer).toMatchObject({ upvotes: 0, isAccepted: false, parentAnswerId: null });
     expect(answerDisplayName(answer)).toBe('Anonymous');
-  });
-});
-
-describe('articleFromGNews', () => {
-  it('maps the GNews shape', () => {
-    const article = articleFromGNews({
-      title: 'Study',
-      description: 'one two three',
-      url: 'https://who.int/x',
-      image: 'https://img',
-      publishedAt: '2026-10-20T00:00:00Z',
-      source: { name: 'WHO' },
-    });
-    expect(article).toMatchObject({ imageUrl: 'https://img', sourceName: 'WHO' });
-    expect(articleReadTime(article)).toBe('1 min read');
-    expect(articleFromGNews({}).sourceName).toBe('Unknown');
   });
 });
 
@@ -177,7 +159,7 @@ describe('journey models', () => {
   });
 });
 
-describe('resources and reminders', () => {
+describe('resources', () => {
   it('maps resources with defaults', () => {
     const resource = resourceFromRow({ id: 'r1', name: 'Hotline', type: 'hotline' });
     expect(resource).toMatchObject({
@@ -186,22 +168,5 @@ describe('resources and reminders', () => {
       isVerified: false,
       isActive: true,
     });
-  });
-
-  it('decides when a reminder is due', () => {
-    const reminder = healthReminderFromRow({
-      id: 'h1',
-      title: 'Water',
-      message: 'Drink',
-      icon: 'water_drop',
-      color: '2196F3',
-      category: 'hydration',
-      frequency_hours: 3,
-      last_shown_at: '2026-10-22T08:00:00',
-    });
-    expect(reminder.priority).toBe(3);
-    expect(shouldShowReminder(reminder, new Date(2026, 9, 22, 10, 59))).toBe(false);
-    expect(shouldShowReminder(reminder, new Date(2026, 9, 22, 11, 0))).toBe(true);
-    expect(shouldShowReminder({ ...reminder, isActive: false })).toBe(false);
   });
 });

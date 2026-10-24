@@ -6,16 +6,9 @@ import { persistStorage } from '@/lib/storage';
 // Notification preferences from settings_screen.dart (SharedPreferences keys
 // `notifications_enabled`, `notification_<type>` and `notifications_setup_complete`).
 // src/lib/notifications/service.ts schedules the reminders from these values.
+// The redesign kept only the self-check and check-in reminders (docs/redesign).
 
-export const NOTIFICATION_TYPES = [
-  'health_tips',
-  'hydration',
-  'movement',
-  'sun_protection',
-  'self_check',
-  'weekly_checkin',
-  'forum',
-] as const;
+export const NOTIFICATION_TYPES = ['self_check', 'weekly_checkin'] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -38,6 +31,17 @@ const allTypes = (enabled: boolean) =>
     boolean
   >;
 
+/** Saved preferences from before the redesign: drops the removed reminder types. */
+export function migrateNotificationPrefs(persisted: unknown, version: number): unknown {
+  if (version >= 1 || !persisted || typeof persisted !== 'object') return persisted;
+  const state = persisted as { types?: Record<string, unknown> };
+  const types = allTypes(true);
+  for (const type of NOTIFICATION_TYPES) {
+    if (typeof state.types?.[type] === 'boolean') types[type] = state.types[type] as boolean;
+  }
+  return { ...state, types };
+}
+
 export const useNotificationPrefs = create<NotificationPrefsState>()(
   persist(
     (set) => ({
@@ -50,6 +54,12 @@ export const useNotificationPrefs = create<NotificationPrefsState>()(
       setupComplete: false,
       setSetupComplete: () => set({ setupComplete: true }),
     }),
-    { name: 'notification-prefs', storage: persistStorage },
+    {
+      name: 'notification-prefs',
+      storage: persistStorage,
+      version: 1,
+      migrate: (persisted, version) =>
+        migrateNotificationPrefs(persisted, version) as NotificationPrefsState,
+    },
   ),
 );

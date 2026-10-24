@@ -36,7 +36,7 @@
 - [x] Android notification icon: white ribbon, `assets/images/notification-icon.png` (from `scripts/make-notification-icon.py`), set in the `expo-notifications` plugin.
 - [x] `ios/` and `android/` are generated and ignored by git.
 - [ ] Any SQL added during the migration (e.g. for Edge Functions) applied to production, additive only.
-- [ ] Edge Functions `news` and `delete-account` deployed to production with their secrets.
+- [ ] Edge Function `delete-account` deployed to production. (`news` was removed with the news feed in the redesign; revoke the old GNews key instead of deploying it.)
 - [ ] Crash reporting added (e.g. `sentry-expo` / `@sentry/react-native`) so release issues are visible.
 - [ ] Privacy policy URL and data-safety / privacy-label answers updated (camera, photo library, notifications, account data).
 

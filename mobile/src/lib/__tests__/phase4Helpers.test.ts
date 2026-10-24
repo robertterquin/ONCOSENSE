@@ -1,4 +1,3 @@
-import { withAlpha } from '@/components/home/HealthReminderCard';
 import { awarenessForMonth } from '@/components/home/TipAndAwareness';
 import { resolveMaterialIconName } from '@/components/MaterialIcon';
 import { askQuestionSchema } from '@/constants/validation';
@@ -25,11 +24,6 @@ describe('resolveMaterialIconName', () => {
 });
 
 describe('home helpers', () => {
-  it('adds alpha to hex colors', () => {
-    expect(withAlpha('2196F3', 0.2)).toBe('#2196F333');
-    expect(withAlpha('#4CAF50', 1)).toBe('#4CAF50ff');
-  });
-
   it('picks the awareness month', () => {
     expect(awarenessForMonth(new Date(2026, 9, 1)).title).toBe('Breast Cancer');
     expect(awarenessForMonth(new Date(2026, 0, 31)).month).toBe('January');

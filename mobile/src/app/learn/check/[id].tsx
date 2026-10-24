@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/AppHeader';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -13,19 +14,19 @@ import { radius } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
-// Guide details: the Flutter Prevention screen's bottom sheet, as a modal screen.
+// Guide details: the Flutter Prevention screen's bottom sheet, as a full screen in Learn.
 
-const close = () => (router.canGoBack() ? router.back() : router.replace('/prevention'));
+const close = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
 
 export default function GuideScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useSelfCheckGuide(id);
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.sheet, { backgroundColor: colors.surface, paddingTop: insets.top }]}>
-      <View style={[styles.handle, { backgroundColor: isDark ? '#616161' : '#E0E0E0' }]} />
+    <View style={[styles.screen, { backgroundColor: colors.surface }]}>
+      <AppHeader title="Self-check guide" subtitle="" showBackButton onBackPress={close} />
       {query.data ? (
         <GuideDetails guide={query.data} bottomInset={insets.bottom} />
       ) : query.isError ? (
@@ -125,15 +126,8 @@ function GuideDetails({ guide, bottomInset }: { guide: SelfCheckGuide; bottomIns
 }
 
 const styles = StyleSheet.create({
-  sheet: {
+  screen: {
     flex: 1,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 8,
   },
   content: {
     padding: 24,

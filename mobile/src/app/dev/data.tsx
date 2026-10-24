@@ -6,10 +6,9 @@ import { AppHeader } from '@/components/AppHeader';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
-import { useBookmarkedArticles } from '@/hooks/useBookmarks';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useAnswers, useQuestions } from '@/hooks/useForum';
-import { useCancerArticles, useDailyHealthTip, useHealthReminders } from '@/hooks/useHome';
+import { useDailyHealthTip } from '@/hooks/useHome';
 import { useJourneyEntries } from '@/hooks/useJourney';
 import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';
 import { useAllResources } from '@/hooks/useResources';
@@ -56,11 +55,6 @@ export default function DataCheckScreen() {
           .join(', '),
     },
     {
-      label: 'Health reminders',
-      query: useHealthReminders(),
-      describe: (d: { title: string }[]) => d.map((r) => r.title).join(' · '),
-    },
-    {
       label: 'Forum questions',
       query: questions,
       describe: (d: { title: string }[]) => `${d.length} — ${d[0]?.title ?? ''}`,
@@ -68,16 +62,6 @@ export default function DataCheckScreen() {
     {
       label: 'Answers to first question',
       query: answers,
-      describe: (d: unknown[]) => `${d.length}`,
-    },
-    {
-      label: 'News (needs the news Edge Function)',
-      query: useCancerArticles(),
-      describe: (d: unknown[]) => `${d.length} articles`,
-    },
-    {
-      label: `Saved articles (${signedIn ? 'signed in' : 'signed out → empty'})`,
-      query: useBookmarkedArticles(),
       describe: (d: unknown[]) => `${d.length}`,
     },
     {

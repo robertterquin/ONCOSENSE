@@ -72,8 +72,8 @@ export default function ComponentGalleryScreen() {
       </Card>
       <Card>
         <EmptyState
-          title="No saved articles"
-          message="Articles you save appear here."
+          title="No saved questions"
+          message="Questions you save appear here."
           icon="bookmark_border"
         />
       </Card>

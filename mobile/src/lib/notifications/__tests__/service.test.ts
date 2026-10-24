@@ -1,25 +1,18 @@
 import { useAuthStore } from '@/stores/authStore';
-import { useNotificationHistory } from '@/stores/notificationHistoryStore';
-import { useNotificationPrefs } from '@/stores/notificationStore';
+import { migrateNotificationPrefs, useNotificationPrefs } from '@/stores/notificationStore';
 
 import * as device from '../device';
 import {
-  addSampleNotificationsOnce,
   handleNotificationTap,
   initializeNotifications,
-  recordDelivered,
   routeForNotification,
   setNotificationsEnabled,
+  startNotificationListeners,
   setNotificationTypeEnabled,
 } from '../service';
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
-jest.mock('@/api/healthReminders', () => ({
-  fetchActiveReminders: jest.fn(async () => [
-    { id: 'tip-1', title: 'Eat Well', message: 'Eat more vegetables' },
-  ]),
-}));
 
 // In-memory stand-in for the device's scheduled notifications.
 jest.mock('../device', () => {
@@ -36,8 +29,6 @@ jest.mock('../device', () => {
     scheduledIdentifiers: jest.fn(async () => [...scheduled.keys()]),
     cancelReminders: jest.fn(async (ids: string[]) => ids.forEach((id) => scheduled.delete(id))),
     cancelAllReminders: jest.fn(async () => scheduled.clear()),
-    presentedNotifications: jest.fn(async () => []),
-    onNotificationReceived: jest.fn(() => () => {}),
     onNotificationTapped: jest.fn(() => () => {}),
   };
 });
@@ -50,14 +41,13 @@ beforeEach(() => {
   jest.clearAllMocks();
   useNotificationPrefs.setState({ enabled: true, setupComplete: false });
   useNotificationPrefs.getState().setAllTypes(true);
-  useNotificationHistory.setState({ notifications: [], samplesAdded: false });
 });
 
 describe('first launch and app start', () => {
   it('asks once, then schedules every reminder', async () => {
     await initializeNotifications();
     expect(device.requestPermission).toHaveBeenCalledTimes(1);
-    expect(scheduled.size).toBe(14);
+    expect(ids()).toEqual(['self-check-monthly', 'weekly-checkin']);
     expect(useNotificationPrefs.getState().setupComplete).toBe(true);
   });
 
@@ -70,22 +60,39 @@ describe('first launch and app start', () => {
 
   it('reschedules switched-on types when the OS dropped them', async () => {
     useNotificationPrefs.setState({ setupComplete: true });
-    useNotificationPrefs.getState().setType('hydration', false);
+    useNotificationPrefs.getState().setType('weekly_checkin', false);
     await initializeNotifications();
     expect(device.requestPermission).not.toHaveBeenCalled();
-    expect(ids().some((id) => id.startsWith('hydration-'))).toBe(false);
-    expect(scheduled.size).toBe(8);
+    expect(ids()).toEqual(['self-check-monthly']);
+  });
+
+  it('cancels reminders from removed types left on the phone', async () => {
+    useNotificationPrefs.setState({ setupComplete: true });
+    for (const id of ['hydration-08', 'movement-09', 'daily-tip', 'self-check-monthly']) {
+      scheduled.set(id, {});
+    }
+    await initializeNotifications();
+    expect(ids()).toEqual(['self-check-monthly']);
+  });
+});
+
+describe('app start for anyone', () => {
+  it('cancels removed reminders without signing in', async () => {
+    for (const id of ['hydration-08', 'sun-protection', 'weekly-checkin']) scheduled.set(id, {});
+    startNotificationListeners();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(ids()).toEqual(['weekly-checkin']);
+    expect(device.requestPermission).not.toHaveBeenCalled();
   });
 });
 
 describe('switches', () => {
   it('toggling a type only adds or removes that type', async () => {
     await initializeNotifications();
-    await setNotificationTypeEnabled('movement', false);
-    expect(ids().filter((id) => id.startsWith('movement-'))).toEqual([]);
-    expect(scheduled.size).toBe(10);
-    await setNotificationTypeEnabled('movement', true);
-    expect(scheduled.size).toBe(14);
+    await setNotificationTypeEnabled('weekly_checkin', false);
+    expect(ids()).toEqual(['self-check-monthly']);
+    await setNotificationTypeEnabled('weekly_checkin', true);
+    expect(ids()).toEqual(['self-check-monthly', 'weekly-checkin']);
   });
 
   it('the master switch cancels everything and turns every type off', async () => {
@@ -94,94 +101,59 @@ describe('switches', () => {
     expect(scheduled.size).toBe(0);
     expect(Object.values(useNotificationPrefs.getState().types).every((on) => !on)).toBe(true);
     await setNotificationsEnabled(true);
-    expect(scheduled.size).toBe(14);
+    expect(scheduled.size).toBe(2);
     expect(Object.values(useNotificationPrefs.getState().types).every(Boolean)).toBe(true);
   });
 
   it('does not schedule a type while the master switch is off', async () => {
     useNotificationPrefs.setState({ enabled: false });
-    await setNotificationTypeEnabled('hydration', true);
+    await setNotificationTypeEnabled('self_check', true);
     expect(scheduled.size).toBe(0);
   });
 });
 
-describe('history', () => {
-  const delivered = {
-    identifier: 'hydration-08',
-    date: new Date(2026, 9, 23, 8, 0),
-    title: '💧 Hydration Reminder',
-    body: "💧 Don't forget to drink water!",
-    type: 'hydration',
-    payload: 'hydration:8',
-    historyId: null,
-  };
-
-  it('records a delivered reminder once', () => {
-    recordDelivered(delivered);
-    recordDelivered(delivered);
-    const { notifications } = useNotificationHistory.getState();
-    expect(notifications).toHaveLength(1);
-    expect(notifications[0]).toMatchObject({ type: 'hydration', isRead: false });
-  });
-
-  it('marks a tapped notification read and opens its screen', () => {
-    const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
-    useNotificationHistory.setState({ notifications: [] });
-    useAuthStore.setState({ isGuest: true });
-    handleNotificationTap({ ...delivered, type: 'weekly_check_in', identifier: 'weekly-checkin' });
-    expect(useNotificationHistory.getState().notifications[0].isRead).toBe(true);
-    expect(router.push).toHaveBeenCalledWith('/journey');
-  });
-
-  it('adds the sample notifications only once', () => {
-    addSampleNotificationsOnce();
-    expect(useNotificationHistory.getState().notifications.map((n) => n.title)).toEqual([
-      '🚶 Movement Reminder',
-      '💧 Hydration Reminder',
-      '💡 Daily Health Tip',
-    ]);
-    useNotificationHistory.getState().clearAll();
-    addSampleNotificationsOnce();
-    expect(useNotificationHistory.getState().notifications).toHaveLength(0);
-  });
-
-  it('keeps at most 50 entries, newest first', () => {
-    const { add } = useNotificationHistory.getState();
-    for (let i = 0; i < 55; i++)
-      add({ title: `#${i}`, body: '', type: 'hydration', timestamp: new Date(i * 1000) });
-    const { notifications } = useNotificationHistory.getState();
-    expect(notifications).toHaveLength(50);
-    expect(notifications[0].title).toBe('#54');
-  });
-});
-
-describe('history storage', () => {
-  it('saves under stored_notifications with ISO timestamps and reloads dates', async () => {
-    const timestamp = new Date(2026, 9, 23, 9, 0);
-    useNotificationHistory
-      .getState()
-      .add({ id: 'a', title: 'Tip', body: 'Body', type: 'health_tip', timestamp });
-    const saved = JSON.parse(localStorage.getItem('stored_notifications') ?? '{}');
-    expect(saved.state.notifications[0]).toMatchObject({
-      id: 'a',
-      timestamp: timestamp.toISOString(),
-      isRead: false,
+describe('saved preferences from before the redesign', () => {
+  it('drops removed types and keeps the remaining choices', () => {
+    const migrated = migrateNotificationPrefs(
+      {
+        enabled: true,
+        setupComplete: true,
+        types: { hydration: true, movement: true, self_check: false, weekly_checkin: true },
+      },
+      0,
+    );
+    expect(migrated).toEqual({
+      enabled: true,
+      setupComplete: true,
+      types: { self_check: false, weekly_checkin: true },
     });
+  });
 
-    useNotificationHistory.setState({ notifications: [] });
-    localStorage.setItem('stored_notifications', JSON.stringify(saved));
-    await useNotificationHistory.persist.rehydrate();
-    const [reloaded] = useNotificationHistory.getState().notifications;
-    expect(reloaded.timestamp).toBeInstanceOf(Date);
-    expect(reloaded.timestamp.getTime()).toBe(timestamp.getTime());
+  it('leaves current preferences alone', () => {
+    const current = { types: { self_check: true, weekly_checkin: false } };
+    expect(migrateNotificationPrefs(current, 1)).toBe(current);
   });
 });
 
-describe('routeForNotification', () => {
-  it('opens the related screen', () => {
-    expect(routeForNotification('self_check', 'self_check')).toBe('/prevention');
-    expect(routeForNotification('forum_reply', 'forum_reply:q-1')).toBe('/forum/q-1');
-    expect(routeForNotification('hydration', 'hydration:8')).toBe('/notifications');
-    expect(routeForNotification(null, null)).toBe('/notifications');
+describe('taps', () => {
+  it('opens the related tab', () => {
+    expect(routeForNotification('self_check')).toBe('/learn');
+    expect(routeForNotification('screening')).toBe('/learn');
+    expect(routeForNotification('weekly_check_in')).toBe('/journey');
+    expect(routeForNotification(null)).toBe('/today');
+  });
+
+  it('opens the screen for someone using the app', () => {
+    const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
+    useAuthStore.setState({ isGuest: true });
+    handleNotificationTap({
+      identifier: 'weekly-checkin',
+      date: new Date(2026, 9, 26, 10, 0),
+      title: 'Check-in',
+      body: '',
+      type: 'weekly_check_in',
+      payload: 'weekly_check_in',
+    });
+    expect(router.push).toHaveBeenCalledWith('/journey');
   });
 });

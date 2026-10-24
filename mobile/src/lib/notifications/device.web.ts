@@ -1,8 +1,7 @@
 import type { ReminderRequest } from './reminders';
 
 // Web version of device.ts. expo-notifications doesn't support local notifications in
-// the browser, so reminders are only scheduled on iOS and Android. The notification
-// center and its history still work.
+// the browser, so reminders are only scheduled on iOS and Android.
 
 export type DeliveredNotification = {
   identifier: string;
@@ -11,8 +10,6 @@ export type DeliveredNotification = {
   body: string;
   type: string | null;
   payload: string | null;
-  /** Set on one-off notifications that were already added to the history when sent. */
-  historyId: string | null;
 };
 
 export async function configureNotifications(): Promise<void> {}
@@ -42,16 +39,6 @@ export async function scheduledSummary(): Promise<{ identifier: string; trigger:
 export async function cancelReminders(_identifiers: string[]): Promise<void> {}
 
 export async function cancelAllReminders(): Promise<void> {}
-
-export async function presentedNotifications(): Promise<DeliveredNotification[]> {
-  return [];
-}
-
-export function onNotificationReceived(
-  _listener: (notification: DeliveredNotification) => void,
-): () => void {
-  return () => {};
-}
 
 export function onNotificationTapped(
   _listener: (notification: DeliveredNotification) => void,

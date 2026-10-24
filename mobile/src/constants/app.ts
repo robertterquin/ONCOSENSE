@@ -24,17 +24,6 @@ export const REMINDER_FREQUENCY = {
 
 /** API and query limits. */
 export const DATA_LIMITS = {
-  /** Max reminders to fetch from the database. */
-  healthRemindersLimit: 100,
-  /** Reminders shown on Home. */
-  healthRemindersToShow: 2,
-  /** Articles on the Home screen. */
-  newsArticlesDefault: 10,
-  /** Max articles requested from the news function. */
-  newsArticlesMax: 30,
-  survivorStoryCount: 1,
-  /** Articles in the Home carousel. */
-  newsArticlesCarousel: 5,
   maxQueryResults: 50,
   minQueryResults: 1,
 } as const;

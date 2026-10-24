@@ -7,11 +7,7 @@ import { AppText } from '@/components/AppText';
 import { InfoDialog } from '@/components/InfoDialog';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PinkSwitch } from '@/components/PinkSwitch';
-import {
-  MasterSwitchItem,
-  ReminderSwitchItem,
-  TestNotificationItem,
-} from '@/components/profile/NotificationSwitches';
+import { MasterSwitchItem, ReminderSwitchItem } from '@/components/profile/NotificationSwitches';
 import { MenuGroup, MenuHeading, MenuItem } from '@/components/profile/ProfileMenu';
 import { Screen } from '@/components/Screen';
 import { APP_TAGLINE, APP_VERSION } from '@/constants/app';
@@ -53,7 +49,6 @@ export default function SettingsScreen() {
         {NOTIFICATION_TYPES.map((type) => (
           <ReminderSwitchItem key={type} type={type} />
         ))}
-        <TestNotificationItem />
       </MenuGroup>
 
       <MenuHeading>Appearance</MenuHeading>
@@ -137,14 +132,6 @@ export default function SettingsScreen() {
           onPress={() => setLegal('Credits & Attributions')}
         />
         <MenuItem
-          icon="star"
-          iconColor="#FFC107"
-          iconBackground="#FFF8E1"
-          title="Rate the App"
-          subtitle="Share your feedback"
-          onPress={() => showToast('App store rating will be available soon')}
-        />
-        <MenuItem
           icon="share"
           iconColor="#00BCD4"
           iconBackground="#E0F7FA"
@@ -210,7 +197,7 @@ function LegalSheet({ title, onClose }: { title: LegalTitle | null; onClose: () 
 
 const DELETE_ITEMS = [
   'Your profile and personal information',
-  'All saved articles and bookmarks',
+  'All saved questions and help contacts',
   'Your forum posts and comments',
   'Cancer journey tracking data',
   'Health reminders and preferences',

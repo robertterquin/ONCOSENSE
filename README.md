@@ -9,7 +9,7 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 | Path | What's there |
 |---|---|
 | `mobile/` | The app (Expo, TypeScript, Expo Router). Its own [README](mobile/README.md) has every command. |
-| `supabase/` | Edge Functions (`news`, `delete-account`) and the Supabase CLI config |
+| `supabase/` | The `delete-account` Edge Function and the Supabase CLI config |
 | `*_SETUP.sql`, `CANCER_DATA_SETUP.md` | SQL and notes for the Supabase tables |
 | `docs/redesign/` | The approved redesign and narrowed scope, phase by phase |
 | `docs/react-native-migration/` | How the app was migrated from Flutter, phase by phase, with the decision log |
@@ -36,16 +36,13 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 
 ## Supabase
 
-The app uses the existing Supabase project (auth, Postgres with Row Level Security, the `images` storage bucket). Two Edge Functions live in `supabase/functions/` and need to be deployed with the [Supabase CLI](https://supabase.com/docs/guides/cli):
+The app uses the existing Supabase project (auth, Postgres with Row Level Security, the `images` storage bucket). One Edge Function lives in `supabase/functions/` and needs to be deployed with the [Supabase CLI](https://supabase.com/docs/guides/cli):
 
 ```bash
 supabase link --project-ref <project-ref>
-supabase secrets set GNEWS_API_KEY=<key>
-supabase functions deploy news
 supabase functions deploy delete-account
 ```
 
-- `news` calls the GNews API server-side so the API key never ships in the app.
 - `delete-account` deletes the signed-in user's data and account (required by the app stores).
 
 ## Releasing

@@ -2,14 +2,11 @@ import { useIsSignedIn } from '@/stores/authStore';
 import { showToast } from '@/stores/toastStore';
 
 import {
-  useBookmarkedArticles,
   useBookmarkedQuestions,
   useBookmarkedResources,
-  useToggleArticleBookmark,
   useToggleQuestionBookmark,
   useToggleResourceBookmark,
 } from './useBookmarks';
-import type { Article } from '@/types/article';
 import type { Question } from '@/types/question';
 import type { Resource } from '@/types/resource';
 
@@ -42,24 +39,6 @@ export function useResourceBookmarks() {
           isSaved(resource) ? 'info' : 'success',
         );
         toggle(resource);
-      }),
-  };
-}
-
-export function useArticleBookmarks() {
-  const saved = useBookmarkedArticles().data ?? [];
-  const { toggle } = useToggleArticleBookmark();
-  const guard = useGuard();
-  const isSaved = (article: Article) => saved.some((item) => item.url === article.url);
-  return {
-    isSaved,
-    toggle: (article: Article) =>
-      guard(() => {
-        showToast(
-          isSaved(article) ? 'Article removed from bookmarks' : 'Article saved to bookmarks',
-          isSaved(article) ? 'info' : 'success',
-        );
-        toggle(article);
       }),
   };
 }

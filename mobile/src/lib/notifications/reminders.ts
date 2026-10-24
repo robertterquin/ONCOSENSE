@@ -1,49 +1,26 @@
 import type { NotificationType as PrefType } from '@/stores/notificationStore';
 
-// The reminder schedule from lib/services/notification_service.dart: same channels,
-// titles, bodies, times and payloads. Pure data, so it can be unit tested; device.ts
-// hands it to expo-notifications.
+// The reminder schedule, as pure data so it can be unit tested; device.ts hands it to
+// expo-notifications. Started as a port of lib/services/notification_service.dart; the
+// redesign (docs/redesign) dropped the daily tip, hydration, movement and sun
+// reminders, keeping only reminders about checking yourself and checking in.
 
-/** Notification types stored in the history (Flutter's `NotificationType`). */
-export const HistoryType = {
-  healthTip: 'health_tip',
-  hydration: 'hydration',
-  movement: 'movement',
-  sunProtection: 'sun_protection',
+/** `data.type` on each notification; decides which screen a tap opens. */
+export const NotificationKind = {
   selfCheck: 'self_check',
   screening: 'screening',
-  forumReply: 'forum_reply',
-  forumUpvote: 'forum_upvote',
   weeklyCheckIn: 'weekly_check_in',
-  resourceUpdate: 'resource_update',
+  test: 'test',
 } as const;
 
 export type ChannelImportance = 'high' | 'default';
 
-/** Android channels from `_createNotificationChannels()`, with the same IDs. */
+/** Android channels, with the IDs the Flutter app used. */
 export const CHANNELS = [
   {
     id: 'health_reminders',
     name: 'Health Reminders',
-    description: 'Daily health tips and cancer prevention reminders',
-    importance: 'high',
-  },
-  {
-    id: 'hydration_reminders',
-    name: 'Hydration Reminders',
-    description: 'Drink water reminders throughout the day',
-    importance: 'default',
-  },
-  {
-    id: 'movement_reminders',
-    name: 'Movement Reminders',
-    description: 'Reminders to stay active and take walks',
-    importance: 'default',
-  },
-  {
-    id: 'forum_notifications',
-    name: 'Forum Notifications',
-    description: 'Replies and upvotes on your questions',
+    description: 'Health tips and cancer prevention reminders',
     importance: 'high',
   },
   {
@@ -55,7 +32,7 @@ export const CHANNELS = [
   {
     id: 'wellness_check_in',
     name: 'Wellness Check-in',
-    description: 'Weekly wellness check-in reminders',
+    description: 'Check-in reminders',
     importance: 'default',
   },
 ] as const satisfies readonly {
@@ -64,6 +41,13 @@ export const CHANNELS = [
   description: string;
   importance: ChannelImportance;
 }[];
+
+/** Channels created by earlier versions; removed from Android settings on start. */
+export const OBSOLETE_CHANNEL_IDS = [
+  'hydration_reminders',
+  'movement_reminders',
+  'forum_notifications',
+] as const;
 
 export type ChannelId = (typeof CHANNELS)[number]['id'];
 
@@ -82,8 +66,8 @@ export type ReminderRequest = {
   channelId: ChannelId;
   /** Android accent color. */
   color: string;
-  /** History type and the Flutter payload string. */
-  data: { type: string; payload: string; historyId?: string };
+  /** Notification kind and payload string. */
+  data: { type: string; payload: string };
   trigger: ReminderTrigger;
 };
 
@@ -95,96 +79,6 @@ export function toExpoWeekday(dartWeekday: number): number {
   return (dartWeekday % 7) + 1;
 }
 
-const pad = (hour: number) => String(hour).padStart(2, '0');
-
-/** Hours from `start` to `end` every `interval`, at most `max` (Flutter stops when it runs out of messages). */
-function hourSlots(start: number, end: number, interval: number, max: number): number[] {
-  const hours: number[] = [];
-  for (let hour = start; hour <= end && hours.length < max; hour += interval) hours.push(hour);
-  return hours;
-}
-
-export const HYDRATION_MESSAGES = [
-  "💧 Don't forget to drink water!",
-  '💧 Stay hydrated - have a glass of water',
-  '💧 Time for a water break',
-  '💧 Keep sipping! Hydration is key',
-  '💧 Water time! Your body will thank you',
-  '💧 Drink 8 glasses of water daily',
-];
-
-export const MOVEMENT_MESSAGES = [
-  '🏃 Take a short walk to stay active!',
-  '🏃 Time to stretch! Simple stretches reduce tension',
-  '🏃 Stand up and move every hour',
-  '🏃 Take the stairs instead of elevator',
-  '🏃 A 3-minute walk break does wonders!',
-];
-
-/** The tip shown by the daily health tip (one of the health reminders). */
-export type DailyTip = { id: string; title: string; message: string };
-
-export function dailyHealthTip(tip: DailyTip, hour = 9, minute = 0): ReminderRequest {
-  return {
-    identifier: 'daily-tip',
-    title: `💡 ${tip.title}`,
-    body: tip.message,
-    channelId: 'health_reminders',
-    color: '#D81B60',
-    data: { type: HistoryType.healthTip, payload: `${HistoryType.healthTip}:${tip.id}` },
-    trigger: { kind: 'daily', hour, minute },
-  };
-}
-
-export function hydrationReminders(
-  startHour = 8,
-  endHour = 20,
-  intervalHours = 2,
-): ReminderRequest[] {
-  return hourSlots(startHour, endHour, intervalHours, HYDRATION_MESSAGES.length).map(
-    (hour, index) => ({
-      identifier: `hydration-${pad(hour)}`,
-      title: '💧 Hydration Reminder',
-      body: HYDRATION_MESSAGES[index],
-      channelId: 'hydration_reminders',
-      color: '#2196F3',
-      data: { type: HistoryType.hydration, payload: `${HistoryType.hydration}:${hour}` },
-      trigger: { kind: 'daily', hour, minute: 0 },
-    }),
-  );
-}
-
-export function movementReminders(
-  startHour = 9,
-  endHour = 18,
-  intervalHours = 3,
-): ReminderRequest[] {
-  return hourSlots(startHour, endHour, intervalHours, MOVEMENT_MESSAGES.length).map(
-    (hour, index) => ({
-      identifier: `movement-${pad(hour)}`,
-      title: '🏃 Movement Reminder',
-      body: MOVEMENT_MESSAGES[index],
-      channelId: 'movement_reminders',
-      color: '#4CAF50',
-      data: { type: HistoryType.movement, payload: `${HistoryType.movement}:${hour}` },
-      // Flutter schedules movement reminders at half past the hour.
-      trigger: { kind: 'daily', hour, minute: 30 },
-    }),
-  );
-}
-
-export function sunProtectionReminder(hour = 10): ReminderRequest {
-  return {
-    identifier: 'sun-protection',
-    title: '☀️ Sun Protection Reminder',
-    body: 'Avoid sun exposure from 10AM–3PM. Apply SPF 30+ sunscreen!',
-    channelId: 'health_reminders',
-    color: '#FFC107',
-    data: { type: HistoryType.sunProtection, payload: HistoryType.sunProtection },
-    trigger: { kind: 'daily', hour, minute: 0 },
-  };
-}
-
 export function monthlySelfExamReminder(dayOfMonth = 1): ReminderRequest {
   return {
     identifier: 'self-check-monthly',
@@ -192,7 +86,7 @@ export function monthlySelfExamReminder(dayOfMonth = 1): ReminderRequest {
     body: "It's time for your monthly breast self-examination. Early detection saves lives!",
     channelId: 'screening_reminders',
     color: '#D81B60',
-    data: { type: HistoryType.selfCheck, payload: HistoryType.selfCheck },
+    data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
     trigger: { kind: 'monthly', day: dayOfMonth, hour: 9, minute: 0 },
   };
 }
@@ -205,7 +99,7 @@ export function weeklyCheckInReminder(dayOfWeek = 7, hour = 10): ReminderRequest
     body: 'How are you feeling today? Take a moment to reflect on your well-being.',
     channelId: 'wellness_check_in',
     color: '#9C27B0',
-    data: { type: HistoryType.weeklyCheckIn, payload: HistoryType.weeklyCheckIn },
+    data: { type: NotificationKind.weeklyCheckIn, payload: NotificationKind.weeklyCheckIn },
     trigger: { kind: 'weekly', weekday: dayOfWeek, hour, minute: 0 },
   };
 }
@@ -223,17 +117,13 @@ export function screeningReminder(
     body: message,
     channelId: 'screening_reminders',
     color: '#E91E63',
-    data: { type: HistoryType.screening, payload: `${HistoryType.screening}:${id}` },
+    data: { type: NotificationKind.screening, payload: `${NotificationKind.screening}:${id}` },
     trigger: { kind: 'date', date },
   };
 }
 
-/** Preference types that schedule reminders (forum notifications are never sent; see the decision log). */
+/** Preference types that schedule reminders. */
 export const SCHEDULED_PREF_TYPES = [
-  'health_tips',
-  'hydration',
-  'movement',
-  'sun_protection',
   'self_check',
   'weekly_checkin',
 ] as const satisfies readonly PrefType[];
@@ -244,17 +134,9 @@ export function isScheduledPrefType(type: PrefType): type is ScheduledPrefType {
   return (SCHEDULED_PREF_TYPES as readonly PrefType[]).includes(type);
 }
 
-/** The reminders a preference type schedules with Flutter's defaults. */
-export function remindersForType(type: ScheduledPrefType, tip: DailyTip): ReminderRequest[] {
+/** The reminders a preference type schedules. */
+export function remindersForType(type: ScheduledPrefType): ReminderRequest[] {
   switch (type) {
-    case 'health_tips':
-      return [dailyHealthTip(tip)];
-    case 'hydration':
-      return hydrationReminders();
-    case 'movement':
-      return movementReminders();
-    case 'sun_protection':
-      return [sunProtectionReminder()];
     case 'self_check':
       return [monthlySelfExamReminder()];
     case 'weekly_checkin':
@@ -264,13 +146,20 @@ export function remindersForType(type: ScheduledPrefType, tip: DailyTip): Remind
 
 /** Identifier prefixes per type, to cancel a type's reminders without the full list. */
 export const IDENTIFIER_PREFIX: Record<ScheduledPrefType, string> = {
-  health_tips: 'daily-tip',
-  hydration: 'hydration-',
-  movement: 'movement-',
-  sun_protection: 'sun-protection',
   self_check: 'self-check-',
   weekly_checkin: 'weekly-checkin',
 };
+
+/**
+ * True for reminders this version still schedules. Anything else on the device (the
+ * removed hydration, movement, sun and daily-tip reminders) gets cancelled on start.
+ */
+export function isCurrentReminder(identifier: string): boolean {
+  return (
+    Object.values(IDENTIFIER_PREFIX).some((prefix) => identifier.startsWith(prefix)) ||
+    identifier.startsWith('screening-')
+  );
+}
 
 /** iOS keeps at most 64 pending local notifications per app. */
 export const IOS_PENDING_LIMIT = 64;

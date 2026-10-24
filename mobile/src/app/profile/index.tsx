@@ -13,11 +13,7 @@ import { MenuGroup, MenuHeading, MenuItem } from '@/components/profile/ProfileMe
 import { Screen } from '@/components/Screen';
 import { APP_TAGLINE, APP_VERSION } from '@/constants/app';
 import { useSignOut } from '@/hooks/useAuth';
-import {
-  useBookmarkedArticles,
-  useBookmarkedQuestions,
-  useBookmarkedResources,
-} from '@/hooks/useBookmarks';
+import { useBookmarkedQuestions, useBookmarkedResources } from '@/hooks/useBookmarks';
 import { confirm } from '@/lib/confirm';
 import { useAuthStore } from '@/stores/authStore';
 import { brand, gradients } from '@/theme/colors';
@@ -34,7 +30,6 @@ function countLabel(count: number, noun: string, empty: string) {
 export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const signOut = useSignOut();
-  const articles = useBookmarkedArticles().data?.length ?? 0;
   const questions = useBookmarkedQuestions().data?.length ?? 0;
   const resources = useBookmarkedResources().data?.length ?? 0;
   const [dialog, setDialog] = useState<'help' | 'about' | null>(null);
@@ -81,28 +76,14 @@ export default function ProfileScreen() {
           icon="bookmark"
           iconColor="#E91E63"
           iconBackground={brand.lightPink}
-          title="Saved Articles"
-          subtitle={countLabel(articles, 'article', 'View your bookmarked articles')}
-          badge={articles}
-          onPress={() => router.push('/profile/saved/articles')}
-        />
-        <MenuItem
-          icon="question_answer"
-          iconColor="#9C27B0"
-          iconBackground="#F3E5F5"
-          title="Saved Questions"
-          subtitle={countLabel(questions, 'question', 'Your saved forum discussions')}
-          badge={questions}
-          onPress={() => router.push('/profile/saved/questions')}
-        />
-        <MenuItem
-          icon="favorite"
-          iconColor="#EC407A"
-          iconBackground={brand.lightPink}
-          title="Saved Resources"
-          subtitle={countLabel(resources, 'resource', 'Your favorite support resources')}
-          badge={resources}
-          onPress={() => router.push('/profile/saved/resources')}
+          title="Saved"
+          subtitle={countLabel(
+            questions + resources,
+            'item',
+            'Questions and help contacts you saved',
+          )}
+          badge={questions + resources}
+          onPress={() => router.push('/profile/saved')}
         />
       </MenuGroup>
 
@@ -123,17 +104,9 @@ export default function ProfileScreen() {
             iconBackground="#FFE0B2"
             title="Change Password"
             subtitle="Update your account password"
-            onPress={() => router.push('/profile/change-password')}
+            onPress={() => router.push('/profile/password')}
           />
         ) : null}
-        <MenuItem
-          icon="notifications"
-          iconColor="#FF9800"
-          iconBackground="#FFF3E0"
-          title="Notifications"
-          subtitle="Manage your notifications"
-          onPress={() => router.push('/profile/notifications')}
-        />
         <MenuItem
           icon="help"
           iconColor="#4CAF50"

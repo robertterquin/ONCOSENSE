@@ -1,38 +1,29 @@
 import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
-import { fetchActiveReminders } from '@/api/healthReminders';
-import { DEFAULT_REMINDERS } from '@/constants/defaultReminders';
 import { useAuthStore } from '@/stores/authStore';
-import { useNotificationHistory } from '@/stores/notificationHistoryStore';
 import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
 import { showToast } from '@/stores/toastStore';
 
 import * as device from './device';
 import type { DeliveredNotification } from './device';
 import {
-  HistoryType,
   IDENTIFIER_PREFIX,
+  NotificationKind,
   SCHEDULED_PREF_TYPES,
+  isCurrentReminder,
   isScheduledPrefType,
   remindersForType,
   screeningReminder,
-  type DailyTip,
   type ScheduledPrefType,
 } from './reminders';
 
-// Port of the scheduling side of lib/services/notification_service.dart and the
-// splash screen's `_initializeNotifications`.
+// Scheduling started as a port of lib/services/notification_service.dart and the
+// splash screen's `_initializeNotifications`. The in-app notification center was
+// removed in the redesign: the phone's own notification list is enough.
 
 /** Local reminders only exist in the iOS and Android apps. */
 export const REMINDERS_SUPPORTED = Platform.OS !== 'web';
-
-async function pickDailyTip(): Promise<DailyTip> {
-  const reminders = await fetchActiveReminders();
-  const pool = reminders.length ? reminders : DEFAULT_REMINDERS;
-  const tip = pool[Math.floor(Math.random() * pool.length)];
-  return { id: tip.id, title: tip.title, message: tip.message };
-}
 
 async function cancelType(type: ScheduledPrefType): Promise<void> {
   const prefix = IDENTIFIER_PREFIX[type];
@@ -40,11 +31,10 @@ async function cancelType(type: ScheduledPrefType): Promise<void> {
   await device.cancelReminders(identifiers);
 }
 
-/** Replaces a type's reminders with Flutter's default schedule. */
+/** Replaces a type's reminders with its default schedule. */
 async function scheduleType(type: ScheduledPrefType): Promise<void> {
   await cancelType(type);
-  const tip = type === 'health_tips' ? await pickDailyTip() : { id: '', title: '', message: '' };
-  for (const reminder of remindersForType(type, tip)) await device.scheduleReminder(reminder);
+  for (const reminder of remindersForType(type)) await device.scheduleReminder(reminder);
 }
 
 /** Schedules every type that is switched on. */
@@ -55,13 +45,19 @@ async function scheduleFromPrefs(): Promise<void> {
   }
 }
 
-/** `enableAllNotifications`: every type on and scheduled. */
+/** Cancels reminders from removed types still scheduled on this phone. */
+async function cancelRemovedReminders(): Promise<void> {
+  const stale = (await device.scheduledIdentifiers()).filter((id) => !isCurrentReminder(id));
+  if (stale.length) await device.cancelReminders(stale);
+}
+
+/** Every type on and scheduled. */
 async function enableAll(): Promise<void> {
   useNotificationPrefs.getState().setAllTypes(true);
   for (const type of SCHEDULED_PREF_TYPES) await scheduleType(type);
 }
 
-/** `disableAllNotifications`: everything cancelled and every type off. */
+/** Everything cancelled and every type off. */
 async function disableAll(): Promise<void> {
   useNotificationPrefs.getState().setAllTypes(false);
   await device.cancelAllReminders();
@@ -91,7 +87,7 @@ export async function setNotificationsEnabled(enabled: boolean): Promise<void> {
   }
 }
 
-/** One type's switch (`toggleNotificationType`): schedules or cancels only that type. */
+/** One type's switch: schedules or cancels only that type. */
 export async function setNotificationTypeEnabled(
   type: NotificationType,
   enabled: boolean,
@@ -120,27 +116,18 @@ export async function scheduleScreeningReminder(
   await device.scheduleReminder(screeningReminder(id, title, message, date));
 }
 
-/**
- * `showTestNotification`: shows a notification now and adds it to the notification
- * center. On the web only the history entry is added.
- */
+/** Shows a notification now (development screen only). */
 export async function sendTestNotification(): Promise<void> {
-  const historyId = `test-${Date.now()}`;
-  const title = '🧪 Test Notification';
-  const body = 'OncoSense notifications are working!';
-  useNotificationHistory
-    .getState()
-    .add({ id: historyId, title, body, type: HistoryType.healthTip, payload: 'test' });
   if (!REMINDERS_SUPPORTED) return;
   try {
     if (await device.requestPermission()) {
       await device.presentNow({
-        identifier: historyId,
-        title,
-        body,
+        identifier: `test-${Date.now()}`,
+        title: '🧪 Test Notification',
+        body: 'OncoSense notifications are working!',
         channelId: 'health_reminders',
         color: '#D81B60',
-        data: { type: HistoryType.healthTip, payload: 'test', historyId },
+        data: { type: NotificationKind.test, payload: NotificationKind.test },
       });
     }
   } catch (error) {
@@ -151,13 +138,14 @@ export async function sendTestNotification(): Promise<void> {
 /**
  * Runs once the user is signed in (the splash screen's `_initializeNotifications`):
  * the first time, asks for permission and schedules the defaults; after that,
- * reschedules if the OS dropped the reminders (reinstall, restore, cleared data).
+ * cancels reminders from removed types and reschedules if the OS dropped them
+ * (reinstall, restore, cleared data).
  */
 export async function initializeNotifications(): Promise<void> {
   if (!REMINDERS_SUPPORTED) return;
   try {
     await device.configureNotifications();
-    await recordPresentedNotifications();
+    await cancelRemovedReminders();
     const prefs = useNotificationPrefs.getState();
     if (!prefs.setupComplete) {
       if (await device.requestPermission()) {
@@ -173,104 +161,33 @@ export async function initializeNotifications(): Promise<void> {
   }
 }
 
-/**
- * The Home screen's sample notifications (`_addSampleNotifications`), so the
- * notification center isn't empty on first use. Flutter re-added them whenever the
- * history was empty, which undid "Clear all"; here they are only added once.
- */
-export function addSampleNotificationsOnce(): void {
-  const history = useNotificationHistory.getState();
-  if (history.samplesAdded) return;
-  history.setSamplesAdded();
-  if (history.notifications.length > 0) return;
-  const samples = [
-    {
-      title: '💡 Daily Health Tip',
-      body: 'Drink at least 8 glasses of water daily to help reduce cancer risk and maintain overall health.',
-      type: HistoryType.healthTip,
-    },
-    {
-      title: '💧 Hydration Reminder',
-      body: 'Time to drink water! Stay hydrated throughout the day.',
-      type: HistoryType.hydration,
-    },
-    {
-      title: '🚶 Movement Reminder',
-      body: 'Take a 5-minute walk break. Regular movement helps reduce cancer risk!',
-      type: HistoryType.movement,
-    },
-  ];
-  const now = Date.now();
-  // Flutter added them in this order, so the last one is newest.
-  samples.forEach((sample, index) => history.add({ ...sample, timestamp: new Date(now + index) }));
-}
-
-// --- History and taps -------------------------------------------------------------
-
-function historyIdFor(notification: DeliveredNotification): string {
-  return notification.historyId ?? `${notification.identifier}@${notification.date.getTime()}`;
-}
-
-/** Adds a delivered notification to the notification center (once). */
-export function recordDelivered(notification: DeliveredNotification): string {
-  const id = historyIdFor(notification);
-  const history = useNotificationHistory.getState();
-  if (!history.notifications.some((n) => n.id === id)) {
-    history.add({
-      id,
-      title: notification.title,
-      body: notification.body,
-      type: notification.type ?? HistoryType.healthTip,
-      payload: notification.payload,
-      timestamp: notification.date,
-    });
-  }
-  return id;
-}
-
-/** Reminders delivered while the app was closed are still in the system tray. */
-async function recordPresentedNotifications(): Promise<void> {
-  for (const notification of await device.presentedNotifications()) recordDelivered(notification);
-}
-
-/** The screen a notification opens (Flutter only logged taps). */
-export function routeForNotification(
-  type: string | null,
-  payload: string | null,
-): '/notifications' | '/journey' | '/prevention' | `/forum/${string}` {
+/** The screen a notification opens. */
+export function routeForNotification(type: string | null): '/journey' | '/learn' | '/today' {
   switch (type) {
-    case HistoryType.weeklyCheckIn:
+    case NotificationKind.weeklyCheckIn:
       return '/journey';
-    case HistoryType.selfCheck:
-    case HistoryType.screening:
-      return '/prevention';
-    case HistoryType.forumReply:
-    case HistoryType.forumUpvote: {
-      const questionId = payload?.split(':')[1];
-      return questionId ? `/forum/${questionId}` : '/notifications';
-    }
+    case NotificationKind.selfCheck:
+    case NotificationKind.screening:
+      return '/learn';
     default:
-      return '/notifications';
+      return '/today';
   }
 }
 
-/** Records it, marks it read and opens the related screen. */
+/** Opens the screen related to a tapped notification. */
 export function handleNotificationTap(notification: DeliveredNotification): void {
-  const id = recordDelivered(notification);
-  useNotificationHistory.getState().markAsRead(id);
   const { user, isGuest } = useAuthStore.getState();
   if (!user && !isGuest) return;
-  router.push(routeForNotification(notification.type, notification.payload));
+  router.push(routeForNotification(notification.type));
 }
 
 /** Listeners for the root layout. Returns a cleanup function. */
 export function startNotificationListeners(): () => void {
   if (!REMINDERS_SUPPORTED) return () => {};
-  device.configureNotifications().catch((error) => console.warn(error));
-  const stopReceived = device.onNotificationReceived(recordDelivered);
-  const stopTapped = device.onNotificationTapped(handleNotificationTap);
-  return () => {
-    stopReceived();
-    stopTapped();
-  };
+  // Also for guests: they can switch reminders on in Settings without signing in.
+  device
+    .configureNotifications()
+    .then(cancelRemovedReminders)
+    .catch((error) => console.warn(error));
+  return device.onNotificationTapped(handleNotificationTap);
 }

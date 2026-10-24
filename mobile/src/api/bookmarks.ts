@@ -1,6 +1,5 @@
 import { parseDbTimestamp, parseOptionalDbTimestamp, toDbTimestamp } from '@/lib/dates';
 import { supabase } from '@/lib/supabase';
-import type { Article } from '@/types/article';
 import type { Question } from '@/types/question';
 import type { Resource } from '@/types/resource';
 import { booleanOr, numberOr, optionalString, stringArray, stringOr, type Row } from '@/types/row';
@@ -9,60 +8,8 @@ import { check, currentUserId, requireUserId } from './errors';
 
 // Port of lib/services/bookmark_service.dart. Bookmarks are copies of the item stored
 // per user, so saved lists load without fetching the original rows.
-// Signed-out users simply have no bookmarks.
-
-// ---- Articles (keyed by URL) ----
-
-function articleFromBookmark(row: Row): Article {
-  return {
-    title: stringOr(row, 'title', ''),
-    description: stringOr(row, 'description', ''),
-    url: stringOr(row, 'url', ''),
-    imageUrl: optionalString(row, 'image_url'),
-    publishedAt: stringOr(row, 'published_at', ''),
-    sourceName: stringOr(row, 'source_name', 'Unknown'),
-  };
-}
-
-export async function fetchBookmarkedArticles(): Promise<Article[]> {
-  const userId = await currentUserId();
-  if (!userId) return [];
-  const { data, error } = await supabase
-    .from('article_bookmarks')
-    .select()
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  check(error, 'Failed to load saved articles');
-  return (data ?? []).map(articleFromBookmark);
-}
-
-export async function addArticleBookmark(article: Article): Promise<void> {
-  const userId = await requireUserId('save articles');
-  const { error } = await supabase.from('article_bookmarks').upsert(
-    {
-      user_id: userId,
-      title: article.title,
-      description: article.description,
-      url: article.url,
-      image_url: article.imageUrl,
-      published_at: article.publishedAt,
-      source_name: article.sourceName,
-    },
-    // Already saved is fine: the table has UNIQUE(user_id, url).
-    { onConflict: 'user_id,url', ignoreDuplicates: true },
-  );
-  check(error, 'Failed to save article');
-}
-
-export async function removeArticleBookmark(url: string): Promise<void> {
-  const userId = await requireUserId('remove saved articles');
-  const { error } = await supabase
-    .from('article_bookmarks')
-    .delete()
-    .eq('user_id', userId)
-    .eq('url', url);
-  check(error, 'Failed to remove saved article');
-}
+// Signed-out users simply have no bookmarks. (Article bookmarks were removed with the
+// news feed in the redesign; the `article_bookmarks` table is left untouched.)
 
 // ---- Questions (keyed by question id) ----
 

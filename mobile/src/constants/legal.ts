@@ -162,13 +162,8 @@ export const CREDITS = `Credits & Attributions
   Licensed under MIT License
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📰 NEWS & CONTENT
+📚 CONTENT
 ━━━━━━━━━━━━━━━━━━━━━━
-
-• GNews API
-  News articles powered by GNews
-  https://gnews.io
-  We aggregate cancer-related news from trusted sources
 
 • Medical Information Sources:
   - World Health Organization (WHO)

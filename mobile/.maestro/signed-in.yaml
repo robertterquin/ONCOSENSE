@@ -24,8 +24,8 @@ appId: com.oncosense.app
     element: 'Save Entry|Update Entry'
 - tapOn: 'Save Entry|Update Entry'
 
-# Forum: ask, answer, upvote, bookmark
-- tapOn: 'Forum'
+# Community: ask, answer, upvote, bookmark
+- tapOn: 'Community'
 - tapOn: 'Ask a Question'
 - tapOn: 'What would you like to know?'
 - inputText: 'Maestro test question'
@@ -43,9 +43,9 @@ appId: com.oncosense.app
 - tapOn: 'Go back'
 
 # Saved questions
-- tapOn: 'Home'
+- tapOn: 'Today'
 - tapOn: 'Profile'
-- tapOn: 'Saved Questions'
+- tapOn: 'Saved'
 - assertVisible: 'Maestro test question.*'
 - tapOn: 'Go back'
 

@@ -8,6 +8,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { hasPermission, scheduledSummary } from '@/lib/notifications/device';
+import { sendTestNotification } from '@/lib/notifications/service';
 import { useNotificationPrefs } from '@/stores/notificationStore';
 
 /**
@@ -44,6 +45,7 @@ export default function NotificationCheckScreen() {
         <AppText variant="label">Pending: {query.data?.reminders.length ?? '…'}</AppText>
       </Card>
       <Button title="Refresh" outlined onPress={() => query.refetch()} />
+      <Button title="Send test notification" outlined onPress={sendTestNotification} />
       <View style={styles.list}>
         {query.data?.reminders.map((reminder) => (
           <Card key={reminder.identifier}>
