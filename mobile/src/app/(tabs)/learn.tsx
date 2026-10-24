@@ -1,91 +1,94 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { View, type ScrollViewInstance } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { CancerTypeCard, GuideCard, SectionHeading, TipCard } from '@/components/learn/LearnParts';
-import { Screen } from '@/components/Screen';
-import { SearchBar } from '@/components/SearchBar';
+import {
+  CancerTypes,
+  CheckYourself,
+  GuideResults,
+  LowerYourRisk,
+} from '@/components/learn/LearnSections';
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { useFilteredCancerTypes } from '@/hooks/useCancerInfo';
-import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';
+import { Screen, SearchField } from '@/components/ui';
+import { useCancerTypes } from '@/hooks/useCancerInfo';
+import { usePreventionTips } from '@/hooks/usePrevention';
+import { useSelfChecks } from '@/hooks/useSelfChecks';
+import { searchLearn } from '@/lib/learn';
 
-// The Learn tab joins the old Info and Prevention tabs (redesign Phase 1): self-check
-// guides, cancer types and ways to lower your risk. Phase 3 gives it the new look.
+// The Learn tab (redesign Phase 3): your self-checks with when they're due, cancer types
+// A to Z and ways to lower your risk, with one search over all three. Today's tip opens
+// it at "Lower your risk" (`?section=risk`).
 
 export default function LearnTab() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
   const [search, setSearch] = useState('');
-  const types = useFilteredCancerTypes(search);
-  const guides = useSelfCheckGuides();
+  const cancers = useCancerTypes();
   const tips = usePreventionTips();
-  const refetch = () => Promise.all([types.refetch(), guides.refetch(), tips.refetch()]);
-  const refreshing = types.isRefetching || guides.isRefetching || tips.isRefetching;
+  const checks = useSelfChecks();
+  const scrollRef = useRef<ScrollViewInstance | null>(null);
+  const [riskY, setRiskY] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (section === 'risk' && riskY !== null) scrollRef.current?.scrollTo({ y: riskY });
+  }, [section, riskY]);
+
+  const queries = [cancers, tips, checks.query];
+  const failed = queries.find((query) => query.isError);
+  const refetch = () => Promise.all(queries.map((query) => query.refetch()));
+  const refreshing = queries.some((query) => query.isRefetching);
+
+  const lists = {
+    cancers: cancers.data ?? [],
+    guides: checks.all.map((status) => status.guide),
+    tips: tips.data ?? [],
+  };
+  const query = search.trim();
+  const results = searchLearn(lists, query);
+  const noResults =
+    query && !results.cancers.length && !results.guides.length && !results.tips.length;
 
   return (
     <Screen
       inTabs
+      title="Learn"
+      subtitle="Signs, self-checks and ways to lower your risk"
       onRefresh={refetch}
       refreshing={refreshing}
-      header={
-        <AppHeader title="Learn" subtitle="Signs, self-checks and ways to lower your risk" />
-      }>
-      <SectionHeading title="Check yourself" subtitle="Short, guided checks you can do at home" />
-      {guides.isPending ? (
-        <LoadingState />
-      ) : guides.isError ? (
-        <ErrorState message={guides.error.message} onRetry={() => guides.refetch()} />
-      ) : guides.data.length === 0 ? (
-        <AppText secondary style={styles.empty}>
-          No self-check guides available right now.
-        </AppText>
-      ) : (
-        guides.data.map((guide) => <GuideCard key={guide.id} guide={guide} />)
-      )}
-
-      <SectionHeading title="Cancer types" subtitle="What it is, early signs, and how it's found" />
-      <SearchBar value={search} onChangeText={setSearch} placeholder="Search cancer types..." />
-      {types.isPending ? (
-        <LoadingState />
-      ) : types.isError ? (
-        <ErrorState message={types.error.message} onRetry={() => types.refetch()} />
-      ) : types.data.length === 0 ? (
-        <EmptyState
-          icon="search_off"
-          title={search ? `No results for "${search.trim()}"` : 'No cancer types available'}
-        />
-      ) : (
-        <View style={styles.grid}>
-          {types.data.map((cancer) => (
-            <CancerTypeCard key={cancer.id} cancer={cancer} />
-          ))}
-        </View>
-      )}
-
-      <SectionHeading
-        title="Lower your risk"
-        subtitle="Everyday habits backed by health agencies"
+      scrollRef={scrollRef}>
+      <SearchField
+        accessibilityLabel="Search Learn"
+        placeholder="Search cancers and checks"
+        value={search}
+        onChangeText={setSearch}
       />
-      {tips.isPending ? (
-        <LoadingState />
-      ) : tips.isError ? (
-        <ErrorState message={tips.error.message} onRetry={() => tips.refetch()} />
-      ) : tips.data.length === 0 ? (
-        <AppText secondary style={styles.empty}>
-          No tips available right now.
-        </AppText>
+
+      {queries.some((q) => q.isPending) ? (
+        <LoadingState message="Loading Learn" />
+      ) : failed ? (
+        <ErrorState message={failed.error?.message ?? 'Something went wrong'} onRetry={refetch} />
+      ) : noResults ? (
+        <EmptyState
+          icon="search"
+          title={`No results for "${query}"`}
+          message="Try a cancer type, a symptom or a self-check."
+        />
+      ) : query ? (
+        <>
+          {results.guides.length ? (
+            <GuideResults statuses={checks.all.filter((s) => results.guides.includes(s.guide))} />
+          ) : null}
+          {results.cancers.length ? <CancerTypes cancers={results.cancers} /> : null}
+          {results.tips.length ? <LowerYourRisk tips={results.tips} /> : null}
+        </>
       ) : (
-        tips.data.map((tip) => <TipCard key={tip.id} tip={tip} />)
+        <>
+          <CheckYourself mine={checks.mine} all={checks.all} />
+          <CancerTypes cancers={lists.cancers} />
+          <View onLayout={(event) => setRiskY(event.nativeEvent.layout.y)}>
+            <LowerYourRisk tips={lists.tips} />
+          </View>
+        </>
       )}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  empty: { textAlign: 'center', paddingVertical: 24 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 12,
-  },
-});

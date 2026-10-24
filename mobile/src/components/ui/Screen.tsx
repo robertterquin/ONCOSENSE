@@ -1,13 +1,19 @@
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import type { ReactNode, RefObject } from 'react';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewInstance,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon } from './Icon';
-import { TAB_BAR_HEIGHT } from './TabBar';
 import { Text } from './Text';
 
 type ScreenProps = {
@@ -28,10 +34,12 @@ type ScreenProps = {
   refreshing?: boolean;
   /** `ground` (lavender-white) or `surface` (white, for reading screens). */
   background?: 'ground' | 'surface';
-  /** Tab screens leave room for the tab bar. */
+  /** Tab screens: the tab bar below already covers the home indicator. */
   inTabs?: boolean;
   /** Sticky actions under the content (a `BottomActionBar`). */
   bottomBar?: ReactNode;
+  /** For scrolling to a section ("On this page"). */
+  scrollRef?: RefObject<ScrollViewInstance | null>;
 };
 
 /** Redesign screen layout: safe areas, top bar, large title and scrolling content. */
@@ -49,15 +57,12 @@ export function Screen({
   background = 'ground',
   inTabs = false,
   bottomBar,
+  scrollRef,
 }: ScreenProps) {
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
   const hasTopBar = Boolean(back || actions);
-  const bottomSpace = inTabs
-    ? TAB_BAR_HEIGHT + insets.bottom + space.xxl
-    : bottomBar
-      ? space.xxl
-      : insets.bottom + space.xxxl;
+  const bottomSpace = inTabs || bottomBar ? space.xxl : insets.bottom + space.xxxl;
 
   const header = title ? (
     <View style={styles.titleRow}>
@@ -110,6 +115,7 @@ export function Screen({
       ) : null}
       {scroll ? (
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={contentStyle}
           keyboardShouldPersistTaps="handled"
           refreshControl={

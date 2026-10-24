@@ -1,0 +1,250 @@
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { newJourneyId } from '@/api/journey';
+import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
+import { awarenessForMonth } from '@/constants/awareness';
+import { useCancerTypes } from '@/hooks/useCancerInfo';
+import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
+import { isSameDay } from '@/lib/dates';
+import { MOODS } from '@/lib/journeyLabels';
+import { cancerForAwareness } from '@/lib/learn';
+import { showToast } from '@/stores/toastStore';
+import { radii, sizes, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
+import type { HealthTip } from '@/types/healthTip';
+import type { JourneyEntry } from '@/types/journeyEntry';
+
+// Pieces of the redesigned Today tab (docs/redesign/03-phase-3-today-and-learn.md).
+
+/** Profile picture or initials, opening Profile. */
+export function ProfileButton({ pictureUrl, name }: { pictureUrl: string | null; name: string }) {
+  const { palette } = useDesign();
+  const [pictureFailed, setPictureFailed] = useState(false);
+  const initials = name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .join('');
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Profile and settings"
+      onPress={() => router.push('/profile')}
+      style={({ pressed }) => [
+        styles.avatar,
+        { backgroundColor: palette.raised },
+        pressed && styles.pressed,
+      ]}>
+      {pictureUrl && !pictureFailed ? (
+        <Image
+          source={{ uri: pictureUrl }}
+          style={styles.avatarImage}
+          contentFit="cover"
+          onError={() => setPictureFailed(true)}
+        />
+      ) : initials ? (
+        <Text variant="strong" tone="action">
+          {initials}
+        </Text>
+      ) : (
+        <Icon name="user" tone="action" />
+      )}
+    </Pressable>
+  );
+}
+
+/** Quick mood for today's check-in; the full check-in adds pain, energy and symptoms. */
+export function MoodCard({ now }: { now: Date }) {
+  const entries = useJourneyEntries();
+  const save = useSaveJourneyEntry();
+  const today = entries.data?.find((entry) => isSameDay(entry.date, now));
+  const [editing, setEditing] = useState(false);
+  const saved = today ? MOODS.find((mood) => mood.value === today.moodLevel) : undefined;
+
+  const saveMood = (moodLevel: number) => {
+    const entry: JourneyEntry = today
+      ? { ...today, moodLevel }
+      : {
+          id: newJourneyId(),
+          date: now,
+          moodLevel,
+          painLevel: 0,
+          energyLevel: 5,
+          sleepQuality: 3,
+          symptoms: [],
+          notes: null,
+          appointmentNotes: null,
+          hasAppointment: false,
+        };
+    save.mutate(entry, {
+      onSuccess: () => setEditing(false),
+      onError: () => showToast("Couldn't save your check-in. Try again.", 'error'),
+    });
+  };
+
+  const openCheckIn = () =>
+    router.push(
+      today ? { pathname: '/journey/check-in', params: { id: today.id } } : '/journey/check-in',
+    );
+
+  if (saved && !editing) {
+    return (
+      <Section title="How are you feeling today?">
+        <ListRow
+          title={`${saved.emoji}  ${saved.label}`}
+          subtitle="Saved for today"
+          accessory={
+            <Button
+              title="Edit"
+              variant="quiet"
+              fullWidth={false}
+              onPress={() => setEditing(true)}
+            />
+          }
+        />
+        <ListRow title="Add pain, energy and symptoms" icon="activity" onPress={openCheckIn} />
+      </Section>
+    );
+  }
+
+  return (
+    <Section title="How are you feeling today?" divided={false}>
+      <View style={styles.moods} accessibilityRole="radiogroup">
+        {MOODS.map((mood) => (
+          <MoodButton
+            key={mood.value}
+            emoji={mood.emoji}
+            label={mood.label}
+            selected={today?.moodLevel === mood.value}
+            disabled={save.isPending}
+            onPress={() => saveMood(mood.value)}
+          />
+        ))}
+      </View>
+      <Button title="Add pain, energy and symptoms" variant="quiet" onPress={openCheckIn} />
+    </Section>
+  );
+}
+
+function MoodButton({
+  emoji,
+  label,
+  selected,
+  disabled,
+  onPress,
+}: {
+  emoji: string;
+  label: string;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  const { palette } = useDesign();
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: selected, disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.mood,
+        { backgroundColor: selected ? palette.raised : palette.ground },
+        selected && { borderColor: palette.action, borderWidth: 2 },
+        pressed && styles.pressed,
+      ]}>
+      <Text style={styles.moodEmoji}>{emoji}</Text>
+      <Text variant="caption" tone={selected ? 'action' : 'muted'} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** The tip of the day, linking to Learn's ways to lower your risk. */
+export function TipCard({ tip }: { tip: HealthTip }) {
+  return (
+    <Section title="Tip for today">
+      <View style={styles.tip}>
+        <Icon name="lightbulb" tone="action" />
+        <Text variant="body" style={styles.flex}>
+          {tip.tip}
+        </Text>
+      </View>
+      <ListRow
+        title="More ways to lower your risk"
+        titleTone="action"
+        onPress={() => router.navigate({ pathname: '/learn', params: { section: 'risk' } })}
+      />
+    </Section>
+  );
+}
+
+/** This month's awareness campaign, opening its cancer type when Learn has it. */
+export function AwarenessRow({ now }: { now: Date }) {
+  const awareness = awarenessForMonth(now);
+  const cancers = useCancerTypes();
+  const cancer = cancers.data ? cancerForAwareness(cancers.data, awareness.title) : null;
+  return (
+    <Section>
+      <ListRow
+        icon="heart"
+        iconTone="rose"
+        title={`${awareness.title} Awareness Month`}
+        subtitle={`${awareness.month}: ${awareness.subtitle.toLowerCase()}`}
+        onPress={() =>
+          cancer
+            ? router.push({ pathname: '/learn/cancer/[id]', params: { id: cancer.id } })
+            : router.navigate('/learn')
+        }
+      />
+    </Section>
+  );
+}
+
+/** Teal pointer to the Help tab. */
+export function HelpRow() {
+  return (
+    <Section look="tinted" tint="helpTint">
+      <ListRow
+        icon="life-buoy"
+        iconTone="help"
+        title="Need someone to talk to?"
+        titleTone="onHelpTint"
+        subtitle="Free hotlines and support groups"
+        subtitleTone="onHelpTint"
+        onPress={() => router.navigate('/help')}
+      />
+    </Section>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  pressed: { opacity: 0.6 },
+  avatar: {
+    width: sizes.touch + 4,
+    height: sizes.touch + 4,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: { width: '100%', height: '100%' },
+  moods: { flexDirection: 'row', gap: space.xs, paddingTop: space.lg },
+  mood: {
+    flex: 1,
+    alignItems: 'center',
+    gap: space.xs,
+    paddingVertical: space.md,
+    borderRadius: radii.tile,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minHeight: sizes.touch,
+  },
+  moodEmoji: { fontSize: 26, lineHeight: 32 },
+  tip: { flexDirection: 'row', gap: space.md, paddingTop: space.lg, paddingBottom: space.sm },
+});

@@ -11,6 +11,7 @@ export { ProgressSegments, StepList } from './Progress';
 export { RibbonMark } from './RibbonMark';
 export { Screen } from './Screen';
 export { Divider, Section } from './Section';
+export { Sheet } from './Sheet';
 export { SliderRow } from './SliderRow';
 export { Switch } from './Switch';
 export { TAB_BAR_HEIGHT, TAB_ICONS, TabBar } from './TabBar';

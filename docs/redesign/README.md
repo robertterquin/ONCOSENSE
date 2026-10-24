@@ -74,7 +74,7 @@ Routes: `/today`, `/learn`, `/journey`, `/community`, `/help` (tabs); `/learn/ca
 |---|---|---|---|---|
 | 1 | Scope cleanup and new navigation | [01-phase-1-scope-and-navigation.md](01-phase-1-scope-and-navigation.md) | 3–4 days | Done |
 | 2 | Design foundations | [02-phase-2-foundations.md](02-phase-2-foundations.md) | 1 week | Done |
-| 3 | Today and Learn | [03-phase-3-today-and-learn.md](03-phase-3-today-and-learn.md) | 1–1.5 weeks | Not started |
+| 3 | Today and Learn | [03-phase-3-today-and-learn.md](03-phase-3-today-and-learn.md) | 1–1.5 weeks | Done |
 | 4 | Journey | [04-phase-4-journey.md](04-phase-4-journey.md) | 1–1.5 weeks | Not started |
 | 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 1 week | Not started |
 | 6 | Getting started, profile and settings | [06-phase-6-account-and-settings.md](06-phase-6-account-and-settings.md) | 1 week | Not started |

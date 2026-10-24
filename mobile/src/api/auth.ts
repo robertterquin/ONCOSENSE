@@ -99,6 +99,11 @@ export function userForumName(user: User | null): string | null {
   return metadataString(user, 'full_name') ?? metadataString(user, 'name');
 }
 
+/** "Male", "Female", "Non-binary", "Other", "Prefer not to say", or null. */
+export function userGender(user: User | null): string | null {
+  return metadataString(user, 'gender');
+}
+
 export function userProfilePictureUrl(user: User | null): string | null {
   return metadataString(user, 'profile_picture_url');
 }

@@ -16,7 +16,7 @@ import {
 } from '@/components/journey/FormSection';
 import { Screen } from '@/components/Screen';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import { energyColor, energyLabel, painColor, painLabel } from '@/lib/journeyLabels';
+import { energyColor, energyLabel, MOODS, painColor, painLabel } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
 import { brand } from '@/theme/colors';
 import { radius } from '@/theme/tokens';
@@ -25,14 +25,6 @@ import { useTheme } from '@/theme/useTheme';
 import { COMMON_SYMPTOMS, type JourneyEntry } from '@/types/journeyEntry';
 
 // Port of lib/screens/journey/add_entry_screen.dart. Opened with `?id=` to edit.
-
-const MOODS = [
-  { emoji: '😢', label: 'Awful', value: 1 },
-  { emoji: '😞', label: 'Bad', value: 2 },
-  { emoji: '😐', label: 'Okay', value: 3 },
-  { emoji: '🙂', label: 'Good', value: 4 },
-  { emoji: '😄', label: 'Great', value: 5 },
-];
 
 const SLEEP = [
   { emoji: '😫', label: 'Terrible', value: 1 },
