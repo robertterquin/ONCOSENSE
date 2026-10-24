@@ -1,4 +1,9 @@
 import {
+  AtkinsonHyperlegibleNext_400Regular,
+  AtkinsonHyperlegibleNext_600SemiBold,
+  AtkinsonHyperlegibleNext_800ExtraBold,
+} from '@expo-google-fonts/atkinson-hyperlegible-next';
+import {
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
@@ -8,6 +13,8 @@ import type { TextStyle } from 'react-native';
 
 // The Flutter app uses Google Fonts Poppins. Each weight is its own font family in
 // React Native, so styles pick the family instead of setting `fontWeight`.
+// The redesign's Atkinson Hyperlegible Next (type.ts) loads alongside it until every
+// screen has moved over; Poppins is removed in redesign Phase 7.
 
 /** Pass to `useFonts` at startup. */
 export const fontAssets = {
@@ -15,6 +22,9 @@ export const fontAssets = {
   Poppins_500Medium,
   Poppins_600SemiBold,
   Poppins_700Bold,
+  AtkinsonHyperlegibleNext_400Regular,
+  AtkinsonHyperlegibleNext_600SemiBold,
+  AtkinsonHyperlegibleNext_800ExtraBold,
 };
 
 export const fonts = {

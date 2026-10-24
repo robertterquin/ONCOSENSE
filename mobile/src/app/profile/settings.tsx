@@ -34,8 +34,9 @@ type LegalTitle = keyof typeof LEGAL;
 
 export default function SettingsScreen() {
   const signedIn = useIsSignedIn();
-  const isDarkMode = useThemeStore((state) => state.isDarkMode);
-  const setDarkMode = useThemeStore((state) => state.setDarkMode);
+  // Phase 6 replaces this switch with Light / Dark / Phone and a text-size setting.
+  const { isDark } = useTheme();
+  const setMode = useThemeStore((state) => state.setMode);
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -62,8 +63,8 @@ export default function SettingsScreen() {
           right={
             <PinkSwitch
               accessibilityLabel="Dark Mode"
-              value={isDarkMode}
-              onValueChange={setDarkMode}
+              value={isDark}
+              onValueChange={(dark) => setMode(dark ? 'dark' : 'light')}
             />
           }
         />

@@ -1,0 +1,108 @@
+import type { BottomTabBarProps } from 'expo-router/tabs';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { radii, space } from '@/theme/tokens';
+import { fontFamily, TEXT_SIZES } from '@/theme/type';
+import { useDesign } from '@/theme/useTheme';
+
+import { Icon, type IconName } from './Icon';
+import { Text } from './Text';
+
+/** Height above the home indicator; screens in tabs leave this much room. */
+export const TAB_BAR_HEIGHT = 64;
+
+/** Icon for each tab route (`app/(tabs)/<name>.tsx`). */
+export const TAB_ICONS: Record<string, IconName> = {
+  today: 'home',
+  learn: 'book',
+  journey: 'activity',
+  community: 'users',
+  help: 'life-buoy',
+};
+
+/**
+ * Five labelled tabs on a white bar; the active one gets a lavender pill behind its
+ * icon and a bold label. Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
+ */
+export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
+  const { palette, textSize } = useDesign();
+  const labelSize = Math.round(13 * TEXT_SIZES[textSize]);
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View
+      accessibilityRole="tablist"
+      style={[
+        styles.bar,
+        {
+          backgroundColor: palette.surface,
+          borderTopColor: palette.line,
+          paddingBottom: Math.max(insets.bottom, space.sm),
+        },
+      ]}>
+      {state.routes.map((route, index) => {
+        const focused = state.index === index;
+        const { options } = descriptors[route.key];
+        const label = options.title ?? route.name;
+        const onPress = () => {
+          const event = emitter.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+        };
+        return (
+          <Pressable
+            key={route.key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: focused }}
+            accessibilityLabel={`${label}, tab ${index + 1} of ${state.routes.length}`}
+            onPress={onPress}
+            onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
+            style={styles.tab}>
+            <View style={[styles.pill, focused && { backgroundColor: palette.raised }]}>
+              <Icon
+                name={TAB_ICONS[route.name] ?? 'home'}
+                size={22}
+                tone={focused ? 'action' : 'muted'}
+              />
+            </View>
+            <Text
+              variant="caption"
+              tone={focused ? 'action' : 'muted'}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              maxFontSizeMultiplier={1.3}
+              style={{
+                fontSize: labelSize,
+                lineHeight: Math.round(labelSize * 1.3),
+                fontFamily: focused ? fontFamily.extraBold : fontFamily.semiBold,
+              }}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    paddingTop: space.sm,
+    paddingHorizontal: space.xs,
+    borderTopWidth: StyleSheet.hairlineWidth * 2,
+  },
+  tab: { flex: 1, alignItems: 'center', gap: space.xs, minHeight: TAB_BAR_HEIGHT - space.sm },
+  pill: {
+    width: 56,
+    height: 32,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

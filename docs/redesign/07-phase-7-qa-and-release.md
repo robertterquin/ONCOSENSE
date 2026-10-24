@@ -11,6 +11,7 @@
 
 ## 7.2 Design check
 
+- [ ] Switch the theme store's default `mode` from `light` to `system` (match the phone) and check the welcome and sign-in screens in dark.
 - [ ] Compare every screen with its artboard: light and dark; a small phone (iPhone SE, 375 px) and a large one; web at phone width.
 - [ ] Every text size (Default, Large, Larger) plus the phone's largest system text: nothing clipped, overlapped or cut off; tab labels still fit.
 - [ ] Contrast test passes; spot-check new screens with a contrast checker.
