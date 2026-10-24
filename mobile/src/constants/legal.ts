@@ -197,7 +197,6 @@ export const CREDITS = `Credits & Attributions
 • @supabase/supabase-js
 • @tanstack/react-query, zustand
 • react-hook-form, zod
-• date-fns
 • lucide-react-native, react-native-svg
 • @react-native-community/datetimepicker, slider
 

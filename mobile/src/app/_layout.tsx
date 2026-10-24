@@ -9,7 +9,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { ToastHost } from '@/components/Toast';
@@ -35,6 +35,16 @@ export default function RootLayout() {
   const ready = (fontsLoaded || !!fontError) && sessionRestored;
 
   useEffect(() => startAuthListener(), []);
+
+  // Web: the browser's 1px focus ring is hard to see, so keyboard focus gets a two-tone
+  // ring (surface inside, action outside) that shows on light, dark and the violet panel.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const style = document.createElement('style');
+    style.textContent = `:focus-visible { outline: none !important; box-shadow: 0 0 0 2px ${palette.surface}, 0 0 0 5px ${palette.action} !important; }`;
+    document.head.append(style);
+    return () => style.remove();
+  }, [palette]);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
