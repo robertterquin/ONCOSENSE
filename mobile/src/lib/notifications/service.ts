@@ -4,12 +4,14 @@ import { Platform } from 'react-native';
 import { userGender } from '@/api/auth';
 import { queryKeys } from '@/hooks/queryKeys';
 import { parseDbTimestamp } from '@/lib/dates';
+import { focusFromMetadata, usesJourney } from '@/lib/focus';
 import { queryClient } from '@/lib/queryClient';
 import { chosenGuides, isSnoozed, selfCheckReminderDate, soonestGuide } from '@/lib/selfCheck';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
+import type { Appointment } from '@/types/appointment';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import * as device from './device';
@@ -18,6 +20,8 @@ import {
   IDENTIFIER_PREFIX,
   NotificationKind,
   SCHEDULED_PREF_TYPES,
+  appointmentReminder,
+  appointmentReminderDate,
   isCurrentReminder,
   isScheduledPrefType,
   remindersForType,
@@ -54,11 +58,29 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   };
 }
 
+/** The daily check-in is for Journey users only (Treatment, Finished, Caring). */
+function wantsCheckInReminder(): boolean {
+  const { user } = useAuthStore.getState();
+  return user !== null && usesJourney(focusFromMetadata(user));
+}
+
 /** Replaces a type's reminders with its current schedule. */
 async function scheduleType(type: ScheduledPrefType): Promise<void> {
   await cancelType(type);
+  if (type === 'daily_checkin' && !wantsCheckInReminder()) return;
   const plan = type === 'self_check' ? selfCheckPlan() : null;
   for (const reminder of remindersForType(type, plan)) await device.scheduleReminder(reminder);
+}
+
+/** Adds or removes the daily check-in reminder after the focus changes (if it is on). */
+export async function rescheduleCheckInReminder(): Promise<void> {
+  const prefs = useNotificationPrefs.getState();
+  if (!REMINDERS_SUPPORTED || !prefs.enabled || !prefs.types.daily_checkin) return;
+  try {
+    if (await device.hasPermission()) await scheduleType('daily_checkin');
+  } catch (error) {
+    console.warn('Failed to update the check-in reminder', error);
+  }
 }
 
 /** Moves the self-check reminder after a check is done or snoozed (if it is on). */
@@ -140,6 +162,29 @@ export async function setNotificationTypeEnabled(
   }
 }
 
+/** Sets (or moves) the reminder the evening before an appointment. */
+export async function scheduleAppointmentReminder(appointment: Appointment): Promise<void> {
+  if (!REMINDERS_SUPPORTED || !useNotificationPrefs.getState().enabled) return;
+  try {
+    await device.cancelReminders([`appointment-${appointment.id}`]);
+    const date = appointmentReminderDate(appointment.startsAt);
+    if (date && (await device.hasPermission())) {
+      await device.scheduleReminder(appointmentReminder(appointment, date));
+    }
+  } catch (error) {
+    console.warn('Failed to schedule the appointment reminder', error);
+  }
+}
+
+export async function cancelAppointmentReminder(appointmentId: string): Promise<void> {
+  if (!REMINDERS_SUPPORTED) return;
+  try {
+    await device.cancelReminders([`appointment-${appointmentId}`]);
+  } catch (error) {
+    console.warn('Failed to cancel the appointment reminder', error);
+  }
+}
+
 /** A one-off screening reminder (`scheduleScreeningReminder`). */
 export async function scheduleScreeningReminder(
   id: string,
@@ -200,6 +245,8 @@ export async function initializeNotifications(): Promise<void> {
 export function routeForNotification(type: string | null): '/journey' | '/learn' | '/today' {
   switch (type) {
     case NotificationKind.weeklyCheckIn:
+    case NotificationKind.dailyCheckIn:
+    case NotificationKind.appointment:
       return '/journey';
     case NotificationKind.selfCheck:
     case NotificationKind.screening:

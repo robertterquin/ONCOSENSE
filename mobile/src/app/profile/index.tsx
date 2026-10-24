@@ -14,7 +14,9 @@ import { Screen } from '@/components/Screen';
 import { APP_TAGLINE, APP_VERSION } from '@/constants/app';
 import { useSignOut } from '@/hooks/useAuth';
 import { useBookmarkedQuestions, useBookmarkedResources } from '@/hooks/useBookmarks';
+import { useFocus } from '@/hooks/useFocus';
 import { confirm } from '@/lib/confirm';
+import { FOCUS_OPTIONS } from '@/lib/focus';
 import { useAuthStore } from '@/stores/authStore';
 import { brand, gradients } from '@/theme/colors';
 import { radius } from '@/theme/tokens';
@@ -33,6 +35,8 @@ export default function ProfileScreen() {
   const questions = useBookmarkedQuestions().data?.length ?? 0;
   const resources = useBookmarkedResources().data?.length ?? 0;
   const [dialog, setDialog] = useState<'help' | 'about' | null>(null);
+  const focus = useFocus();
+  const focusTitle = FOCUS_OPTIONS.find((option) => option.value === focus)?.title ?? null;
 
   const logout = async () => {
     if (!user) {
@@ -89,6 +93,14 @@ export default function ProfileScreen() {
 
       <MenuHeading>Preferences</MenuHeading>
       <MenuGroup>
+        <MenuItem
+          icon="explore"
+          iconColor="#5236B5"
+          iconBackground="#ECE7F8"
+          title="What brings you here"
+          subtitle={focusTitle ? `${focusTitle} · Change` : 'Choose what the app shows you'}
+          onPress={() => router.push('/journey/focus')}
+        />
         <MenuItem
           icon="settings"
           iconColor="#2196F3"

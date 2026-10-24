@@ -1,23 +1,19 @@
 import { changePasswordSchema, editProfileSchema } from '@/constants/validation';
 import { formatLongDate } from '@/lib/dates';
-import { energyColor, energyLabel, painColor, painLabel } from '@/lib/journeyLabels';
+import { energyValueText, painValueText } from '@/lib/journeyLabels';
 
-describe('journey slider labels (same as Flutter)', () => {
+describe('check-in slider values (read aloud and shown)', () => {
   it('describes pain levels', () => {
-    expect(painLabel(0)).toBe('No pain');
-    expect(painLabel(2)).toBe('2/10 (Mild)');
-    expect(painLabel(6)).toBe('6/10 (Significant)');
-    expect(painLabel(10)).toBe('10/10 (Extreme)');
-    expect(painColor(1)).toBe('#4CAF50');
-    expect(painColor(9)).toBe('#F44336');
+    expect(painValueText(0)).toBe('No pain');
+    expect(painValueText(2)).toBe('2 of 10, mild');
+    expect(painValueText(6)).toBe('6 of 10, significant');
+    expect(painValueText(10)).toBe('10 of 10, extreme');
   });
 
   it('describes energy levels', () => {
-    expect(energyLabel(1)).toBe('1/10 (Exhausted)');
-    expect(energyLabel(8)).toBe('8/10 (Energized)');
-    expect(energyLabel(10)).toBe('10/10 (Full Energy)');
-    expect(energyColor(2)).toBe('#F44336');
-    expect(energyColor(10)).toBe('#4CAF50');
+    expect(energyValueText(1)).toBe('1 of 10, exhausted');
+    expect(energyValueText(8)).toBe('8 of 10, energized');
+    expect(energyValueText(10)).toBe('10 of 10, full of energy');
   });
 
   it('formats long dates', () => {

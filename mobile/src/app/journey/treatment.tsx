@@ -1,36 +1,40 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
 import { DateField } from '@/components/DateField';
-import { ChipSelect, FormBox, FormSection } from '@/components/journey/FormSection';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { Screen } from '@/components/Screen';
-import { useSaveTreatment } from '@/hooks/useJourney';
-import { addDays, formatShortDate } from '@/lib/dates';
+import { LoadingState } from '@/components/StateViews';
+import {
+  BottomActionBar,
+  Button,
+  Chip,
+  Icon,
+  IconButton,
+  ListRow,
+  Screen,
+  Section,
+  Switch,
+  Text,
+  TextField,
+} from '@/components/ui';
+import { useDeleteTreatment, useSaveTreatment, useTreatments } from '@/hooks/useJourney';
+import { confirm } from '@/lib/confirm';
+import { formatLongDate } from '@/lib/dates';
 import { showToast } from '@/stores/toastStore';
-import { brand } from '@/theme/colors';
-import { radius } from '@/theme/tokens';
-import { fonts } from '@/theme/typography';
-import { useTheme } from '@/theme/useTheme';
-import { treatmentTypeLabel, type TreatmentType } from '@/types/treatment';
+import { radii, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
+import {
+  TREATMENT_TYPES,
+  treatmentTypeLabel,
+  type Treatment,
+  type TreatmentType,
+} from '@/types/treatment';
 
-// Port of lib/screens/journey/add_treatment_screen.dart
+// Add or edit a treatment (redesign Phase 4). Opened with `?id=` to edit. Started as a
+// port of lib/screens/journey/add_treatment_screen.dart.
 
-const TYPE_OPTIONS: { type: TreatmentType; icon: string; color: string }[] = [
-  { type: 'chemotherapy', icon: 'science', color: '#9C27B0' },
-  { type: 'radiation', icon: 'bolt', color: '#FF9800' },
-  { type: 'surgery', icon: 'medical_services', color: '#F44336' },
-  { type: 'immunotherapy', icon: 'shield', color: '#2196F3' },
-  { type: 'hormoneTherapy', icon: 'medication', color: '#009688' },
-  { type: 'targetedTherapy', icon: 'gps_fixed', color: '#3F51B5' },
-  { type: 'stemCell', icon: 'biotech', color: '#00BCD4' },
-  { type: 'other', icon: 'more_horiz', color: '#9E9E9E' },
-];
+const close = () => (router.canGoBack() ? router.back() : router.replace('/journey'));
 
 const SIDE_EFFECTS = [
   'Fatigue',
@@ -47,26 +51,51 @@ const SIDE_EFFECTS = [
   'Anxiety',
 ];
 
-export default function AddTreatmentScreen() {
-  const { colors, isDark } = useTheme();
+/** Surgery and "other" are usually one event, not a course of sessions. */
+const hasSessions = (type: TreatmentType) => type !== 'surgery' && type !== 'other';
+
+export default function TreatmentScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const treatments = useTreatments();
+  const existing = treatments.data?.find((treatment) => treatment.id === id);
+  if (id && !existing) {
+    return (
+      <Screen back={{ label: 'Journey', onPress: close }}>
+        <LoadingState message="Loading the treatment" />
+      </Screen>
+    );
+  }
+  return <TreatmentForm existing={existing} />;
+}
+
+function TreatmentForm({ existing }: { existing?: Treatment }) {
+  const { palette } = useDesign();
   const save = useSaveTreatment();
-  const [type, setType] = useState<TreatmentType>('chemotherapy');
-  const [name, setName] = useState('');
-  const [startDate, setStartDate] = useState(() => new Date());
-  const [totalSessions, setTotalSessions] = useState(0);
-  const [sideEffects, setSideEffects] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
-  const hasSessions = type !== 'surgery' && type !== 'other';
-  const muted = isDark ? 'rgba(255,255,255,0.6)' : '#757575';
+  const remove = useDeleteTreatment();
+  const [type, setType] = useState<TreatmentType>(existing?.type ?? 'chemotherapy');
+  const [name, setName] = useState(existing?.name ?? '');
+  const [startDate, setStartDate] = useState(() => existing?.startDate ?? new Date());
+  const [totalSessions, setTotalSessions] = useState(existing?.totalSessions ?? 6);
+  const [sideEffects, setSideEffects] = useState<string[]>(existing?.sideEffects ?? []);
+  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [isActive, setIsActive] = useState(existing?.isActive ?? true);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const sessions = hasSessions(type);
+
+  const toggleEffect = (effect: string) =>
+    setSideEffects((list) =>
+      list.includes(effect) ? list.filter((item) => item !== effect) : [...list, effect],
+    );
 
   const submit = () => {
     if (!name.trim()) {
-      showToast('Please enter a treatment name', 'error');
+      setNameError('Add a name, like "Chemotherapy, AC regimen"');
       return;
     }
+    const total = sessions ? totalSessions : 0;
     save.mutate(
       {
-        id: newJourneyId(),
+        id: existing?.id ?? newJourneyId(),
         name: name.trim(),
         type,
         startDate,
@@ -74,174 +103,180 @@ export default function AddTreatmentScreen() {
         doctorName: null,
         hospitalName: null,
         notes: notes.trim() || null,
-        totalSessions: hasSessions ? totalSessions : 0,
-        completedSessions: 0,
+        totalSessions: total,
+        completedSessions: Math.min(existing?.completedSessions ?? 0, total),
         sideEffects,
-        isActive: true,
+        isActive,
       },
       {
         onSuccess: () => {
-          router.back();
-          showToast("Treatment added! You've got this! 💪", 'success');
+          showToast(existing ? 'Treatment updated' : 'Treatment added', 'success');
+          close();
         },
-        onError: (error) => showToast(`Error saving treatment: ${error.message}`, 'error'),
+        onError: (error) => showToast(`Couldn't save: ${error.message}`, 'error'),
       },
     );
   };
 
-  const inputStyle = [styles.input, { color: colors.text, borderColor: colors.divider }];
+  const onDelete = async () => {
+    if (!existing) return;
+    const ok = await confirm({
+      title: 'Delete this treatment?',
+      message: `${existing.name} and its session count will be removed. Milestones stay.`,
+      confirmText: 'Delete',
+      cancelText: 'Keep',
+      destructive: true,
+    });
+    if (!ok) return;
+    remove.mutate(existing.id, {
+      onSuccess: () => {
+        showToast('Treatment deleted');
+        close();
+      },
+      onError: (error) => showToast(error.message, 'error'),
+    });
+  };
 
   return (
     <Screen
-      header={
-        <AppHeader title="Add Treatment" subtitle="Track your treatment journey" showBackButton />
+      back={{ label: 'Journey', onPress: close }}
+      title={existing ? 'Edit treatment' : 'New treatment'}
+      bottomBar={
+        <BottomActionBar>
+          <Button title="Save" loading={save.isPending} onPress={submit} />
+        </BottomActionBar>
       }>
-      <FormSection title="Treatment Type" icon="medical_services">
-        <View style={styles.types}>
-          {TYPE_OPTIONS.map((option) => {
-            const selected = option.type === type;
-            return (
-              <Pressable
-                key={option.type}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected }}
-                onPress={() => setType(option.type)}
-                style={[
-                  styles.typeOption,
-                  {
-                    backgroundColor: selected
-                      ? `${option.color}26`
-                      : isDark
-                        ? colors.card
-                        : brand.white,
-                    borderColor: selected ? option.color : colors.divider,
-                  },
-                ]}>
-                <MaterialIcon name={option.icon} size={20} color={option.color} />
-                <AppText
-                  variant="bodySmall"
-                  color={selected ? option.color : colors.text}
-                  style={styles.typeLabel}>
-                  {treatmentTypeLabel(option.type)}
-                </AppText>
-              </Pressable>
-            );
-          })}
+      <Section title="Type" look="plain">
+        <View style={styles.chips} accessibilityRole="radiogroup">
+          {TREATMENT_TYPES.map((option) => (
+            <Chip
+              key={option}
+              kind="radio"
+              label={treatmentTypeLabel(option)}
+              selected={type === option}
+              onPress={() => setType(option)}
+            />
+          ))}
         </View>
-      </FormSection>
+      </Section>
 
-      <FormSection title="Treatment Name" icon="label">
-        <FormBox>
-          <TextInput
-            accessibilityLabel="Treatment name"
-            placeholder="e.g., FOLFOX Regimen, Mastectomy, etc."
-            placeholderTextColor={colors.inputPlaceholder}
-            value={name}
-            onChangeText={setName}
-            style={[...inputStyle, styles.singleLine]}
-          />
-        </FormBox>
-      </FormSection>
+      <TextField
+        label="Name"
+        placeholder="Chemotherapy, AC regimen"
+        value={name}
+        onChangeText={(text) => {
+          setName(text);
+          if (nameError) setNameError(null);
+        }}
+        error={nameError}
+      />
 
-      <FormSection title="Start Date" icon="calendar_today">
+      <View style={styles.field}>
+        <Text variant="row">Start date</Text>
         <DateField
           value={startDate}
           onChange={setStartDate}
-          minimumDate={new Date(2000, 0, 1)}
-          maximumDate={addDays(new Date(), 365)}
-          accessibilityLabel="Treatment start date">
-          <FormBox style={styles.row}>
-            <MaterialIcon name="event" size={24} color={brand.headerPink} />
-            <AppText variant="titleMedium" style={styles.flex}>
-              {formatShortDate(startDate)}
-            </AppText>
-            <MaterialIcon name="edit_calendar" size={22} color={brand.headerPink} />
-          </FormBox>
+          maximumDate={new Date()}
+          accessibilityLabel={`Start date, ${formatLongDate(startDate)}`}>
+          <View
+            style={[styles.box, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+            <Icon name="calendar" size={20} tone="action" />
+            <Text variant="body">{formatLongDate(startDate)}</Text>
+          </View>
         </DateField>
-      </FormSection>
+      </View>
 
-      {hasSessions ? (
-        <FormSection title="Total Sessions" icon="repeat">
-          <FormBox style={styles.sessions}>
-            <View style={styles.row}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Fewer sessions"
-                disabled={totalSessions === 0}
-                onPress={() => setTotalSessions(totalSessions - 1)}
-                style={totalSessions === 0 && styles.dimmed}>
-                <MaterialIcon name="remove_circle_outline" size={32} color={brand.headerPink} />
-              </Pressable>
-              <AppText
-                variant="headlineMedium"
-                style={styles.sessionCount}
-                accessibilityLabel={`${totalSessions} sessions`}>
-                {totalSessions === 0 ? 'N/A' : totalSessions}
-              </AppText>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="More sessions"
-                onPress={() => setTotalSessions(totalSessions + 1)}>
-                <MaterialIcon name="add_circle_outline" size={32} color={brand.headerPink} />
-              </Pressable>
-            </View>
-            <AppText style={[styles.hint, { color: muted }]}>
-              {totalSessions === 0
-                ? 'Set to 0 if unknown or not applicable'
-                : 'You can update this later'}
-            </AppText>
-          </FormBox>
-        </FormSection>
+      {sessions ? (
+        <Section look="card" divided={false}>
+          <ListRow
+            title="Number of sessions"
+            subtitle={
+              existing ? `${existing.completedSessions} done so far` : 'You can change this later'
+            }
+            accessory={
+              <View style={styles.stepper}>
+                <IconButton
+                  icon="minus"
+                  accessibilityLabel="One session fewer"
+                  onPress={() => setTotalSessions((n) => Math.max(1, n - 1))}
+                />
+                <Text
+                  variant="strong"
+                  style={styles.count}
+                  accessibilityLabel={`${totalSessions} sessions`}>
+                  {totalSessions}
+                </Text>
+                <IconButton
+                  icon="plus"
+                  accessibilityLabel="One more session"
+                  onPress={() => setTotalSessions((n) => Math.min(60, n + 1))}
+                />
+              </View>
+            }
+          />
+        </Section>
       ) : null}
 
-      <FormSection title="Expected/Experienced Side Effects" icon="warning_amber">
-        <ChipSelect options={SIDE_EFFECTS} selected={sideEffects} onChange={setSideEffects} />
-      </FormSection>
+      <Section title="Side effects (optional)" look="plain">
+        <View style={styles.chips}>
+          {SIDE_EFFECTS.map((effect) => (
+            <Chip
+              key={effect}
+              label={effect}
+              selected={sideEffects.includes(effect)}
+              onPress={() => toggleEffect(effect)}
+            />
+          ))}
+        </View>
+      </Section>
 
-      <FormSection title="Notes" icon="notes">
-        <FormBox>
-          <TextInput
-            accessibilityLabel="Treatment notes"
-            placeholder="Any additional details about this treatment..."
-            placeholderTextColor={colors.inputPlaceholder}
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            style={[...inputStyle, styles.notes]}
+      <TextField
+        label="Notes (optional)"
+        placeholder="Doctor, hospital, anything to remember"
+        multiline
+        value={notes}
+        onChangeText={setNotes}
+      />
+
+      {existing ? (
+        <>
+          <Section look="card" divided={false}>
+            <ListRow
+              title="Still ongoing"
+              subtitle={isActive ? 'Shown as in progress' : 'Shown as finished'}
+              accessory={
+                <Switch
+                  accessibilityLabel="Still ongoing"
+                  value={isActive}
+                  onValueChange={setIsActive}
+                />
+              }
+            />
+          </Section>
+          <Button
+            title="Delete treatment"
+            variant="destructive"
+            loading={remove.isPending}
+            onPress={onDelete}
           />
-        </FormBox>
-      </FormSection>
-
-      <Button title="Add Treatment" onPress={submit} loading={save.isPending} />
+        </>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  dimmed: { opacity: 0.3 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  types: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  typeOption: {
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  field: { gap: space.sm },
+  box: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: radius.medium,
-    borderWidth: 2,
+    gap: space.sm,
+    minHeight: 54,
+    paddingHorizontal: space.lg,
+    borderRadius: radii.control,
+    borderWidth: 1.5,
   },
-  typeLabel: { fontSize: 12, fontFamily: 'Poppins_500Medium' },
-  input: {
-    borderWidth: 1,
-    borderRadius: radius.medium,
-    padding: 12,
-    fontFamily: fonts.regular,
-    fontSize: 14,
-  },
-  singleLine: { minHeight: 46 },
-  notes: { minHeight: 100, textAlignVertical: 'top' },
-  sessions: { alignItems: 'center', gap: 8 },
-  sessionCount: { minWidth: 70, textAlign: 'center' },
-  hint: { fontSize: 11 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  count: { minWidth: 28, textAlign: 'center' },
 });

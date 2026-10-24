@@ -20,14 +20,14 @@ export const REMINDER_ROWS: Record<NotificationType, ReminderRow> = {
     color: '#E91E63',
     background: '#FCE4EC',
     title: 'Self-Check Reminders',
-    subtitle: 'Monthly breast self-exam reminder',
+    subtitle: 'On the day your next self-check is due',
   },
-  weekly_checkin: {
+  daily_checkin: {
     icon: 'spa',
     color: '#9C27B0',
     background: '#F3E5F5',
-    title: 'Weekly Wellness Check',
-    subtitle: 'Sunday morning wellness reminder',
+    title: 'Daily Check-in',
+    subtitle: 'Every evening at 8 PM, when you use Journey',
   },
 };
 

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import {
   cancerFreeDateFromMetadata,
@@ -7,12 +8,15 @@ import {
   saveJourneySetupStatus,
 } from '@/api/auth';
 import {
+  deleteAppointment,
   deleteJourneyEntry,
   deleteMilestone,
   deleteTreatment,
+  fetchAppointments,
   fetchJourneyEntries,
   fetchMilestones,
   fetchTreatments,
+  saveAppointment,
   saveJourneyEntry,
   saveMilestone,
   saveTreatment,
@@ -24,7 +28,13 @@ import {
   streakMilestone,
   treatmentMilestone,
 } from '@/lib/journey';
+import type { JourneyFocus } from '@/lib/focus';
+import {
+  cancelAppointmentReminder,
+  scheduleAppointmentReminder,
+} from '@/lib/notifications/service';
 import { useUser, useUserId } from '@/stores/authStore';
+import type { Appointment } from '@/types/appointment';
 import type { JourneyEntry } from '@/types/journeyEntry';
 import type { Milestone } from '@/types/milestone';
 import type { Treatment } from '@/types/treatment';
@@ -42,6 +52,25 @@ export function useJourneyEntries() {
 export function useTreatments() {
   const userId = useUserId();
   return useQuery({ queryKey: queryKeys.treatments(userId), queryFn: fetchTreatments });
+}
+
+let appointmentRemindersSynced = false;
+
+/** Appointments, soonest first. Empty until the appointments table exists. */
+export function useAppointments() {
+  const userId = useUserId();
+  const query = useQuery({
+    queryKey: queryKeys.appointments(userId),
+    queryFn: fetchAppointments,
+    enabled: userId !== null,
+  });
+  // A new phone (or a reinstall) has no reminders yet: set them once per session.
+  useEffect(() => {
+    if (!query.data || appointmentRemindersSynced) return;
+    appointmentRemindersSynced = true;
+    for (const appointment of query.data) void scheduleAppointmentReminder(appointment);
+  }, [query.data]);
+  return query;
 }
 
 export function useMilestones() {
@@ -66,6 +95,7 @@ function useJourneyCache() {
     entries: queryKeys.journeyEntries(userId),
     treatments: queryKeys.treatments(userId),
     milestones: queryKeys.milestones(userId),
+    appointments: queryKeys.appointments(userId),
   };
 
   /** Saves a milestone unless one with the same title was already achieved that day. */
@@ -85,13 +115,19 @@ function useJourneyCache() {
 
 // ---- Setup ----
 
+/** Saves the focus and dates; the first time, also records "Journey Started". */
 export function useStartJourney() {
   const { addMilestoneIfNew } = useJourneyCache();
+  const alreadyStarted = hasCompletedJourneySetup(useUser());
   return useMutation({
-    mutationFn: async (setup: { diagnosisDate: Date; cancerFreeDate?: Date | null }) => {
+    mutationFn: async (setup: {
+      focus: JourneyFocus;
+      diagnosisDate: Date;
+      cancerFreeDate?: Date | null;
+    }) => {
       // Updating metadata also refreshes the signed-in user in the auth store.
       await saveJourneySetupStatus({ journeyStarted: true, ...setup });
-      await addMilestoneIfNew(journeyStartedMilestone());
+      if (!alreadyStarted) await addMilestoneIfNew(journeyStartedMilestone());
     },
   });
 }
@@ -231,5 +267,38 @@ export function useDeleteMilestone() {
         list?.filter((m) => m.id !== milestoneId),
       ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.milestones }),
+  });
+}
+
+// ---- Appointments ----
+
+const byStart = (a: Appointment, b: Appointment) => a.startsAt.getTime() - b.startsAt.getTime();
+
+/** Adds or updates an appointment and moves its reminder. */
+export function useSaveAppointment() {
+  const { queryClient, keys } = useJourneyCache();
+  return useMutation({
+    mutationFn: async (appointment: Appointment) => {
+      await saveAppointment(appointment);
+      queryClient.setQueryData<Appointment[]>(keys.appointments, (list = []) =>
+        [appointment, ...list.filter((a) => a.id !== appointment.id)].sort(byStart),
+      );
+      await scheduleAppointmentReminder(appointment);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: keys.appointments }),
+  });
+}
+
+export function useDeleteAppointment() {
+  const { queryClient, keys } = useJourneyCache();
+  return useMutation({
+    mutationFn: async (appointmentId: string) => {
+      await deleteAppointment(appointmentId);
+      queryClient.setQueryData<Appointment[]>(keys.appointments, (list = []) =>
+        list.filter((a) => a.id !== appointmentId),
+      );
+      await cancelAppointmentReminder(appointmentId);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: keys.appointments }),
   });
 }

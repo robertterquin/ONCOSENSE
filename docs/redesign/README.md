@@ -75,7 +75,7 @@ Routes: `/today`, `/learn`, `/journey`, `/community`, `/help` (tabs); `/learn/ca
 | 1 | Scope cleanup and new navigation | [01-phase-1-scope-and-navigation.md](01-phase-1-scope-and-navigation.md) | 3–4 days | Done |
 | 2 | Design foundations | [02-phase-2-foundations.md](02-phase-2-foundations.md) | 1 week | Done |
 | 3 | Today and Learn | [03-phase-3-today-and-learn.md](03-phase-3-today-and-learn.md) | 1–1.5 weeks | Done |
-| 4 | Journey | [04-phase-4-journey.md](04-phase-4-journey.md) | 1–1.5 weeks | Not started |
+| 4 | Journey | [04-phase-4-journey.md](04-phase-4-journey.md) | 1–1.5 weeks | Built; waiting on the appointments SQL and a test-account run |
 | 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 1 week | Not started |
 | 6 | Getting started, profile and settings | [06-phase-6-account-and-settings.md](06-phase-6-account-and-settings.md) | 1 week | Not started |
 | 7 | QA, accessibility and release | [07-phase-7-qa-and-release.md](07-phase-7-qa-and-release.md) | 1 week | Not started |
@@ -105,6 +105,8 @@ Same as the migration:
 | 2026-10-24 | The focus ("What brings you here?") is saved in user metadata `journey_focus` (guests: on the device) | No table needed; decides whether Journey and check-in reminders appear | — |
 | 2026-10-24 | Self-check completions are stored on the device | Private, works for guests, no schema change; sync can come later | — |
 | 2026-10-24 | Appointments get a new `journey_appointments` table (additive, RLS per user) | Treatments have no session dates; "Coming up" needs real dates | — |
+| 2026-10-24 | Appointment IDs (and `treatment_id`) are text, not uuid | Matches the other journey tables, which use the app's millisecond IDs | — |
+| 2026-10-24 | The weekly check-in reminder becomes a daily one at 8 PM, for Journey focuses only | Daily check-ins make the week strip and the doctor summary useful; Learning users get no check-in reminder | — |
 | 2026-10-24 | Mood labels become Rough, Low, Okay, Good, Great (still stored 1–5) | Gentler wording; existing data unchanged | Robert |
 | 2026-10-24 | Voice notes use the phone keyboard's dictation, not a custom mic button | Works on iOS and Android with no extra native module | — |
 | 2026-10-24 | Icons move to Lucide (`lucide-react-native` + `react-native-svg`) | Matches the approved stroke style; also draws the ribbon mark | — |

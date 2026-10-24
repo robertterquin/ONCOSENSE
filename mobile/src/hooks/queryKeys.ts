@@ -31,4 +31,5 @@ export const queryKeys = {
   journeyEntries: (userId: string | null) => ['journey', userId, 'entries'] as const,
   treatments: (userId: string | null) => ['journey', userId, 'treatments'] as const,
   milestones: (userId: string | null) => ['journey', userId, 'milestones'] as const,
+  appointments: (userId: string | null) => ['journey', userId, 'appointments'] as const,
 };

@@ -62,4 +62,4 @@ Artboards: **Today**, **Learn**, **Cancer type: Breast cancer**, **Self-check gu
 - **Tab bar:** the redesign's tab bar is wired in. It sits below the screens instead of floating over them, so the old screens' bottom padding shrank to match. On the web, tab labels stay at the default size (browsers can't shrink "Community" to fit at Larger text).
 - **New native module:** `expo-speech`. The iOS and Android development builds must be rebuilt.
 - **Removed:** `components/home/TipAndAwareness.tsx`, `components/learn/LearnParts.tsx`, `components/SectionCard.tsx` and `lib/cancerIcons.ts`.
-- **Dev server:** this machine has no Watchman, and Metro did not pick up file edits; restart `npx expo start` after changes.
+- **Dev server:** `CI=1 npx expo start` turns off reloads (Metro's CI mode), which is why edits weren't picked up. Start it without `CI=1` to get fast refresh.

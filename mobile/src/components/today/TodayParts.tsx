@@ -4,16 +4,18 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
+import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { awarenessForMonth } from '@/constants/awareness';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import { isSameDay } from '@/lib/dates';
+import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { MOODS } from '@/lib/journeyLabels';
 import { cancerForAwareness } from '@/lib/learn';
 import { showToast } from '@/stores/toastStore';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
+import type { Appointment } from '@/types/appointment';
 import type { HealthTip } from '@/types/healthTip';
 import type { JourneyEntry } from '@/types/journeyEntry';
 
@@ -112,55 +114,35 @@ export function MoodCard({ now }: { now: Date }) {
 
   return (
     <Section title="How are you feeling today?" divided={false}>
-      <View style={styles.moods} accessibilityRole="radiogroup">
-        {MOODS.map((mood) => (
-          <MoodButton
-            key={mood.value}
-            emoji={mood.emoji}
-            label={mood.label}
-            selected={today?.moodLevel === mood.value}
-            disabled={save.isPending}
-            onPress={() => saveMood(mood.value)}
-          />
-        ))}
+      <View style={styles.moodPicker}>
+        <MoodPicker
+          value={today?.moodLevel ?? null}
+          onChange={saveMood}
+          disabled={save.isPending}
+        />
       </View>
       <Button title="Add pain, energy and symptoms" variant="quiet" onPress={openCheckIn} />
     </Section>
   );
 }
 
-function MoodButton({
-  emoji,
-  label,
-  selected,
-  disabled,
-  onPress,
-}: {
-  emoji: string;
-  label: string;
-  selected: boolean;
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  const { palette } = useDesign();
+/** The next two appointments; hidden when there are none. */
+export function ComingUpToday({ appointments }: { appointments: Appointment[] }) {
+  if (!appointments.length) return null;
   return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityLabel={label}
-      accessibilityState={{ checked: selected, disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.mood,
-        { backgroundColor: selected ? palette.raised : palette.ground },
-        selected && { borderColor: palette.action, borderWidth: 2 },
-        pressed && styles.pressed,
-      ]}>
-      <Text style={styles.moodEmoji}>{emoji}</Text>
-      <Text variant="caption" tone={selected ? 'action' : 'muted'} numberOfLines={1}>
-        {label}
-      </Text>
-    </Pressable>
+    <Section title="Coming up">
+      {appointments.map((appointment) => (
+        <ListRow
+          key={appointment.id}
+          icon="calendar"
+          title={appointment.title}
+          subtitle={`${formatShortDate(appointment.startsAt)}, ${formatTime(appointment.startsAt)}`}
+          onPress={() =>
+            router.push({ pathname: '/journey/appointment', params: { id: appointment.id } })
+          }
+        />
+      ))}
+    </Section>
   );
 }
 
@@ -234,17 +216,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarImage: { width: '100%', height: '100%' },
-  moods: { flexDirection: 'row', gap: space.xs, paddingTop: space.lg },
-  mood: {
-    flex: 1,
-    alignItems: 'center',
-    gap: space.xs,
-    paddingVertical: space.md,
-    borderRadius: radii.tile,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    minHeight: sizes.touch,
-  },
-  moodEmoji: { fontSize: 26, lineHeight: 32 },
+  moodPicker: { paddingTop: space.lg },
   tip: { flexDirection: 'row', gap: space.md, paddingTop: space.lg, paddingBottom: space.sm },
 });

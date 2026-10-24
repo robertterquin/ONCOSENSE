@@ -1,3 +1,4 @@
+import { formatTime } from '@/lib/dates';
 import type { NotificationType as PrefType } from '@/stores/notificationStore';
 
 // The reminder schedule, as pure data so it can be unit tested; device.ts hands it to
@@ -9,7 +10,10 @@ import type { NotificationType as PrefType } from '@/stores/notificationStore';
 export const NotificationKind = {
   selfCheck: 'self_check',
   screening: 'screening',
+  appointment: 'appointment',
+  /** Before redesign Phase 4; still routed for notifications already delivered. */
   weeklyCheckIn: 'weekly_check_in',
+  dailyCheckIn: 'daily_check_in',
   test: 'test',
 } as const;
 
@@ -107,16 +111,16 @@ export function selfCheckReminder(guideTitle: string, date: Date): ReminderReque
 /** What the self-check reminder needs: the soonest chosen guide and when to remind. */
 export type SelfCheckPlan = { guideTitle: string; date: Date };
 
-/** `dayOfWeek` uses Dart numbering (7 = Sunday). */
-export function weeklyCheckInReminder(dayOfWeek = 7, hour = 10): ReminderRequest {
+/** Every evening for Journey users (redesign Phase 4; replaced the weekly check-in). */
+export function dailyCheckInReminder(hour = 20): ReminderRequest {
   return {
-    identifier: 'weekly-checkin',
-    title: '💗 Weekly Wellness Check-in',
-    body: 'How are you feeling today? Take a moment to reflect on your well-being.',
+    identifier: 'daily-checkin',
+    title: 'How was today?',
+    body: 'A one-minute check-in helps you and your doctor see how things change.',
     channelId: 'wellness_check_in',
-    color: '#9C27B0',
-    data: { type: NotificationKind.weeklyCheckIn, payload: NotificationKind.weeklyCheckIn },
-    trigger: { kind: 'weekly', weekday: dayOfWeek, hour, minute: 0 },
+    color: '#5236B5',
+    data: { type: NotificationKind.dailyCheckIn, payload: NotificationKind.dailyCheckIn },
+    trigger: { kind: 'daily', hour, minute: 0 },
   };
 }
 
@@ -138,10 +142,36 @@ export function screeningReminder(
   };
 }
 
+/** 6:00 PM the day before an appointment, or null when that time has passed. */
+export function appointmentReminderDate(startsAt: Date, now: Date = new Date()): Date | null {
+  const at = new Date(startsAt.getFullYear(), startsAt.getMonth(), startsAt.getDate() - 1, 18, 0);
+  return at.getTime() > now.getTime() ? at : null;
+}
+
+/** The evening before an appointment (redesign Phase 4). */
+export function appointmentReminder(
+  appointment: { id: string; title: string; startsAt: Date; location: string | null },
+  date: Date,
+): ReminderRequest {
+  const where = appointment.location ? ` at ${appointment.location}` : '';
+  return {
+    identifier: `appointment-${appointment.id}`,
+    title: 'Appointment tomorrow',
+    body: `${appointment.title}, ${formatTime(appointment.startsAt)}${where}.`,
+    channelId: 'screening_reminders',
+    color: '#5236B5',
+    data: {
+      type: NotificationKind.appointment,
+      payload: `${NotificationKind.appointment}:${appointment.id}`,
+    },
+    trigger: { kind: 'date', date },
+  };
+}
+
 /** Preference types that schedule reminders. */
 export const SCHEDULED_PREF_TYPES = [
   'self_check',
-  'weekly_checkin',
+  'daily_checkin',
 ] as const satisfies readonly PrefType[];
 
 export type ScheduledPrefType = (typeof SCHEDULED_PREF_TYPES)[number];
@@ -165,15 +195,15 @@ export function remindersForType(
           ? selfCheckReminder(selfCheckPlan.guideTitle, selfCheckPlan.date)
           : monthlySelfExamReminder(),
       ];
-    case 'weekly_checkin':
-      return [weeklyCheckInReminder()];
+    case 'daily_checkin':
+      return [dailyCheckInReminder()];
   }
 }
 
 /** Identifier prefixes per type, to cancel a type's reminders without the full list. */
 export const IDENTIFIER_PREFIX: Record<ScheduledPrefType, string> = {
   self_check: 'self-check-',
-  weekly_checkin: 'weekly-checkin',
+  daily_checkin: 'daily-checkin',
 };
 
 /**
@@ -183,7 +213,8 @@ export const IDENTIFIER_PREFIX: Record<ScheduledPrefType, string> = {
 export function isCurrentReminder(identifier: string): boolean {
   return (
     Object.values(IDENTIFIER_PREFIX).some((prefix) => identifier.startsWith(prefix)) ||
-    identifier.startsWith('screening-')
+    identifier.startsWith('screening-') ||
+    identifier.startsWith('appointment-')
   );
 }
 

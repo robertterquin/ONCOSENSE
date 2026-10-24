@@ -8,7 +8,7 @@ import { persistStorage } from '@/lib/storage';
 // src/lib/notifications/service.ts schedules the reminders from these values.
 // The redesign kept only the self-check and check-in reminders (docs/redesign).
 
-export const NOTIFICATION_TYPES = ['self_check', 'weekly_checkin'] as const;
+export const NOTIFICATION_TYPES = ['self_check', 'daily_checkin'] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -31,14 +31,18 @@ const allTypes = (enabled: boolean) =>
     boolean
   >;
 
-/** Saved preferences from before the redesign: drops the removed reminder types. */
+/**
+ * Saved preferences from earlier versions: drops the reminder types the redesign removed
+ * and carries the weekly check-in choice over to the daily check-in (Phase 4).
+ */
 export function migrateNotificationPrefs(persisted: unknown, version: number): unknown {
-  if (version >= 1 || !persisted || typeof persisted !== 'object') return persisted;
+  if (version >= 2 || !persisted || typeof persisted !== 'object') return persisted;
   const state = persisted as { types?: Record<string, unknown> };
+  const old = state.types ?? {};
   const types = allTypes(true);
-  for (const type of NOTIFICATION_TYPES) {
-    if (typeof state.types?.[type] === 'boolean') types[type] = state.types[type] as boolean;
-  }
+  if (typeof old.self_check === 'boolean') types.self_check = old.self_check;
+  const checkIn = old.daily_checkin ?? old.weekly_checkin;
+  if (typeof checkIn === 'boolean') types.daily_checkin = checkIn;
   return { ...state, types };
 }
 
@@ -57,7 +61,7 @@ export const useNotificationPrefs = create<NotificationPrefsState>()(
     {
       name: 'notification-prefs',
       storage: persistStorage,
-      version: 1,
+      version: 2,
       migrate: (persisted, version) =>
         migrateNotificationPrefs(persisted, version) as NotificationPrefsState,
     },
