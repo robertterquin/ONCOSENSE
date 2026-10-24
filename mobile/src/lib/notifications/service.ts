@@ -2,13 +2,18 @@ import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
 import { userGender } from '@/api/auth';
+import { getTipOfTheDay } from '@/api/healthTips';
 import { queryKeys } from '@/hooks/queryKeys';
 import { parseDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, usesJourney } from '@/lib/focus';
 import { queryClient } from '@/lib/queryClient';
 import { chosenGuides, isSnoozed, selfCheckReminderDate, soonestGuide } from '@/lib/selfCheck';
 import { useAuthStore } from '@/stores/authStore';
-import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
+import {
+  useNotificationPrefs,
+  type NotificationType,
+  type ReminderTime,
+} from '@/stores/notificationStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import type { Appointment } from '@/types/appointment';
@@ -54,7 +59,12 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   const snoozed = isSnoozed(state, now) ? parseDbTimestamp(state.snoozedUntil!) : null;
   return {
     guideTitle: soonest.guide.title,
-    date: selfCheckReminderDate(soonest.due, snoozed, now),
+    date: selfCheckReminderDate(
+      soonest.due,
+      snoozed,
+      now,
+      useNotificationPrefs.getState().times.self_check,
+    ),
   };
 }
 
@@ -64,12 +74,39 @@ function wantsCheckInReminder(): boolean {
   return user !== null && usesJourney(focusFromMetadata(user));
 }
 
-/** Replaces a type's reminders with its current schedule. */
+/** Appointments already loaded for the signed-in person (Journey), soonest first. */
+function cachedAppointments(): Appointment[] {
+  const userId = useAuthStore.getState().user?.id ?? null;
+  return queryClient.getQueryData<Appointment[]>(queryKeys.appointments(userId)) ?? [];
+}
+
+/** Replaces a type's reminders with its current schedule, at the time set in Settings. */
 async function scheduleType(type: ScheduledPrefType): Promise<void> {
   await cancelType(type);
   if (type === 'daily_checkin' && !wantsCheckInReminder()) return;
-  const plan = type === 'self_check' ? selfCheckPlan() : null;
-  for (const reminder of remindersForType(type, plan)) await device.scheduleReminder(reminder);
+  const now = new Date();
+  const reminders = remindersForType(type, {
+    now,
+    times: useNotificationPrefs.getState().times,
+    selfCheckPlan: type === 'self_check' ? selfCheckPlan(now) : null,
+    appointments: type === 'appointments' ? cachedAppointments() : undefined,
+    tip: type === 'weekly_tip' ? getTipOfTheDay(now).tip : undefined,
+  });
+  for (const reminder of reminders) await device.scheduleReminder(reminder);
+}
+
+/** Changes when one reminder fires; only that type is rescheduled. */
+export async function setReminderTime(type: NotificationType, time: ReminderTime): Promise<void> {
+  useNotificationPrefs.getState().setTime(type, time);
+  const prefs = useNotificationPrefs.getState();
+  if (!REMINDERS_SUPPORTED || !prefs.enabled || !prefs.types[type] || !isScheduledPrefType(type)) {
+    return;
+  }
+  try {
+    if (await device.hasPermission()) await scheduleType(type);
+  } catch (error) {
+    console.warn(`Failed to move the ${type} reminder`, error);
+  }
 }
 
 /** Adds or removes the daily check-in reminder after the focus changes (if it is on). */
@@ -108,10 +145,10 @@ async function cancelRemovedReminders(): Promise<void> {
   if (stale.length) await device.cancelReminders(stale);
 }
 
-/** Every type on and scheduled. */
+/** The default types on and scheduled (the weekly tip stays off until chosen). */
 async function enableAll(): Promise<void> {
   useNotificationPrefs.getState().setAllTypes(true);
-  for (const type of SCHEDULED_PREF_TYPES) await scheduleType(type);
+  await scheduleFromPrefs();
 }
 
 /** Everything cancelled and every type off. */
@@ -164,10 +201,16 @@ export async function setNotificationTypeEnabled(
 
 /** Sets (or moves) the reminder the evening before an appointment. */
 export async function scheduleAppointmentReminder(appointment: Appointment): Promise<void> {
-  if (!REMINDERS_SUPPORTED || !useNotificationPrefs.getState().enabled) return;
+  const prefs = useNotificationPrefs.getState();
+  if (!REMINDERS_SUPPORTED || !prefs.enabled) return;
   try {
     await device.cancelReminders([`appointment-${appointment.id}`]);
-    const date = appointmentReminderDate(appointment.startsAt);
+    if (!prefs.types.appointments) return;
+    const date = appointmentReminderDate(
+      appointment.startsAt,
+      new Date(),
+      prefs.times.appointments,
+    );
     if (date && (await device.hasPermission())) {
       await device.scheduleReminder(appointmentReminder(appointment, date));
     }

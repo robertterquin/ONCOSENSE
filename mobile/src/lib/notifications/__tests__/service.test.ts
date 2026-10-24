@@ -1,5 +1,10 @@
 import { useAuthStore } from '@/stores/authStore';
-import { migrateNotificationPrefs, useNotificationPrefs } from '@/stores/notificationStore';
+import {
+  DEFAULT_TIMES,
+  DEFAULT_TYPES,
+  migrateNotificationPrefs,
+  useNotificationPrefs,
+} from '@/stores/notificationStore';
 
 import * as device from '../device';
 import {
@@ -9,6 +14,7 @@ import {
   setNotificationsEnabled,
   startNotificationListeners,
   setNotificationTypeEnabled,
+  setReminderTime,
 } from '../service';
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
@@ -43,7 +49,11 @@ beforeEach(() => {
   scheduled.clear();
   jest.clearAllMocks();
   useAuthStore.setState({ user: inTreatment, isGuest: false });
-  useNotificationPrefs.setState({ enabled: true, setupComplete: false });
+  useNotificationPrefs.setState({
+    enabled: true,
+    setupComplete: false,
+    times: { ...DEFAULT_TIMES },
+  });
   useNotificationPrefs.getState().setAllTypes(true);
 });
 
@@ -77,6 +87,28 @@ describe('first launch and app start', () => {
     }
     await initializeNotifications();
     expect(ids()).toEqual(['self-check-monthly']);
+  });
+});
+
+describe('reminder times', () => {
+  it('changing a time reschedules only that reminder', async () => {
+    await initializeNotifications();
+    const selfCheckBefore = scheduled.get('self-check-monthly');
+    await setReminderTime('daily_checkin', { hour: 21, minute: 30 });
+    expect(scheduled.get('daily-checkin')).toMatchObject({
+      trigger: { kind: 'daily', hour: 21, minute: 30 },
+    });
+    // The self-check reminder is the same object: it wasn't cancelled and set again.
+    expect(scheduled.get('self-check-monthly')).toBe(selfCheckBefore);
+    expect(jest.mocked(device.cancelReminders).mock.calls.at(-1)?.[0]).toEqual(['daily-checkin']);
+  });
+
+  it('keeps a new time for a reminder that is off, without scheduling it', async () => {
+    await initializeNotifications();
+    await setNotificationTypeEnabled('daily_checkin', false);
+    await setReminderTime('daily_checkin', { hour: 7, minute: 0 });
+    expect(ids()).toEqual(['self-check-monthly']);
+    expect(useNotificationPrefs.getState().times.daily_checkin).toEqual({ hour: 7, minute: 0 });
   });
 });
 
@@ -126,7 +158,17 @@ describe('switches', () => {
     expect(Object.values(useNotificationPrefs.getState().types).every((on) => !on)).toBe(true);
     await setNotificationsEnabled(true);
     expect(scheduled.size).toBe(2);
-    expect(Object.values(useNotificationPrefs.getState().types).every(Boolean)).toBe(true);
+    // Back to the defaults: the weekly tip stays off until someone turns it on.
+    expect(useNotificationPrefs.getState().types).toEqual(DEFAULT_TYPES);
+  });
+
+  it('the weekly tip is off by default and can be turned on', async () => {
+    await initializeNotifications();
+    expect(ids()).not.toContain('weekly-tip');
+    await setNotificationTypeEnabled('weekly_tip', true);
+    expect(scheduled.get('weekly-tip')).toMatchObject({
+      trigger: { kind: 'weekly', weekday: 7, hour: 10, minute: 0 },
+    });
   });
 
   it('does not schedule a type while the master switch is off', async () => {
@@ -137,7 +179,7 @@ describe('switches', () => {
 });
 
 describe('saved preferences from earlier versions', () => {
-  it('drops removed types and keeps the remaining choices', () => {
+  it('drops removed types, keeps the remaining choices and adds the new ones', () => {
     const migrated = migrateNotificationPrefs(
       {
         enabled: true,
@@ -149,19 +191,29 @@ describe('saved preferences from earlier versions', () => {
     expect(migrated).toEqual({
       enabled: true,
       setupComplete: true,
-      types: { self_check: false, daily_checkin: true },
+      types: { self_check: false, daily_checkin: true, appointments: true, weekly_tip: false },
+      times: DEFAULT_TIMES,
     });
   });
 
   it('carries the weekly check-in choice over to the daily check-in', () => {
     expect(
       migrateNotificationPrefs({ types: { self_check: true, weekly_checkin: false } }, 1),
-    ).toEqual({ types: { self_check: true, daily_checkin: false } });
+    ).toMatchObject({ types: { self_check: true, daily_checkin: false } });
+  });
+
+  it('adds times and the new types to version 2 preferences', () => {
+    expect(
+      migrateNotificationPrefs({ types: { self_check: true, daily_checkin: false } }, 2),
+    ).toEqual({
+      types: { self_check: true, daily_checkin: false, appointments: true, weekly_tip: false },
+      times: DEFAULT_TIMES,
+    });
   });
 
   it('leaves current preferences alone', () => {
-    const current = { types: { self_check: true, daily_checkin: false } };
-    expect(migrateNotificationPrefs(current, 2)).toBe(current);
+    const current = { types: DEFAULT_TYPES, times: DEFAULT_TIMES };
+    expect(migrateNotificationPrefs(current, 3)).toBe(current);
   });
 });
 

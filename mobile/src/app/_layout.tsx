@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { ToastHost } from '@/components/Toast';
+import { focusFromMetadata } from '@/lib/focus';
 import { initializeNotifications, startNotificationListeners } from '@/lib/notifications/service';
 import { queryClient } from '@/lib/queryClient';
 import { startAuthListener, useAuthStore, useUserId } from '@/stores/authStore';
@@ -31,10 +32,12 @@ export default function RootLayout() {
   // After the navigator is mounted, so a tapped notification can open its screen.
   useEffect(() => (ready ? startNotificationListeners() : undefined), [ready]);
 
-  // Like the Flutter splash screen, set up reminders for signed-in users.
+  // Set up reminders for signed-in users once they've answered "What brings you here?",
+  // so the first permission prompt offers the right reminders (redesign Phase 6).
+  const hasFocus = useAuthStore((state) => focusFromMetadata(state.user) !== null);
   useEffect(() => {
-    if (ready && userId) initializeNotifications();
-  }, [ready, userId]);
+    if (ready && userId && hasFocus) initializeNotifications();
+  }, [ready, userId, hasFocus]);
 
   // Keep the native splash screen (logo on white) until fonts and the session are ready.
   if (!ready) return null;

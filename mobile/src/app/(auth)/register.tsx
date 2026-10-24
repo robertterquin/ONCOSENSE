@@ -2,27 +2,26 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
-import { AppText } from '@/components/AppText';
-import { AuthLayout } from '@/components/AuthLayout';
-import { Button } from '@/components/Button';
-import { Checkbox } from '@/components/Checkbox';
-import { FormField } from '@/components/FormField';
-import { MaterialIcon } from '@/components/MaterialIcon';
-import { PasswordChecklist } from '@/components/PasswordChecklist';
+import { FormTextField } from '@/components/account/FormTextField';
+import { LegalSheet, type LegalTitle } from '@/components/account/LegalSheet';
+import { PasswordRules } from '@/components/account/PasswordRules';
+import { Button, Chip, Screen, Section, Text } from '@/components/ui';
 import { GENDER_OPTIONS } from '@/constants/app';
 import { MESSAGES, registerSchema, type RegisterForm } from '@/constants/validation';
 import { useSignUp } from '@/hooks/useAuth';
 import { showToast } from '@/stores/toastStore';
-import { brand } from '@/theme/colors';
+import { space } from '@/theme/tokens';
 
-// Port of lib/screens/auth/register_screen.dart
+// Create an account (redesign Phase 6): same fields and rules as before, then "What
+// brings you here?".
 
-const WHITE: readonly [string, string] = ['#FFFFFF', '#FFFFFF'];
+const back = () => (router.canGoBack() ? router.back() : router.replace('/welcome'));
 
-export default function RegisterScreen() {
+export default function CreateAccountScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [legal, setLegal] = useState<LegalTitle | null>(null);
   const signUp = useSignUp();
   const { control, handleSubmit } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -56,144 +55,119 @@ export default function RegisterScreen() {
   });
 
   return (
-    <AuthLayout title="Create Account" gradient={WHITE}>
-      <FormField
-        control={control}
-        name="name"
-        label="Full Name"
-        placeholder="Enter your full name"
-        autoComplete="name"
-        textContentType="name"
-        leftIcon={<MaterialIcon name="person-outline" size={22} color="#757575" />}
-      />
-      <FormField
-        control={control}
-        name="email"
-        label="Email"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        textContentType="emailAddress"
-        leftIcon={<MaterialIcon name="mail-outline" size={22} color="#757575" />}
-      />
-      <FormField
-        control={control}
-        name="password"
-        label="Password"
-        placeholder="Enter a strong password"
-        isPassword
-        autoComplete="new-password"
-        textContentType="newPassword"
-        leftIcon={<MaterialIcon name="lock-outline" size={22} color="#757575" />}
-      />
-
-      <PasswordChecklist password={password ?? ''} />
-
-      <FormField
-        control={control}
-        name="confirmPassword"
-        label="Confirm Password"
-        placeholder="Re-enter your password"
-        isPassword
-        autoComplete="new-password"
-        textContentType="newPassword"
-        leftIcon={<MaterialIcon name="lock-outline" size={22} color="#757575" />}
-      />
-      <FormField
-        control={control}
-        name="age"
-        label="Age (Optional)"
-        placeholder="Enter your age"
-        keyboardType="number-pad"
-        maxLength={3}
-        leftIcon={<MaterialIcon name="calendar_today" size={20} color="#757575" />}
-      />
-
-      <Controller
-        control={control}
-        name="gender"
-        render={({ field }) => (
-          <View style={styles.gender}>
-            <AppText variant="label">Gender (Optional)</AppText>
-            <View style={styles.chips} accessibilityRole="radiogroup">
-              {GENDER_OPTIONS.map((option) => {
-                const selected = field.value === option;
-                return (
-                  <Pressable
+    <KeyboardAvoidingView
+      style={styles.fill}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Screen
+        back={{ label: 'Welcome', onPress: back }}
+        title="Create an account"
+        subtitle="Your check-ins and saved items stay with you on any phone.">
+        <FormTextField
+          control={control}
+          name="name"
+          label="Your name"
+          autoComplete="name"
+          textContentType="name"
+        />
+        <FormTextField
+          control={control}
+          name="email"
+          label="Email"
+          placeholder="you@example.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+        />
+        <FormTextField
+          control={control}
+          name="password"
+          label="Password"
+          secure
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+        <PasswordRules password={password ?? ''} />
+        <FormTextField
+          control={control}
+          name="confirmPassword"
+          label="Confirm password"
+          secure
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+        <FormTextField
+          control={control}
+          name="age"
+          label="Age (optional)"
+          keyboardType="number-pad"
+          maxLength={3}
+        />
+        <Controller
+          control={control}
+          name="gender"
+          render={({ field }) => (
+            <Section
+              title="Gender (optional)"
+              subtitle="Helps us suggest the right self-checks"
+              look="plain">
+              <View style={styles.chips} accessibilityRole="radiogroup">
+                {GENDER_OPTIONS.map((option) => (
+                  <Chip
                     key={option}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
-                    onPress={() => field.onChange(selected ? null : option)}
-                    style={[styles.chip, selected && styles.chipSelected]}>
-                    <AppText color={selected ? brand.white : '#424242'}>{option}</AppText>
-                  </Pressable>
-                );
-              })}
-            </View>
+                    kind="radio"
+                    label={option}
+                    selected={field.value === option}
+                    onPress={() => field.onChange(field.value === option ? null : option)}
+                  />
+                ))}
+              </View>
+            </Section>
+          )}
+        />
+        <View style={styles.terms}>
+          <Chip
+            label="I agree to the Terms of service and Privacy policy"
+            selected={termsAccepted}
+            onPress={() => setTermsAccepted(!termsAccepted)}
+          />
+          <View style={styles.links}>
+            <Button
+              title="Read the terms"
+              variant="quiet"
+              fullWidth={false}
+              onPress={() => setLegal('Terms of service')}
+            />
+            <Button
+              title="Read the privacy policy"
+              variant="quiet"
+              fullWidth={false}
+              onPress={() => setLegal('Privacy policy')}
+            />
           </View>
-        )}
-      />
-
-      <Checkbox
-        checked={termsAccepted}
-        onChange={setTermsAccepted}
-        accessibilityLabel="I agree to the Terms & Conditions and Privacy Policy"
-        label={
-          <AppText style={styles.terms}>
-            I agree to the{' '}
-            <AppText variant="label" color={brand.primaryPink}>
-              Terms &amp; Conditions
-            </AppText>{' '}
-            and{' '}
-            <AppText variant="label" color={brand.primaryPink}>
-              Privacy Policy
-            </AppText>
-          </AppText>
-        }
-      />
-
-      <Button title="Register" onPress={onSubmit} loading={signUp.isPending} style={styles.gap} />
-
-      <View style={styles.footer}>
-        <AppText>Already have an account? </AppText>
-        <Pressable accessibilityRole="link" hitSlop={8} onPress={() => router.replace('/login')}>
-          <AppText variant="label" color={brand.primaryPink}>
-            Login
-          </AppText>
-        </Pressable>
-      </View>
-    </AuthLayout>
+        </View>
+        <Button title="Create account" loading={signUp.isPending} onPress={onSubmit} />
+        <View style={styles.footer}>
+          <Text variant="supporting" tone="muted">
+            Already have an account?
+          </Text>
+          <Button
+            title="Sign in"
+            variant="quiet"
+            fullWidth={false}
+            onPress={() => router.replace('/login')}
+          />
+        </View>
+      </Screen>
+      <LegalSheet open={legal} onClose={() => setLegal(null)} />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  gender: {
-    gap: 8,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  chipSelected: {
-    backgroundColor: brand.primaryPink,
-  },
-  terms: {
-    flexShrink: 1,
-  },
-  gap: {
-    marginTop: 8,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  fill: { flex: 1 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  terms: { gap: space.xs },
+  links: { flexDirection: 'row', flexWrap: 'wrap' },
+  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },
 });
