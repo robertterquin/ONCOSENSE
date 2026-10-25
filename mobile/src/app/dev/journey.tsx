@@ -5,9 +5,9 @@ import {
   EnergyAndPain,
   Milestones,
   RecentCheckIns,
-  ThisWeek,
   Treatments,
 } from '@/components/journey/Dashboard';
+import { ThreadWeek } from '@/components/journey/ThreadWeek';
 import { Button, Screen } from '@/components/ui';
 import { addDays } from '@/lib/dates';
 import type { Appointment } from '@/types/appointment';
@@ -99,8 +99,8 @@ export default function JourneySampleScreen() {
       back={{ label: 'Back' }}
       title="My journey"
       subtitle="In treatment since August 2026 (sample data)">
-      <Button title="Check in" icon="plus" onPress={() => {}} />
-      <ThisWeek entries={ENTRIES} now={now} />
+      <ThreadWeek entries={ENTRIES} now={now} />
+      <Button title="Check in for today" icon="plus" onPress={() => {}} />
       <EnergyAndPain entries={ENTRIES} now={now} />
       <ComingUp appointments={APPOINTMENTS} />
       <Treatments treatments={TREATMENTS} />

@@ -1,6 +1,12 @@
 import { toDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, focusSubtitle, usesJourney } from '@/lib/focus';
-import { lastSevenDays, weekStrip, weekSummaryText } from '@/lib/journey';
+import {
+  lastSevenDays,
+  sevenDayTrend,
+  weekStrip,
+  weekSummaryText,
+  weekThreadText,
+} from '@/lib/journey';
 import {
   appointmentReminder,
   appointmentReminderDate,
@@ -34,6 +40,34 @@ const entry = (date: Date, fields: Partial<JourneyEntry> = {}): JourneyEntry => 
 });
 
 const now = new Date(2026, 9, 24, 14, 30); // Saturday, October 24
+
+describe('week thread and trends', () => {
+  it('reads the week as one sentence', () => {
+    const days = weekStrip(
+      [entry(new Date(2026, 9, 19, 9)), entry(new Date(2026, 9, 20, 9)), entry(now)],
+      now,
+    );
+    expect(weekThreadText(days)).toBe(
+      'This week: checked in Monday, Tuesday and Saturday. 3 of 7 days.',
+    );
+    expect(weekThreadText(weekStrip([], now))).toBe('This week: no check-ins yet. 0 of 7 days.');
+  });
+
+  it('compares the last 7 days with the 7 before', () => {
+    const before = entry(new Date(2026, 9, 14, 9), { energyLevel: 4, painLevel: 3 });
+    const recent = entry(new Date(2026, 9, 22, 9), { energyLevel: 6, painLevel: 3.2 });
+    expect(sevenDayTrend([before, recent], 'averageEnergy', now)).toEqual({
+      value: 6,
+      detail: 'of 10, up from 4',
+    });
+    expect(sevenDayTrend([before, recent], 'averagePain', now).detail).toBe('of 10, steady');
+    expect(sevenDayTrend([recent], 'averageEnergy', now).detail).toBe('of 10');
+    expect(sevenDayTrend([], 'averagePain', now)).toEqual({
+      value: null,
+      detail: 'No check-ins in the last 7 days',
+    });
+  });
+});
 
 describe('focus', () => {
   it('reads the saved focus', () => {
