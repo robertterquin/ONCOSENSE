@@ -2,7 +2,6 @@ import { useColorScheme } from 'react-native';
 
 import { useThemeStore, type ThemeMode } from '@/stores/themeStore';
 
-import { brand, darkColors, lightColors } from './colors';
 import { darkPalette, lightPalette, type Palette } from './palette';
 import { scaledType, type TextSize, type TypeVariant } from './type';
 
@@ -14,12 +13,6 @@ export function resolveIsDark(mode: ThemeMode, phone: string | null | undefined)
 function useIsDark(): boolean {
   const mode = useThemeStore((state) => state.mode);
   return resolveIsDark(mode, useColorScheme());
-}
-
-/** The active color scheme (the Flutter-era colors; screens move to `useDesign`). */
-export function useTheme() {
-  const isDark = useIsDark();
-  return { isDark, colors: isDark ? darkColors : lightColors, brand };
 }
 
 /** Redesign tokens: palette for the active theme and type at the user's text size. */

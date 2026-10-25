@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import {
-  acceptAnswer,
   createAnswer,
   createQuestion,
   deleteAnswer,
@@ -14,9 +13,8 @@ import {
   reportContent,
   toggleAnswerUpvote,
   toggleQuestionUpvote,
-  updateQuestion,
   type QuestionFilters,
-} from '@/api/forum';
+} from '@/api/community';
 import { useUserId } from '@/stores/authStore';
 import type { Answer } from '@/types/answer';
 import type { Question } from '@/types/question';
@@ -83,18 +81,6 @@ export function useAskQuestion() {
   return useMutation({
     mutationFn: createQuestion,
     onSuccess: () => invalidateQuestions(queryClient),
-  });
-}
-
-export function useUpdateQuestion(questionId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (changes: Parameters<typeof updateQuestion>[1]) =>
-      updateQuestion(questionId, changes),
-    onSuccess: (question) => {
-      queryClient.setQueryData(queryKeys.question(questionId), question);
-      return invalidateQuestions(queryClient);
-    },
   });
 }
 
@@ -173,14 +159,6 @@ export function useDeleteAnswer(questionId: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.question(questionId) });
       return invalidateQuestions(queryClient);
     },
-  });
-}
-
-export function useAcceptAnswer(questionId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (answerId: string) => acceptAnswer(answerId, questionId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.answers(questionId) }),
   });
 }
 

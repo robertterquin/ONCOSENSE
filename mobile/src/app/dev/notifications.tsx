@@ -2,11 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Screen } from '@/components/Screen';
+import { Button, Screen, Section, Text } from '@/components/ui';
 import { hasPermission, scheduledSummary } from '@/lib/notifications/device';
 import { sendTestNotification } from '@/lib/notifications/service';
 import { useNotificationPrefs } from '@/stores/notificationStore';
@@ -30,30 +26,27 @@ export default function NotificationCheckScreen() {
   if (!__DEV__) return <Redirect href="/" />;
 
   return (
-    <Screen
-      header={
-        <AppHeader title="Scheduled reminders" subtitle="Development check" showBackButton />
-      }>
-      <Card>
-        <AppText variant="label">
+    <Screen back={{ label: 'Back' }} title="Scheduled reminders" subtitle="Development check">
+      <Section look="tinted" tint="raised">
+        <Text variant="row">
           Permission: {query.data ? (query.data.permission ? 'granted' : 'not granted') : '…'}
-        </AppText>
-        <AppText>
+        </Text>
+        <Text>
           Master switch: {prefs.enabled ? 'on' : 'off'} · setup complete:{' '}
           {prefs.setupComplete ? 'yes' : 'no'}
-        </AppText>
-        <AppText variant="label">Pending: {query.data?.reminders.length ?? '…'}</AppText>
-      </Card>
-      <Button title="Refresh" outlined onPress={() => query.refetch()} />
-      <Button title="Send test notification" outlined onPress={sendTestNotification} />
+        </Text>
+        <Text variant="row">Pending: {query.data?.reminders.length ?? '…'}</Text>
+      </Section>
+      <Button title="Refresh" variant="secondary" onPress={() => query.refetch()} />
+      <Button title="Send test notification" variant="secondary" onPress={sendTestNotification} />
       <View style={styles.list}>
         {query.data?.reminders.map((reminder) => (
-          <Card key={reminder.identifier}>
-            <AppText variant="label">{reminder.identifier}</AppText>
-            <AppText variant="bodySmall" secondary>
+          <Section key={reminder.identifier} look="tinted" tint="raised">
+            <Text variant="row">{reminder.identifier}</Text>
+            <Text variant="supporting" tone="muted">
               {reminder.trigger}
-            </AppText>
-          </Card>
+            </Text>
+          </Section>
         ))}
       </View>
     </Screen>

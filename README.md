@@ -9,8 +9,8 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 | Path | What's there |
 |---|---|
 | `mobile/` | The app (Expo, TypeScript, Expo Router). Its own [README](mobile/README.md) has every command. |
-| `supabase/` | The `delete-account` Edge Function and the Supabase CLI config |
-| `*_SETUP.sql`, `CANCER_DATA_SETUP.md` | SQL and notes for the Supabase tables |
+| `supabase/` | Database migrations, the `delete-account` Edge Function and the Supabase CLI config |
+| `supabase/reference/` | The original setup SQL and notes for the bookmark, journey and cancer-type tables (the rest of the schema lives only in the Supabase project) |
 | `docs/redesign/` | The approved redesign and narrowed scope, phase by phase |
 | `docs/react-native-migration/` | How the app was migrated from Flutter, phase by phase, with the decision log |
 | `docs/archive/flutter/` | Notes from the Flutter era, kept for reference |

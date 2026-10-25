@@ -182,12 +182,10 @@ export const CREDITS = `Credits & Attributions
 🎨 DESIGN & ASSETS
 ━━━━━━━━━━━━━━━━━━━━━━
 
-• Material Design Icons
-  Copyright © Google Inc.
-  Licensed under Apache License 2.0
+• Lucide icons
+  Licensed under the ISC License
 
-• Google Fonts
-  Open-source fonts
+• Atkinson Hyperlegible Next, from Google Fonts
   Licensed under SIL Open Font License
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -195,12 +193,11 @@ export const CREDITS = `Credits & Attributions
 ━━━━━━━━━━━━━━━━━━━━━━
 
 • expo-router, expo-image, expo-image-picker,
-  expo-linear-gradient, expo-sqlite, expo-web-browser
+  expo-sqlite, expo-web-browser
 • @supabase/supabase-js
 • @tanstack/react-query, zustand
 • react-hook-form, zod
-• date-fns
-• @expo-google-fonts/poppins, @expo/vector-icons
+• lucide-react-native, react-native-svg
 • @react-native-community/datetimepicker, slider
 
 All packages are licensed under their respective licenses.

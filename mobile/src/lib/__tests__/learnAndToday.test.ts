@@ -1,5 +1,5 @@
 import { awarenessForMonth } from '@/constants/awareness';
-import { cancerForAwareness, cancerForGuide, guideForCancer, searchLearn } from '@/lib/learn';
+import { cancerForAwareness, guideForCancer, searchLearn } from '@/lib/learn';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -20,8 +20,6 @@ describe('Learn links', () => {
     expect(guideForCancer(guides, cancers[0])?.cancerType).toBe('Breast');
     expect(guideForCancer(guides, cancers[1])?.cancerType).toBe('Leukemia');
     expect(guideForCancer(guides, cancers[2])).toBeNull();
-    expect(cancerForGuide(cancers, guides[0])?.name).toBe('Breast Cancer');
-    expect(cancerForGuide(cancers, guides[2])).toBeNull();
   });
 
   it("links October's awareness month to breast cancer", () => {

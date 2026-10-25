@@ -1,13 +1,8 @@
 import type { JourneyEntry } from '@/types/journeyEntry';
-import {
-  DAYS_FREE_MILESTONES,
-  STREAK_MILESTONE_DAYS,
-  TREATMENT_MILESTONES,
-  type Milestone,
-} from '@/types/milestone';
+import { STREAK_MILESTONE_DAYS, TREATMENT_MILESTONES, type Milestone } from '@/types/milestone';
 import { treatmentProgress, type Treatment } from '@/types/treatment';
 
-import { addDays, differenceInWholeDays, isSameDay } from './dates';
+import { addDays, isSameDay } from './dates';
 
 // Journey calculations ported from lib/services/journey_service.dart. Pure functions,
 // so they're easy to test and share between hooks and screens.
@@ -39,38 +34,10 @@ function recentEntries(entries: JourneyEntry[], days: number, now: Date): Journe
   return entries.filter((entry) => entry.date.getTime() > since);
 }
 
-export function averageMood(entries: JourneyEntry[], days: number, now: Date = new Date()): number {
-  const recent = recentEntries(entries, days, now);
-  if (recent.length === 0) return 0;
-  return recent.reduce((sum, entry) => sum + entry.moodLevel, 0) / recent.length;
-}
-
 export function averagePain(entries: JourneyEntry[], days: number, now: Date = new Date()): number {
   const recent = recentEntries(entries, days, now);
   if (recent.length === 0) return 0;
   return recent.reduce((sum, entry) => sum + entry.painLevel, 0) / recent.length;
-}
-
-export type TrendPoint = { date: Date; mood: number; pain: number; energy: number };
-
-/** One point per day for the last `days` days, oldest first; days without an entry are 0. */
-export function moodTrend(
-  entries: JourneyEntry[],
-  days: number,
-  now: Date = new Date(),
-): TrendPoint[] {
-  const points: TrendPoint[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const date = addDays(now, -i);
-    const entry = entryForDate(entries, date);
-    points.push({
-      date,
-      mood: entry?.moodLevel ?? 0,
-      pain: entry?.painLevel ?? 0,
-      energy: entry?.energyLevel ?? 0,
-    });
-  }
-  return points;
 }
 
 /** Top 10 symptoms by how many entries mention them. */
@@ -82,10 +49,6 @@ export function mostCommonSymptoms(entries: JourneyEntry[]): [string, number][] 
     }
   }
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-}
-
-export function daysSince(date: Date | null, now: Date = new Date()): number {
-  return date ? differenceInWholeDays(now, date) : 0;
 }
 
 // ---- Dashboard (redesign Phase 4) ----
@@ -218,31 +181,5 @@ export function treatmentMilestone(treatment: Treatment, now: Date = new Date())
       type: 'sessionComplete',
     },
     now,
-  );
-}
-
-/** Days-free milestones reached since the cancer-free date that haven't been recorded yet. */
-export function cancerFreeMilestones(
-  cancerFreeDate: Date | null,
-  existing: Milestone[],
-  now: Date = new Date(),
-): Milestone[] {
-  if (!cancerFreeDate) return [];
-  const days = daysSince(cancerFreeDate, now);
-  return DAYS_FREE_MILESTONES.filter(
-    (template) =>
-      days >= template.days &&
-      !existing.some((m) => m.type === 'daysFree' && m.daysCount === template.days),
-  ).map((template) =>
-    newMilestone(
-      `${now.getTime()}_free_${template.days}`,
-      {
-        title: template.title,
-        description: template.description,
-        type: 'daysFree',
-        daysCount: template.days,
-      },
-      now,
-    ),
   );
 }

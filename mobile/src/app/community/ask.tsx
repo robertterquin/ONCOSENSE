@@ -15,7 +15,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { askQuestionSchema, type AskQuestionForm } from '@/constants/validation';
-import { useAskQuestion } from '@/hooks/useForum';
+import { useAskQuestion } from '@/hooks/useCommunity';
 import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';

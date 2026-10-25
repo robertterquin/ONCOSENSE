@@ -2,10 +2,19 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { QuestionRow } from '@/components/forum/QuestionRow';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { Banner, Button, Chip, Screen, SearchField, Section } from '@/components/ui';
-import { useQuestions } from '@/hooks/useForum';
+import { QuestionRow } from '@/components/community/QuestionRow';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Banner,
+  Button,
+  Chip,
+  Screen,
+  SearchField,
+  Section,
+} from '@/components/ui';
+import { useQuestions } from '@/hooks/useCommunity';
 import { useNow } from '@/hooks/useNow';
 import { confirm } from '@/lib/confirm';
 import { useIsSignedIn } from '@/stores/authStore';
@@ -36,6 +45,8 @@ export default function CommunityTab() {
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
+  // Room under the last question for the floating button, which grows with text size.
+  const [fabHeight, setFabHeight] = useState(56);
   // Keep "2 minutes ago" fresh.
   const now = useNow(10_000);
   const questions = useQuestions({ category, searchQuery, sortBy: 'recent' });
@@ -101,10 +112,12 @@ export default function CommunityTab() {
             ))}
           </Section>
         )}
-        {/* Room for the floating button over the last question. */}
-        <View style={styles.fabSpace} />
+        <View style={{ height: fabHeight }} />
       </Screen>
-      <View style={styles.fab} pointerEvents="box-none">
+      <View
+        style={styles.fab}
+        pointerEvents="box-none"
+        onLayout={(event) => setFabHeight(event.nativeEvent.layout.height)}>
         <Button
           title="Ask a question"
           icon="plus"
@@ -120,7 +133,6 @@ export default function CommunityTab() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   topics: { gap: space.sm, paddingRight: space.xl },
-  fabSpace: { height: 56 },
   fab: { position: 'absolute', right: space.xl, bottom: space.lg },
   fabButton: {
     shadowColor: '#2E1F66',

@@ -27,6 +27,13 @@ export type QuestionFilters = {
 
 // ---- Questions ----
 
+// Reads go through views that hide the author of anonymous posts (migration
+// 20261025000000); the tables no longer return `user_id`, so writes ask only for these.
+const QUESTION_COLUMNS =
+  'id,title,content,category,user_name,profile_picture_url,is_anonymous,upvotes,answer_count,created_at,updated_at,is_resolved,tags';
+const ANSWER_COLUMNS =
+  'id,question_id,content,user_name,is_anonymous,upvotes,created_at,updated_at,is_accepted,parent_answer_id';
+
 export async function fetchQuestions({
   category,
   searchQuery,
@@ -34,7 +41,7 @@ export async function fetchQuestions({
   limit = 20,
   offset = 0,
 }: QuestionFilters = {}): Promise<Question[]> {
-  let query = supabase.from('questions').select('*');
+  let query = supabase.from('questions_public').select('*');
   if (category) query = query.eq('category', category);
   if (searchQuery) {
     const value = ilikeValue(searchQuery);
@@ -75,7 +82,7 @@ export async function fetchQuestions({
 
 export async function fetchQuestion(questionId: string): Promise<Question | null> {
   const { data, error } = await supabase
-    .from('questions')
+    .from('questions_public')
     .select('*')
     .eq('id', questionId)
     .maybeSingle();
@@ -111,30 +118,10 @@ export async function createQuestion(input: {
       tags: input.tags ?? [],
       ...(profilePictureUrl && { profile_picture_url: profilePictureUrl }),
     })
-    .select()
+    .select(QUESTION_COLUMNS)
     .single();
   check(error, 'Failed to post question');
-  return questionFromRow(data);
-}
-
-export async function updateQuestion(
-  questionId: string,
-  changes: { title?: string; content?: string; category?: string; isResolved?: boolean },
-): Promise<Question> {
-  const { data, error } = await supabase
-    .from('questions')
-    .update({
-      updated_at: toDbTimestamp(new Date()),
-      ...(changes.title !== undefined && { title: changes.title }),
-      ...(changes.content !== undefined && { content: changes.content }),
-      ...(changes.category !== undefined && { category: changes.category }),
-      ...(changes.isResolved !== undefined && { is_resolved: changes.isResolved }),
-    })
-    .eq('id', questionId)
-    .select()
-    .single();
-  check(error, 'Failed to update question');
-  return questionFromRow(data);
+  return questionFromRow({ ...data, user_id: user.id });
 }
 
 export async function deleteQuestion(questionId: string): Promise<void> {
@@ -193,7 +180,7 @@ export async function hasUpvotedQuestion(questionId: string): Promise<boolean> {
 
 export async function fetchAnswers(questionId: string): Promise<Answer[]> {
   const { data, error } = await supabase
-    .from('answers')
+    .from('answers_public')
     .select('*')
     .eq('question_id', questionId)
     .order('is_accepted', { ascending: false })
@@ -228,7 +215,7 @@ export async function createAnswer(input: {
       is_accepted: false,
       parent_answer_id: input.parentAnswerId ?? null,
     })
-    .select()
+    .select(ANSWER_COLUMNS)
     .single();
   check(error, 'Failed to post answer');
 
@@ -236,18 +223,7 @@ export async function createAnswer(input: {
     question_id_param: input.questionId,
   });
   check(rpc.error, 'Failed to update answer count');
-  return answerFromRow(data);
-}
-
-export async function updateAnswer(answerId: string, content: string): Promise<Answer> {
-  const { data, error } = await supabase
-    .from('answers')
-    .update({ content, updated_at: toDbTimestamp(new Date()) })
-    .eq('id', answerId)
-    .select()
-    .single();
-  check(error, 'Failed to update answer');
-  return answerFromRow(data);
+  return answerFromRow({ ...data, user_id: user.id });
 }
 
 export async function deleteAnswer(answerId: string, questionId: string): Promise<void> {
@@ -255,17 +231,6 @@ export async function deleteAnswer(answerId: string, questionId: string): Promis
   check(error, 'Failed to delete answer');
   const rpc = await supabase.rpc('decrement_answer_count', { question_id_param: questionId });
   check(rpc.error, 'Failed to update answer count');
-}
-
-/** Marks one answer as the best answer for its question. */
-export async function acceptAnswer(answerId: string, questionId: string): Promise<void> {
-  const cleared = await supabase
-    .from('answers')
-    .update({ is_accepted: false })
-    .eq('question_id', questionId);
-  check(cleared.error, 'Failed to accept answer');
-  const accepted = await supabase.from('answers').update({ is_accepted: true }).eq('id', answerId);
-  check(accepted.error, 'Failed to accept answer');
 }
 
 /** Adds the user's upvote, or removes it if they already upvoted. Returns whether it's now upvoted. */

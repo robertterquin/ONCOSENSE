@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ReportSheet } from '@/components/forum/ReportSheet';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
+import { ReportSheet } from '@/components/community/ReportSheet';
 import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
   Button,
   Icon,
   IconButton,
@@ -29,7 +31,7 @@ import {
   useReportContent,
   useToggleAnswerUpvote,
   useToggleQuestionUpvote,
-} from '@/hooks/useForum';
+} from '@/hooks/useCommunity';
 import { useNow } from '@/hooks/useNow';
 import { initials } from '@/lib/community';
 import { confirm } from '@/lib/confirm';

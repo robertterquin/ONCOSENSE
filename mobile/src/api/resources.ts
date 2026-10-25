@@ -1,24 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { resourceFromRow, type Resource, type ResourceType } from '@/types/resource';
 
-import { check, ilikeValue } from './errors';
+import { check } from './errors';
 
 // Port of lib/services/resources_service.dart. Like the Flutter app, a built-in list
 // is returned if the `resources` table can't be read.
 
 function verifiedResources() {
   return supabase.from('resources').select().eq('is_verified', true).eq('is_active', true);
-}
-
-export async function fetchAllResources(): Promise<Resource[]> {
-  try {
-    const { data, error } = await verifiedResources().order('name');
-    check(error, 'Failed to fetch resources');
-    return (data ?? []).map(resourceFromRow);
-  } catch (error) {
-    console.warn(error);
-    return fallbackResources();
-  }
 }
 
 export async function fetchResourcesByType(type: ResourceType): Promise<Resource[]> {
@@ -29,25 +18,6 @@ export async function fetchResourcesByType(type: ResourceType): Promise<Resource
   } catch (error) {
     console.warn(error);
     return fallbackResources().filter((resource) => resource.type === type);
-  }
-}
-
-export async function searchResources(query: string): Promise<Resource[]> {
-  try {
-    const value = ilikeValue(query);
-    const { data, error } = await verifiedResources()
-      .or(`name.ilike.${value},description.ilike.${value}`)
-      .order('name');
-    check(error, 'Failed to search resources');
-    return (data ?? []).map(resourceFromRow);
-  } catch (error) {
-    console.warn(error);
-    const lower = query.toLowerCase();
-    return fallbackResources().filter(
-      (resource) =>
-        resource.name.toLowerCase().includes(lower) ||
-        resource.description.toLowerCase().includes(lower),
-    );
   }
 }
 

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { DateField } from '@/components/DateField';
-import { Chip, Icon, ListRow, Sheet, Switch, Text } from '@/components/ui';
+import { DateField, Chip, Icon, ListRow, Sheet, Switch, Text } from '@/components/ui';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
 import { formatTime } from '@/lib/dates';
 import {

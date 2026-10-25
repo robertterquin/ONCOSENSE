@@ -1,7 +1,7 @@
 import { answerDisplayName, answerFromRow } from '@/types/answer';
-import { journeyEntryFromRow, journeyEntryToRow, moodLabel } from '@/types/journeyEntry';
+import { journeyEntryFromRow, journeyEntryToRow } from '@/types/journeyEntry';
 import { milestoneFromRow } from '@/types/milestone';
-import { forumCategoryIcon, questionDisplayName, questionFromRow } from '@/types/question';
+import { questionDisplayName, questionFromRow } from '@/types/question';
 import { resourceFromRow } from '@/types/resource';
 import { selfCheckGuideFromRow } from '@/types/selfCheckGuide';
 import { treatmentFromRow, treatmentProgress, treatmentToRow } from '@/types/treatment';
@@ -37,14 +37,10 @@ describe('questionFromRow', () => {
     expect(questionDisplayName(questionFromRow({ ...questionRow, user_name: 'Rosa' }))).toBe(
       'Rosa',
     );
-    const anonymous = questionDisplayName(questionFromRow({ ...questionRow, is_anonymous: true }));
-    expect(anonymous).toMatch(/^Anonymous /);
-    // Same user always gets the same anonymous name.
-    expect(questionDisplayName(questionFromRow({ ...questionRow, is_anonymous: true }))).toBe(
-      anonymous,
-    );
-    expect(forumCategoryIcon('Lifestyle')).toBe('💪');
-    expect(forumCategoryIcon('Other')).toBe('💬');
+    // The database hides the author of other people's anonymous questions.
+    const anonymous = questionFromRow({ ...questionRow, is_anonymous: true, user_id: null });
+    expect(anonymous.userId).toBe('');
+    expect(questionDisplayName(anonymous)).toBe('Anonymous');
   });
 
   it('throws when a required column is missing', () => {
@@ -119,8 +115,6 @@ describe('journey models', () => {
     expect(entry.date.getDate()).toBe(22);
     expect(entry.date.getHours()).toBe(20);
     expect(journeyEntryToRow(entry)).toEqual({ ...row, date: '2026-10-22T20:30:00.000' });
-    expect(moodLabel(entry.moodLevel)).toBe('Good');
-    expect(moodLabel(9)).toBe('Okay');
   });
 
   it('parses treatment types by name or old numeric index', () => {

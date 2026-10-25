@@ -2,14 +2,14 @@ import * as WebBrowser from 'expo-web-browser';
 import { Linking } from 'react-native';
 
 import { showToast } from '@/stores/toastStore';
-import { brand } from '@/theme/colors';
+import { lightPalette } from '@/theme/palette';
 
 /** Opens a web page in the in-app browser. */
 export async function openWebPage(url: string, failureMessage = 'Could not open link') {
   try {
     await WebBrowser.openBrowserAsync(url, {
-      controlsColor: brand.headerPink,
-      toolbarColor: brand.white,
+      controlsColor: lightPalette.action,
+      toolbarColor: lightPalette.surface,
     });
   } catch {
     showToast(failureMessage, 'error');

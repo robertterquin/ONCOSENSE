@@ -1,4 +1,4 @@
-import { formatRelativeTime, parseDbTimestamp } from '@/lib/dates';
+import { parseDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, numberOr, optionalString, requireString, type Row } from './row';
 
@@ -6,6 +6,7 @@ export type Answer = {
   id: string;
   questionId: string;
   content: string;
+  /** Empty on other people's anonymous answers (the database hides it). */
   userId: string;
   userName: string | null;
   isAnonymous: boolean;
@@ -23,7 +24,7 @@ export function answerFromRow(row: Row): Answer {
     id: requireString(row, 'id'),
     questionId: requireString(row, 'question_id'),
     content: requireString(row, 'content'),
-    userId: requireString(row, 'user_id'),
+    userId: optionalString(row, 'user_id') ?? '',
     userName: optionalString(row, 'user_name'),
     isAnonymous: booleanOr(row, 'is_anonymous', false),
     upvotes: numberOr(row, 'upvotes', 0),
@@ -36,12 +37,4 @@ export function answerFromRow(row: Row): Answer {
 
 export function answerDisplayName(answer: Answer): string {
   return answer.isAnonymous ? 'Anonymous' : (answer.userName ?? 'User');
-}
-
-export function answerRelativeTime(answer: Answer, now?: Date): string {
-  return formatRelativeTime(answer.createdAt, now);
-}
-
-export function isReply(answer: Answer): boolean {
-  return answer.parentAnswerId !== null;
 }

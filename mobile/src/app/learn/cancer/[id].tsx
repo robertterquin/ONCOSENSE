@@ -2,9 +2,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, View, type ScrollViewInstance } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
-import { ErrorState, LoadingState } from '@/components/StateViews';
-import { Chip, ListRow, Screen, Section, Text } from '@/components/ui';
+import { ErrorState, LoadingState, Chip, ListRow, Screen, Section, Text } from '@/components/ui';
 import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
@@ -58,6 +58,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   const guides = useSelfCheckGuides();
   const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
   const scrollRef = useRef<ScrollViewInstance | null>(null);
+  const reduceMotion = useReducedMotion();
   const [offsets, setOffsets] = useState<Partial<Record<SectionKey, number>>>({});
   const place = (key: SectionKey) => ({
     onLayout: (event: { nativeEvent: { layout: { y: number } } }) => {
@@ -67,7 +68,8 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   });
   const jump = (key: SectionKey) => {
     const y = offsets[key];
-    if (y !== undefined) scrollRef.current?.scrollTo({ y: Math.max(0, y - space.md) });
+    if (y !== undefined)
+      scrollRef.current?.scrollTo({ y: Math.max(0, y - space.md), animated: !reduceMotion });
   };
 
   return (

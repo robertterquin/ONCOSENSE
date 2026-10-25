@@ -3,8 +3,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ErrorState, LoadingState } from '@/components/StateViews';
 import {
+  ErrorState,
+  LoadingState,
   Banner,
   BottomActionBar,
   Button,

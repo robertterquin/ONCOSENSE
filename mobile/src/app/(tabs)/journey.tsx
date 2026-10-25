@@ -9,8 +9,15 @@ import {
   ThisWeek,
   Treatments,
 } from '@/components/journey/Dashboard';
-import { ErrorState, LoadingState } from '@/components/StateViews';
-import { Banner, Button, RibbonMark, Screen, Text } from '@/components/ui';
+import {
+  ErrorState,
+  LoadingState,
+  Banner,
+  Button,
+  RibbonMark,
+  Screen,
+  Text,
+} from '@/components/ui';
 import { useFocus } from '@/hooks/useFocus';
 import {
   useAppointments,

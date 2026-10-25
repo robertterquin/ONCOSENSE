@@ -16,14 +16,3 @@ export async function fetchCancerTypeById(id: string): Promise<CancerType> {
   check(error, 'Failed to fetch cancer type');
   return cancerTypeFromRow(data);
 }
-
-export async function searchCancerTypes(query: string): Promise<CancerType[]> {
-  if (!query) return fetchAllCancerTypes();
-  const { data, error } = await supabase
-    .from('cancer_types')
-    .select()
-    .ilike('name', `%${query}%`)
-    .order('name');
-  check(error, 'Failed to search cancer types');
-  return (data ?? []).map(cancerTypeFromRow);
-}

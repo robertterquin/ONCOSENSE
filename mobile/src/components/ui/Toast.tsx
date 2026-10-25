@@ -8,8 +8,8 @@ import type { Palette } from '@/theme/palette';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-import { Icon, type IconName } from './ui/Icon';
-import { Text } from './ui/Text';
+import { Icon, type IconName } from './Icon';
+import { Text } from './Text';
 
 // Short messages at the bottom of the screen, in the redesign style: dark night-violet
 // for information, teal for success, rose for errors (each with an icon, so the color

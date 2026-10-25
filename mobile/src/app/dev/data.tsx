@@ -1,19 +1,15 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { AppHeader } from '@/components/AppHeader';
-import { AppText } from '@/components/AppText';
-import { Card } from '@/components/Card';
-import { Screen } from '@/components/Screen';
+import { Screen, Section, Text } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { useAnswers, useQuestions } from '@/hooks/useForum';
+import { useAnswers, useQuestions } from '@/hooks/useCommunity';
 import { useDailyHealthTip } from '@/hooks/useHome';
 import { useJourneyEntries } from '@/hooks/useJourney';
 import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';
 import { useAllResources } from '@/hooks/useResources';
 import { useIsSignedIn } from '@/stores/authStore';
-import { brand } from '@/theme/colors';
 
 type Check = {
   label: string;
@@ -74,32 +70,25 @@ export default function DataCheckScreen() {
   if (!__DEV__) return <Redirect href="/" />;
 
   return (
-    <Screen header={<AppHeader title="Data Check" subtitle="Phase 2 hooks" showBackButton />}>
-      <Card>
-        <AppText variant="label">Tip of the day</AppText>
-        <AppText>{tip.tip}</AppText>
-      </Card>
+    <Screen back={{ label: 'Back' }} title="Data check" subtitle="Read-only hooks">
+      <Section look="tinted" tint="raised">
+        <Text variant="row">Tip of the day</Text>
+        <Text>{tip.tip}</Text>
+      </Section>
       {checks.map(({ label, query, describe }) => (
-        <Card key={label}>
-          <AppText variant="label">{label}</AppText>
+        <Section key={label} look="tinted" tint="raised">
+          <Text variant="row">{label}</Text>
           <View accessibilityLabel={`${label} result`}>
             {query.isPending && !query.isError ? (
-              <AppText secondary>Loading…</AppText>
+              <Text tone="muted">Loading…</Text>
             ) : query.isError ? (
-              <AppText color={brand.error}>✗ {query.error.message}</AppText>
+              <Text tone="danger">✗ {query.error.message}</Text>
             ) : (
-              <AppText color={brand.success}>✓ {describe(query.data as never)}</AppText>
+              <Text>✓ {describe(query.data as never)}</Text>
             )}
           </View>
-        </Card>
+        </Section>
       ))}
-      <View style={styles.spacer} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  spacer: {
-    height: 16,
-  },
-});

@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { userDisplayName } from '@/api/auth';
-import { LoadingState } from '@/components/StateViews';
 import {
+  LoadingState,
   Banner,
   BottomActionBar,
   Button,

@@ -1,16 +1,12 @@
 import {
-  averageMood,
-  cancerFreeMilestones,
   currentStreak,
   isDuplicateMilestone,
   journeyStartedMilestone,
-  moodTrend,
   mostCommonSymptoms,
   streakMilestone,
   treatmentMilestone,
 } from '@/lib/journey';
 import type { JourneyEntry } from '@/types/journeyEntry';
-import type { Milestone } from '@/types/milestone';
 import type { Treatment } from '@/types/treatment';
 
 const now = new Date(2026, 9, 22, 18, 0);
@@ -54,21 +50,6 @@ describe('currentStreak', () => {
 });
 
 describe('statistics', () => {
-  it('averages mood over the last N days', () => {
-    const entries = [
-      entry(0, { moodLevel: 5 }),
-      entry(1, { moodLevel: 3 }),
-      entry(10, { moodLevel: 1 }),
-    ];
-    expect(averageMood(entries, 7, now)).toBe(4);
-    expect(averageMood([], 7, now)).toBe(0);
-  });
-
-  it('builds a daily trend with zeros for missing days', () => {
-    const trend = moodTrend([entry(0, { moodLevel: 5 })], 3, now);
-    expect(trend.map((point) => point.mood)).toEqual([0, 0, 5]);
-  });
-
   it('ranks symptoms by frequency', () => {
     const entries = [
       entry(0, { symptoms: ['Fatigue', 'Nausea'] }),
@@ -106,16 +87,6 @@ describe('milestones', () => {
     expect(treatmentMilestone(treatment, now)?.description).toBe('Chemo: Halfway there!');
     expect(treatmentMilestone({ ...treatment, completedSessions: 5 }, now)).toBeNull();
     expect(treatmentMilestone({ ...treatment, totalSessions: 0 }, now)).toBeNull();
-  });
-
-  it('adds only the days-free milestones not yet recorded', () => {
-    const cancerFree = new Date(now);
-    cancerFree.setDate(cancerFree.getDate() - 40);
-    const existing: Milestone[] = [
-      { ...journeyStartedMilestone(now), type: 'daysFree', daysCount: 7 },
-    ];
-    expect(cancerFreeMilestones(cancerFree, existing, now).map((m) => m.daysCount)).toEqual([30]);
-    expect(cancerFreeMilestones(null, [], now)).toEqual([]);
   });
 
   it('treats same title on the same day as a duplicate', () => {

@@ -3,6 +3,8 @@
 Every row of the [inventory](00-inventory.md), checked against the React Native app in `mobile/`.
 Differences on purpose are listed in each phase doc and the [decision log](README.md#decision-log).
 
+> **The redesign changed the scope.** After the port, the app was redesigned ([redesign plan](../redesign/README.md)): new tabs (Today, Learn, Journey, Community, Help), Journey made opt-in, news removed, appointments added. Routes and components below are from the port and many no longer exist; the redesign phase docs are the current reference.
+
 **Status key:** ✅ ported and checked · 🟡 ported, still needs a device or signed-in check · ➖ intentionally not ported
 
 ## 1. Screens

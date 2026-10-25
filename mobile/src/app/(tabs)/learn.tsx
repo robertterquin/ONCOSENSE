@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import {
   CancerTypes,
@@ -8,8 +9,7 @@ import {
   GuideResults,
   LowerYourRisk,
 } from '@/components/learn/LearnSections';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { Screen, SearchField } from '@/components/ui';
+import { EmptyState, ErrorState, LoadingState, Screen, SearchField } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { usePreventionTips } from '@/hooks/usePrevention';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
@@ -26,13 +26,15 @@ export default function LearnTab() {
   const tips = usePreventionTips();
   const checks = useSelfChecks();
   const scrollRef = useRef<ScrollViewInstance | null>(null);
+  const reduceMotion = useReducedMotion();
   const [riskY, setRiskY] = useState<number | null>(null);
 
   // On every visit with `?section=risk` (the tab stays mounted), once it's laid out.
   useFocusEffect(
     useCallback(() => {
-      if (section === 'risk' && riskY !== null) scrollRef.current?.scrollTo({ y: riskY });
-    }, [section, riskY]),
+      if (section === 'risk' && riskY !== null)
+        scrollRef.current?.scrollTo({ y: riskY, animated: !reduceMotion });
+    }, [section, riskY, reduceMotion]),
   );
 
   const queries = [cancers, tips, checks.query];

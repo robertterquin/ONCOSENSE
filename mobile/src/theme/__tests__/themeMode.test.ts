@@ -13,8 +13,8 @@ describe('resolveIsDark', () => {
 });
 
 describe('theme store', () => {
-  it('starts light until every screen is redesigned (Phase 7 switches to the phone)', () => {
-    expect(useThemeStore.getState().mode).toBe('light');
+  it('matches the phone by default', () => {
+    expect(useThemeStore.getState().mode).toBe('system');
   });
 });
 
