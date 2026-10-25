@@ -1,5 +1,5 @@
 import { awarenessForMonth } from '@/constants/awareness';
-import { cancerForAwareness, guideForCancer, searchLearn } from '@/lib/learn';
+import { cancerForAwareness, guideForCancer, iconForCancer, searchLearn } from '@/lib/learn';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -16,6 +16,15 @@ const cancers = [cancer('Breast Cancer', ['A lump']), cancer('Leukemia'), cancer
 const guides = [guide('Breast'), guide('Leukemia'), guide('Testicular')];
 
 describe('Learn links', () => {
+  it('gives each cancer type an icon, the ribbon when Hugeicons has no organ', () => {
+    expect(iconForCancer('Lung Cancer')).toBe('lungs');
+    expect(iconForCancer('Leukemia')).toBe('blood');
+    expect(iconForCancer('Skin')).toBe('sun');
+    expect(iconForCancer('Oral')).toBe('tooth');
+    expect(iconForCancer('Breast Cancer')).toBe('ribbon');
+    expect(iconForCancer('Stomach Cancer')).toBe('ribbon');
+  });
+
   it('pairs cancer types with their self-checks', () => {
     expect(guideForCancer(guides, cancers[0])?.cancerType).toBe('Breast');
     expect(guideForCancer(guides, cancers[1])?.cancerType).toBe('Leukemia');

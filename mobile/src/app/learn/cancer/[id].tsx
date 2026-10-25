@@ -8,7 +8,7 @@ import { ErrorState, LoadingState, Chip, ListRow, Screen, Section, Text } from '
 import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
-import { guideForCancer } from '@/lib/learn';
+import { guideForCancer, iconForCancer } from '@/lib/learn';
 import { space } from '@/theme/tokens';
 import type { CancerType } from '@/types/cancerType';
 
@@ -101,7 +101,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
       <Section look="plain">
         {guide ? (
           <ListRow
-            icon="calendar-check"
+            icon={iconForCancer(guide.cancerType)}
             iconTone="rose"
             title={guide.title}
             subtitle={`${guide.frequency} self-check, about 10 minutes`}

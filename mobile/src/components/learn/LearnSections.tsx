@@ -2,9 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Chip, ListRow, Section, Sheet, Text } from '@/components/ui';
+import { Button, Chip, ListRow, Section, Sheet, Tag, Text, TopicTile } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
+import { formatShortDate } from '@/lib/dates';
+import { iconForCancer } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
+import { useDesign } from '@/theme/useTheme';
 import { space } from '@/theme/tokens';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -14,27 +17,38 @@ import type { PreventionTip } from '@/types/preventionTip';
 const openGuide = (id: string) => router.push({ pathname: '/learn/check/[id]', params: { id } });
 const openCancer = (id: string) => router.push({ pathname: '/learn/cancer/[id]', params: { id } });
 
-/** One self-check guide with when it is next due ("Due today" in rose). */
+/** One self-check guide: a rose "Due" tag when it's due, else when it was last done. */
 export function GuideRow({ status }: { status: GuideStatus }) {
+  const { guide, isDue, label, lastDone } = status;
+  const done = !isDue && lastDone ? `Done ${formatShortDate(lastDone)}` : null;
+  const subtitle = isDue ? guide.frequency : `${guide.frequency} · ${label}`;
   return (
     <ListRow
-      icon="calendar-check"
-      iconTone={status.isDue ? 'rose' : 'action'}
-      title={status.guide.title}
-      subtitle={`${status.guide.frequency} · ${status.label}`}
-      subtitleTone={status.isDue ? 'rose' : 'muted'}
-      onPress={() => openGuide(status.guide.id)}
+      icon={iconForCancer(guide.cancerType)}
+      iconTone="rose"
+      title={guide.title}
+      subtitle={subtitle}
+      badge={
+        isDue ? <Tag tone="due" label={label} /> : done ? <Tag tone="done" label={done} /> : null
+      }
+      accessibilityLabel={[guide.title, isDue ? label : done, subtitle].filter(Boolean).join(', ')}
+      onPress={() => openGuide(guide.id)}
     />
   );
 }
 
+/** Soonest due first. */
+const byDue = (a: GuideStatus, b: GuideStatus) => a.due.getTime() - b.due.getTime();
+
 /** The person's guides first, then the rest on request. */
 export function CheckYourself({ mine, all }: { mine: GuideStatus[]; all: GuideStatus[] }) {
   const [showAll, setShowAll] = useState(false);
-  const others = all.filter((item) => !mine.some((own) => own.guide.id === item.guide.id));
+  const others = all
+    .filter((item) => !mine.some((own) => own.guide.id === item.guide.id))
+    .sort(byDue);
   return (
     <Section title="Check yourself" subtitle="Short, guided checks you can do at home">
-      {mine.map((status) => (
+      {[...mine].sort(byDue).map((status) => (
         <GuideRow key={status.guide.id} status={status} />
       ))}
       {showAll ? others.map((status) => <GuideRow key={status.guide.id} status={status} />) : null}
@@ -59,13 +73,31 @@ export function GuideResults({ statuses }: { statuses: GuideStatus[] }) {
   );
 }
 
-/** Cancer types, A to Z. */
+/** Cancer types, A to Z, as a two-column grid (one column at Larger text). */
 export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
+  const { textSize } = useDesign();
   const sorted = [...cancers].sort((a, b) => a.name.localeCompare(b.name));
+  const columns = textSize === 'larger' ? 1 : 2;
+  const rows = Array.from({ length: Math.ceil(sorted.length / columns) }, (_, index) =>
+    sorted.slice(index * columns, index * columns + columns),
+  );
   return (
-    <Section title="Cancer types" subtitle="Early signs, risks and how each is found">
-      {sorted.map((cancer) => (
-        <ListRow key={cancer.id} title={cancer.name} onPress={() => openCancer(cancer.id)} />
+    <Section title="Cancer types" subtitle="Early signs, risks and how each is found" look="plain">
+      {rows.map((row) => (
+        <View key={row[0].id} style={styles.gridRow}>
+          {row.map((cancer) => (
+            <TopicTile
+              key={cancer.id}
+              icon={iconForCancer(cancer.name)}
+              title={cancer.name}
+              subtitle={
+                cancer.symptoms.length ? `${cancer.symptoms.length} early signs` : undefined
+              }
+              onPress={() => openCancer(cancer.id)}
+            />
+          ))}
+          {row.length < columns ? <View style={styles.gridFiller} /> : null}
+        </View>
       ))}
     </Section>
   );
@@ -111,4 +143,6 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  gridRow: { flexDirection: 'row', gap: space.sm },
+  gridFiller: { flex: 1 },
 });
