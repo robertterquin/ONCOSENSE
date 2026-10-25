@@ -1,3 +1,4 @@
+import type { IconName } from '@/components/ui/Icon';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
@@ -14,6 +15,21 @@ export function guideForCancer<T extends Pick<SelfCheckGuide, 'cancerType'>>(
 ): T | null {
   const name = lower(cancer.name);
   return guides.find((guide) => name.startsWith(lower(guide.cancerType))) ?? null;
+}
+
+// Hugeicons has an organ for these; the rest use the awareness ribbon.
+const CANCER_ICONS: [prefix: string, icon: IconName][] = [
+  ['lung', 'lungs'],
+  ['liver', 'liver'],
+  ['leukemia', 'blood'],
+  ['skin', 'sun'],
+  ['oral', 'tooth'],
+];
+
+/** The icon for a cancer type or a guide's `cancerType` ("Lung Cancer", "Oral"). */
+export function iconForCancer(name: string): IconName {
+  const key = lower(name);
+  return CANCER_ICONS.find(([prefix]) => key.startsWith(prefix))?.[1] ?? 'ribbon';
 }
 
 /** The cancer type an awareness month is about ("Breast Cancer"), if Learn has it. */

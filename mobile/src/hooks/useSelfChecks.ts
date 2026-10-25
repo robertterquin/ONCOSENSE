@@ -19,7 +19,13 @@ import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import { useSelfCheckGuides } from './usePrevention';
 
-export type GuideStatus = { guide: SelfCheckGuide; due: Date; isDue: boolean; label: string };
+export type GuideStatus = {
+  guide: SelfCheckGuide;
+  due: Date;
+  isDue: boolean;
+  label: string;
+  lastDone: Date | null;
+};
 
 let reminderSynced = false;
 
@@ -42,7 +48,7 @@ export function useSelfChecks(now: Date = new Date()) {
   const status = (guide: SelfCheckGuide): GuideStatus => {
     const lastDone = lastDoneDate(state, guide.id);
     const due = nextDue(guide, lastDone, now);
-    return { guide, due, isDue: isDue(guide, lastDone, now), label: dueLabel(due, now) };
+    return { guide, due, isDue: isDue(guide, lastDone, now), label: dueLabel(due, now), lastDone };
   };
   const mine = chosenGuides(all, state.chosen, gender);
 

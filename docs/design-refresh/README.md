@@ -35,7 +35,7 @@ Three supporting changes:
 |---|---|---|---|---|
 | 1 | Foundations: icons, tab bar, launch screen, shared parts | [01-phase-1-foundations.md](01-phase-1-foundations.md) | 3–4 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
 | 2 | Today | [02-phase-2-today.md](02-phase-2-today.md) | 2–3 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
-| 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Not started |
+| 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Built on `design/phase-3`, checked on web and iOS; not committed |
 | 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Not started |
 | 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Not started |
 | 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Not started |

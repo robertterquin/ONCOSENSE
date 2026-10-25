@@ -11,6 +11,7 @@ import {
   Button,
   IconButton,
   ProgressSegments,
+  Tag,
   Screen,
   Section,
   StepList,
@@ -149,11 +150,14 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
         <>
           <Text variant="reading">{guide.description}</Text>
           <View style={styles.progress}>
-            <Text variant="caption" tone="muted">
-              {steps.length
-                ? `Step ${current + 1} of ${steps.length} · ${status.label}`
-                : status.label}
-            </Text>
+            <View style={styles.progressLine}>
+              {steps.length ? (
+                <Text variant="caption" tone="muted">
+                  {`Step ${current + 1} of ${steps.length}`}
+                </Text>
+              ) : null}
+              <Tag tone={status.isDue ? 'due' : 'next'} label={status.label} />
+            </View>
             {steps.length ? (
               <ProgressSegments
                 total={steps.length}
@@ -218,5 +222,6 @@ const styles = StyleSheet.create({
   flex1: { flex: 1 },
   flex2: { flex: 2 },
   progress: { gap: space.sm },
+  progressLine: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
 });

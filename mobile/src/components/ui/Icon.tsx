@@ -3,6 +3,7 @@ import AlertCircleIcon from '@hugeicons/core-free-icons/AlertCircleIcon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 import ArrowLeft02Icon from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BloodIcon from '@hugeicons/core-free-icons/BloodIcon';
 import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
 import Bookmark01Icon from '@hugeicons/core-free-icons/Bookmark01Icon';
 import BulbIcon from '@hugeicons/core-free-icons/BulbIcon';
@@ -16,6 +17,7 @@ import CircleIcon from '@hugeicons/core-free-icons/CircleIcon';
 import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Copy01Icon from '@hugeicons/core-free-icons/Copy01Icon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+import DentalToothIcon from '@hugeicons/core-free-icons/DentalToothIcon';
 import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
 import Flag02Icon from '@hugeicons/core-free-icons/Flag02Icon';
 import Globe02Icon from '@hugeicons/core-free-icons/Globe02Icon';
@@ -25,6 +27,7 @@ import Hospital01Icon from '@hugeicons/core-free-icons/Hospital01Icon';
 import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
 import InformationCircleIcon from '@hugeicons/core-free-icons/InformationCircleIcon';
 import LifebuoyIcon from '@hugeicons/core-free-icons/LifebuoyIcon';
+import LiverIcon from '@hugeicons/core-free-icons/LiverIcon';
 import LinkSquare02Icon from '@hugeicons/core-free-icons/LinkSquare02Icon';
 import Location01Icon from '@hugeicons/core-free-icons/Location01Icon';
 import Logout01Icon from '@hugeicons/core-free-icons/Logout01Icon';
@@ -70,6 +73,7 @@ const ICONS = {
   activity: Activity01Icon,
   back: ArrowLeft02Icon,
   bell: Notification01Icon,
+  blood: BloodIcon,
   book: BookOpen01Icon,
   bookmark: Bookmark01Icon,
   calendar: Calendar03Icon,
@@ -96,6 +100,7 @@ const ICONS = {
   info: InformationCircleIcon,
   lightbulb: BulbIcon,
   'life-buoy': LifebuoyIcon,
+  liver: LiverIcon,
   'log-out': Logout01Icon,
   lungs: LungsIcon,
   mail: Mail01Icon,
@@ -120,6 +125,7 @@ const ICONS = {
   sliders: SlidersHorizontalIcon,
   stethoscope: StethoscopeIcon,
   sun: Sun03Icon,
+  tooth: DentalToothIcon,
   'thumbs-up': ThumbsUpIcon,
   trash: Delete02Icon,
   user: UserIcon,

@@ -5,25 +5,25 @@
 
 ## 3.1 Check yourself
 
-- [ ] Self-check rows get a rose icon well (skin: sun, breast: heart, and so on) and a `Tag`: "Due" (rose) or "Done" with the date (teal check).
-- [ ] Order: due first, then the rest by how soon they're due.
+- [x] Self-check rows get a rose icon well (`iconForCancer`: skin sun, oral tooth, others the ribbon) and a `Tag` under the subtitle: the due label in rose, or "Done <date>" in teal. *(Tags sit under the text, not beside the title: beside it, Larger text squeezed titles to one word per line.)*
+- [x] Order: soonest due first, in both "your" guides and the rest.
 
 ## 3.2 Know the signs
 
-- [ ] Cancer types become a two-column grid of `TopicTile`s: icon, name, one short line from the data (no invented blurbs).
-- [ ] Map each of the 10 cancer types to a Hugeicons icon (ribbon, lungs, stethoscope, hospital, …); fall back to the ribbon. Keep the mapping in one place with a test.
-- [ ] At Larger text the grid drops to one column if a name would wrap more than twice.
+- [x] Cancer types become a two-column grid of `TopicTile`s: icon, name, and "N early signs" from the data. (Every type has a self-check, so "Has a self-check" said nothing.)
+- [x] Map cancer types to Hugeicons in `iconForCancer` (`lib/learn.ts`, tested): lung, liver, leukemia (blood), skin (sun), oral (tooth). Hugeicons has no breast, colorectal, cervical, prostate, stomach or ovary icon, so those use the ribbon rather than a misleading generic icon.
+- [x] At Larger text the grid drops to one column.
 
 ## 3.3 Lower your risk and search
 
-- [ ] Tips keep their list; icon wells use the sun tint.
-- [ ] Search field unchanged apart from the icon.
+- [x] Tips keep their chips and detail sheet. *(Unchanged: chips have no icon wells.)*
+- [x] Search field unchanged apart from the icon.
 
 ## 3.4 Detail screens
 
-- [ ] Cancer detail and guided self-check: swap icons, use `Tag` for "Due", check the step progress matches Today's.
+- [x] Cancer detail: the self-check row uses the cancer's icon. Guided self-check: "Step 1 of 5" plus a `Tag` (rose when due, violet otherwise).
 
 ## Done when
 
 - [ ] Learn, a cancer detail and a self-check guide match the concept on web and iOS, light and dark, at Default and Larger text.
-- [ ] Every cancer type has an icon; the mapping test passes.
+- [x] Every cancer type has an icon; the mapping test passes.

@@ -25,6 +25,8 @@ type ListRowProps = {
   subtitleTone?: keyof Palette;
   icon?: IconName;
   iconTone?: TileTone;
+  /** A small element under the subtitle, inside the tappable area (a `Tag`). */
+  badge?: ReactNode;
   /** Short text before the chevron ("6 items"). */
   trailing?: string;
   /** Replaces the chevron (a switch, a call button). Keep it outside `onPress`. */
@@ -47,6 +49,7 @@ export function ListRow({
   subtitleTone = 'muted',
   icon,
   iconTone = 'action',
+  badge,
   trailing,
   accessory,
   onPress,
@@ -73,6 +76,7 @@ export function ListRow({
             {subtitle}
           </Text>
         ) : null}
+        {badge}
       </View>
       {trailing ? (
         <Text variant="supporting" tone="muted">
@@ -123,5 +127,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  text: { flex: 1, gap: 2 },
+  text: { flex: 1, gap: 2, alignItems: 'flex-start' },
 });
