@@ -11,7 +11,7 @@ Read `mobile/AGENTS.md` too: Expo changes every SDK release, so check the versio
 - **Local state:** Zustand stores in `src/stores/`, persisted with `persistStorage` (`expo-sqlite` localStorage).
 - **Forms:** react-hook-form + zod; every schema lives in `src/constants/validation.ts`.
 - **Notifications:** local reminders with expo-notifications in `src/lib/notifications/` (`reminders.ts` is the schedule, `device.ts` the only file that calls expo-notifications, `service.ts` the logic).
-- **UI:** shared components in `src/components/` (`Screen`, `AppHeader`, `AppText`, `Button`, `MenuItem`, `PinkSwitch`, …); colors and type in `src/theme/`. Material icon names (snake_case, as stored in the database) go through `MaterialIcon`.
+- **UI:** shared components in `src/components/ui/`, imported from `@/components/ui` (`Screen`, `Text`, `Button`, `ListRow`, `Switch`, `Icon`, …); feature components in `src/components/<feature>/`. Colors and type come from `useDesign()` in `src/theme/`.
 
 ## Conventions
 

@@ -13,7 +13,6 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 | `supabase/reference/` | The original setup SQL and notes for the bookmark, journey and cancer-type tables (the rest of the schema lives only in the Supabase project) |
 | `docs/redesign/` | The approved redesign and narrowed scope, phase by phase |
 | `docs/react-native-migration/` | How the app was migrated from Flutter, phase by phase, with the decision log |
-| `docs/archive/flutter/` | Notes from the Flutter era, kept for reference |
 | `.github/workflows/mobile.yml` | CI: lint, typecheck and tests on every pull request and push to `main` |
 
 ## Get started
