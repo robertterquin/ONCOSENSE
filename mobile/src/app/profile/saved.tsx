@@ -155,11 +155,18 @@ function Empty({
   return (
     <View style={styles.empty}>
       <EmptyState icon="bookmark" title={title} message={message} />
-      <Button title={action.label} variant="secondary" fullWidth={false} onPress={action.onPress} />
+      <Button
+        title={action.label}
+        variant="secondary"
+        fullWidth={false}
+        style={styles.centered}
+        onPress={action.onPress}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   empty: { alignItems: 'center', gap: space.md },
+  centered: { alignSelf: 'center' },
 });

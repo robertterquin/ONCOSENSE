@@ -3,7 +3,7 @@
 The redesign (`docs/redesign/`) gave the app its scope, screens and accessibility. This plan makes it feel warmer and easier to find your way around, without changing what the app does.
 
 - **Concept:** four screens (Today, Learn, Journey, Help) mocked up in chat on 2026-10-25, with Hugeicons and tab bar B. Content in the mock-ups (hotlines, chemo session, cancer blurbs) is placeholder; real screens keep the app's real data and copy.
-- **Status:** proposed 2026-10-25, waiting for approval before Phase 1 starts.
+- **Status:** Phases 1–5 merged into `main` on 2026-10-25; Phase 6 built on `design/phase-6`. Left for people with devices: VoiceOver, real-phone checks, store screenshots.
 
 ## The idea
 
@@ -33,12 +33,12 @@ Three supporting changes:
 
 | # | Phase | Doc | Est. effort | Status |
 |---|---|---|---|---|
-| 1 | Foundations: icons, tab bar, launch screen, shared parts | [01-phase-1-foundations.md](01-phase-1-foundations.md) | 3–4 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
-| 2 | Today | [02-phase-2-today.md](02-phase-2-today.md) | 2–3 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
-| 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Built on `design/phase-3`, checked on web and iOS; not committed |
-| 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Built on `design/phase-4`, checked on web and iOS; not committed |
-| 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Built on `design/phase-5`, checked on web (light, dark) and iOS (dark); not committed |
-| 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Not started |
+| 1 | Foundations: icons, tab bar, launch screen, shared parts | [01-phase-1-foundations.md](01-phase-1-foundations.md) | 3–4 days | Merged into `main` |
+| 2 | Today | [02-phase-2-today.md](02-phase-2-today.md) | 2–3 days | Merged into `main` |
+| 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Merged into `main` |
+| 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Merged into `main` |
+| 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Merged into `main` |
+| 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Built on `design/phase-6`, checked on web and iOS; VoiceOver, store screenshots and release left; not committed |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 

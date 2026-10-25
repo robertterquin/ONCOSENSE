@@ -8,14 +8,15 @@ import { useDesign } from '@/theme/useTheme';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
-/** Icon tile colors by section: lavender, rose (self-checks), teal (help), sun (tips). */
-export type TileTone = 'action' | 'rose' | 'help' | 'sun';
+/** Icon tile colors by section: lavender, rose (self-checks), teal (help), sun (tips and reminders), danger. */
+export type TileTone = 'action' | 'rose' | 'help' | 'sun' | 'danger';
 
 export const TILES: Record<TileTone, { background: keyof Palette; color: keyof Palette }> = {
   action: { background: 'raised', color: 'action' },
   rose: { background: 'roseTint', color: 'rose' },
   help: { background: 'helpTint', color: 'help' },
   sun: { background: 'sun', color: 'sunInk' },
+  danger: { background: 'roseTint', color: 'danger' },
 };
 
 type ListRowProps = {
