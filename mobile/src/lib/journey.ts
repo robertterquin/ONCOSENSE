@@ -103,6 +103,33 @@ export function lastSevenDays(entries: JourneyEntry[], now: Date = new Date()): 
   };
 }
 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const joinWords = (words: string[]) =>
+  words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`;
+
+/** The week thread in one sentence, for screen readers. */
+export function weekThreadText(days: WeekDay[]): string {
+  const done = days.filter((day) => day.checkedIn).map((day) => DAY_NAMES[day.date.getDay()]);
+  const list = done.length ? `checked in ${joinWords(done)}` : 'no check-ins yet';
+  return `This week: ${list}. ${done.length} of 7 days.`;
+}
+
+/** A 7-day average and how it compares with the 7 days before ("of 10, up from 5"). */
+export function sevenDayTrend(
+  entries: JourneyEntry[],
+  field: 'averageEnergy' | 'averagePain',
+  now: Date = new Date(),
+): { value: number | null; detail: string } {
+  const value = lastSevenDays(entries, now)[field];
+  const before = lastSevenDays(entries, addDays(now, -7))[field];
+  if (value === null) return { value, detail: 'No check-ins in the last 7 days' };
+  if (before === null) return { value, detail: 'of 10' };
+  const change = value - before;
+  if (Math.abs(change) < 0.5) return { value, detail: 'of 10, steady' };
+  return { value, detail: `of 10, ${change > 0 ? 'up' : 'down'} from ${before}` };
+}
+
 /** The chart in words, for screen readers and anyone who prefers text. */
 export function weekSummaryText(summary: WeekSummary): string {
   if (summary.checkIns === 0) return 'No check-ins in the last 7 days.';

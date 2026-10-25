@@ -6,9 +6,9 @@ import {
   EnergyAndPain,
   Milestones,
   RecentCheckIns,
-  ThisWeek,
   Treatments,
 } from '@/components/journey/Dashboard';
+import { ThreadWeek } from '@/components/journey/ThreadWeek';
 import {
   ErrorState,
   LoadingState,
@@ -100,15 +100,6 @@ function Dashboard() {
       subtitle={focusSubtitle(focus, diagnosisDate, cancerFreeDate)}
       onRefresh={refresh}
       refreshing={queries.some((query) => query.isRefetching)}>
-      <Button
-        title={
-          checkedInToday
-            ? 'Edit today’s check-in'
-            : forFocus(focus, 'Check in', 'Check in for them')
-        }
-        icon={checkedInToday ? 'check' : 'plus'}
-        onPress={() => router.push('/journey/check-in')}
-      />
       {loading ? (
         <LoadingState message="Loading your journey" />
       ) : failed ? (
@@ -118,7 +109,16 @@ function Dashboard() {
         />
       ) : (
         <>
-          <ThisWeek entries={entryList} now={now} />
+          <ThreadWeek entries={entryList} now={now} />
+          <Button
+            title={
+              checkedInToday
+                ? 'Edit today’s check-in'
+                : forFocus(focus, 'Check in for today', 'Check in for them')
+            }
+            icon={checkedInToday ? 'check' : 'plus'}
+            onPress={() => router.push('/journey/check-in')}
+          />
           <EnergyAndPain entries={entryList} now={now} />
           <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
           <Treatments treatments={treatments.data ?? []} />

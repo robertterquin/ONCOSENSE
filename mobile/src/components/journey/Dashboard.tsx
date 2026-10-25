@@ -3,17 +3,17 @@ import { StyleSheet, View } from 'react-native';
 
 import {
   Button,
-  Icon,
   IconButton,
   ListRow,
   ProgressSegments,
   Section,
+  StatTile,
   Text,
 } from '@/components/ui';
 import { decorative } from '@/components/ui/a11y';
 import { useCelebrateMilestone, useIncrementSession } from '@/hooks/useJourney';
 import { formatShortDate, formatTime } from '@/lib/dates';
-import { lastSevenDays, weekStrip, weekSummaryText, type WeekSummary } from '@/lib/journey';
+import { lastSevenDays, sevenDayTrend, weekSummaryText, type WeekSummary } from '@/lib/journey';
 import { MOODS } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
@@ -27,50 +27,28 @@ import { treatmentTypeLabel, type Treatment } from '@/types/treatment';
 
 const editEntry = (id: string) => router.push({ pathname: '/journey/check-in', params: { id } });
 
-/** Monday to Sunday; days with a check-in show a check, today has a ring. */
-export function ThisWeek({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
-  const { palette } = useDesign();
-  const days = weekStrip(entries, now);
-  const count = days.filter((day) => day.checkedIn).length;
-  return (
-    <Section title="This week" subtitle={`${count} of 7 days checked in`} divided={false}>
-      <View style={styles.week}>
-        {days.map((day) => (
-          <View
-            key={day.label}
-            style={styles.day}
-            accessible
-            accessibilityLabel={`${day.label}${day.isToday ? ', today' : ''}, ${
-              day.checkedIn ? 'checked in' : 'no check-in'
-            }`}>
-            <Text variant="caption" tone={day.isToday ? 'action' : 'muted'}>
-              {day.label}
-            </Text>
-            <View
-              style={[
-                styles.dayMark,
-                day.checkedIn
-                  ? { backgroundColor: palette.action }
-                  : { backgroundColor: palette.ground },
-                day.isToday && { borderWidth: 2.5, borderColor: palette.action },
-              ]}>
-              {day.checkedIn ? (
-                <Icon name="check" size={16} tone="onAction" strokeWidth={3} />
-              ) : null}
-            </View>
-          </View>
-        ))}
-      </View>
-    </Section>
-  );
-}
-
 /** Paired bars for energy and pain over the last 7 days, with the numbers in words. */
 export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
+  const { palette } = useDesign();
   const summary = lastSevenDays(entries, now);
+  const energy = sevenDayTrend(entries, 'averageEnergy', now);
+  const pain = sevenDayTrend(entries, 'averagePain', now);
   return (
-    <Section title="Energy and pain" subtitle="Last 7 days, 0 to 10" divided={false}>
-      <View style={styles.chartBlock}>
+    <Section title="Energy and pain" subtitle="Last 7 days, 0 to 10" look="plain">
+      <View style={styles.tiles}>
+        <StatTile
+          label="Energy, 7 days"
+          value={energy.value === null ? '–' : String(energy.value)}
+          detail={energy.detail}
+        />
+        <StatTile
+          label="Pain, 7 days"
+          value={pain.value === null ? '–' : String(pain.value)}
+          detail={pain.detail}
+          valueTone="rose"
+        />
+      </View>
+      <View style={[styles.chartBlock, { backgroundColor: palette.surface }]}>
         <Chart summary={summary} />
         <Text variant="supporting">{weekSummaryText(summary)}</Text>
         {summary.topSymptoms.length ? (
@@ -159,6 +137,7 @@ export function ComingUp({ appointments }: { appointments: Appointment[] }) {
             <ListRow
               key={appointment.id}
               icon="calendar"
+              iconTone="sun"
               title={appointment.title}
               subtitle={`${formatShortDate(appointment.startsAt)}, ${formatTime(appointment.startsAt)}${
                 appointment.location ? ` · ${appointment.location}` : ''
@@ -217,6 +196,7 @@ function TreatmentRow({ treatment }: { treatment: Treatment }) {
     <View style={styles.treatment}>
       <ListRow
         icon="pill"
+        iconTone="sun"
         title={treatment.name}
         subtitle={`${treatmentTypeLabel(treatment.type)} · ${status}`}
         onPress={() =>
@@ -307,16 +287,8 @@ export function RecentCheckIns({ entries }: { entries: JourneyEntry[] }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  week: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: space.lg },
-  day: { alignItems: 'center', gap: space.xs, flex: 1 },
-  dayMark: {
-    width: 34,
-    height: 34,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chartBlock: { gap: space.md, paddingVertical: space.lg },
+  tiles: { flexDirection: 'row', gap: space.sm },
+  chartBlock: { gap: space.md, padding: space.lg, borderRadius: radii.section },
   legend: { flexDirection: 'row', gap: space.lg, paddingBottom: space.sm },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
