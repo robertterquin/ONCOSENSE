@@ -67,6 +67,7 @@ export default function HelpTab() {
             <Chip
               key={option ?? 'all'}
               kind="radio"
+              tone="help"
               label={option ?? 'All of the Philippines'}
               selected={region === option}
               onPress={() => setRegion(option)}
@@ -106,18 +107,18 @@ export default function HelpTab() {
 /** "Feeling overwhelmed?" with one big call button that works offline. */
 function CrisisPanel() {
   return (
-    <Section look="tinted" tint="helpTint" divided={false}>
+    <Section look="tinted" tint="help" divided={false}>
       <View style={styles.crisis}>
-        <Text variant="section" tone="onHelpTint" accessibilityRole="header">
+        <Text variant="section" tone="surface" accessibilityRole="header">
           Feeling overwhelmed?
         </Text>
-        <Text variant="body" tone="onHelpTint">
+        <Text variant="body" tone="surface">
           Talk to someone now. The {CRISIS_LINE.name} is free and open 24 hours.
         </Text>
         <Button
           title={`Call ${CRISIS_LINE.display}`}
           icon="phone"
-          variant="help"
+          variant="onHelp"
           accessibilityHint={`Calls the ${CRISIS_LINE.name}`}
           onPress={() => callPhone(CRISIS_LINE.dial)}
         />
