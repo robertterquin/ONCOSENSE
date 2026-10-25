@@ -1,0 +1,62 @@
+# OncoSense Design Refresh ("the Thread") — Plan
+
+The redesign (`docs/redesign/`) gave the app its scope, screens and accessibility. This plan makes it feel warmer and easier to find your way around, without changing what the app does.
+
+- **Concept:** four screens (Today, Learn, Journey, Help) mocked up in chat on 2026-10-25, with Hugeicons and tab bar B. Content in the mock-ups (hotlines, chemo session, cancer blurbs) is placeholder; real screens keep the app's real data and copy.
+- **Status:** proposed 2026-10-25, waiting for approval before Phase 1 starts.
+
+## The idea
+
+The awareness ribbon is already the app's only illustration. In this direction it becomes **one continuous thread** through the app: the next-step panel on Today, and on Journey the week drawn as a single ribbon line with a knot for each day you checked in. Everything around it stays calm and quiet, so that one element is the memorable thing.
+
+Three supporting changes:
+
+1. **Color tells you where you are.** Rose for self-checks, teal for help and calling, warm yellow (sun) for tips and appointments, violet for your next step. Every color is already in the palette; state is never shown by color alone.
+2. **One icon family that means something.** Hugeicons (stroke rounded): rounded line ends like the Nunito headings, and real medical icons (ribbon, lungs, stethoscope, medicine, mood faces) instead of generic ones.
+3. **Less sameness.** Content sits in grouped lists and a few distinct blocks (a stat tile, a grid tile, a full-color help card), not the same white card repeated down every screen.
+
+## What stays
+
+- Scope, navigation, routes and data: no new features or tables.
+- Palette, Atkinson Hyperlegible Next for text, Nunito ExtraBold for headings, text sizes, contrast rules.
+- Every design rule in [the redesign plan](../redesign/README.md#design-rules). Rule 6 ("the ribbon line is the only illustration") is extended, not broken: the thread *is* the ribbon line.
+
+## Design rules added by this plan
+
+1. **Icons come from `Icon` only**, drawn from Hugeicons at a 1.8 stroke (thicker than its 1.5 default, for low vision). No other icon package in screens.
+2. **Section colors:** rose = self-checks, teal = help and calling, sun = tips and appointments, violet = the next step and the active tab. A color always comes with a word or icon that says the same thing.
+3. **No shadows, glass or translucency** on content. They lower contrast for older eyes. The tab bar is a solid surface with a border.
+4. **One thread per screen at most.** The ribbon thread appears on Today (panel) and Journey (week), and as the launch screen. Nowhere else.
+5. **Mock-up content is never shipped.** Every hotline, number and medical line comes from the database or an approved source.
+
+## Phases
+
+| # | Phase | Doc | Est. effort | Status |
+|---|---|---|---|---|
+| 1 | Foundations: icons, tab bar, launch screen, shared parts | [01-phase-1-foundations.md](01-phase-1-foundations.md) | 3–4 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
+| 2 | Today | [02-phase-2-today.md](02-phase-2-today.md) | 2–3 days | Built on `design/phase-1`, checked on web and iOS; Larger text left; not committed |
+| 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Not started |
+| 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Not started |
+| 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Not started |
+| 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Not started |
+
+Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
+
+## How to work
+
+Same as the redesign:
+
+1. One short branch per phase from `main` (`design/phase-N`), merged into `main` with `--no-ff`, pushed, then deleted. Never force-push `main`.
+2. A phase is done when its **Done when** list is true and `npm run lint`, `npm run typecheck` and `npm test` pass in `mobile/`.
+3. Show each changed screen on web and in the iOS Simulator, light and dark, at Default and Larger text, before committing.
+4. New color pairs go into `palette.test.ts` before they're used.
+5. Update the status table and decision log as you go.
+
+## Decision log
+
+| Date | Decision | Why | Who |
+|---|---|---|---|
+| 2026-10-25 | Tab bar B: a light floating dock with every tab named | The dark pill hid four of five names and competed with the next-step panel | Robert |
+| 2026-10-25 | Hugeicons (stroke rounded, MIT) replaces Lucide | Has all 51 icons the app uses plus ribbon, lungs, stethoscope and five mood faces; rounded ends match Nunito; no two-tone fills that fade for low vision | Robert |
+| 2026-10-25 | Launch screen: lavender ribbon on night violet, matching Welcome | The old pink Flutter ribbon on white no longer matched the app | Robert |
+| 2026-10-25 | Keep five moods (Rough to Great), drawn as Hugeicons faces | The mock-up showed four; the data and the check-in use five | — |

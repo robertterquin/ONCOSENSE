@@ -22,17 +22,15 @@ export const TAB_ICONS: Record<string, IconName> = {
 };
 
 /**
- * A floating violet pill: the open tab expands into a white pill with its icon and name,
- * the others show their icon (screen readers still hear every name). No resize animation:
- * Reanimated's layout transitions froze the flex widths on iOS and pushed tabs off the bar.
- * Sits below the screens rather than over them, so nothing scrolls behind it.
- * Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
+ * A light floating dock with every tab named: the open tab gets a lavender pill behind its
+ * icon and a bold label. Sits below the screens rather than over them, so nothing scrolls
+ * behind it. Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const { palette, textSize } = useDesign();
   // Phones shrink a long label to fit (`adjustsFontSizeToFit`); browsers can't, so the
-  // web keeps labels at the default size.
-  const labelSize = Platform.OS === 'web' ? 14 : Math.round(14 * TEXT_SIZES[textSize]);
+  // web keeps labels at the default size ("Community" would be cut off at 375 px).
+  const labelSize = Platform.OS === 'web' ? 12 : Math.round(13 * TEXT_SIZES[textSize]);
   const insets = useSafeAreaInsets();
 
   return (
@@ -41,7 +39,9 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
         styles.outer,
         { backgroundColor: palette.ground, paddingBottom: Math.max(insets.bottom, space.md) },
       ]}>
-      <View accessibilityRole="tablist" style={[styles.bar, { backgroundColor: palette.panel }]}>
+      <View
+        accessibilityRole="tablist"
+        style={[styles.bar, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const { options } = descriptors[route.key];
@@ -55,36 +55,36 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
             if (!focused && !event.defaultPrevented) navigateToTab(route.key);
           };
           return (
-            <View key={route.key} style={focused ? styles.activeSlot : styles.slot}>
-              <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{ selected: focused }}
-                accessibilityLabel={`${label}, tab ${index + 1} of ${state.routes.length}`}
-                onPress={onPress}
-                onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
-                style={[styles.tab, focused && { backgroundColor: palette.onPanel }]}>
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={`${label}, tab ${index + 1} of ${state.routes.length}`}
+              onPress={onPress}
+              onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
+              style={styles.tab}>
+              <View style={[styles.pill, focused && { backgroundColor: palette.raised }]}>
                 <Icon
                   name={TAB_ICONS[route.name] ?? 'home'}
                   size={22}
-                  color={focused ? palette.panel : palette.onPanelMuted}
+                  tone={focused ? 'action' : 'muted'}
                 />
-                {focused && (
-                  <Text
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.8}
-                    maxFontSizeMultiplier={1.3}
-                    style={{
-                      color: palette.panel,
-                      fontSize: labelSize,
-                      lineHeight: Math.round(labelSize * 1.3),
-                      fontFamily: fontFamily.extraBold,
-                    }}>
-                    {label}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
+              </View>
+              <Text
+                variant="caption"
+                tone={focused ? 'action' : 'muted'}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+                maxFontSizeMultiplier={1.3}
+                style={{
+                  fontSize: labelSize,
+                  lineHeight: Math.round(labelSize * 1.3),
+                  fontFamily: focused ? fontFamily.extraBold : fontFamily.semiBold,
+                }}>
+                {label}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
@@ -93,25 +93,21 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
 }
 
 const styles = StyleSheet.create({
-  outer: { paddingHorizontal: space.lg, paddingTop: space.sm },
+  outer: { paddingHorizontal: space.md, paddingTop: space.sm },
   bar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: space.xs + 2,
-    borderRadius: radii.round,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.xs,
+    borderRadius: radii.panel,
+    borderWidth: 1.5,
     minHeight: TAB_BAR_HEIGHT,
   },
-  // Fixed icon slots, so the bar always adds up to the same width whichever tab is open.
-  slot: { width: 48 },
-  activeSlot: { flexShrink: 1, minWidth: 0 },
-  tab: {
-    minHeight: 52,
-    flexDirection: 'row',
+  tab: { flex: 1, alignItems: 'center', gap: space.xs },
+  pill: {
+    width: 52,
+    height: 32,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.xs + 2,
-    paddingHorizontal: space.md,
-    borderRadius: radii.round,
   },
 });

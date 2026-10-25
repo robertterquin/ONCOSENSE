@@ -12,6 +12,7 @@ Built with **React Native (Expo)** and **Supabase**. The original Flutter app wa
 | `supabase/` | Database migrations, the `delete-account` Edge Function and the Supabase CLI config |
 | `supabase/reference/` | The original setup SQL and notes for the bookmark, journey and cancer-type tables (the rest of the schema lives only in the Supabase project) |
 | `docs/redesign/` | The approved redesign and narrowed scope, phase by phase |
+| `docs/design-refresh/` | The "Thread" design refresh: icons, tab bar and screen polish, phase by phase |
 | `docs/react-native-migration/` | How the app was migrated from Flutter, phase by phase, with the decision log |
 | `.github/workflows/mobile.yml` | CI: lint, typecheck and tests on every pull request and push to `main` |
 

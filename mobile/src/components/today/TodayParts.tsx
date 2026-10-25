@@ -96,7 +96,8 @@ export function MoodCard({ now }: { now: Date }) {
     return (
       <Section title="How are you feeling today?">
         <ListRow
-          title={`${saved.emoji}  ${saved.label}`}
+          icon={saved.icon}
+          title={saved.label}
           subtitle="Saved for today"
           accessory={
             <Button
@@ -148,17 +149,20 @@ export function ComingUpToday({ appointments }: { appointments: Appointment[] })
 
 /** The tip of the day, linking to Learn's ways to lower your risk. */
 export function TipCard({ tip }: { tip: HealthTip }) {
+  const { palette } = useDesign();
   return (
-    <Section title="Tip for today">
+    <Section title="Tip for today" look="tinted" tint="sun" divided>
       <View style={styles.tip}>
-        <Icon name="lightbulb" tone="action" />
+        <View style={[styles.tipWell, { backgroundColor: palette.surface }]}>
+          <Icon name="lightbulb" tone="sunInk" />
+        </View>
         <Text variant="body" style={styles.flex}>
           {tip.tip}
         </Text>
       </View>
       <ListRow
         title="More ways to lower your risk"
-        titleTone="action"
+        titleTone="sunInk"
         onPress={() => router.navigate({ pathname: '/learn', params: { section: 'risk' } })}
       />
     </Section>
@@ -173,8 +177,7 @@ export function AwarenessRow({ now }: { now: Date }) {
   return (
     <Section>
       <ListRow
-        icon="heart"
-        iconTone="rose"
+        icon="ribbon"
         title={`${awareness.title} Awareness Month`}
         subtitle={`${awareness.month}: ${awareness.subtitle.toLowerCase()}`}
         onPress={() =>
@@ -217,5 +220,18 @@ const styles = StyleSheet.create({
   },
   avatarImage: { width: '100%', height: '100%' },
   moodPicker: { paddingTop: space.lg },
-  tip: { flexDirection: 'row', gap: space.md, paddingTop: space.lg, paddingBottom: space.sm },
+  tip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingTop: space.lg,
+    paddingBottom: space.md,
+  },
+  tipWell: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.tile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

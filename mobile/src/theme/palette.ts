@@ -116,6 +116,7 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['muted', 'helpTint'],
   ['surface', 'help'],
   ['panel', 'onPanel'],
+  ['ink', 'sun'],
 ];
 
 /** Non-text marks (chart bars, switch tracks, borders that carry meaning): 3:1. */
@@ -125,4 +126,5 @@ export const MARK_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['help', 'helpTint'],
   ['onAction', 'rose'],
   ['danger', 'raised'],
+  ['sunInk', 'surface'],
 ];

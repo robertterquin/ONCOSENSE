@@ -9,6 +9,7 @@ import { useDesign } from '@/theme/useTheme';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { RibbonMark } from './RibbonMark';
+import { Tag } from './Tag';
 import { Text } from './Text';
 
 // Panels: the next-step panel (the design's one bold element), banners and the
@@ -20,6 +21,10 @@ type NextStepPanelProps = {
   /** Short status line above the title ("Due today"). */
   status: string;
   statusIcon?: IconName;
+  /** Shows the status as a rose "due" tag instead of an icon and text. */
+  due?: boolean;
+  /** Number of steps, drawn as segments under the body (a guided self-check). */
+  steps?: number;
   title: string;
   body: string;
   primary: Action;
@@ -30,30 +35,44 @@ type NextStepPanelProps = {
 export function NextStepPanel({
   status,
   statusIcon = 'calendar',
+  due = false,
+  steps,
   title,
   body,
   primary,
   secondary,
 }: NextStepPanelProps) {
   const { palette, isDark } = useDesign();
+  const ribbon = isDark ? '#4D3BA6' : '#5B45B8';
   return (
     <View style={[styles.panel, { backgroundColor: palette.panel }]}>
       <View style={styles.ribbon}>
-        <RibbonMark height={229} color={isDark ? '#4D3BA6' : '#5B45B8'} />
+        <RibbonMark height={229} color={ribbon} />
       </View>
       <View style={styles.panelContent}>
-        <View style={styles.status}>
-          <Icon name={statusIcon} size={18} color="#D9CFF5" />
-          <Text variant="caption" color="#D9CFF5">
-            {status}
-          </Text>
-        </View>
+        {due ? (
+          <Tag tone="due" label={status} />
+        ) : (
+          <View style={styles.status}>
+            <Icon name={statusIcon} size={18} color="#D9CFF5" />
+            <Text variant="caption" color="#D9CFF5">
+              {status}
+            </Text>
+          </View>
+        )}
         <Text variant="panel" tone="onPanel" accessibilityRole="header" style={styles.panelTitle}>
           {title}
         </Text>
         <Text variant="body" tone="onPanelMuted" style={styles.panelBody}>
           {body}
         </Text>
+        {steps ? (
+          <View accessible accessibilityLabel={`${steps} steps`} style={styles.steps}>
+            {Array.from({ length: steps }, (_, index) => (
+              <View key={index} style={[styles.step, { backgroundColor: ribbon }]} />
+            ))}
+          </View>
+        ) : null}
         <View style={styles.panelActions}>
           <Button title={primary.label} onPress={primary.onPress} variant="onPanel" />
           {secondary ? (
@@ -148,6 +167,8 @@ const styles = StyleSheet.create({
   panelTitle: { maxWidth: 250 },
   panelBody: { maxWidth: 280 },
   panelActions: { gap: space.sm, marginTop: space.sm + 2 },
+  steps: { flexDirection: 'row', gap: space.xs, marginTop: space.xs },
+  step: { flex: 1, height: 6, borderRadius: radii.round },
   banner: { flexDirection: 'row', gap: space.md, padding: space.lg, borderRadius: radii.control },
   bannerText: { flex: 1, gap: space.xs },
   barItem: { flex: 1 },
