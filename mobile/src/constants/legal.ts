@@ -182,8 +182,8 @@ export const CREDITS = `Credits & Attributions
 🎨 DESIGN & ASSETS
 ━━━━━━━━━━━━━━━━━━━━━━
 
-• Lucide icons
-  Licensed under the ISC License
+• Hugeicons (free stroke-rounded set)
+  Licensed under the MIT License
 
 • Atkinson Hyperlegible Next and Nunito, from Google Fonts
   Licensed under SIL Open Font License
@@ -197,7 +197,7 @@ export const CREDITS = `Credits & Attributions
 • @supabase/supabase-js
 • @tanstack/react-query, zustand
 • react-hook-form, zod
-• lucide-react-native, react-native-svg
+• @hugeicons/react-native, react-native-svg
 • @react-native-community/datetimepicker, slider
 
 All packages are licensed under their respective licenses.

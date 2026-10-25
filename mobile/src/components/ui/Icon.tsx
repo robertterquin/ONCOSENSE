@@ -1,112 +1,130 @@
-import {
-  Activity,
-  ArrowLeft,
-  Bell,
-  BookOpen,
-  Bookmark,
-  Calendar,
-  CalendarCheck,
-  Camera,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Circle,
-  CircleAlert,
-  CircleCheck,
-  Clock,
-  Copy,
-  Ellipsis,
-  ExternalLink,
-  Eye,
-  EyeOff,
-  Flag,
-  Globe,
-  Heart,
-  House,
-  Image,
-  Info,
-  Lightbulb,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MapPin,
-  MessageCircle,
-  Mic,
-  Minus,
-  Moon,
-  Phone,
-  Pill,
-  Plus,
-  Search,
-  Share,
-  ShieldCheck,
-  SlidersHorizontal,
-  Sun,
-  ThumbsUp,
-  Trash2,
-  User,
-  Users,
-  Volume2,
-  X,
-} from 'lucide-react-native';
+import Activity01Icon from '@hugeicons/core-free-icons/Activity01Icon';
+import AlertCircleIcon from '@hugeicons/core-free-icons/AlertCircleIcon';
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowLeft02Icon from '@hugeicons/core-free-icons/ArrowLeft02Icon';
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Bookmark01Icon from '@hugeicons/core-free-icons/Bookmark01Icon';
+import BulbIcon from '@hugeicons/core-free-icons/BulbIcon';
+import Calendar03Icon from '@hugeicons/core-free-icons/Calendar03Icon';
+import CalendarCheckIn01Icon from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
+import CallIcon from '@hugeicons/core-free-icons/CallIcon';
+import Camera01Icon from '@hugeicons/core-free-icons/Camera01Icon';
+import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
+import CheckmarkCircle02Icon from '@hugeicons/core-free-icons/CheckmarkCircle02Icon';
+import CircleIcon from '@hugeicons/core-free-icons/CircleIcon';
+import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
+import Copy01Icon from '@hugeicons/core-free-icons/Copy01Icon';
+import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
+import Flag02Icon from '@hugeicons/core-free-icons/Flag02Icon';
+import Globe02Icon from '@hugeicons/core-free-icons/Globe02Icon';
+import HappyIcon from '@hugeicons/core-free-icons/HappyIcon';
+import Home01Icon from '@hugeicons/core-free-icons/Home01Icon';
+import Hospital01Icon from '@hugeicons/core-free-icons/Hospital01Icon';
+import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
+import InformationCircleIcon from '@hugeicons/core-free-icons/InformationCircleIcon';
+import LifebuoyIcon from '@hugeicons/core-free-icons/LifebuoyIcon';
+import LinkSquare02Icon from '@hugeicons/core-free-icons/LinkSquare02Icon';
+import Location01Icon from '@hugeicons/core-free-icons/Location01Icon';
+import Logout01Icon from '@hugeicons/core-free-icons/Logout01Icon';
+import LungsIcon from '@hugeicons/core-free-icons/LungsIcon';
+import Mail01Icon from '@hugeicons/core-free-icons/Mail01Icon';
+import Medicine02Icon from '@hugeicons/core-free-icons/Medicine02Icon';
+import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
+import Mic01Icon from '@hugeicons/core-free-icons/Mic01Icon';
+import MinusSignIcon from '@hugeicons/core-free-icons/MinusSignIcon';
+import Moon02Icon from '@hugeicons/core-free-icons/Moon02Icon';
+import MoreHorizontalIcon from '@hugeicons/core-free-icons/MoreHorizontalIcon';
+import NeutralIcon from '@hugeicons/core-free-icons/NeutralIcon';
+import Notification01Icon from '@hugeicons/core-free-icons/Notification01Icon';
+import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
+import RibbonIcon from '@hugeicons/core-free-icons/RibbonIcon';
+import Sad01Icon from '@hugeicons/core-free-icons/Sad01Icon';
+import Search01Icon from '@hugeicons/core-free-icons/Search01Icon';
+import SecurityCheckIcon from '@hugeicons/core-free-icons/SecurityCheckIcon';
+import Share08Icon from '@hugeicons/core-free-icons/Share08Icon';
+import SlidersHorizontalIcon from '@hugeicons/core-free-icons/SlidersHorizontalIcon';
+import SmileIcon from '@hugeicons/core-free-icons/SmileIcon';
+import StethoscopeIcon from '@hugeicons/core-free-icons/StethoscopeIcon';
+import Sun03Icon from '@hugeicons/core-free-icons/Sun03Icon';
+import ThumbsUpIcon from '@hugeicons/core-free-icons/ThumbsUpIcon';
+import Tick02Icon from '@hugeicons/core-free-icons/Tick02Icon';
+import UnhappyIcon from '@hugeicons/core-free-icons/UnhappyIcon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
+import UserIcon from '@hugeicons/core-free-icons/UserIcon';
+import ViewIcon from '@hugeicons/core-free-icons/ViewIcon';
+import ViewOffSlashIcon from '@hugeicons/core-free-icons/ViewOffSlashIcon';
+import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
+import { HugeiconsIcon } from '@hugeicons/react-native';
 
 import type { Palette } from '@/theme/palette';
 import { useDesign } from '@/theme/useTheme';
 
 import { decorative } from './a11y';
 
-// Lucide stroke icons (the approved design's style). Add a name here before using it.
+// Hugeicons stroke-rounded icons (docs/design-refresh). Each is imported from its own path
+// so the bundle only carries these. Add a name here before using it.
 
 const ICONS = {
-  activity: Activity,
-  back: ArrowLeft,
-  bell: Bell,
-  book: BookOpen,
-  bookmark: Bookmark,
-  calendar: Calendar,
-  'calendar-check': CalendarCheck,
-  camera: Camera,
-  check: Check,
-  'chevron-left': ChevronLeft,
-  'chevron-right': ChevronRight,
-  circle: Circle,
-  'circle-alert': CircleAlert,
-  'circle-check': CircleCheck,
-  clock: Clock,
-  close: X,
-  copy: Copy,
-  'external-link': ExternalLink,
-  eye: Eye,
-  'eye-off': EyeOff,
-  flag: Flag,
-  globe: Globe,
-  heart: Heart,
-  home: House,
-  image: Image,
-  info: Info,
-  lightbulb: Lightbulb,
-  'life-buoy': LifeBuoy,
-  'log-out': LogOut,
-  mail: Mail,
-  'map-pin': MapPin,
-  message: MessageCircle,
-  mic: Mic,
-  minus: Minus,
-  moon: Moon,
-  more: Ellipsis,
-  phone: Phone,
-  pill: Pill,
-  plus: Plus,
-  search: Search,
-  share: Share,
-  shield: ShieldCheck,
-  sliders: SlidersHorizontal,
-  sun: Sun,
-  'thumbs-up': ThumbsUp,
-  trash: Trash2,
-  user: User,
-  users: Users,
-  volume: Volume2,
+  activity: Activity01Icon,
+  back: ArrowLeft02Icon,
+  bell: Notification01Icon,
+  book: BookOpen01Icon,
+  bookmark: Bookmark01Icon,
+  calendar: Calendar03Icon,
+  'calendar-check': CalendarCheckIn01Icon,
+  camera: Camera01Icon,
+  check: Tick02Icon,
+  'chevron-left': ArrowLeft01Icon,
+  'chevron-right': ArrowRight01Icon,
+  circle: CircleIcon,
+  'circle-alert': AlertCircleIcon,
+  'circle-check': CheckmarkCircle02Icon,
+  clock: Clock01Icon,
+  close: Cancel01Icon,
+  copy: Copy01Icon,
+  'external-link': LinkSquare02Icon,
+  eye: ViewIcon,
+  'eye-off': ViewOffSlashIcon,
+  flag: Flag02Icon,
+  globe: Globe02Icon,
+  heart: FavouriteIcon,
+  home: Home01Icon,
+  hospital: Hospital01Icon,
+  image: Image01Icon,
+  info: InformationCircleIcon,
+  lightbulb: BulbIcon,
+  'life-buoy': LifebuoyIcon,
+  'log-out': Logout01Icon,
+  lungs: LungsIcon,
+  mail: Mail01Icon,
+  'map-pin': Location01Icon,
+  message: Message01Icon,
+  mic: Mic01Icon,
+  minus: MinusSignIcon,
+  'mood-rough': UnhappyIcon,
+  'mood-low': Sad01Icon,
+  'mood-okay': NeutralIcon,
+  'mood-good': SmileIcon,
+  'mood-great': HappyIcon,
+  moon: Moon02Icon,
+  more: MoreHorizontalIcon,
+  phone: CallIcon,
+  pill: Medicine02Icon,
+  plus: PlusSignIcon,
+  ribbon: RibbonIcon,
+  search: Search01Icon,
+  share: Share08Icon,
+  shield: SecurityCheckIcon,
+  sliders: SlidersHorizontalIcon,
+  stethoscope: StethoscopeIcon,
+  sun: Sun03Icon,
+  'thumbs-up': ThumbsUpIcon,
+  trash: Delete02Icon,
+  user: UserIcon,
+  users: UserGroupIcon,
+  volume: VolumeHighIcon,
 } as const;
 
 export type IconName = keyof typeof ICONS;
@@ -123,10 +141,15 @@ type IconProps = {
 };
 
 /** A decorative icon (hidden from screen readers; label the control that holds it). */
-export function Icon({ name, size = 22, tone = 'ink', color, strokeWidth = 2 }: IconProps) {
+export function Icon({ name, size = 22, tone = 'ink', color, strokeWidth = 1.8 }: IconProps) {
   const { palette } = useDesign();
-  const Glyph = ICONS[name];
   return (
-    <Glyph size={size} color={color ?? palette[tone]} strokeWidth={strokeWidth} {...decorative} />
+    <HugeiconsIcon
+      icon={ICONS[name]}
+      size={size}
+      color={color ?? palette[tone]}
+      strokeWidth={strokeWidth}
+      {...decorative}
+    />
   );
 }
