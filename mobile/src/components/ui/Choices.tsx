@@ -12,11 +12,17 @@ type ChipProps = {
   onPress: () => void;
   /** `toggle` (any number selected, shows a check) or `radio` (one of a group). */
   kind?: 'toggle' | 'radio';
+  /** Selected color: violet, or teal on Help. */
+  tone?: 'action' | 'help';
 };
 
 /** Rounded choice, 44 pt tall. Selected state differs in border, fill and weight. */
-export function Chip({ label, selected, onPress, kind = 'toggle' }: ChipProps) {
+export function Chip({ label, selected, onPress, kind = 'toggle', tone = 'action' }: ChipProps) {
   const { palette } = useDesign();
+  const on =
+    tone === 'help'
+      ? { fill: palette.helpTint, line: palette.help, text: 'onHelpTint' as const }
+      : { fill: palette.raised, line: palette.action, text: 'action' as const };
   return (
     <Pressable
       accessibilityRole={kind === 'radio' ? 'radio' : 'checkbox'}
@@ -26,14 +32,14 @@ export function Chip({ label, selected, onPress, kind = 'toggle' }: ChipProps) {
       style={({ pressed }) => [
         styles.chip,
         selected
-          ? { backgroundColor: palette.raised, borderColor: palette.action, borderWidth: 2 }
+          ? { backgroundColor: on.fill, borderColor: on.line, borderWidth: 2 }
           : { backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1.5 },
         pressed && styles.pressed,
       ]}>
       {selected && kind === 'toggle' ? (
-        <Icon name="check" size={16} tone="action" strokeWidth={3} />
+        <Icon name="check" size={16} tone={on.text} strokeWidth={3} />
       ) : null}
-      <Text variant={selected ? 'strong' : 'row'} tone={selected ? 'action' : 'ink'}>
+      <Text variant={selected ? 'strong' : 'row'} tone={selected ? on.text : 'ink'}>
         {label}
       </Text>
     </Pressable>

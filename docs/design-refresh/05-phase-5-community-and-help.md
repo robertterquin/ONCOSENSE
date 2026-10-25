@@ -5,15 +5,15 @@
 
 ## 5.1 Help
 
-- [ ] The crisis card fills with `help` (teal) instead of a tinted card: white title, white "Call <number>" button with the call icon. Contrast pairs checked in both themes.
-- [ ] Every contact row ends in a round `CallButton` (teal tint), replacing the current call icon and more button; "More" options move to a long press or the row's detail.
-- [ ] Region chips: the selected chip uses the teal tint and border, so Help's color carries through.
-- [ ] Phone numbers and names come only from the `resources` data, as now.
+- [x] The crisis card fills with `help` (teal) instead of a tinted card: `surface` text and an `onHelp` button (`surface` with `help` text). Both pairs were already in `palette.test.ts`. In dark mode `help` is a bright teal with dark text.
+- [x] Every contact row already ends in a round teal call button (`IconButton look="help"`). The More button stays: a long press is hard to find and doesn't work well with screen readers.
+- [x] Region chips: the selected chip uses the teal tint and border (`Chip tone="help"`), so Help's color carries through.
+- [x] Phone numbers and names come only from the `resources` data, as now.
 
 ## 5.2 Community
 
-- [ ] Topic chips, question rows and the "Ask a question" button get the new icons; topic labels stay violet.
-- [ ] The "members, not doctors" banner gets the shield icon in a lavender well.
+- [x] Topic chips, question rows and the "Ask a question" button get the new icons; topic labels stay violet. *(Through Phase 1's `Icon`.)*
+- [x] The "members, not doctors" banner keeps the shield on its lavender background. *(Unchanged: a well on the same lavender added nothing.)*
 - [ ] Question detail: "Found this helpful" and save use the new icons; counts unchanged.
 
 ## Done when
