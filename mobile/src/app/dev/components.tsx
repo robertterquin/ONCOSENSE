@@ -22,11 +22,15 @@ import {
   Section,
   SegmentedControl,
   SliderRow,
+  StatTile,
   StepList,
   Switch,
+  Tag,
   Text,
   TextField,
+  TopicTile,
 } from '@/components/ui';
+import { MoodPicker } from '@/components/journey/MoodPicker';
 import { emailSchema } from '@/constants/validation';
 import { useThemeStore, type ThemeMode } from '@/stores/themeStore';
 import { showToast } from '@/stores/toastStore';
@@ -44,6 +48,7 @@ export default function ComponentGalleryScreen() {
   const [symptoms, setSymptoms] = useState(['Fatigue']);
   const [sleep, setSleep] = useState('Fair');
   const [reminders, setReminders] = useState(true);
+  const [mood, setMood] = useState<number | null>(4);
   const [pain, setPain] = useState(3);
 
   if (!__DEV__) return <Redirect href="/" />;
@@ -138,6 +143,26 @@ export default function ComponentGalleryScreen() {
         </View>
       </Section>
 
+      <Section title="Tags and tiles" look="plain">
+        <View style={styles.wrap}>
+          <Tag tone="due" label="Due" />
+          <Tag tone="done" label="Done 6 days ago" />
+          <Tag tone="next" label="Next" />
+        </View>
+        <View style={styles.inlineRow}>
+          <StatTile label="Energy, 7 days" value="6.2" detail="of 10, up from 5" />
+          <StatTile label="Pain, 7 days" value="2.5" detail="of 10, steady" valueTone="rose" />
+        </View>
+        <View style={styles.inlineRow}>
+          <TopicTile icon="ribbon" title="Breast" subtitle="Most common here" onPress={() => {}} />
+          <TopicTile icon="lungs" title="Lung" subtitle="7 early signs" onPress={() => {}} />
+        </View>
+        <View style={styles.inlineRow}>
+          <TopicTile icon="stethoscope" iconTone="rose" title="Rose" onPress={() => {}} />
+          <TopicTile icon="pill" iconTone="sun" title="Sun" onPress={() => {}} />
+        </View>
+      </Section>
+
       <NextStepPanel
         status="Due today"
         title="Your monthly breast self-check"
@@ -217,6 +242,12 @@ export default function ComponentGalleryScreen() {
           }
         />
         <ListRow icon="flag" iconTone="sun" title="Finished cycle 2" subtitle="October 7" />
+      </Section>
+
+      <Section title="Mood" look="card" divided={false}>
+        <View style={styles.moodSample}>
+          <MoodPicker value={mood} onChange={setMood} />
+        </View>
       </Section>
 
       <Section title="Choices" look="card" divided={false}>
@@ -334,6 +365,8 @@ export default function ComponentGalleryScreen() {
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
+  inlineRow: { flexDirection: 'row', gap: space.sm },
+  moodSample: { paddingVertical: space.lg },
   flex2: { flex: 2 },
   stack: { gap: space.md, paddingVertical: space.lg },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

@@ -56,8 +56,10 @@ export default function TodayTab() {
       {nextStep.kind === 'self-check' ? (
         <NextStepPanel
           status="Due today"
+          due
+          steps={nextStep.guide.steps.length}
           title={nextStep.guide.title}
-          body={`Your ${nextStep.guide.frequency.toLowerCase()} check. About 10 minutes, one step at a time.`}
+          body={`Your ${nextStep.guide.frequency.toLowerCase()} check, ${nextStep.guide.steps.length} steps. About 10 minutes, one at a time.`}
           primary={{
             label: 'Start self-check',
             onPress: () =>

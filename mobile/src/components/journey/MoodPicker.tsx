@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text } from '@/components/ui';
+import { Icon, Text } from '@/components/ui';
 import { MOODS } from '@/lib/journeyLabels';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -29,12 +29,11 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
             onPress={() => onChange(mood.value)}
             style={({ pressed }) => [
               styles.mood,
-              { backgroundColor: selected ? palette.raised : palette.ground },
-              selected && { borderColor: palette.action },
+              { backgroundColor: selected ? palette.action : palette.ground },
               pressed && styles.pressed,
             ]}>
-            <Text style={styles.emoji}>{mood.emoji}</Text>
-            <Text variant="caption" tone={selected ? 'action' : 'muted'} numberOfLines={1}>
+            <Icon name={mood.icon} size={28} tone={selected ? 'onAction' : 'muted'} />
+            <Text variant="caption" tone={selected ? 'onAction' : 'muted'} numberOfLines={1}>
               {mood.label}
             </Text>
           </Pressable>
@@ -52,10 +51,7 @@ const styles = StyleSheet.create({
     gap: space.xs,
     paddingVertical: space.md,
     borderRadius: radii.tile,
-    borderWidth: 2,
-    borderColor: 'transparent',
     minHeight: sizes.touch,
   },
   pressed: { opacity: 0.6 },
-  emoji: { fontSize: 26, lineHeight: 32 },
 });

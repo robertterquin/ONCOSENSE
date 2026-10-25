@@ -1,3 +1,5 @@
+import type { IconName } from '@/components/ui/Icon';
+
 // Words for check-in values (redesign Phase 4). Started from add_entry_screen.dart.
 
 function painWord(level: number): string {
@@ -31,12 +33,12 @@ export function energyValueText(level: number): string {
  * The redesign's gentler labels; stored values are unchanged.
  */
 export const MOODS = [
-  { emoji: '😣', label: 'Rough', value: 1 },
-  { emoji: '😔', label: 'Low', value: 2 },
-  { emoji: '😐', label: 'Okay', value: 3 },
-  { emoji: '🙂', label: 'Good', value: 4 },
-  { emoji: '😄', label: 'Great', value: 5 },
-];
+  { icon: 'mood-rough', label: 'Rough', value: 1 },
+  { icon: 'mood-low', label: 'Low', value: 2 },
+  { icon: 'mood-okay', label: 'Okay', value: 3 },
+  { icon: 'mood-good', label: 'Good', value: 4 },
+  { icon: 'mood-great', label: 'Great', value: 5 },
+] as const satisfies readonly { icon: IconName; label: string; value: number }[];
 
 /** How someone slept (`sleepQuality` 1–5). */
 export const SLEEP = [
