@@ -155,6 +155,8 @@ export function Icon({ name, size = 22, tone = 'ink', color, strokeWidth = 1.8 }
       size={size}
       color={color ?? palette[tone]}
       strokeWidth={strokeWidth}
+      // On iOS an SVG catches touches, so a tap on the icon wouldn't reach its button.
+      pointerEvents="none"
       {...decorative}
     />
   );

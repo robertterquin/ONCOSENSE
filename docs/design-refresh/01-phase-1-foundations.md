@@ -10,6 +10,7 @@
 - [x] Map every current name (51) to a Hugeicons icon.
 - [x] Add new names: `ribbon`, `lungs`, `stethoscope`, `hospital`, and five mood faces `mood-rough` … `mood-great` (`unhappy`, `sad-01`, `neutral`, `smile`, `happy`). Medicine is the existing `pill`; skin uses `sun`.
 - [x] Remove `lucide-react-native`; update the credits in `src/constants/legal.ts`.
+- [x] `Icon` sets `pointerEvents="none"`: on iOS a Hugeicons SVG caught taps, so tapping a tab's icon (or any icon button's icon) did nothing. *(Found and fixed in Phase 4, 2026-10-25.)*
 - [x] Check the dev component gallery (`/dev/components`) shows every icon. *(Web, light, 2026-10-25.)*
 
 ## 1.2 Tab bar B
