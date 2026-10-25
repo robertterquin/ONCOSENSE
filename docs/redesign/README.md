@@ -60,7 +60,7 @@ Routes: `/today`, `/learn`, `/journey`, `/community`, `/help` (tabs); `/learn/ca
 ## Design rules
 
 1. **Tokens only.** Colors, type sizes, spacing and radii come from `src/theme/`. No hex values or font sizes in screens.
-2. **Atkinson Hyperlegible Next** for all text. Body 17–18, never below 15. Supports the text-size setting (Default, Large, Larger).
+2. **Atkinson Hyperlegible Next** for all text except headings, which use **Nunito** ExtraBold. Body 17–18, never below 15. Supports the text-size setting (Default, Large, Larger).
 3. **WCAG AA in both themes.** Text 4.5:1, chart marks and controls 3:1. Check new color pairs before using them.
 4. **One job per screen.** Large plain titles, white sections of rows, no gradient headers, no identical floating cards.
 5. **Touch targets ≥ 44 px** (rows 64–72, main buttons 52–56).
@@ -114,3 +114,4 @@ Same as the migration:
 | 2026-10-25 | Self-check history and saved guides move to the account (`self_check_progress`); guests keep them on the phone until they sign in | Data should follow the person to a new phone; replaces the 2026-10-24 "on the device" decision | Robert |
 | 2026-10-25 | Anonymous questions and answers are read through `questions_public` and `answers_public`, which hide the author; votes are visible only to the voter; anonymous posts show "Anonymous" | The author's ID on anonymous posts linked them to the person's named posts | Robert |
 | 2026-10-25 | Create the missing `reports` table (people can send reports, not read them) | The Report button wrote to a table that never existed | — |
+| 2026-10-25 | Headings use Nunito ExtraBold; all other text stays Atkinson Hyperlegible Next | Rounded headings feel warmer; headings are large and short, so legibility holds, and body text keeps the low-vision font | Robert |

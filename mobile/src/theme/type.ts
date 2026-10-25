@@ -1,13 +1,15 @@
 import type { TextStyle } from 'react-native';
 
-// Redesign type scale (docs/redesign/02-phase-2-foundations.md). One family, Atkinson
-// Hyperlegible Next, built by the Braille Institute for low vision. Sizes are at the
+// Redesign type scale (docs/redesign/02-phase-2-foundations.md). Text is Atkinson
+// Hyperlegible Next, built by the Braille Institute for low vision; headings use rounded
+// Nunito for warmth, since they're large and short. Sizes are at the
 // "Default" text size; `scaledType` applies the user's Large or Larger setting.
 
 export const fontFamily = {
   regular: 'AtkinsonHyperlegibleNext_400Regular',
   semiBold: 'AtkinsonHyperlegibleNext_600SemiBold',
   extraBold: 'AtkinsonHyperlegibleNext_800ExtraBold',
+  heading: 'Nunito_800ExtraBold',
 } as const;
 
 type TypeStyle = Required<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'lineHeight'>> &
@@ -15,15 +17,15 @@ type TypeStyle = Required<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'lineHeigh
 
 export const typeScale = {
   /** Detail screen titles (cancer type, guide). */
-  display: { fontFamily: fontFamily.extraBold, fontSize: 34, lineHeight: 38, letterSpacing: -0.34 },
+  display: { fontFamily: fontFamily.heading, fontSize: 34, lineHeight: 38, letterSpacing: -0.34 },
   /** Tab screen titles. */
-  title: { fontFamily: fontFamily.extraBold, fontSize: 32, lineHeight: 37, letterSpacing: -0.32 },
+  title: { fontFamily: fontFamily.heading, fontSize: 32, lineHeight: 37, letterSpacing: -0.32 },
   /** The next-step panel's title. */
-  panel: { fontFamily: fontFamily.extraBold, fontSize: 28, lineHeight: 32 },
+  panel: { fontFamily: fontFamily.heading, fontSize: 28, lineHeight: 32 },
   /** Large section headings on detail screens. */
-  heading: { fontFamily: fontFamily.extraBold, fontSize: 23, lineHeight: 28 },
+  heading: { fontFamily: fontFamily.heading, fontSize: 23, lineHeight: 28 },
   /** Section titles. */
-  section: { fontFamily: fontFamily.extraBold, fontSize: 21, lineHeight: 26 },
+  section: { fontFamily: fontFamily.heading, fontSize: 21, lineHeight: 26 },
   /** Long reading text (articles, guides). */
   reading: { fontFamily: fontFamily.regular, fontSize: 18, lineHeight: 28 },
   /** Row titles. */

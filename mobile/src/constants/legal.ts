@@ -185,7 +185,7 @@ export const CREDITS = `Credits & Attributions
 • Lucide icons
   Licensed under the ISC License
 
-• Atkinson Hyperlegible Next, from Google Fonts
+• Atkinson Hyperlegible Next and Nunito, from Google Fonts
   Licensed under SIL Open Font License
 
 ━━━━━━━━━━━━━━━━━━━━━━
