@@ -1,6 +1,5 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { radii, space } from '@/theme/tokens';
@@ -24,8 +23,9 @@ export const TAB_ICONS: Record<string, IconName> = {
 
 /**
  * A floating violet pill: the open tab expands into a white pill with its icon and name,
- * the others show their icon (screen readers still hear every name). Sits below the
- * screens rather than over them, so nothing scrolls behind it.
+ * the others show their icon (screen readers still hear every name). No resize animation:
+ * Reanimated's layout transitions froze the flex widths on iOS and pushed tabs off the bar.
+ * Sits below the screens rather than over them, so nothing scrolls behind it.
  * Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
@@ -55,10 +55,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
             if (!focused && !event.defaultPrevented) navigateToTab(route.key);
           };
           return (
-            <Animated.View
-              key={route.key}
-              layout={LinearTransition.duration(200)}
-              style={focused ? styles.activeSlot : styles.slot}>
+            <View key={route.key} style={focused ? styles.activeSlot : styles.slot}>
               <Pressable
                 accessibilityRole="tab"
                 accessibilityState={{ selected: focused }}
@@ -87,7 +84,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
                   </Text>
                 )}
               </Pressable>
-            </Animated.View>
+            </View>
           );
         })}
       </View>
@@ -100,19 +97,21 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: space.xs + 2,
     borderRadius: radii.round,
     minHeight: TAB_BAR_HEIGHT,
   },
-  slot: { flex: 1 },
-  activeSlot: { flexShrink: 0 },
+  // Fixed icon slots, so the bar always adds up to the same width whichever tab is open.
+  slot: { width: 48 },
+  activeSlot: { flexShrink: 1, minWidth: 0 },
   tab: {
     minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.md + 2,
+    gap: space.xs + 2,
+    paddingHorizontal: space.md,
     borderRadius: radii.round,
   },
 });
