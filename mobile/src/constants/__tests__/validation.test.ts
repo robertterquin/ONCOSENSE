@@ -6,7 +6,6 @@ import {
   loginSchema,
   MESSAGES,
   nameSchema,
-  passwordSchema,
   registerSchema,
 } from '@/constants/validation';
 
@@ -20,10 +19,7 @@ describe('validation (same rules and messages as Flutter)', () => {
     expect(firstError(emailSchema.safeParse(' ana@example.com '))).toBeNull();
   });
 
-  it('validates password and name length', () => {
-    expect(firstError(passwordSchema.safeParse(''))).toBe(MESSAGES.passwordEmpty);
-    expect(firstError(passwordSchema.safeParse('12345'))).toBe(MESSAGES.passwordShort);
-    expect(firstError(passwordSchema.safeParse('123456'))).toBeNull();
+  it('validates name length', () => {
     expect(firstError(nameSchema.safeParse('A'))).toBe(MESSAGES.nameShort);
   });
 

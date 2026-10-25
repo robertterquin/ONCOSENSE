@@ -4,8 +4,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
 import { MoodPicker } from '@/components/journey/MoodPicker';
-import { LoadingState } from '@/components/StateViews';
 import {
+  LoadingState,
   BottomActionBar,
   Button,
   Chip,

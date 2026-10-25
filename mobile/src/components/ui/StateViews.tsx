@@ -3,9 +3,9 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-import { Button } from './ui/Button';
-import { Icon, type IconName } from './ui/Icon';
-import { Text } from './ui/Text';
+import { Button } from './Button';
+import { Icon, type IconName } from './Icon';
+import { Text } from './Text';
 
 // Loading, error and empty states in the redesign style.
 

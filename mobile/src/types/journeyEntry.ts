@@ -1,4 +1,4 @@
-import { formatShortDate, parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
+import { parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, optionalString, requireString, stringArray, type Row } from './row';
 
@@ -49,26 +49,6 @@ export function journeyEntryToRow(entry: JourneyEntry): Row {
     appointment_notes: entry.appointmentNotes,
     has_appointment: entry.hasAppointment,
   };
-}
-
-const MOODS: Record<number, { emoji: string; label: string }> = {
-  1: { emoji: '😢', label: 'Very Sad' },
-  2: { emoji: '😞', label: 'Sad' },
-  3: { emoji: '😐', label: 'Okay' },
-  4: { emoji: '🙂', label: 'Good' },
-  5: { emoji: '😄', label: 'Great' },
-};
-
-export function moodEmoji(moodLevel: number): string {
-  return (MOODS[moodLevel] ?? MOODS[3]).emoji;
-}
-
-export function moodLabel(moodLevel: number): string {
-  return (MOODS[moodLevel] ?? MOODS[3]).label;
-}
-
-export function journeyEntryFormattedDate(entry: JourneyEntry): string {
-  return formatShortDate(entry.date);
 }
 
 /** Symptoms offered for quick selection. */

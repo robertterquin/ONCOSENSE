@@ -2,10 +2,19 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { QuestionRow } from '@/components/forum/QuestionRow';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { Banner, Button, Chip, Screen, SearchField, Section } from '@/components/ui';
-import { useQuestions } from '@/hooks/useForum';
+import { QuestionRow } from '@/components/community/QuestionRow';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Banner,
+  Button,
+  Chip,
+  Screen,
+  SearchField,
+  Section,
+} from '@/components/ui';
+import { useQuestions } from '@/hooks/useCommunity';
 import { useNow } from '@/hooks/useNow';
 import { confirm } from '@/lib/confirm';
 import { useIsSignedIn } from '@/stores/authStore';

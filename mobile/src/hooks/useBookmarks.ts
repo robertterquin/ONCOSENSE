@@ -33,20 +33,6 @@ export function useBookmarkedResources() {
   });
 }
 
-export function useIsQuestionBookmarked(questionId: string): boolean {
-  return useBookmarkedQuestions().data?.some((question) => question.id === questionId) ?? false;
-}
-
-export function useIsResourceBookmarked(resourceId: string): boolean {
-  return useBookmarkedResources().data?.some((resource) => resource.id === resourceId) ?? false;
-}
-
-export function useTotalBookmarkCount(): number {
-  const questions = useBookmarkedQuestions().data?.length ?? 0;
-  const resources = useBookmarkedResources().data?.length ?? 0;
-  return questions + resources;
-}
-
 /**
  * Builds an optimistic add/remove toggle for one bookmark list: the item appears or
  * disappears immediately and is restored if the request fails.

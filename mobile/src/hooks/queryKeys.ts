@@ -1,4 +1,4 @@
-import type { QuestionFilters } from '@/api/forum';
+import type { QuestionFilters } from '@/api/community';
 import type { ResourceType } from '@/types/resource';
 
 /**

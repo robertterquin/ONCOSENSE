@@ -1,4 +1,4 @@
-import { formatRelativeTime, parseDbTimestamp } from '@/lib/dates';
+import { parseDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, numberOr, optionalString, requireString, type Row } from './row';
 
@@ -37,12 +37,4 @@ export function answerFromRow(row: Row): Answer {
 
 export function answerDisplayName(answer: Answer): string {
   return answer.isAnonymous ? 'Anonymous' : (answer.userName ?? 'User');
-}
-
-export function answerRelativeTime(answer: Answer, now?: Date): string {
-  return formatRelativeTime(answer.createdAt, now);
-}
-
-export function isReply(answer: Answer): boolean {
-  return answer.parentAnswerId !== null;
 }

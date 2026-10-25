@@ -9,8 +9,7 @@ import {
   GuideResults,
   LowerYourRisk,
 } from '@/components/learn/LearnSections';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { Screen, SearchField } from '@/components/ui';
+import { EmptyState, ErrorState, LoadingState, Screen, SearchField } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { usePreventionTips } from '@/hooks/usePrevention';
 import { useSelfChecks } from '@/hooks/useSelfChecks';

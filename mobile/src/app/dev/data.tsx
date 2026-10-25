@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { Screen, Section, Text } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { useAnswers, useQuestions } from '@/hooks/useForum';
+import { useAnswers, useQuestions } from '@/hooks/useCommunity';
 import { useDailyHealthTip } from '@/hooks/useHome';
 import { useJourneyEntries } from '@/hooks/useJourney';
 import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';

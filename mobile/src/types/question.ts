@@ -1,4 +1,4 @@
-import { formatRelativeTime, parseDbTimestamp } from '@/lib/dates';
+import { parseDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, numberOr, optionalString, requireString, stringArray, type Row } from './row';
 
@@ -47,10 +47,6 @@ export function questionDisplayName(question: Question): string {
   return question.userName;
 }
 
-export function questionRelativeTime(question: Question, now?: Date): string {
-  return formatRelativeTime(question.createdAt, now);
-}
-
 export const FORUM_CATEGORIES = [
   'Symptoms',
   'Diagnosis',
@@ -59,24 +55,3 @@ export const FORUM_CATEGORIES = [
   'Lifestyle',
   'Family Support',
 ] as const;
-
-export type ForumCategory = (typeof FORUM_CATEGORIES)[number];
-
-export function forumCategoryIcon(category: string): string {
-  switch (category) {
-    case 'Symptoms':
-      return '🩺';
-    case 'Diagnosis':
-      return '🔬';
-    case 'Treatment':
-      return '💊';
-    case 'Mental Health':
-      return '🧠';
-    case 'Lifestyle':
-      return '💪';
-    case 'Family Support':
-      return '👨‍👩‍👧‍👦';
-    default:
-      return '💬';
-  }
-}

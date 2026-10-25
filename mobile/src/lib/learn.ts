@@ -16,14 +16,6 @@ export function guideForCancer<T extends Pick<SelfCheckGuide, 'cancerType'>>(
   return guides.find((guide) => name.startsWith(lower(guide.cancerType))) ?? null;
 }
 
-export function cancerForGuide<T extends Pick<CancerType, 'name'>>(
-  cancers: T[],
-  guide: Pick<SelfCheckGuide, 'cancerType'>,
-): T | null {
-  const type = lower(guide.cancerType);
-  return cancers.find((cancer) => lower(cancer.name).startsWith(type)) ?? null;
-}
-
 /** The cancer type an awareness month is about ("Breast Cancer"), if Learn has it. */
 export function cancerForAwareness<T extends Pick<CancerType, 'name'>>(
   cancers: T[],

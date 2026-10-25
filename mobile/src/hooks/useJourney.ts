@@ -10,7 +10,6 @@ import {
 import {
   deleteAppointment,
   deleteJourneyEntry,
-  deleteMilestone,
   deleteTreatment,
   fetchAppointments,
   fetchJourneyEntries,
@@ -22,7 +21,6 @@ import {
   saveTreatment,
 } from '@/api/journey';
 import {
-  cancerFreeMilestones,
   isDuplicateMilestone,
   journeyStartedMilestone,
   streakMilestone,
@@ -132,27 +130,6 @@ export function useStartJourney() {
   });
 }
 
-export function useSetCancerFreeDate() {
-  return useMutation({
-    mutationFn: (cancerFreeDate: Date) =>
-      saveJourneySetupStatus({ journeyStarted: true, cancerFreeDate }),
-  });
-}
-
-/** Records any days-free milestones reached since the cancer-free date. */
-export function useCheckCancerFreeMilestones() {
-  const { queryClient, keys, addMilestoneIfNew } = useJourneyCache();
-  const { cancerFreeDate } = useJourneySetup();
-  return useMutation({
-    mutationFn: async () => {
-      const existing = queryClient.getQueryData<Milestone[]>(keys.milestones) ?? [];
-      for (const milestone of cancerFreeMilestones(cancerFreeDate, existing)) {
-        await addMilestoneIfNew(milestone);
-      }
-    },
-  });
-}
-
 // ---- Entries ----
 
 /** Adds or updates an entry, then records a streak milestone if one was reached. */
@@ -234,16 +211,6 @@ export function useDeleteTreatment() {
   });
 }
 
-// ---- Milestones ----
-
-export function useAddMilestone() {
-  const { queryClient, keys, addMilestoneIfNew } = useJourneyCache();
-  return useMutation({
-    mutationFn: addMilestoneIfNew,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: keys.milestones }),
-  });
-}
-
 export function useCelebrateMilestone() {
   const { queryClient, keys } = useJourneyCache();
   return useMutation({
@@ -254,18 +221,6 @@ export function useCelebrateMilestone() {
         list?.map((m) => (m.id === milestone.id ? celebrated : m)),
       );
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: keys.milestones }),
-  });
-}
-
-export function useDeleteMilestone() {
-  const { queryClient, keys } = useJourneyCache();
-  return useMutation({
-    mutationFn: deleteMilestone,
-    onSuccess: (_result, milestoneId) =>
-      queryClient.setQueryData<Milestone[]>(keys.milestones, (list) =>
-        list?.filter((m) => m.id !== milestoneId),
-      ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.milestones }),
   });
 }

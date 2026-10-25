@@ -89,8 +89,3 @@ const TYPE_INFO: Record<TreatmentType, { label: string; icon: string }> = {
 export function treatmentTypeLabel(type: TreatmentType): string {
   return TYPE_INFO[type].label;
 }
-
-/** Material icon name. */
-export function treatmentTypeIcon(type: TreatmentType): string {
-  return TYPE_INFO[type].icon;
-}

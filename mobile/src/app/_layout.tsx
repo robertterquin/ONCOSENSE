@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { ToastHost } from '@/components/Toast';
+import { ToastHost } from '@/components/ui';
 import { focusFromMetadata } from '@/lib/focus';
 import { initializeNotifications, startNotificationListeners } from '@/lib/notifications/service';
 import { queryClient } from '@/lib/queryClient';

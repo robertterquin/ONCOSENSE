@@ -124,27 +124,6 @@ export async function createQuestion(input: {
   return questionFromRow({ ...data, user_id: user.id });
 }
 
-export async function updateQuestion(
-  questionId: string,
-  changes: { title?: string; content?: string; category?: string; isResolved?: boolean },
-): Promise<Question> {
-  const { data, error } = await supabase
-    .from('questions')
-    .update({
-      updated_at: toDbTimestamp(new Date()),
-      ...(changes.title !== undefined && { title: changes.title }),
-      ...(changes.content !== undefined && { content: changes.content }),
-      ...(changes.category !== undefined && { category: changes.category }),
-      ...(changes.isResolved !== undefined && { is_resolved: changes.isResolved }),
-    })
-    .eq('id', questionId)
-    .select(QUESTION_COLUMNS)
-    .single();
-  check(error, 'Failed to update question');
-  // Only the author can change a question.
-  return questionFromRow({ ...data, user_id: await currentUserId() });
-}
-
 export async function deleteQuestion(questionId: string): Promise<void> {
   const { error } = await supabase.from('questions').delete().eq('id', questionId);
   check(error, 'Failed to delete question');
@@ -247,34 +226,11 @@ export async function createAnswer(input: {
   return answerFromRow({ ...data, user_id: user.id });
 }
 
-export async function updateAnswer(answerId: string, content: string): Promise<Answer> {
-  const { data, error } = await supabase
-    .from('answers')
-    .update({ content, updated_at: toDbTimestamp(new Date()) })
-    .eq('id', answerId)
-    .select(ANSWER_COLUMNS)
-    .single();
-  check(error, 'Failed to update answer');
-  // Only the author can change an answer.
-  return answerFromRow({ ...data, user_id: await currentUserId() });
-}
-
 export async function deleteAnswer(answerId: string, questionId: string): Promise<void> {
   const { error } = await supabase.from('answers').delete().eq('id', answerId);
   check(error, 'Failed to delete answer');
   const rpc = await supabase.rpc('decrement_answer_count', { question_id_param: questionId });
   check(rpc.error, 'Failed to update answer count');
-}
-
-/** Marks one answer as the best answer for its question. */
-export async function acceptAnswer(answerId: string, questionId: string): Promise<void> {
-  const cleared = await supabase
-    .from('answers')
-    .update({ is_accepted: false })
-    .eq('question_id', questionId);
-  check(cleared.error, 'Failed to accept answer');
-  const accepted = await supabase.from('answers').update({ is_accepted: true }).eq('id', answerId);
-  check(accepted.error, 'Failed to accept answer');
 }
 
 /** Adds the user's upvote, or removes it if they already upvoted. Returns whether it's now upvoted. */

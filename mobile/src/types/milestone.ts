@@ -1,4 +1,4 @@
-import { formatShortDate, parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
+import { parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, optionalNumber, requireString, type Row } from './row';
 
@@ -57,38 +57,6 @@ export function milestoneToRow(milestone: Milestone): Row {
     days_count: milestone.daysCount,
   };
 }
-
-const TYPE_ICONS: Record<MilestoneType, string> = {
-  daysFree: 'celebration',
-  treatmentComplete: 'emoji_events',
-  sessionComplete: 'check_circle',
-  recovery: 'favorite',
-  personal: 'star',
-  anniversary: 'cake',
-};
-
-/** Material icon name. */
-export function milestoneIcon(milestone: Milestone): string {
-  return milestone.iconName ?? TYPE_ICONS[milestone.type];
-}
-
-export function milestoneFormattedDate(milestone: Milestone): string {
-  return formatShortDate(milestone.dateAchieved);
-}
-
-export const DAYS_FREE_MILESTONES = [
-  { days: 7, title: '1 Week Cancer-Free! 🎉', description: "You've completed your first week!" },
-  { days: 30, title: '1 Month Cancer-Free! 🌟', description: 'One month of strength and courage!' },
-  { days: 90, title: '3 Months Cancer-Free! 💪', description: 'Quarter milestone achieved!' },
-  { days: 180, title: '6 Months Cancer-Free! 🏆', description: 'Half a year of fighting strong!' },
-  {
-    days: 365,
-    title: '1 Year Cancer-Free! 🎊',
-    description: 'A full year - incredible achievement!',
-  },
-  { days: 730, title: '2 Years Cancer-Free! 🌈', description: 'Two years of victory!' },
-  { days: 1825, title: '5 Years Cancer-Free! 👑', description: 'Five-year survivor milestone!' },
-];
 
 export const TREATMENT_MILESTONES = [
   { percent: 25, title: '25% Treatment Complete! 💪', description: 'Quarter way through!' },

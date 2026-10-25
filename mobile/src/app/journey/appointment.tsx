@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
-import { DateField } from '@/components/DateField';
-import { LoadingState } from '@/components/StateViews';
 import {
+  DateField,
+  LoadingState,
   BottomActionBar,
   Button,
   Chip,

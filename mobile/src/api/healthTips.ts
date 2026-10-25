@@ -9,11 +9,3 @@ export function getTipOfTheDay(now: Date = new Date()): HealthTip {
   const dayOfYear = Math.trunc((now.getTime() - startOfYear.getTime()) / 86_400_000);
   return HEALTH_TIPS[dayOfYear % HEALTH_TIPS.length];
 }
-
-export function getAllTips(): HealthTip[] {
-  return HEALTH_TIPS;
-}
-
-export function getTipsByCategory(category: string): HealthTip[] {
-  return HEALTH_TIPS.filter((tip) => tip.category === category);
-}

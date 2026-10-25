@@ -104,16 +104,6 @@ export async function saveMilestone(milestone: Milestone): Promise<void> {
   check(error, 'Failed to save milestone');
 }
 
-export async function deleteMilestone(milestoneId: string): Promise<void> {
-  const userId = await requireUserId('delete milestones');
-  const { error } = await supabase
-    .from('journey_milestones')
-    .delete()
-    .eq('id', milestoneId)
-    .eq('user_id', userId);
-  check(error, 'Failed to delete milestone');
-}
-
 // ---- Appointments (redesign Phase 4; supabase/migrations/*_journey_appointments.sql) ----
 
 /** True when the project doesn't have the `journey_appointments` table yet. */

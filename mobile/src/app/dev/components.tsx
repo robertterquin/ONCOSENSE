@@ -2,8 +2,10 @@ import { Redirect } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
 import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
   Banner,
   BottomActionBar,
   Button,

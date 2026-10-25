@@ -4,8 +4,7 @@ import { useRef, useState } from 'react';
 import { StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { ErrorState, LoadingState } from '@/components/StateViews';
-import { Chip, ListRow, Screen, Section, Text } from '@/components/ui';
+import { ErrorState, LoadingState, Chip, ListRow, Screen, Section, Text } from '@/components/ui';
 import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';

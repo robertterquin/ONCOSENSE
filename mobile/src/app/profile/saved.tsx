@@ -2,11 +2,18 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { QuestionRow } from '@/components/forum/QuestionRow';
+import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { GuideRow } from '@/components/learn/LearnSections';
-import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews';
-import { Button, Screen, Section, SegmentedControl } from '@/components/ui';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Button,
+  Screen,
+  Section,
+  SegmentedControl,
+} from '@/components/ui';
 import { useBookmarkedQuestions, useBookmarkedResources } from '@/hooks/useBookmarks';
 import { useNow } from '@/hooks/useNow';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
