@@ -19,7 +19,7 @@ Artboards: **Today**, **Learn**, **Cancer type: Breast cancer**, **Self-check gu
   2. Journey users with an appointment in the next 24 hours → the appointment (Phase 4 data; hidden until then).
   3. Nothing due → "Learn the early signs" linking to Learn.
 - [x] **How are you feeling today?** for Journey focuses only (until Phase 4 adds the focus: signed-in users who started their journey): five mood buttons save today's check-in mood; "Add pain, energy and symptoms" opens the full check-in (Phase 4). After saving, the card shows today's mood and an "Edit" link.
-- [ ] **Coming up** (Phase 4 data): next two appointments or treatment sessions; hidden when empty. *Moved to Phase 4, which builds the appointment data (4.2 already lists it).*
+- [x] **Coming up** (Phase 4 data): next two appointments or treatment sessions; hidden when empty. *Moved to Phase 4, which builds the appointment data (4.2 already lists it).* *(Done in Phase 4: `ComingUpToday`.)*
 - [x] **Tip for today** from `constants/healthTips.ts`, chosen by date so it is stable all day; links to Learn's risk section.
 - [x] **Awareness month** row from the existing awareness logic, linking to the related cancer type.
 - [x] **Need someone to talk to?** → Help.
@@ -36,7 +36,7 @@ Artboards: **Today**, **Learn**, **Cancer type: Breast cancer**, **Self-check gu
 - [x] Title, description, "On this page" chips that scroll to: Signs to watch for (`symptoms`), Who has a higher risk (`riskFactors`), How it's found (`screeningMethods` plus `earlyDetectionInfo`), When to see a doctor.
 - [x] Action rows: the related self-check guide (if any) and "Find a screening center" → Help. (Help opens at the top; Phase 5 adds the filter to screening centers.)
 - [x] Footer: "This is general information, not medical advice." Sources show only when the data has them (cancer types have no source columns today; adding nullable `source_name`/`source_url` is optional and owner-applied).
-- [ ] Save (bookmark) moves to the new Saved screen in Phase 5. *Phase 5.*
+- [x] Save (bookmark) moves to the new Saved screen in Phase 5. *Phase 5.* *(Done in Phase 5: `/profile/saved`.)*
 
 ## 3.5 Guided self-check — `/learn/check/[id]`
 

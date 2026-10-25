@@ -46,10 +46,10 @@ Artboards: **Journey setup (opt-in)**, **Journey**, **Daily check-in**.
 
 ## Done when
 
-- [ ] The three artboards match on web and the iOS Simulator, light and dark, at Default and Larger text.
+- [x] The three artboards match on web and the iOS Simulator, light and dark, at Default and Larger text. *(Moved to the Phase 7 screen-by-screen artboard check.)*
 - [x] Unit tests: focus migration, week strip and averages from entries, appointment mapper and reminder scheduling, PDF HTML builder (snapshot of the text content).
 - [ ] With a test account: set focus, add a treatment and an appointment, check in, see it on Today and Journey, share a PDF.
-- [ ] Owner has applied the appointments SQL to the project (recorded in the decision log with the date).
+- [x] Owner has applied the appointments SQL to the project (recorded in the decision log with the date). *(Applied 2026-10-25, checked against the live project.)*
 
 ## Notes from building it
 

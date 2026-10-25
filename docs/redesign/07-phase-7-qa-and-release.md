@@ -26,7 +26,7 @@
 ## 7.4 Tests
 
 - [ ] Update the Maestro flows for the new labels and routes (rewritten 2026-10-24 from the code's labels; not run yet, Maestro isn't installed on the dev Mac): guest tour (Today → Learn → guided self-check → Help → Community), and the signed-in flow (focus → check-in → appointment → share summary → ask → answer → helpful → Saved → theme → log out).
-- [ ] Unit test coverage for all new stores and helpers; CI green. (Coverage done 2026-10-24; CI runs once the branch is pushed.)
+- [x] Unit test coverage for all new stores and helpers; CI green. (Coverage done 2026-10-24; CI runs once the branch is pushed.) *(CI green on `main`, 2026-10-25.)*
 
 ## 7.5 Release
 
@@ -50,5 +50,5 @@
 
 - [ ] Every artboard has a matching screen, checked in both themes and all text sizes.
 - [ ] VoiceOver and TalkBack passes recorded in this doc with dates and devices.
-- [ ] No unused components or packages remain; CI is green.
+- [x] No unused components or packages remain; CI is green. *(Codebase cleanup and CI green, 2026-10-25.)*
 - [ ] The redesigned app is in internal testing on both stores.

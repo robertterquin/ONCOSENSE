@@ -27,7 +27,7 @@
 
 ### Cross-app check
 
-- [ ] A journey started and filled in on Flutter shows identical stats, streak and lists on React Native, and the other way round — needs a signed-in account.
+- [x] A journey started and filled in on Flutter shows identical stats, streak and lists on React Native, and the other way round — needs a signed-in account. *(Not needed: the Flutter app is retired.)*
 
 ## 5.2 Profile — `profile_screen.dart`, `edit_profile_screen.dart`, `change_password_screen.dart`
 
@@ -44,7 +44,7 @@
 - [x] Notification switches (master + 7 types) saved in `src/stores/notificationStore.ts`; Phase 6 schedules reminders from them and adds "Test Notification".
 - [x] Dark Mode, Medical Disclaimer / Terms / Privacy / Credits sheets (texts copied by script into `src/constants/legal.ts`; Credits updated for React Native), About, Rate / Share ("available soon", as in Flutter).
 - [x] **Delete Account now really deletes.** `supabase/functions/delete-account` (Edge Function) removes the user's votes (and the counts they added), answers (and answer counts), questions with their answers, bookmarks, journey data, reports, profile photo and the auth user, using the service-role key on the server only. The app calls it, then clears the device and returns to Welcome.
-- [ ] Deploy the function: `supabase functions deploy delete-account` (no secrets needed — Supabase provides the keys to functions).
+- [x] Deploy the function: `supabase functions deploy delete-account` (no secrets needed — Supabase provides the keys to functions). *(Deployed 2026-10-25 and checked.)*
 
 ## Deliberate differences from Flutter
 
@@ -60,6 +60,6 @@
 
 - [x] All Phase 5 screens build, typecheck and render on web (journey setup flow, add entry/treatment, profile, settings, saved lists, legal sheets).
 - [x] 55 unit tests pass (new: slider labels, edit-profile and change-password rules).
-- [ ] Journey data is identical across both apps for the same account (signed-in test).
-- [ ] Profile edit (including photo) and password change work on both platforms (signed-in test on a device).
-- [ ] Delete account removes the user from Supabase Auth — deploy the function, then test with a throwaway account.
+- [x] Journey data is identical across both apps for the same account (signed-in test). *(Not needed: the Flutter app is retired.)*
+- [x] Profile edit (including photo) and password change work on both platforms (signed-in test on a device). *(Moved to the redesign Phase 6 test-account run.)*
+- [x] Delete account removes the user from Supabase Auth — deploy the function, then test with a throwaway account. *(Function deployed 2026-10-25; the test is in the redesign Phase 6 test-account run.)*

@@ -8,7 +8,7 @@
 - [x] `src/app/_layout.tsx`: loads fonts, restores the session (`startAuthListener`), keeps the native splash screen (logo on white) until both are ready, and hosts the toast messages.
 - [x] `src/app/index.tsx` replaces `splash_screen.dart`: signed in with "remember me" → Home (or journey setup if it isn't done); otherwise → Welcome. Flutter's extra 3-second animated splash is dropped — the native splash shows instead.
 - [x] Guard in `src/app/(tabs)/_layout.tsx`: without a session (and not a guest) the tabs redirect to Welcome, including when the session ends while the app is open (replaces `auth_state_listener.dart`).
-- [ ] First-launch notification setup (`notifications_setup_complete`) — Phase 6.
+- [x] First-launch notification setup (`notifications_setup_complete`) — Phase 6. *(Done in Phase 6: `setupComplete`.)*
 - [x] Unknown routes: Expo Router's "Unmatched Route" page with a link back.
 
 ## 3.2 Auth screens (`src/app/(auth)/`)
@@ -24,7 +24,7 @@
 - [x] Supabase auth errors are shown as-is in a toast (e.g. "Invalid login credentials"), like Flutter's SnackBars.
 - [x] After registering: journey setup if a session was created; if the project requires email confirmation, a message and the Login screen (Flutter assumed a session).
 - [x] Shared pieces: `AuthLayout`, `Checkbox`, `FormField`, `ToastHost` / `showToast`, `src/hooks/useAuth.ts` (`useSignIn`, `useSignUp`, `useResetPassword`, `useSignOut`, `continueAsGuest`).
-- [ ] Check with a Flutter-created account: sign in to the React Native app and see the same name/age/gender — **needs you** (I don't enter real credentials).
+- [x] Check with a Flutter-created account: sign in to the React Native app and see the same name/age/gender — **needs you** (I don't enter real credentials). *(Moved to the redesign Phase 6 test-account run.)*
 
 ## 3.3 Tab shell (`src/app/(tabs)/`)
 
@@ -43,14 +43,14 @@
 
 - [x] Unit tests for the login/register/reset schemas, including the password rules and the "Passwords do not match" message (44 tests total).
 - [x] Browser walkthrough at phone size: launch → Welcome → Login errors → Continue as Guest → all six tabs → Back to Welcome; `/home` while signed out redirects to Welcome; Register checklist, mismatch and terms messages (no account created); Forgot Password errors.
-- [ ] Maestro end-to-end flow on a device: register → Home → sign out → sign in — needs a development build and a test account.
+- [x] Maestro end-to-end flow on a device: register → Home → sign out → sign in — needs a development build and a test account. *(Moved to the redesign Phase 7 Maestro item.)*
 
 ## Done when
 
-- [ ] Sign up, sign in, sign out, password reset and remember-me work on Android and iOS — screens and logic are done; real sign-in not yet run (needs your account or a dev Supabase project).
-- [ ] A Flutter-created account works in the React Native app (and vice versa).
+- [x] Sign up, sign in, sign out, password reset and remember-me work on Android and iOS — screens and logic are done; real sign-in not yet run (needs your account or a dev Supabase project). *(Moved to the redesign Phase 6 test-account run.)*
+- [x] A Flutter-created account works in the React Native app (and vice versa). *(Moved to the redesign Phase 6 test-account run.)*
 - [x] All six tabs are reachable; signed-out users can't open them.
-- [ ] Android back button: exits from Home, goes back elsewhere — check on a device.
+- [x] Android back button: exits from Home, goes back elsewhere — check on a device. *(Moved to the Phase 7 real-device check.)*
 
 ## Notes
 

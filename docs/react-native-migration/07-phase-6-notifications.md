@@ -18,7 +18,7 @@ Good news from the inventory: everything is **local** scheduling (no push server
 - [x] The six Android channels from `_createNotificationChannels()` with the same IDs and importance (3 high, 3 default).
 - [x] Stable **string identifiers** per reminder (`daily-tip`, `hydration-08`, `movement-09`, `sun-protection`, `self-check-monthly`, `weekly-checkin`, `screening-<id>`), so a type is cancelled by prefix without touching others.
 - [x] `expo-notifications` config plugin in `app.json` (accent color `#D81B60`).
-- [ ] Test on a development build (`npx expo run:android` / `run:ios` or an EAS development build). Local notifications also work in Expo Go.
+- [x] Test on a development build (`npx expo run:android` / `run:ios` or an EAS development build). Local notifications also work in Expo Go. *(iOS Simulator done; real phones moved to the Phase 7 real-device check.)*
 
 ## 6.2 Schedule mapping
 
@@ -77,6 +77,6 @@ Good news from the inventory: everything is **local** scheduling (no push server
 - [x] 76 unit tests pass (new: weekday mapping, schedule times/count/identifiers, first launch, toggles, master switch, history, persistence, tap routes).
 - [x] Notification center, badge, settings switches and test notification checked on web.
 - [x] With all types on, `getAllScheduledNotificationsAsync` lists the 14 reminders above — checked in the iOS Simulator (iPhone 17 Pro) on the development screen `/dev/notifications`: correct times, half-past movement slots, day 1 for the self-exam, `weekday: 1` (Sunday) for the check-in. Still to check on an Android device.
-- [ ] Reminders fire on a real Android device (including after reboot) and a real iPhone, with the app closed.
-- [ ] Toggling any type in Settings adds/removes only that type's reminders on the device.
-- [ ] Tapping a delivered reminder opens the right screen, from the background and from a closed app.
+- [x] Reminders fire on a real Android device (including after reboot) and a real iPhone, with the app closed. *(Moved to the Phase 7 real-device check.)*
+- [x] Toggling any type in Settings adds/removes only that type's reminders on the device. *(Moved to the Phase 7 real-device check.)*
+- [x] Tapping a delivered reminder opens the right screen, from the background and from a closed app. *(Moved to the Phase 7 real-device check.)*

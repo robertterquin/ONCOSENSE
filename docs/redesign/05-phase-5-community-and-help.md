@@ -41,7 +41,7 @@ Artboards: **Community**, **Question**, **Get help**, **Get help (dark)**.
 
 - [x] The four artboards match on web and the iOS Simulator, light and dark, at Default and Larger text. (Web: light, dark and Larger; iOS Simulator: light, with Copy number and the guest report prompt.)
 - [x] Unit tests: region mapping, crisis line constant, question row formatting.
-- [ ] With a test account: ask, answer, mark helpful, save and report; a guest can read but not post.
+- [ ] With a test account: ask, answer, mark helpful (tap quickly on and off: the count stays right), save and report; a guest can read but not post.
 - [ ] Every call button dials on a real phone.
 - [x] Old Forum, Resources and saved-list screens and components are deleted.
 

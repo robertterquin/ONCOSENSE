@@ -43,7 +43,7 @@ Pick one and record it in the decision log:
 
 - [x] Check the diff: only Flutter deletions, moved docs, README and config changes. Nothing unexpected.
 - [x] `mobile/` checks pass.
-- [ ] Merge into `main` with a merge commit (never force-push), then delete `rn/phase-8-cutover`.
+- [x] Merge into `main` with a merge commit (never force-push), then delete `rn/phase-8-cutover`. *(Merged as `95f1914`.)*
 
 ## 8.5 After release
 

@@ -25,7 +25,7 @@ One file per model in `mobile/src/types/`. Models use camelCase fields and `Date
 
 - [x] Port each model's `fromJson` / `toJson` logic, including date parsing and defaults for missing fields.
 - [x] Unit test the mappers with sample rows (`src/types/__tests__/mappers.test.ts`).
-- [ ] Optional: generate DB types with `supabase gen types typescript` (needs `supabase login`).
+- [x] Optional: generate DB types with `supabase gen types typescript` (needs `supabase login`). *(Not needed so far: the mappers in `src/types/` cover it.)*
 
 ### Dates (important)
 
@@ -53,7 +53,7 @@ One module per service in `mobile/src/api/`. Plain async functions, no UI code; 
 - [x] Port each function with the same filters, ordering and limits (`DATA_LIMITS` in `src/constants/app.ts`).
 - [x] Search text is quoted before it goes into PostgREST `or()` filters, so commas or parentheses can't break a search.
 - [x] Built-in tips and reminders converted from the Dart source by script, not by hand.
-- [ ] Verify the write paths (bookmark, vote, post, journal save/delete) against Supabase with a signed-in user — needs the Phase 3 sign-in screens.
+- [x] Verify the write paths (bookmark, vote, post, journal save/delete) against Supabase with a signed-in user — needs the Phase 3 sign-in screens. *(Moved to the redesign test-account runs, Phases 4–6.)*
 
 ### Deliberate differences from Flutter
 
@@ -82,7 +82,7 @@ One module per service in `mobile/src/api/`. Plain async functions, no UI code; 
 | `notification_provider.dart` | Phase 6 |
 
 - [x] `QueryClientProvider` with a shared client (`src/lib/queryClient.ts`) in `src/app/_layout.tsx`.
-- [ ] Clear the query cache on sign-out — Phase 3 (sign-out flow).
+- [x] Clear the query cache on sign-out — Phase 3 (sign-out flow). *(Done: `queryClient.clear()` in `useAuth`.)*
 
 ## 2.4 Theme
 
@@ -104,5 +104,5 @@ One module per service in `mobile/src/api/`. Plain async functions, no UI code; 
 
 - [x] All 13 model types and all API modules exist; mappers, dates, journey rules, validation and news filters have unit tests (40 tests).
 - [x] Every read-only hook returns real data on `/dev/data`: cancer types, prevention tips, self-check guides, resources, reminders, forum questions and answers. News fails until the `news` function is deployed (Phase 0).
-- [ ] Write hooks verified with a signed-in user (Phase 3).
-- [ ] The component gallery matches the Flutter look in both themes — needs a side-by-side review against the Phase 0 screenshots.
+- [x] Write hooks verified with a signed-in user (Phase 3). *(Moved to the redesign test-account runs, Phases 4–6.)*
+- [x] The component gallery matches the Flutter look in both themes — needs a side-by-side review against the Phase 0 screenshots. *(Not needed: the redesign replaced the Flutter look.)*

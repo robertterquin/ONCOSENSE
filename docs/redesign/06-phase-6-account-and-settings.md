@@ -38,7 +38,7 @@ Artboards: **Welcome**, **Sign in**, **Profile**, **Settings and reminders**.
 
 - [x] The four artboards match on web and the iOS Simulator, light and dark, at Default and Larger text.
 - [x] Unit tests: reminder time changes reschedule only their type; theme and text-size migrations.
-- [ ] Full flows with a test account: sign up → focus → permission → Today; sign out; sign in; forgot password email arrives; delete account (with `delete-account` deployed).
+- [ ] Full flows with a test account: sign up → focus → permission → Today; edit the profile and photo; change the password; sign out; sign in (also with an account made in the old Flutter app: same name, age and gender); forgot password email arrives; delete account (`delete-account` is deployed).
 
 ## Notes from building it
 

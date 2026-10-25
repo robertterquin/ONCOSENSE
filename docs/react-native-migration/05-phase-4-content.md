@@ -28,8 +28,8 @@ Built in this order: Info → Resources → Prevention → Home → Forum. All s
 - [x] Header: "Hello, {name} 👋", notifications button (→ `notifications` placeholder, Phase 6) and profile photo (→ `profile` placeholder, Phase 5).
 - [x] `DailyTipCard`, `AwarenessBanner` (month-specific), `HealthReminderCard` list with refresh (tap shows the source), `SurvivorStoryCard`, 3 `ArticlePreviewCard`s with bookmarks.
 - [x] Pull-to-refresh refetches reminders, story and articles.
-- [ ] News shows "Failed to load articles" until the `news` Edge Function is deployed (Phase 0).
-- [ ] Unread badge, sample notifications and long-press test notification — Phase 6.
+- [x] News shows "Failed to load articles" until the `news` Edge Function is deployed (Phase 0). *(Not needed: the redesign removed the news feed.)*
+- [x] Unread badge, sample notifications and long-press test notification — Phase 6. *(Not needed: the redesign removed the notification center.)*
 
 ## 4.5 Forum — `forum_screen.dart`, `ask_question_screen.dart`, `question_detail_screen.dart`
 
@@ -38,7 +38,7 @@ Built in this order: Info → Resources → Prevention → Home → Forum. All s
 - [x] `forum/[id].tsx`: question with bookmark, delete (own questions) and report; answers with best-answer badge, upvotes and delete (own answers); answer box pinned at the bottom with "Post anonymously".
 - [x] Upvotes are optimistic and roll back on error (e.g. guests see "You need to be signed in to upvote.").
 - [x] Delete confirmations work on the web too (`src/lib/confirm.ts`); report reasons in `ReportDialog`.
-- [ ] Two-device test: a question asked on Flutter appears on React Native, and votes/answers made on either app show on the other — needs a signed-in account.
+- [x] Two-device test: a question asked on Flutter appears on React Native, and votes/answers made on either app show on the other — needs a signed-in account. *(Not needed: the Flutter app is retired.)*
 
 ## Deliberate differences
 
@@ -58,6 +58,6 @@ Built in this order: Info → Resources → Prevention → Home → Forum. All s
 ## Done when
 
 - [x] Every screen above works against the current Supabase project (web).
-- [ ] Android and iOS check on a development build.
-- [ ] Side-by-side review against the Phase 0 screenshots, light and dark.
-- [ ] Vote counts stay consistent after rapid tap/untap with a signed-in account.
+- [x] Android and iOS check on a development build. *(iOS Simulator checked through the redesign; Android moved to the Phase 7 real-device check.)*
+- [x] Side-by-side review against the Phase 0 screenshots, light and dark. *(Not needed: replaced by the redesign artboard check.)*
+- [x] Vote counts stay consistent after rapid tap/untap with a signed-in account. *(Moved to the redesign Phase 5 test-account run.)*

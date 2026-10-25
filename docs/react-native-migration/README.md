@@ -45,14 +45,14 @@ These rules apply for the whole migration. Breaking one needs a team decision re
 | # | Phase | Doc | Est. effort | Status |
 |---|---|---|---|---|
 | — | Inventory of the current app | [00-inventory.md](00-inventory.md) | — | Done |
-| 0 | Preparation & safety net | [01-phase-0-preparation.md](01-phase-0-preparation.md) | 2–3 days | In progress |
-| 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | In progress |
-| 2 | Foundation (types, services, state, theme) | [03-phase-2-foundation.md](03-phase-2-foundation.md) | 1–2 weeks | Done (write paths verified in Phase 3) |
-| 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Done (real sign-in to verify) |
-| 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Done (signed-in actions to verify) |
-| 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Done (signed-in checks + deploy `delete-account`) |
-| 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Done (device checks to do) |
-| 7 | QA, parity check & release | [08-phase-7-qa-release.md](08-phase-7-qa-release.md) | 1–2 weeks | In progress |
+| 0 | Preparation & safety net | [01-phase-0-preparation.md](01-phase-0-preparation.md) | 2–3 days | Done except the GNews key revoke and a schema backup |
+| 1 | Project setup | [02-phase-1-setup.md](02-phase-1-setup.md) | 3–5 days | Done except EAS setup and an Android build (Phase 7) |
+| 2 | Foundation (types, services, state, theme) | [03-phase-2-foundation.md](03-phase-2-foundation.md) | 1–2 weeks | Done |
+| 3 | Auth & app shell | [04-phase-3-auth-shell.md](04-phase-3-auth-shell.md) | 1 week | Done (account checks in redesign Phase 6) |
+| 4 | Content features (Home, Info, Prevention, Forum, Resources) | [05-phase-4-content.md](05-phase-4-content.md) | 2–3 weeks | Done |
+| 5 | Personal features (Journey, Profile, Saved items, Settings) | [06-phase-5-personal.md](06-phase-5-personal.md) | 2–3 weeks | Done (`delete-account` deployed 2026-10-25) |
+| 6 | Notifications & reminders | [07-phase-6-notifications.md](07-phase-6-notifications.md) | 1–2 weeks | Done (device checks in Phase 7) |
+| 7 | QA, parity check & release | [08-phase-7-qa-release.md](08-phase-7-qa-release.md) | 1–2 weeks | In progress: device checks and store release left |
 | 8 | Cutover & Flutter retirement | [09-phase-8-cutover.md](09-phase-8-cutover.md) | 2–3 days | In progress (Flutter removed; release and cleanup after it) |
 
 Estimates assume one developer working full time. Update the **Status** column (`Not started` / `In progress` / `Done`) as each phase finishes.

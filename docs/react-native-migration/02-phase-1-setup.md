@@ -76,10 +76,10 @@ Use `npx expo install` for anything native so versions match the SDK, and run `n
 - [x] GitHub Actions workflow `.github/workflows/mobile.yml` runs lint, typecheck and tests on PRs and pushes touching `mobile/**` only (so the Flutter side is unaffected).
 - [x] `eas.json` with `development`, `preview` and `production` profiles.
 - [ ] Create the EAS project: `npx eas-cli@latest login` then `npx eas-cli@latest init` (adds the project ID to `app.json`).
-- [ ] Make one development build each for Android and iOS and install them: `npx eas-cli@latest build --profile development --platform all`, or locally with `npm run ios` / `npm run android` (needs Xcode + CocoaPods / Android Studio).
+- [ ] Make one development build each for Android and iOS and install them: `npx eas-cli@latest build --profile development --platform all`, or locally with `npm run ios` / `npm run android` (needs Xcode + CocoaPods / Android Studio). *(iOS done locally with `npm run ios`; Android not yet.)*
 
 ## Done when
 
-- [ ] `mobile/` runs on an Android emulator and iOS simulator via the development build.
+- [ ] `mobile/` runs on an Android emulator and iOS simulator via the development build. *(iOS Simulator done; Android not yet.)*
 - [x] The smoke test screen shows real `cancer_types` rows from Supabase (checked on web; iOS and Android bundles build with `npx expo export`).
-- [ ] CI passes on the PR; `git diff origin/main...HEAD --stat` shows no changes outside `mobile/`, `.github/workflows/mobile.yml`, `.gitignore` and `docs/`.
+- [x] CI passes on the PR; `git diff origin/main...HEAD --stat` shows no changes outside `mobile/`, `.github/workflows/mobile.yml`, `.gitignore` and `docs/`. *(CI green on `main`, 2026-10-25; Flutter has since left `main`.)*
