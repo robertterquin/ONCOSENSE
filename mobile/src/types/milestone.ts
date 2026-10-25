@@ -3,7 +3,7 @@ import { parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
 import { booleanOr, optionalNumber, requireString, type Row } from './row';
 
 /** Stored by name in the `type` column. The order matches Flutter's enum (used for old numeric rows). */
-export const MILESTONE_TYPES = [
+const MILESTONE_TYPES = [
   'daysFree',
   'treatmentComplete',
   'sessionComplete',
@@ -12,7 +12,7 @@ export const MILESTONE_TYPES = [
   'anniversary',
 ] as const;
 
-export type MilestoneType = (typeof MILESTONE_TYPES)[number];
+type MilestoneType = (typeof MILESTONE_TYPES)[number];
 
 export type Milestone = {
   id: string;

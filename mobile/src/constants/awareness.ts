@@ -1,7 +1,7 @@
 // Cancer awareness months, first shown on the Flutter home screen. Today links each
 // one to its cancer type when Learn has one with the same name.
 
-export type AwarenessMonth = {
+type AwarenessMonth = {
   emoji: string;
   month: string;
   /** Matches a cancer type's name when there is one ("Breast Cancer"). */
@@ -9,7 +9,7 @@ export type AwarenessMonth = {
   subtitle: string;
 };
 
-export const AWARENESS_MONTHS: AwarenessMonth[] = [
+const AWARENESS_MONTHS: AwarenessMonth[] = [
   {
     emoji: '🎗️',
     month: 'January',

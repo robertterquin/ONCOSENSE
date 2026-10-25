@@ -10,7 +10,7 @@ import { MOODS, SLEEP } from './journeyLabels';
 // "Share a summary with my doctor" (redesign Phase 4): the facts for a date range, as
 // plain lines (the preview, and what tests check) and as HTML for expo-print.
 
-export type SummaryInput = {
+type SummaryInput = {
   name: string;
   focus: JourneyFocus | null;
   days: number;

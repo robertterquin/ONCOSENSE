@@ -3,7 +3,7 @@ import { CREDITS, MEDICAL_DISCLAIMER, PRIVACY_POLICY, TERMS_OF_SERVICE } from '@
 
 // Terms, privacy, the medical disclaimer and credits, shown in a sheet.
 
-export const LEGAL = {
+const LEGAL = {
   'Medical disclaimer': MEDICAL_DISCLAIMER,
   'Terms of service': TERMS_OF_SERVICE,
   'Privacy policy': PRIVACY_POLICY,

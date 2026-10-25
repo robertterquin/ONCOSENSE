@@ -61,7 +61,7 @@ export function dueLabel(due: Date, now: Date = new Date()): string {
 }
 
 /** Guides shown first for a profile's gender (`cancer_type` values). Editable in Phase 6. */
-export function defaultGuideTypes(gender: string | null): string[] {
+function defaultGuideTypes(gender: string | null): string[] {
   if (gender === 'Female') return ['Breast', 'Skin', 'Oral'];
   if (gender === 'Male') return ['Testicular', 'Skin', 'Oral'];
   return ['Skin', 'Oral'];
@@ -112,7 +112,7 @@ export function soonestGuide<T extends SelfCheckGuide>(
   return soonest;
 }
 
-export type NextStep<T> = { kind: 'self-check'; guide: T; due: Date } | { kind: 'learn' };
+type NextStep<T> = { kind: 'self-check'; guide: T; due: Date } | { kind: 'learn' };
 
 /**
  * Today's one next step: a due self-check that isn't snoozed, else learning the early

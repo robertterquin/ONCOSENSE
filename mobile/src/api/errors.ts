@@ -13,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-export class NotSignedInError extends ApiError {
+class NotSignedInError extends ApiError {
   constructor(action: string) {
     super(`You need to be signed in to ${action}.`);
     this.name = 'NotSignedInError';

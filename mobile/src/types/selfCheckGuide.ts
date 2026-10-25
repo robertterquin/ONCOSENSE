@@ -2,7 +2,7 @@ import { parseOptionalDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, numberOr, optionalString, requireString, type Row } from './row';
 
-export type SelfCheckStep = {
+type SelfCheckStep = {
   step: number;
   instruction: string;
   detail: string;

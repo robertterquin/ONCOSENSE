@@ -53,7 +53,7 @@ export function mostCommonSymptoms(entries: JourneyEntry[]): [string, number][] 
 
 // ---- Dashboard (redesign Phase 4) ----
 
-export type WeekDay = { date: Date; label: string; isToday: boolean; checkedIn: boolean };
+type WeekDay = { date: Date; label: string; isToday: boolean; checkedIn: boolean };
 
 const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

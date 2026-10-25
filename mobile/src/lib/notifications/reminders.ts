@@ -22,7 +22,7 @@ export const NotificationKind = {
   test: 'test',
 } as const;
 
-export type ChannelImportance = 'high' | 'default';
+type ChannelImportance = 'high' | 'default';
 
 /** Android channels, with the IDs the Flutter app used. */
 export const CHANNELS = [
@@ -58,7 +58,7 @@ export const OBSOLETE_CHANNEL_IDS = [
   'forum_notifications',
 ] as const;
 
-export type ChannelId = (typeof CHANNELS)[number]['id'];
+type ChannelId = (typeof CHANNELS)[number]['id'];
 
 export type ReminderTrigger =
   | { kind: 'daily'; hour: number; minute: number }
@@ -88,7 +88,7 @@ export function toExpoWeekday(dartWeekday: number): number {
   return (dartWeekday % 7) + 1;
 }
 
-export function monthlySelfExamReminder(
+function monthlySelfExamReminder(
   dayOfMonth = 1,
   time: ReminderTime = DEFAULT_TIMES.self_check,
 ): ReminderRequest {
@@ -104,7 +104,7 @@ export function monthlySelfExamReminder(
 }
 
 /** The next self-check, on the day it is due (redesign Phase 3). */
-export function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
+function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
   return {
     identifier: 'self-check-next',
     title: 'Time for a self-check',
@@ -120,9 +120,7 @@ export function selfCheckReminder(guideTitle: string, date: Date): ReminderReque
 export type SelfCheckPlan = { guideTitle: string; date: Date };
 
 /** Every evening for Journey users (redesign Phase 4; replaced the weekly check-in). */
-export function dailyCheckInReminder(
-  time: ReminderTime = DEFAULT_TIMES.daily_checkin,
-): ReminderRequest {
+function dailyCheckInReminder(time: ReminderTime = DEFAULT_TIMES.daily_checkin): ReminderRequest {
   return {
     identifier: 'daily-checkin',
     title: 'How was today?',
@@ -135,7 +133,7 @@ export function dailyCheckInReminder(
 }
 
 /** A health tip once a week (redesign Phase 6; off unless turned on in Settings). */
-export function weeklyTipReminder(
+function weeklyTipReminder(
   tip: string,
   time: ReminderTime = DEFAULT_TIMES.weekly_tip,
 ): ReminderRequest {
@@ -226,7 +224,7 @@ export function isScheduledPrefType(type: PrefType): type is ScheduledPrefType {
 type AppointmentLike = { id: string; title: string; startsAt: Date; location: string | null };
 
 /** What scheduling needs beyond the type: times from Settings and the person's data. */
-export type ReminderContext = {
+type ReminderContext = {
   times?: Partial<Record<PrefType, ReminderTime>>;
   /** The soonest chosen self-check (when the guides have loaded). */
   selfCheckPlan?: SelfCheckPlan | null;

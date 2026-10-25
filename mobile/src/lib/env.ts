@@ -1,4 +1,4 @@
-export type SupabaseConfig = {
+type SupabaseConfig = {
   url: string;
   anonKey: string;
 };

@@ -15,7 +15,7 @@ import {
 
 // Port of lib/services/forum_service.dart.
 
-export type QuestionSort = 'recent' | 'trending' | 'unanswered';
+type QuestionSort = 'recent' | 'trending' | 'unanswered';
 
 export type QuestionFilters = {
   category?: string | null;

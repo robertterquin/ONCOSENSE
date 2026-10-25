@@ -37,7 +37,7 @@ const toDate = (time: ReminderTime) => {
 };
 
 /** "On the day a check is due, 9:00 AM" */
-export function describeReminder(type: NotificationType, time: ReminderTime): string {
+function describeReminder(type: NotificationType, time: ReminderTime): string {
   const at = formatTime(toDate(time));
   switch (type) {
     case 'self_check':

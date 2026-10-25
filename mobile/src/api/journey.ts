@@ -111,7 +111,7 @@ export function isMissingTable(error: { code?: string } | null): boolean {
   return error?.code === '42P01' || error?.code === 'PGRST205';
 }
 
-export const APPOINTMENTS_NOT_SET_UP =
+const APPOINTMENTS_NOT_SET_UP =
   "Appointments aren't available yet. They'll work once the app's database is updated.";
 
 /** Upcoming and past appointments; empty until the table exists. */

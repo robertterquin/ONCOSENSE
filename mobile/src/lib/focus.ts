@@ -4,7 +4,7 @@ import type { User } from '@supabase/supabase-js';
 // the daily check-in reminder appear. Saved in user metadata `journey_focus`; guests
 // keep it on the device (stores/focusStore.ts).
 
-export const JOURNEY_FOCUSES = ['learning', 'treatment', 'finished', 'caring'] as const;
+const JOURNEY_FOCUSES = ['learning', 'treatment', 'finished', 'caring'] as const;
 
 export type JourneyFocus = (typeof JOURNEY_FOCUSES)[number];
 
@@ -31,7 +31,7 @@ export const FOCUS_OPTIONS: { value: JourneyFocus; title: string; description: s
   },
 ];
 
-export function isJourneyFocusValue(value: unknown): value is JourneyFocus {
+function isJourneyFocusValue(value: unknown): value is JourneyFocus {
   return typeof value === 'string' && (JOURNEY_FOCUSES as readonly string[]).includes(value);
 }
 

@@ -24,7 +24,7 @@ export function cancerForAwareness<T extends Pick<CancerType, 'name'>>(
   return cancers.find((cancer) => lower(cancer.name) === lower(awarenessTitle)) ?? null;
 }
 
-export type LearnLists = {
+type LearnLists = {
   cancers: CancerType[];
   guides: SelfCheckGuide[];
   tips: PreventionTip[];

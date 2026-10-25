@@ -10,7 +10,7 @@ function verifiedResources() {
   return supabase.from('resources').select().eq('is_verified', true).eq('is_active', true);
 }
 
-export async function fetchResourcesByType(type: ResourceType): Promise<Resource[]> {
+async function fetchResourcesByType(type: ResourceType): Promise<Resource[]> {
   try {
     const { data, error } = await verifiedResources().eq('type', type).order('name');
     check(error, 'Failed to fetch resources');

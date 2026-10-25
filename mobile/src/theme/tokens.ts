@@ -1,11 +1,4 @@
-// Spacing, radius and animation durations from lib/utils/constants.dart.
-
-export const spacing = {
-  small: 8,
-  medium: 16,
-  large: 24,
-  extraLarge: 32,
-} as const;
+// Radius and animation durations from lib/utils/constants.dart.
 
 export const radius = {
   small: 8,

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-export const MIN_NAME_LENGTH = 2;
-export const MIN_AGE = 13;
-export const MAX_AGE = 120;
+const MIN_NAME_LENGTH = 2;
+const MIN_AGE = 13;
+const MAX_AGE = 120;
 
 const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -70,7 +70,7 @@ export const PASSWORD_REQUIREMENTS = [
   },
 ] as const;
 
-export const newPasswordSchema = z
+const newPasswordSchema = z
   .string()
   .min(1, MESSAGES.passwordEmpty)
   .superRefine((password, ctx) => {
