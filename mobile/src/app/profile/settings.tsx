@@ -126,6 +126,7 @@ export default function SettingsScreen() {
             />
             <ListRow
               icon="trash"
+              iconTone="danger"
               title="Delete account"
               titleTone="danger"
               onPress={() => setDeleting(true)}

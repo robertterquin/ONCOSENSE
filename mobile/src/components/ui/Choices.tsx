@@ -85,7 +85,7 @@ export function SegmentedControl<T extends string>({
             <Text
               variant={selected ? 'strong' : 'row'}
               tone={selected ? 'action' : 'ink'}
-              numberOfLines={1}>
+              style={styles.segmentLabel}>
               {option.label}
             </Text>
           </Pressable>
@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     borderRadius: radii.control - 4,
   },
+  segmentLabel: { textAlign: 'center' },
   raisedShadow: {
     shadowColor: '#221A36',
     shadowOpacity: 0.18,

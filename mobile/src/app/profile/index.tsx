@@ -98,6 +98,7 @@ export default function ProfileScreen() {
         />
         <ListRow
           icon="bell"
+          iconTone="sun"
           title="Reminders"
           trailing={REMINDERS_SUPPORTED ? (remindersOn ? `${remindersOn} on` : 'Off') : undefined}
           onPress={() => router.push('/profile/settings')}

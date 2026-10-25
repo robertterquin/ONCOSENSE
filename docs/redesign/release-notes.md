@@ -32,6 +32,16 @@ Draft for the first release of the redesigned app (redesign Phase 7). Check the 
   - Clear keyboard focus on the web version.
 - **Posting anonymously is on by default** in Community, and you can change it each time.
 
+### A warmer look (design refresh)
+
+- **Headings in a rounder font** (Nunito), with body text still in Atkinson Hyperlegible.
+- **New icons** with soft, rounded lines, including organs for the cancers that have one and five faces for how you feel.
+- **A floating tab bar** that names every tab.
+- **Today** shows how many steps a self-check has and sets the tip apart in warm yellow.
+- **Learn** marks each self-check as due or done, and shows cancer types as a grid.
+- **Journey** draws your week as one ribbon thread, with a knot for each day you checked in, and shows how your energy and pain compare with the week before.
+- **Help** puts the crisis line on a bright teal card you can't miss.
+
 ### What we removed, and why
 
 - **The news feed and stories:** the articles weren't checked by us, and the app should stay on awareness, early detection and support.

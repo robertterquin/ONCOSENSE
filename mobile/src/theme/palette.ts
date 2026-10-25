@@ -127,4 +127,5 @@ export const MARK_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['onAction', 'rose'],
   ['danger', 'raised'],
   ['sunInk', 'surface'],
+  ['danger', 'roseTint'],
 ];
