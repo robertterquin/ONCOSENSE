@@ -1,5 +1,6 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { radii, space } from '@/theme/tokens';
@@ -22,89 +23,96 @@ export const TAB_ICONS: Record<string, IconName> = {
 };
 
 /**
- * Five labelled tabs on a white bar; the active one gets a lavender pill behind its
- * icon and a bold label. Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
+ * A floating violet pill: the open tab expands into a white pill with its icon and name,
+ * the others show their icon (screen readers still hear every name). Sits below the
+ * screens rather than over them, so nothing scrolls behind it.
+ * Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const { palette, textSize } = useDesign();
   // Phones shrink a long label to fit (`adjustsFontSizeToFit`); browsers can't, so the
-  // web keeps labels at the default size ("Community" would be cut off at 375 px).
-  const labelSize = Platform.OS === 'web' ? 13 : Math.round(13 * TEXT_SIZES[textSize]);
+  // web keeps labels at the default size.
+  const labelSize = Platform.OS === 'web' ? 14 : Math.round(14 * TEXT_SIZES[textSize]);
   const insets = useSafeAreaInsets();
 
   return (
     <View
-      accessibilityRole="tablist"
       style={[
-        styles.bar,
-        {
-          backgroundColor: palette.surface,
-          borderTopColor: palette.line,
-          paddingBottom: Math.max(insets.bottom, space.sm),
-        },
+        styles.outer,
+        { backgroundColor: palette.ground, paddingBottom: Math.max(insets.bottom, space.md) },
       ]}>
-      {state.routes.map((route, index) => {
-        const focused = state.index === index;
-        const { options } = descriptors[route.key];
-        const label = options.title ?? route.name;
-        const onPress = () => {
-          const event = emitter.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
-          if (!focused && !event.defaultPrevented) navigateToTab(route.key);
-        };
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: focused }}
-            accessibilityLabel={`${label}, tab ${index + 1} of ${state.routes.length}`}
-            onPress={onPress}
-            onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
-            style={styles.tab}>
-            <View style={[styles.pill, focused && { backgroundColor: palette.raised }]}>
-              <Icon
-                name={TAB_ICONS[route.name] ?? 'home'}
-                size={22}
-                tone={focused ? 'action' : 'muted'}
-              />
-            </View>
-            <Text
-              variant="caption"
-              tone={focused ? 'action' : 'muted'}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.8}
-              maxFontSizeMultiplier={1.3}
-              style={{
-                fontSize: labelSize,
-                lineHeight: Math.round(labelSize * 1.3),
-                fontFamily: focused ? fontFamily.extraBold : fontFamily.semiBold,
-              }}>
-              {label}
-            </Text>
-          </Pressable>
-        );
-      })}
+      <View accessibilityRole="tablist" style={[styles.bar, { backgroundColor: palette.panel }]}>
+        {state.routes.map((route, index) => {
+          const focused = state.index === index;
+          const { options } = descriptors[route.key];
+          const label = options.title ?? route.name;
+          const onPress = () => {
+            const event = emitter.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+          };
+          return (
+            <Animated.View
+              key={route.key}
+              layout={LinearTransition.duration(200)}
+              style={focused ? styles.activeSlot : styles.slot}>
+              <Pressable
+                accessibilityRole="tab"
+                accessibilityState={{ selected: focused }}
+                accessibilityLabel={`${label}, tab ${index + 1} of ${state.routes.length}`}
+                onPress={onPress}
+                onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
+                style={[styles.tab, focused && { backgroundColor: palette.onPanel }]}>
+                <Icon
+                  name={TAB_ICONS[route.name] ?? 'home'}
+                  size={22}
+                  color={focused ? palette.panel : palette.onPanelMuted}
+                />
+                {focused && (
+                  <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.8}
+                    maxFontSizeMultiplier={1.3}
+                    style={{
+                      color: palette.panel,
+                      fontSize: labelSize,
+                      lineHeight: Math.round(labelSize * 1.3),
+                      fontFamily: fontFamily.extraBold,
+                    }}>
+                    {label}
+                  </Text>
+                )}
+              </Pressable>
+            </Animated.View>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outer: { paddingHorizontal: space.lg, paddingTop: space.sm },
   bar: {
     flexDirection: 'row',
-    paddingTop: space.sm,
-    paddingHorizontal: space.xs,
-    borderTopWidth: StyleSheet.hairlineWidth * 2,
-  },
-  tab: { flex: 1, alignItems: 'center', gap: space.xs, minHeight: TAB_BAR_HEIGHT - space.sm },
-  pill: {
-    width: 56,
-    height: 32,
+    alignItems: 'center',
+    padding: space.xs + 2,
     borderRadius: radii.round,
+    minHeight: TAB_BAR_HEIGHT,
+  },
+  slot: { flex: 1 },
+  activeSlot: { flexShrink: 0 },
+  tab: {
+    minHeight: 52,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.md + 2,
+    borderRadius: radii.round,
   },
 });
