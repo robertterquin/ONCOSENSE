@@ -117,8 +117,8 @@ type IconButtonProps = {
   /** Read by screen readers ("Call Philippine Cancer Society, (02) 8508-7777"). */
   accessibilityLabel: string;
   onPress: () => void;
-  /** `plain`: no background; `tinted`: lavender; `help`: teal tint for calling. */
-  look?: 'plain' | 'tinted' | 'help';
+  /** `plain`: no background; `tinted`: lavender; `help`: teal tint for calling; `primary`: solid action. */
+  look?: 'plain' | 'tinted' | 'help' | 'primary';
   size?: number;
   style?: StyleProp<ViewStyle>;
 };
@@ -134,8 +134,15 @@ export function IconButton({
 }: IconButtonProps) {
   const { palette } = useDesign();
   const background =
-    look === 'tinted' ? palette.raised : look === 'help' ? palette.helpTint : 'transparent';
-  const color = look === 'help' ? palette.help : palette.action;
+    look === 'primary'
+      ? palette.action
+      : look === 'tinted'
+        ? palette.raised
+        : look === 'help'
+          ? palette.helpTint
+          : 'transparent';
+  const color =
+    look === 'primary' ? palette.onAction : look === 'help' ? palette.help : palette.action;
   return (
     <Pressable
       accessibilityRole="button"

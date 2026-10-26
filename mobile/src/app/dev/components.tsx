@@ -194,6 +194,12 @@ export default function ComponentGalleryScreen() {
             onPress={() => {}}
           />
           <IconButton
+            icon="plus"
+            look="primary"
+            accessibilityLabel="Ask a question"
+            onPress={() => {}}
+          />
+          <IconButton
             icon="phone"
             look="help"
             accessibilityLabel="Call Department of Health, 1555"
