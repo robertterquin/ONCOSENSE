@@ -17,8 +17,8 @@
 
 - [x] Light floating dock: `surface` background, `border` outline, `radii.panel` corners; every tab shows its icon and name; the open tab gets a `raised` pill and a bold `action` label. *(Built 2026-10-25, checked on web light and dark.)*
 - [x] Check on the iOS Simulator. *(iPhone 17 Pro, light, 2026-10-25.)*
-- [ ] Check at Larger text ("Community" must not be cut).
-- [ ] Commit.
+- [x] Check at Larger text ("Community" must not be cut). *(Web, 375 px, 2026-10-26.)*
+- [x] Commit.
 
 ## 1.3 Launch screen
 
@@ -38,7 +38,7 @@ New components in `src/components/ui/`, each in the "Tags and tiles" section of 
 
 ## Done when
 
-- [ ] Every screen renders with Hugeicons and nothing imports Lucide.
-- [ ] Tab bar and launch screen checked on web and iOS, light and dark.
+- [x] Every screen renders with Hugeicons and nothing imports Lucide.
+- [x] Tab bar and launch screen checked on web and iOS, light and dark. *(iOS light and dark on iPhone 17 Pro, 2026-10-26.)*
 - [ ] The new components appear in `/dev/components` in both themes and at Larger text.
-- [ ] Contrast tests pass.
+- [x] Contrast tests pass.

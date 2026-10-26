@@ -71,16 +71,17 @@ export function ThreadWeek({ entries, now }: { entries: JourneyEntry[]; now: Dat
           ) : null}
         </View>
         <View style={styles.labels} {...decorative}>
-          {days.map((day, index) => (
-            <Text
-              key={day.label}
-              variant="caption"
-              tone={day.isToday ? 'action' : 'muted'}
-              numberOfLines={1}
-              style={[styles.label, { left: x(index) - LABEL_WIDTH / 2 }]}>
-              {day.isToday ? 'Today' : day.label.charAt(0)}
-            </Text>
-          ))}
+          {width > 0 &&
+            days.map((day, index) => (
+              <Text
+                key={day.label}
+                variant="caption"
+                tone={day.isToday ? 'action' : 'muted'}
+                numberOfLines={1}
+                style={[styles.label, { left: x(index) - LABEL_WIDTH / 2 }]}>
+                {day.isToday ? 'Today' : day.label.charAt(0)}
+              </Text>
+            ))}
         </View>
       </View>
     </Section>

@@ -11,7 +11,7 @@
 
 ## 6.2 Checks
 
-- [ ] Every screen in light and dark, at Default, Large and Larger text, on web at 375 px and the iOS Simulator. *(2026-10-25: account screens on web at 390 px, light and dark, Default and Larger; Profile and Settings on iOS (iPhone 17 Pro, dark). Larger text truncated segmented-control labels ("Questi…"); they now wrap. Large text not swept.)*
+- [ ] Every screen in light and dark, at Default, Large and Larger text, on web at 375 px and the iOS Simulator. *(2026-10-25: account screens on web at 390 px, light and dark, Default and Larger; Profile and Settings on iOS (iPhone 17 Pro, dark). Larger text truncated segmented-control labels ("Questi…"); they now wrap. 2026-10-26: Today, Learn, Journey, Community and Help on web at Large; Today, Learn, Journey, Help and Settings on iOS in light. Not swept: cancer detail and self-check guide at every size.)*
 - [ ] Contrast test covers every new pair; spot-check the teal crisis card and the tags with a contrast checker. *(Test covers every pair, including `danger`/`roseTint`; the manual spot-check is left.)*
 - [x] Reduce Motion: the thread doesn't animate. *(The draw-in animation was skipped, so nothing animates.)*
 - [ ] VoiceOver pass on Today, Learn, Journey and Help (TalkBack when an Android build exists).

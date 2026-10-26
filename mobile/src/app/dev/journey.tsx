@@ -8,7 +8,7 @@ import {
   Treatments,
 } from '@/components/journey/Dashboard';
 import { ThreadWeek } from '@/components/journey/ThreadWeek';
-import { Button, Screen } from '@/components/ui';
+import { Button, Screen, Section } from '@/components/ui';
 import { addDays } from '@/lib/dates';
 import type { Appointment } from '@/types/appointment';
 import type { JourneyEntry } from '@/types/journeyEntry';
@@ -46,6 +46,14 @@ const ENTRIES = [
   entry(4, { moodLevel: 3, painLevel: 5, energyLevel: 4 }),
   entry(6, { moodLevel: 4, painLevel: 3, energyLevel: 6 }),
 ];
+
+// Sunday of this week, so the full-week sample has every day behind it.
+const sunday = addDays(now, (7 - now.getDay()) % 7);
+const FULL_WEEK = [0, 1, 2, 3, 4, 5, 6].map((daysAgo) => ({
+  ...entry(0, { energyLevel: 6, painLevel: 3 }),
+  id: `full-${daysAgo}`,
+  date: addDays(sunday, -daysAgo),
+}));
 
 const APPOINTMENTS: Appointment[] = [
   {
@@ -106,6 +114,13 @@ export default function JourneySampleScreen() {
       <Treatments treatments={TREATMENTS} />
       <Milestones milestones={MILESTONES} />
       <RecentCheckIns entries={ENTRIES} />
+      <Section title="New user (no check-ins)" look="plain">
+        <ThreadWeek entries={[]} now={now} />
+        <EnergyAndPain entries={[]} now={now} />
+      </Section>
+      <Section title="Full week" look="plain">
+        <ThreadWeek entries={FULL_WEEK} now={sunday} />
+      </Section>
     </Screen>
   );
 }

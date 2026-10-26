@@ -28,4 +28,4 @@
 
 - [ ] Today matches the concept on web and iOS, light and dark, at Default and Larger text.
 - [ ] VoiceOver reads the panel as one group, then each mood with its state.
-- [ ] Guest and signed-in Today both checked.
+- [x] Guest and signed-in Today both checked. *(Guest on web at Large and Larger; signed in on iOS, light and dark, 2026-10-26.)*

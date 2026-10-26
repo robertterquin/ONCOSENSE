@@ -14,7 +14,7 @@
 
 - [x] Topic chips, question rows and the "Ask a question" button get the new icons; topic labels stay violet. *(Through Phase 1's `Icon`.)*
 - [x] The "members, not doctors" banner keeps the shield on its lavender background. *(Unchanged: a well on the same lavender added nothing.)*
-- [ ] Question detail: "Found this helpful" and save use the new icons; counts unchanged.
+- [x] Question detail: "Found this helpful" and save use the new icons; counts unchanged. *(Through Phase 1's `Icon`.)*
 
 ## Done when
 

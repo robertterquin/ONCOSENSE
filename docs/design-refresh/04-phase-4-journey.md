@@ -27,6 +27,6 @@
 
 ## Done when
 
-- [ ] Journey matches the concept on web and iOS, light and dark, at Default and Larger text, for a new user (no check-ins), a partial week and a full week.
+- [x] Journey matches the concept on web and iOS, light and dark, at Default and Larger text, for a new user (no check-ins), a partial week and a full week. *(2026-10-26: all three states on `/dev/journey`, web light at Large and dark at Larger; partial week on iOS, light and dark. The day labels flashed piled up before the width was measured; they now wait for it.)*
 - [x] Unit tests: the thread sentence from entries, the 7-day trend. (Knot states come from `weekStrip`, already tested.)
 - [ ] VoiceOver reads the week as one sentence.
