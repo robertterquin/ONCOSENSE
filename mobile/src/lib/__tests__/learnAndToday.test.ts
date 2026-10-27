@@ -27,6 +27,7 @@ describe('Learn links', () => {
     expect(iconForCancer('Colorectal Cancer')).toBe('colon');
     expect(iconForCancer('Ovarian Cancer')).toBe('ovaries');
     expect(iconForCancer('Prostate Cancer')).toBe('prostate');
+    expect(iconForCancer('Testicular')).toBe('testicular');
     expect(iconForCancer('Unknown Condition')).toBe('ribbon');
   });
 

@@ -1,3 +1,4 @@
+import type { IconName } from '@/components/ui/Icon';
 import { parseDbTimestamp, toDbTimestamp } from '@/lib/dates';
 
 import { booleanOr, numberOr, optionalString, requireString, stringArray, type Row } from './row';
@@ -88,4 +89,25 @@ const TYPE_INFO: Record<TreatmentType, { label: string; icon: string }> = {
 
 export function treatmentTypeLabel(type: TreatmentType): string {
   return TYPE_INFO[type].label;
+}
+
+export function iconForTreatment(type: TreatmentType): IconName {
+  switch (type) {
+    case 'surgery':
+      return 'surgery';
+    case 'chemotherapy':
+      return 'chemo';
+    case 'radiation':
+      return 'radiation';
+    case 'immunotherapy':
+      return 'immunotherapy';
+    case 'targetedTherapy':
+      return 'target';
+    case 'stemCell':
+      return 'dna';
+    case 'hormoneTherapy':
+    case 'other':
+    default:
+      return 'pill';
+  }
 }

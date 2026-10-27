@@ -18,6 +18,7 @@ import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Copy01Icon from '@hugeicons/core-free-icons/Copy01Icon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
 import DentalToothIcon from '@hugeicons/core-free-icons/DentalToothIcon';
+import Dna01Icon from '@hugeicons/core-free-icons/Dna01Icon';
 import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
 import Flag02Icon from '@hugeicons/core-free-icons/Flag02Icon';
 import Globe02Icon from '@hugeicons/core-free-icons/Globe02Icon';
@@ -51,6 +52,7 @@ import SlidersHorizontalIcon from '@hugeicons/core-free-icons/SlidersHorizontalI
 import SmileIcon from '@hugeicons/core-free-icons/SmileIcon';
 import StethoscopeIcon from '@hugeicons/core-free-icons/StethoscopeIcon';
 import Sun03Icon from '@hugeicons/core-free-icons/Sun03Icon';
+import Target02Icon from '@hugeicons/core-free-icons/Target02Icon';
 import ThumbsUpIcon from '@hugeicons/core-free-icons/ThumbsUpIcon';
 import Tick02Icon from '@hugeicons/core-free-icons/Tick02Icon';
 import UnhappyIcon from '@hugeicons/core-free-icons/UnhappyIcon';
@@ -68,11 +70,16 @@ import {
   BloodCellsIcon,
   BreastIcon,
   CervixIcon,
+  ChemoIcon,
   ColonIcon,
+  ImmunotherapyIcon,
   OvariesIcon,
   ProstateIcon,
+  RadiationIcon,
   SkinCheckIcon,
   StomachIcon,
+  SurgeryIcon,
+  TesticularIcon,
 } from './OrganIcons';
 import { decorative } from './a11y';
 
@@ -98,6 +105,7 @@ const ICONS = {
   clock: Clock01Icon,
   close: Cancel01Icon,
   copy: Copy01Icon,
+  dna: Dna01Icon,
   'external-link': LinkSquare02Icon,
   eye: ViewIcon,
   'eye-off': ViewOffSlashIcon,
@@ -135,6 +143,7 @@ const ICONS = {
   sliders: SlidersHorizontalIcon,
   stethoscope: StethoscopeIcon,
   sun: Sun03Icon,
+  target: Target02Icon,
   tooth: DentalToothIcon,
   'thumbs-up': ThumbsUpIcon,
   trash: Delete02Icon,
@@ -152,6 +161,11 @@ const ORGAN_ICONS = {
   prostate: ProstateIcon,
   'skin-check': SkinCheckIcon,
   stomach: StomachIcon,
+  testicular: TesticularIcon,
+  surgery: SurgeryIcon,
+  chemo: ChemoIcon,
+  radiation: RadiationIcon,
+  immunotherapy: ImmunotherapyIcon,
 } as const;
 
 export type OrganIconName = keyof typeof ORGAN_ICONS;

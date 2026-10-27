@@ -32,6 +32,7 @@ const CANCER_ICONS: [prefix: string, icon: IconName][] = [
   ['stomach', 'stomach'],
   ['gastric', 'stomach'],
   ['oral', 'tooth'],
+  ['testicular', 'testicular'],
 ];
 
 /** The icon for a cancer type or a guide's `cancerType` ("Lung Cancer", "Oral"). */

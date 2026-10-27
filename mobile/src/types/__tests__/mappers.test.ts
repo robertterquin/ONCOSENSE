@@ -4,7 +4,12 @@ import { milestoneFromRow } from '@/types/milestone';
 import { questionDisplayName, questionFromRow } from '@/types/question';
 import { resourceFromRow } from '@/types/resource';
 import { selfCheckGuideFromRow } from '@/types/selfCheckGuide';
-import { treatmentFromRow, treatmentProgress, treatmentToRow } from '@/types/treatment';
+import {
+  iconForTreatment,
+  treatmentFromRow,
+  treatmentProgress,
+  treatmentToRow,
+} from '@/types/treatment';
 
 // Sample rows shaped like the Supabase responses.
 
@@ -134,6 +139,17 @@ describe('journey models', () => {
       type: 'chemotherapy',
       completed_sessions: 4,
     });
+  });
+
+  it('maps clinical icons for each treatment type', () => {
+    expect(iconForTreatment('surgery')).toBe('surgery');
+    expect(iconForTreatment('chemotherapy')).toBe('chemo');
+    expect(iconForTreatment('radiation')).toBe('radiation');
+    expect(iconForTreatment('immunotherapy')).toBe('immunotherapy');
+    expect(iconForTreatment('targetedTherapy')).toBe('target');
+    expect(iconForTreatment('stemCell')).toBe('dna');
+    expect(iconForTreatment('hormoneTherapy')).toBe('pill');
+    expect(iconForTreatment('other')).toBe('pill');
   });
 
   it('parses milestone types and defaults unknown ones to personal', () => {

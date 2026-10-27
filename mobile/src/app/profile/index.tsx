@@ -78,7 +78,7 @@ export default function ProfileScreen() {
 
       <Section look="tinted" tint="raised">
         <ListRow
-          icon="sliders"
+          icon="flag"
           title={
             focusTitle
               ? `The app is set up for ${focusTitle.toLowerCase()}`

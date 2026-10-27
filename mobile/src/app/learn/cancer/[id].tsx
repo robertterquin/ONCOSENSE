@@ -109,7 +109,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           />
         ) : null}
         <ListRow
-          icon="map-pin"
+          icon="hospital"
           iconTone="help"
           title="Find a screening center"
           subtitle="Screening centers near you, in Help"

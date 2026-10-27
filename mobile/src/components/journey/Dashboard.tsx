@@ -21,7 +21,7 @@ import { useDesign } from '@/theme/useTheme';
 import type { Appointment } from '@/types/appointment';
 import type { JourneyEntry } from '@/types/journeyEntry';
 import type { Milestone } from '@/types/milestone';
-import { treatmentTypeLabel, type Treatment } from '@/types/treatment';
+import { iconForTreatment, treatmentTypeLabel, type Treatment } from '@/types/treatment';
 
 // The Journey dashboard's sections (docs/redesign/04-phase-4-journey.md).
 
@@ -195,7 +195,7 @@ function TreatmentRow({ treatment }: { treatment: Treatment }) {
   return (
     <View style={styles.treatment}>
       <ListRow
-        icon="pill"
+        icon={iconForTreatment(treatment.type)}
         iconTone="sun"
         title={treatment.name}
         subtitle={`${treatmentTypeLabel(treatment.type)} · ${status}`}
