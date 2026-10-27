@@ -28,13 +28,18 @@ export default function LearnTab() {
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const reduceMotion = useReducedMotion();
   const [riskY, setRiskY] = useState<number | null>(null);
+  const [cancersY, setCancersY] = useState<number | null>(null);
 
-  // On every visit with `?section=risk` (the tab stays mounted), once it's laid out.
+  // On every visit with `?section=risk` or `?section=cancers` (the tab stays mounted), once it's laid out.
   useFocusEffect(
     useCallback(() => {
       if (section === 'risk' && riskY !== null)
         scrollRef.current?.scrollTo({ y: riskY, animated: !reduceMotion });
-    }, [section, riskY, reduceMotion]),
+      else if (section === 'cancers' && cancersY !== null)
+        scrollRef.current?.scrollTo({ y: cancersY, animated: !reduceMotion });
+      else if (!section)
+        scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion });
+    }, [section, riskY, cancersY, reduceMotion]),
   );
 
   const queries = [cancers, tips, checks.query];
@@ -88,7 +93,9 @@ export default function LearnTab() {
       ) : (
         <>
           <CheckYourself mine={checks.mine} all={checks.all} />
-          <CancerTypes cancers={lists.cancers} />
+          <View onLayout={(event) => setCancersY(event.nativeEvent.layout.y)}>
+            <CancerTypes cancers={lists.cancers} />
+          </View>
           <View onLayout={(event) => setRiskY(event.nativeEvent.layout.y)}>
             <LowerYourRisk tips={lists.tips} />
           </View>

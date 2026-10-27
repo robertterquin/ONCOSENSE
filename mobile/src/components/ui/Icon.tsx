@@ -64,6 +64,16 @@ import { HugeiconsIcon } from '@hugeicons/react-native';
 import type { Palette } from '@/theme/palette';
 import { useDesign } from '@/theme/useTheme';
 
+import {
+  BloodCellsIcon,
+  BreastIcon,
+  CervixIcon,
+  ColonIcon,
+  OvariesIcon,
+  ProstateIcon,
+  SkinCheckIcon,
+  StomachIcon,
+} from './OrganIcons';
 import { decorative } from './a11y';
 
 // Hugeicons stroke-rounded icons (docs/design-refresh). Each is imported from its own path
@@ -133,9 +143,24 @@ const ICONS = {
   volume: VolumeHighIcon,
 } as const;
 
-export type IconName = keyof typeof ICONS;
+const ORGAN_ICONS = {
+  breast: BreastIcon,
+  cervix: CervixIcon,
+  colon: ColonIcon,
+  'blood-cells': BloodCellsIcon,
+  ovaries: OvariesIcon,
+  prostate: ProstateIcon,
+  'skin-check': SkinCheckIcon,
+  stomach: StomachIcon,
+} as const;
 
-export const ICON_NAMES = Object.keys(ICONS) as IconName[];
+export type OrganIconName = keyof typeof ORGAN_ICONS;
+export type IconName = keyof typeof ICONS | OrganIconName;
+
+export const ICON_NAMES = [
+  ...Object.keys(ICONS),
+  ...Object.keys(ORGAN_ICONS),
+] as IconName[];
 
 type IconProps = {
   name: IconName;
@@ -149,11 +174,18 @@ type IconProps = {
 /** A decorative icon (hidden from screen readers; label the control that holds it). */
 export function Icon({ name, size = 22, tone = 'ink', color, strokeWidth = 1.8 }: IconProps) {
   const { palette } = useDesign();
+  const iconColor = color ?? palette[tone];
+
+  if (name in ORGAN_ICONS) {
+    const OrganComponent = ORGAN_ICONS[name as OrganIconName];
+    return <OrganComponent size={size} color={iconColor} />;
+  }
+
   return (
     <HugeiconsIcon
-      icon={ICONS[name]}
+      icon={ICONS[name as keyof typeof ICONS]}
       size={size}
-      color={color ?? palette[tone]}
+      color={iconColor}
       strokeWidth={strokeWidth}
       // On iOS an SVG catches touches, so a tap on the icon wouldn't reach its button.
       pointerEvents="none"

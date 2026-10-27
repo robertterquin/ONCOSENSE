@@ -1,13 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, Chip, ListRow, Section, Sheet, Tag, Text, TopicTile } from '@/components/ui';
+import { Button, Chip, ListRow, Section, Sheet, Tag, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
 import { iconForCancer } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
-import { useDesign } from '@/theme/useTheme';
 import { space } from '@/theme/tokens';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -73,33 +72,102 @@ export function GuideResults({ statuses }: { statuses: GuideStatus[] }) {
   );
 }
 
-/** Cancer types, A to Z, as a two-column grid (one column at Larger text). */
+const BODY_SYSTEMS = ['All', 'Reproductive', 'Digestive', 'Respiratory', 'Blood', 'Skin'] as const;
+type BodySystem = (typeof BODY_SYSTEMS)[number];
+
+function bodySystemForCancer(name: string): BodySystem {
+  const lower = name.toLowerCase();
+  if (
+    lower.includes('breast') ||
+    lower.includes('cervical') ||
+    lower.includes('ovarian') ||
+    lower.includes('prostate') ||
+    lower.includes('testicular')
+  ) {
+    return 'Reproductive';
+  }
+  if (
+    lower.includes('colorectal') ||
+    lower.includes('colon') ||
+    lower.includes('liver') ||
+    lower.includes('stomach') ||
+    lower.includes('gastric') ||
+    lower.includes('esophag') ||
+    lower.includes('pancrea')
+  ) {
+    return 'Digestive';
+  }
+  if (lower.includes('lung')) {
+    return 'Respiratory';
+  }
+  if (
+    lower.includes('leukemia') ||
+    lower.includes('lymphoma') ||
+    lower.includes('blood') ||
+    lower.includes('myeloma')
+  ) {
+    return 'Blood';
+  }
+  if (lower.includes('skin') || lower.includes('melanoma')) {
+    return 'Skin';
+  }
+  return 'All';
+}
+
+/** Cancer types categorized by body systems (Option 2), with filter chips and clean grouped list. */
 export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
-  const { textSize } = useDesign();
+  const [selectedSystem, setSelectedSystem] = useState<BodySystem>('All');
   const sorted = [...cancers].sort((a, b) => a.name.localeCompare(b.name));
-  const columns = textSize === 'larger' ? 1 : 2;
-  const rows = Array.from({ length: Math.ceil(sorted.length / columns) }, (_, index) =>
-    sorted.slice(index * columns, index * columns + columns),
-  );
+  const filtered =
+    selectedSystem === 'All'
+      ? sorted
+      : sorted.filter((c) => bodySystemForCancer(c.name) === selectedSystem);
+
   return (
-    <Section title="Cancer types" subtitle="Early signs, risks and how each is found" look="plain">
-      {rows.map((row) => (
-        <View key={row[0].id} style={styles.gridRow}>
-          {row.map((cancer) => (
-            <TopicTile
-              key={cancer.id}
-              icon={iconForCancer(cancer.name)}
-              title={cancer.name}
-              subtitle={
-                cancer.symptoms.length ? `${cancer.symptoms.length} early signs` : undefined
-              }
-              onPress={() => openCancer(cancer.id)}
-            />
-          ))}
-          {row.length < columns ? <View style={styles.gridFiller} /> : null}
-        </View>
-      ))}
-    </Section>
+    <View style={styles.sectionGap}>
+      <Section
+        title="Cancer types"
+        subtitle="Early signs, risks and how each is found"
+        look="plain">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.systems}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Body system">
+          {BODY_SYSTEMS.map((system) => {
+            const count =
+              system === 'All'
+                ? sorted.length
+                : sorted.filter((c) => bodySystemForCancer(c.name) === system).length;
+            if (system !== 'All' && count === 0) return null;
+            return (
+              <Chip
+                key={system}
+                kind="radio"
+                label={system === 'All' ? `All (${count})` : `${system} (${count})`}
+                selected={selectedSystem === system}
+                onPress={() => setSelectedSystem(system)}
+              />
+            );
+          })}
+        </ScrollView>
+      </Section>
+      <Section look="card">
+        {filtered.map((cancer) => (
+          <ListRow
+            key={cancer.id}
+            icon={iconForCancer(cancer.name)}
+            iconTone="action"
+            title={cancer.name}
+            subtitle={
+              cancer.symptoms.length ? `${cancer.symptoms.length} early signs` : undefined
+            }
+            onPress={() => openCancer(cancer.id)}
+          />
+        ))}
+      </Section>
+    </View>
   );
 }
 
@@ -142,7 +210,7 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 }
 
 const styles = StyleSheet.create({
+  sectionGap: { gap: space.md },
+  systems: { gap: space.sm, paddingRight: space.xl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  gridRow: { flexDirection: 'row', gap: space.sm },
-  gridFiller: { flex: 1 },
 });

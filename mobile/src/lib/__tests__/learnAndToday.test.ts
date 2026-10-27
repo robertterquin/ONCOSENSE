@@ -16,13 +16,18 @@ const cancers = [cancer('Breast Cancer', ['A lump']), cancer('Leukemia'), cancer
 const guides = [guide('Breast'), guide('Leukemia'), guide('Testicular')];
 
 describe('Learn links', () => {
-  it('gives each cancer type an icon, the ribbon when Hugeicons has no organ', () => {
+  it('gives each cancer type an accurate organ or clinical icon, falling back to ribbon', () => {
     expect(iconForCancer('Lung Cancer')).toBe('lungs');
-    expect(iconForCancer('Leukemia')).toBe('blood');
-    expect(iconForCancer('Skin')).toBe('sun');
+    expect(iconForCancer('Leukemia')).toBe('blood-cells');
+    expect(iconForCancer('Skin Cancer')).toBe('skin-check');
     expect(iconForCancer('Oral')).toBe('tooth');
-    expect(iconForCancer('Breast Cancer')).toBe('ribbon');
-    expect(iconForCancer('Stomach Cancer')).toBe('ribbon');
+    expect(iconForCancer('Breast Cancer')).toBe('breast');
+    expect(iconForCancer('Stomach Cancer')).toBe('stomach');
+    expect(iconForCancer('Cervical Cancer')).toBe('cervix');
+    expect(iconForCancer('Colorectal Cancer')).toBe('colon');
+    expect(iconForCancer('Ovarian Cancer')).toBe('ovaries');
+    expect(iconForCancer('Prostate Cancer')).toBe('prostate');
+    expect(iconForCancer('Unknown Condition')).toBe('ribbon');
   });
 
   it('pairs cancer types with their self-checks', () => {

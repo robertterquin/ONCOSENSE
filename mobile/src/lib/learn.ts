@@ -17,12 +17,20 @@ export function guideForCancer<T extends Pick<SelfCheckGuide, 'cancerType'>>(
   return guides.find((guide) => name.startsWith(lower(guide.cancerType))) ?? null;
 }
 
-// Hugeicons has an organ for these; the rest use the awareness ribbon.
+// Organ and clinical icons for cancer types (Health Icons & Hugeicons).
 const CANCER_ICONS: [prefix: string, icon: IconName][] = [
-  ['lung', 'lungs'],
+  ['breast', 'breast'],
+  ['cervic', 'cervix'],
+  ['color', 'colon'],
+  ['colon', 'colon'],
+  ['leukemia', 'blood-cells'],
   ['liver', 'liver'],
-  ['leukemia', 'blood'],
-  ['skin', 'sun'],
+  ['lung', 'lungs'],
+  ['ovari', 'ovaries'],
+  ['prostat', 'prostate'],
+  ['skin', 'skin-check'],
+  ['stomach', 'stomach'],
+  ['gastric', 'stomach'],
   ['oral', 'tooth'],
 ];
 
