@@ -22,7 +22,6 @@ import Dna01Icon from '@hugeicons/core-free-icons/Dna01Icon';
 import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
 import Flag02Icon from '@hugeicons/core-free-icons/Flag02Icon';
 import Globe02Icon from '@hugeicons/core-free-icons/Globe02Icon';
-import HappyIcon from '@hugeicons/core-free-icons/HappyIcon';
 import Home01Icon from '@hugeicons/core-free-icons/Home01Icon';
 import Hospital01Icon from '@hugeicons/core-free-icons/Hospital01Icon';
 import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
@@ -40,22 +39,18 @@ import Mic01Icon from '@hugeicons/core-free-icons/Mic01Icon';
 import MinusSignIcon from '@hugeicons/core-free-icons/MinusSignIcon';
 import Moon02Icon from '@hugeicons/core-free-icons/Moon02Icon';
 import MoreHorizontalIcon from '@hugeicons/core-free-icons/MoreHorizontalIcon';
-import NeutralIcon from '@hugeicons/core-free-icons/NeutralIcon';
 import Notification01Icon from '@hugeicons/core-free-icons/Notification01Icon';
 import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
 import RibbonIcon from '@hugeicons/core-free-icons/RibbonIcon';
-import Sad01Icon from '@hugeicons/core-free-icons/Sad01Icon';
 import Search01Icon from '@hugeicons/core-free-icons/Search01Icon';
 import SecurityCheckIcon from '@hugeicons/core-free-icons/SecurityCheckIcon';
 import Share08Icon from '@hugeicons/core-free-icons/Share08Icon';
 import SlidersHorizontalIcon from '@hugeicons/core-free-icons/SlidersHorizontalIcon';
-import SmileIcon from '@hugeicons/core-free-icons/SmileIcon';
 import StethoscopeIcon from '@hugeicons/core-free-icons/StethoscopeIcon';
 import Sun03Icon from '@hugeicons/core-free-icons/Sun03Icon';
 import Target02Icon from '@hugeicons/core-free-icons/Target02Icon';
 import ThumbsUpIcon from '@hugeicons/core-free-icons/ThumbsUpIcon';
 import Tick02Icon from '@hugeicons/core-free-icons/Tick02Icon';
-import UnhappyIcon from '@hugeicons/core-free-icons/UnhappyIcon';
 import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
 import UserIcon from '@hugeicons/core-free-icons/UserIcon';
 import ViewIcon from '@hugeicons/core-free-icons/ViewIcon';
@@ -81,6 +76,7 @@ import {
   SurgeryIcon,
   TesticularIcon,
 } from './OrganIcons';
+import { MoodGoodIcon, MoodGreatIcon, MoodLowIcon, MoodOkayIcon, MoodRoughIcon } from './MoodIcons';
 import { decorative } from './a11y';
 
 // Hugeicons stroke-rounded icons (docs/design-refresh). Each is imported from its own path
@@ -126,11 +122,6 @@ const ICONS = {
   message: Message01Icon,
   mic: Mic01Icon,
   minus: MinusSignIcon,
-  'mood-rough': UnhappyIcon,
-  'mood-low': Sad01Icon,
-  'mood-okay': NeutralIcon,
-  'mood-good': SmileIcon,
-  'mood-great': HappyIcon,
   moon: Moon02Icon,
   more: MoreHorizontalIcon,
   phone: CallIcon,
@@ -166,15 +157,18 @@ const ORGAN_ICONS = {
   chemo: ChemoIcon,
   radiation: RadiationIcon,
   immunotherapy: ImmunotherapyIcon,
+  // Mood faces (Microsoft Fluent Emoji High Contrast): vector SVGs tinted with tone or color.
+  'mood-rough': MoodRoughIcon,
+  'mood-low': MoodLowIcon,
+  'mood-okay': MoodOkayIcon,
+  'mood-good': MoodGoodIcon,
+  'mood-great': MoodGreatIcon,
 } as const;
 
 export type OrganIconName = keyof typeof ORGAN_ICONS;
 export type IconName = keyof typeof ICONS | OrganIconName;
 
-export const ICON_NAMES = [
-  ...Object.keys(ICONS),
-  ...Object.keys(ORGAN_ICONS),
-] as IconName[];
+export const ICON_NAMES = [...Object.keys(ICONS), ...Object.keys(ORGAN_ICONS)] as IconName[];
 
 type IconProps = {
   name: IconName;
