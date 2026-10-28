@@ -24,6 +24,8 @@ export type ButtonVariant =
   | 'onPanel'
   /** Text-only button on the night-violet panel. */
   | 'onPanelQuiet'
+  /** Text-only button in soft rose on the night-violet panel (Today's "Remind me tomorrow"). */
+  | 'onPanelAccent'
   /** Outlined button on the night-violet panel (Welcome's "Sign in"). */
   | 'onPanelOutline'
   /** Light button on a solid teal card (Help's crisis line). */
@@ -56,6 +58,7 @@ const LOOKS: Record<ButtonVariant, Look> = {
   destructive: { background: 'surface', text: 'danger', border: 'border' },
   onPanel: { background: 'onPanel', text: 'panel' },
   onPanelQuiet: { background: 'transparent', text: 'onPanel' },
+  onPanelAccent: { background: 'transparent', text: 'onPanelAccent' },
   onPanelOutline: { background: 'transparent', text: 'onPanel', border: 'onPanelMuted' },
   onHelp: { background: 'surface', text: 'help' },
 };

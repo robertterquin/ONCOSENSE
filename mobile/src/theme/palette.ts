@@ -25,6 +25,10 @@ export type Palette = {
   onPanel: string;
   /** Secondary text on the panel. */
   onPanelMuted: string;
+  /** Lighter violet at the panel's top-left, where its gradient starts. */
+  panelTop: string;
+  /** Soft rose for the panel's quiet action and active step. */
+  onPanelAccent: string;
   /** Self-checks. */
   rose: string;
   roseTint: string;
@@ -55,6 +59,8 @@ export const lightPalette: Palette = {
   panel: '#2E1F66',
   onPanel: '#FFFFFF',
   onPanelMuted: '#E6E0FA',
+  panelTop: '#41309A',
+  onPanelAccent: '#F7B6CF',
   rose: '#C2255C',
   roseTint: '#FBE8EF',
   help: '#0E6B63',
@@ -79,6 +85,8 @@ export const darkPalette: Palette = {
   panel: '#352578',
   onPanel: '#FFFFFF',
   onPanelMuted: '#E6E0FA',
+  panelTop: '#41309A',
+  onPanelAccent: '#F7B6CF',
   rose: '#F27BA6',
   roseTint: '#3A1A2A',
   help: '#6FD3C5',
@@ -104,6 +112,10 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['onAction', 'action'],
   ['onPanel', 'panel'],
   ['onPanelMuted', 'panel'],
+  ['onPanel', 'panelTop'],
+  ['onPanelMuted', 'panelTop'],
+  ['onPanelAccent', 'panel'],
+  ['onPanelAccent', 'panelTop'],
   ['rose', 'surface'],
   ['rose', 'roseTint'],
   ['help', 'surface'],

@@ -1,4 +1,5 @@
-import Svg, { Path } from 'react-native-svg';
+import { useId } from 'react';
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { decorative } from './a11y';
 
@@ -15,9 +16,12 @@ type RibbonMarkProps = {
   weight?: number;
   /** A thin highlight line along the middle of the ribbon. */
   highlight?: string;
+  /** Top-left and bottom-right colors; the stroke fades between them instead of using `color`. */
+  gradient?: [from: string, to: string];
 };
 
-export function RibbonMark({ height, color, weight = 20, highlight }: RibbonMarkProps) {
+export function RibbonMark({ height, color, weight = 20, highlight, gradient }: RibbonMarkProps) {
+  const gradientId = useId().replace(/:/g, '');
   return (
     <Svg
       width={(height * 200) / 260}
@@ -25,9 +29,17 @@ export function RibbonMark({ height, color, weight = 20, highlight }: RibbonMark
       viewBox="0 0 200 260"
       fill="none"
       {...decorative}>
+      {gradient ? (
+        <Defs>
+          <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0" stopColor={gradient[0]} />
+            <Stop offset="1" stopColor={gradient[1]} />
+          </LinearGradient>
+        </Defs>
+      ) : null}
       <Path
         d={RIBBON}
-        stroke={color}
+        stroke={gradient ? `url(#${gradientId})` : color}
         strokeWidth={weight}
         strokeLinecap="round"
         strokeLinejoin="round"

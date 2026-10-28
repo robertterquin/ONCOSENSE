@@ -1,11 +1,20 @@
-import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import type { Palette } from '@/theme/palette';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
+import { decorative } from './a11y';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { RibbonMark } from './RibbonMark';
@@ -16,6 +25,10 @@ import { Text } from './Text';
 // sticky bottom action bar.
 
 type Action = { label: string; onPress: () => void };
+
+/** The ribbon's violet-to-rose fade, and the quiet segments of the step bar. */
+const RIBBON_GRADIENT: [string, string] = ['#6A55D6', '#B2579A'];
+const STEP_REST = 'rgba(255, 255, 255, 0.18)';
 
 type NextStepPanelProps = {
   /** Short status line above the title ("Due today"). */
@@ -31,7 +44,7 @@ type NextStepPanelProps = {
   secondary?: Action;
 };
 
-/** Night-violet panel with the ribbon line: the one thing to do next. */
+/** Night-violet panel with a soft violet fade and the ribbon line: the one thing to do next. */
 export function NextStepPanel({
   status,
   statusIcon = 'calendar',
@@ -42,12 +55,39 @@ export function NextStepPanel({
   primary,
   secondary,
 }: NextStepPanelProps) {
-  const { palette, isDark } = useDesign();
-  const ribbon = isDark ? '#4D3BA6' : '#5B45B8';
+  const { palette } = useDesign();
+  // The fade is drawn at the panel's measured size: a percent-sized gradient renders in
+  // mismatched tiles on iOS (a visible seam).
+  const [size, setSize] = useState({ width: 0, height: 0 });
   return (
-    <View style={[styles.panel, { backgroundColor: palette.panel }]}>
+    <View
+      style={[styles.panel, { backgroundColor: palette.panel }]}
+      onLayout={({ nativeEvent: { layout } }) =>
+        setSize({ width: layout.width, height: layout.height })
+      }>
+      {size.width > 0 ? (
+        <Svg
+          width={size.width}
+          height={size.height}
+          style={StyleSheet.absoluteFill}
+          {...decorative}>
+          <Defs>
+            <LinearGradient
+              id="panelFade"
+              gradientUnits="userSpaceOnUse"
+              x1={size.width * 0.25}
+              y1={0}
+              x2={size.width * 0.75}
+              y2={size.height}>
+              <Stop offset="0" stopColor={palette.panelTop} />
+              <Stop offset="1" stopColor={palette.panel} />
+            </LinearGradient>
+          </Defs>
+          <Rect width={size.width} height={size.height} fill="url(#panelFade)" />
+        </Svg>
+      ) : null}
       <View style={styles.ribbon}>
-        <RibbonMark height={229} color={ribbon} />
+        <RibbonMark height={229} color={palette.panelTop} gradient={RIBBON_GRADIENT} />
       </View>
       <View style={styles.panelContent}>
         {due ? (
@@ -69,14 +109,20 @@ export function NextStepPanel({
         {steps ? (
           <View accessible accessibilityLabel={`${steps} steps`} style={styles.steps}>
             {Array.from({ length: steps }, (_, index) => (
-              <View key={index} style={[styles.step, { backgroundColor: ribbon }]} />
+              <View
+                key={index}
+                style={[
+                  styles.step,
+                  { backgroundColor: index === 0 ? palette.onPanelAccent : STEP_REST },
+                ]}
+              />
             ))}
           </View>
         ) : null}
         <View style={styles.panelActions}>
           <Button title={primary.label} onPress={primary.onPress} variant="onPanel" />
           {secondary ? (
-            <Button title={secondary.label} onPress={secondary.onPress} variant="onPanelQuiet" />
+            <Button title={secondary.label} onPress={secondary.onPress} variant="onPanelAccent" />
           ) : null}
         </View>
       </View>
