@@ -8,6 +8,7 @@ import { formatShortDate } from '@/lib/dates';
 import { iconForCancer, iconForPreventionTip, shortenSourceName } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
 import { haptics } from '@/lib/haptics';
+import { useHabitsStore } from '@/stores/habitsStore';
 import type { Palette } from '@/theme/palette';
 import { radii, shadows, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -208,6 +209,8 @@ function PreventionTipCard({
   const tone = categoryTone(tip.category);
   const icon = iconForPreventionTip(tip);
   const source = shortenSourceName(tip.sourceName);
+  const isDone = useHabitsStore((state) => state.isDone(tip.id));
+  const toggleDone = useHabitsStore((state) => state.toggleDone);
 
   return (
     <Pressable
@@ -215,7 +218,7 @@ function PreventionTipCard({
         styles.card,
         {
           backgroundColor: palette.surface,
-          borderColor: palette.border,
+          borderColor: isDone ? palette.help : palette.border,
         },
         pressed && styles.cardPressed,
       ]}
@@ -224,12 +227,42 @@ function PreventionTipCard({
         onPress();
       }}
       accessibilityRole="button"
-      accessibilityLabel={`${tip.title}, ${tip.category}. ${tip.description}. Source: ${tip.sourceName}`}>
+      accessibilityLabel={`${tip.title}, ${tip.category}. ${isDone ? 'Completed today.' : ''} ${tip.description}. Source: ${tip.sourceName}`}>
       <View style={styles.cardHeader}>
-        <View style={[styles.badge, { backgroundColor: palette[tone.background] }]}>
-          <Text variant="caption" tone={tone.color} style={styles.badgeText}>
-            {tip.category.toUpperCase()}
-          </Text>
+        <View style={styles.badgeRow}>
+          <View style={[styles.badge, { backgroundColor: palette[tone.background] }]}>
+            <Text variant="caption" tone={tone.color} style={styles.badgeText}>
+              {tip.category.toUpperCase()}
+            </Text>
+          </View>
+          <Pressable
+            hitSlop={6}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: isDone }}
+            accessibilityLabel={`Mark ${tip.title} as completed today`}
+            onPress={(e) => {
+              e.stopPropagation();
+              toggleDone(tip.id);
+            }}
+            style={[
+              styles.actionPill,
+              isDone
+                ? { backgroundColor: palette.helpTint, borderColor: palette.help }
+                : { backgroundColor: palette.raised, borderColor: palette.line },
+            ]}>
+            <Icon
+              name={isDone ? 'check' : 'circle'}
+              size={12}
+              tone={isDone ? 'help' : 'muted'}
+              strokeWidth={isDone ? 2.5 : 1.8}
+            />
+            <Text
+              variant="caption"
+              tone={isDone ? 'help' : 'muted'}
+              style={styles.doneText}>
+              {isDone ? 'Done' : 'Today'}
+            </Text>
+          </Pressable>
         </View>
         <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
           <Icon name={icon} size={18} tone={tone.color} />
@@ -267,11 +300,19 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
   const openTone = open ? categoryTone(open.category) : null;
   const openIcon = open ? iconForPreventionTip(open) : null;
 
+  const completedToday = useHabitsStore((state) => state.completedCount());
+  const isDone = useHabitsStore((state) => (open ? state.isDone(open.id) : false));
+  const isBookmarked = useHabitsStore((state) => (open ? state.isBookmarked(open.id) : false));
+  const toggleDone = useHabitsStore((state) => state.toggleDone);
+  const toggleBookmark = useHabitsStore((state) => state.toggleBookmark);
+
+  const subtitle =
+    completedToday > 0
+      ? `Everyday habits backed by health agencies · ${completedToday} done today`
+      : 'Everyday habits backed by health agencies';
+
   return (
-    <Section
-      title="Lower your risk"
-      subtitle="Everyday habits backed by health agencies"
-      look="plain">
+    <Section title="Lower your risk" subtitle={subtitle} look="plain">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -299,13 +340,27 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
             </View>
             <Text variant="reading">{open.description}</Text>
             {open.detailedInfo ? <Text variant="reading">{open.detailedInfo}</Text> : null}
-            <Button
-              title={`Source: ${open.sourceName}`}
-              icon="external-link"
-              variant="quiet"
-              fullWidth={false}
-              onPress={() => openWebPage(open.sourceUrl)}
-            />
+            <View style={styles.sheetActions}>
+              <Button
+                title={isDone ? 'Completed today ✓' : 'Mark as completed today'}
+                icon={isDone ? 'check' : 'circle'}
+                variant={isDone ? 'help' : 'primary'}
+                onPress={() => toggleDone(open.id)}
+              />
+              <Button
+                title={isBookmarked ? 'Saved in bookmarks' : 'Save habit to bookmarks'}
+                icon="bookmark"
+                variant="secondary"
+                onPress={() => toggleBookmark(open.id)}
+              />
+              <Button
+                title={`Source: ${open.sourceName}`}
+                icon="external-link"
+                variant="quiet"
+                fullWidth={false}
+                onPress={() => openWebPage(open.sourceUrl)}
+              />
+            </View>
           </View>
         ) : null}
       </Sheet>
@@ -347,6 +402,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radii.round,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+  },
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: radii.round,
+    borderWidth: 1,
+  },
+  doneText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
   badgeText: {
     fontSize: 10,
@@ -397,6 +470,10 @@ const styles = StyleSheet.create({
   },
   sheetContent: {
     gap: space.md,
+  },
+  sheetActions: {
+    gap: space.sm,
+    marginTop: space.xs,
   },
   sheetMetaRow: {
     flexDirection: 'row',

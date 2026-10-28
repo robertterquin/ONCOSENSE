@@ -74,7 +74,12 @@ export function weekStrip(entries: JourneyEntry[], now: Date = new Date()): Week
 
 export type WeekSummary = {
   /** One point per day, oldest first; `null` on days without a check-in. */
-  days: { date: Date; energy: number | null; pain: number | null }[];
+  days: {
+    date: Date;
+    energy: number | null;
+    pain: number | null;
+    entry?: JourneyEntry;
+  }[];
   checkIns: number;
   averageEnergy: number | null;
   averagePain: number | null;
@@ -95,7 +100,7 @@ export function lastSevenDays(entries: JourneyEntry[], now: Date = new Date()): 
       ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
       : null;
   return {
-    days: days.map(({ date, energy, pain }) => ({ date, energy, pain })),
+    days: days.map(({ date, energy, pain, entry }) => ({ date, energy, pain, entry })),
     checkIns: logged.length,
     averageEnergy: average(logged.map((entry) => entry.energyLevel)),
     averagePain: average(logged.map((entry) => entry.painLevel)),

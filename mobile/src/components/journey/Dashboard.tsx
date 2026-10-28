@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   Button,
@@ -10,7 +11,7 @@ import {
   StatTile,
   Text,
 } from '@/components/ui';
-import { decorative } from '@/components/ui/a11y';
+import { haptics } from '@/lib/haptics';
 import { useCelebrateMilestone, useIncrementSession } from '@/hooks/useJourney';
 import { formatShortDate, formatTime } from '@/lib/dates';
 import { lastSevenDays, sevenDayTrend, weekSummaryText, type WeekSummary } from '@/lib/journey';
@@ -66,6 +67,10 @@ const CHART_HEIGHT = 96;
 
 function Chart({ summary }: { summary: WeekSummary }) {
   const { palette } = useDesign();
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+
+  const selectedDay = selectedDayIndex !== null ? summary.days[selectedDayIndex] : null;
+
   const bar = (value: number | null, color: string) => (
     <View
       style={[
@@ -78,31 +83,89 @@ function Chart({ summary }: { summary: WeekSummary }) {
     />
   );
   return (
-    <View {...decorative}>
-      <View style={styles.legend}>
-        <LegendDot color={palette.action} label="Energy" />
-        <LegendDot color={palette.chartPain} label="Pain" />
+    <View>
+      <View style={styles.chartHeader}>
+        <View style={styles.legend}>
+          <LegendDot color={palette.action} label="Energy" />
+          <LegendDot color={palette.chartPain} label="Pain" />
+        </View>
+        <Text variant="caption" tone="muted">
+          Tap a bar to inspect
+        </Text>
       </View>
-      <View style={[styles.chart, { borderBottomColor: palette.line }]}>
-        {summary.days.map((day) => (
-          <View key={day.date.toDateString()} style={styles.chartDay}>
-            <View style={styles.bars}>
-              {bar(day.energy, palette.action)}
-              {bar(day.pain, palette.chartPain)}
+
+      {selectedDay ? (
+        <View
+          style={[
+            styles.dayInspector,
+            { backgroundColor: palette.raised, borderColor: palette.line },
+          ]}>
+          <View style={styles.inspectorTop}>
+            <Text variant="strong">{formatShortDate(selectedDay.date)}</Text>
+            <View style={styles.inspectorScores}>
+              <View style={styles.inspectorBadge}>
+                <View style={[styles.miniDot, { backgroundColor: palette.action }]} />
+                <Text variant="caption">
+                  {selectedDay.energy !== null ? `Energy ${selectedDay.energy}/10` : 'No energy'}
+                </Text>
+              </View>
+              <View style={styles.inspectorBadge}>
+                <View style={[styles.miniDot, { backgroundColor: palette.chartPain }]} />
+                <Text variant="caption">
+                  {selectedDay.pain !== null ? `Pain ${selectedDay.pain}/10` : 'No pain'}
+                </Text>
+              </View>
             </View>
           </View>
-        ))}
+          {selectedDay.entry?.symptoms?.length ? (
+            <Text variant="caption" tone="muted" numberOfLines={1}>
+              Symptoms: {selectedDay.entry.symptoms.join(', ')}
+            </Text>
+          ) : selectedDay.energy === null && selectedDay.pain === null ? (
+            <Text variant="caption" tone="muted">
+              No check-in recorded for this day
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      <View style={[styles.chart, { borderBottomColor: palette.line }]}>
+        {summary.days.map((day, index) => {
+          const isSelected = selectedDayIndex === index;
+          return (
+            <Pressable
+              key={day.date.toDateString()}
+              accessibilityRole="button"
+              accessibilityLabel={`${formatShortDate(day.date)}: Energy ${day.energy ?? 'none'}, Pain ${day.pain ?? 'none'}`}
+              onPress={() => {
+                haptics.selection();
+                setSelectedDayIndex(isSelected ? null : index);
+              }}
+              style={[
+                styles.chartDay,
+                isSelected && [styles.selectedDayColumn, { backgroundColor: palette.raised }],
+              ]}>
+              <View style={styles.bars}>
+                {bar(day.energy, palette.action)}
+                {bar(day.pain, palette.chartPain)}
+              </View>
+            </Pressable>
+          );
+        })}
       </View>
       <View style={styles.chartLabels}>
-        {summary.days.map((day) => (
-          <Text
-            key={day.date.toDateString()}
-            variant="caption"
-            tone="muted"
-            style={styles.chartDay}>
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'][day.date.getDay()]}
-          </Text>
-        ))}
+        {summary.days.map((day, index) => {
+          const isSelected = selectedDayIndex === index;
+          return (
+            <Text
+              key={day.date.toDateString()}
+              variant="caption"
+              tone={isSelected ? 'action' : 'muted'}
+              style={[styles.chartDay, isSelected && styles.selectedDayLabel]}>
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'][day.date.getDay()]}
+            </Text>
+          );
+        })}
       </View>
     </View>
   );
@@ -289,9 +352,42 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   tiles: { flexDirection: 'row', gap: space.sm },
   chartBlock: { gap: space.md, padding: space.lg, borderRadius: radii.section },
-  legend: { flexDirection: 'row', gap: space.lg, paddingBottom: space.sm },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: space.xs,
+  },
+  legend: { flexDirection: 'row', gap: space.lg },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
+  dayInspector: {
+    padding: space.sm + 2,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    marginBottom: space.sm,
+    gap: 4,
+  },
+  inspectorTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  inspectorScores: {
+    flexDirection: 'row',
+    gap: space.md,
+    alignItems: 'center',
+  },
+  inspectorBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  miniDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
   chart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -299,6 +395,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth * 2,
   },
   chartDay: { flex: 1, alignItems: 'center', textAlign: 'center' },
+  selectedDayColumn: {
+    borderRadius: 8,
+    paddingBottom: 2,
+  },
+  selectedDayLabel: {
+    fontWeight: '700',
+  },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
   bar: { width: 10, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
   chartLabels: { flexDirection: 'row', paddingTop: space.xs },
