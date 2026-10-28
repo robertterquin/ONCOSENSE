@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { fontFamily } from '@/theme/type';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { haptics } from '@/lib/haptics';
@@ -58,7 +59,7 @@ type SegmentedControlProps<T extends string> = {
   onChange: (value: T) => void;
 };
 
-/** One-of-a-few choice (theme, text size). */
+/** One-of-a-few choice (theme, text size, filters). */
 export function SegmentedControl<T extends string>({
   accessibilityLabel,
   options,
@@ -66,11 +67,16 @@ export function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   const { palette, isDark } = useDesign();
+  const isCompact = options.length >= 4;
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      style={[styles.segments, { backgroundColor: palette.ground }]}>
+      style={[
+        styles.segments,
+        isCompact && styles.segmentsCompact,
+        { backgroundColor: palette.ground },
+      ]}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -85,14 +91,19 @@ export function SegmentedControl<T extends string>({
             }}
             style={[
               styles.segment,
+              isCompact && styles.segmentCompact,
               selected && { backgroundColor: palette.surface },
               selected && !isDark && styles.raisedShadow,
               selected && isDark && { borderWidth: 1.5, borderColor: palette.action },
             ]}>
             <Text
-              variant={selected ? 'strong' : 'row'}
+              variant={isCompact ? 'caption' : selected ? 'strong' : 'row'}
               tone={selected ? 'action' : 'ink'}
-              style={styles.segmentLabel}>
+              numberOfLines={1}
+              style={[
+                styles.segmentLabel,
+                isCompact && selected && styles.compactSelectedLabel,
+              ]}>
               {option.label}
             </Text>
           </Pressable>
@@ -113,6 +124,7 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.7 },
   segments: { flexDirection: 'row', gap: space.xs, padding: space.xs, borderRadius: radii.control },
+  segmentsCompact: { gap: 4, padding: 3 },
   segment: {
     flex: 1,
     minHeight: sizes.touch,
@@ -121,7 +133,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     borderRadius: radii.control - 4,
   },
+  segmentCompact: {
+    paddingHorizontal: 4,
+  },
   segmentLabel: { textAlign: 'center' },
+  compactSelectedLabel: { fontFamily: fontFamily.extraBold },
   raisedShadow: {
     shadowColor: '#221A36',
     shadowOpacity: 0.18,
