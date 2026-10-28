@@ -10,7 +10,7 @@ import {
   ProfileButton,
   TipCard,
 } from '@/components/today/TodayParts';
-import { NextStepPanel, Screen, Text } from '@/components/ui';
+import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
 import { useFocus } from '@/hooks/useFocus';
 import { useDailyHealthTip } from '@/hooks/useHome';
 import { useAppointments } from '@/hooks/useJourney';
@@ -50,7 +50,15 @@ export default function TodayTab() {
             {greeting(now, user ? firstName(name) : null)}
           </Text>
         </View>
-        <ProfileButton pictureUrl={userProfilePictureUrl(user)} name={name} />
+        <View style={styles.headerRight}>
+          <IconButton
+            icon="search"
+            accessibilityLabel="Search OncoSense"
+            look="tinted"
+            onPress={() => router.push('/search')}
+          />
+          <ProfileButton pictureUrl={userProfilePictureUrl(user)} name={name} />
+        </View>
       </View>
 
       {nextStep.kind === 'self-check' ? (
@@ -101,4 +109,5 @@ export default function TodayTab() {
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   headerText: { flex: 1, gap: 2 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
 });

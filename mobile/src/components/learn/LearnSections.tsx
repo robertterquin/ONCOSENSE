@@ -198,7 +198,7 @@ function categoryTone(category: string): { background: keyof Palette; color: key
   }
 }
 
-function PreventionTipCard({
+export function PreventionTipCard({
   tip,
   onPress,
 }: {
@@ -293,18 +293,69 @@ function PreventionTipCard({
   );
 }
 
+export function PreventionDetailSheet({
+  tip,
+  onClose,
+}: {
+  tip: PreventionTip | null;
+  onClose: () => void;
+}) {
+  const { palette } = useDesign();
+  const openTone = tip ? categoryTone(tip.category) : null;
+  const openIcon = tip ? iconForPreventionTip(tip) : null;
+  const isDone = useHabitsStore((state) => (tip ? state.isDone(tip.id) : false));
+  const isBookmarked = useHabitsStore((state) => (tip ? state.isBookmarked(tip.id) : false));
+  const toggleDone = useHabitsStore((state) => state.toggleDone);
+  const toggleBookmark = useHabitsStore((state) => state.toggleBookmark);
+
+  return (
+    <Sheet visible={tip !== null} onClose={onClose} title={tip?.title ?? ''}>
+      {tip && openTone && openIcon ? (
+        <View style={styles.sheetContent}>
+          <View style={styles.sheetMetaRow}>
+            <View style={[styles.badge, { backgroundColor: palette[openTone.background] }]}>
+              <Text variant="caption" tone={openTone.color} style={styles.badgeText}>
+                {tip.category.toUpperCase()}
+              </Text>
+            </View>
+            <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
+              <Icon name={openIcon} size={18} tone={openTone.color} />
+            </View>
+          </View>
+          <Text variant="reading">{tip.description}</Text>
+          {tip.detailedInfo ? <Text variant="reading">{tip.detailedInfo}</Text> : null}
+          <View style={styles.sheetActions}>
+            <Button
+              title={isDone ? 'Completed today ✓' : 'Mark as completed today'}
+              icon={isDone ? 'check' : 'circle'}
+              variant={isDone ? 'help' : 'primary'}
+              onPress={() => toggleDone(tip.id)}
+            />
+            <Button
+              title={isBookmarked ? 'Saved in bookmarks' : 'Save habit to bookmarks'}
+              icon="bookmark"
+              variant="secondary"
+              onPress={() => toggleBookmark(tip.id)}
+            />
+            <Button
+              title={`Source: ${tip.sourceName}`}
+              icon="external-link"
+              variant="quiet"
+              fullWidth={false}
+              onPress={() => openWebPage(tip.sourceUrl)}
+            />
+          </View>
+        </View>
+      ) : null}
+    </Sheet>
+  );
+}
+
 /** Prevention tips as a swipeable horizontal cards carousel; each opens a sheet with details and source. */
 export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
   const [open, setOpen] = useState<PreventionTip | null>(null);
-  const { palette } = useDesign();
-  const openTone = open ? categoryTone(open.category) : null;
-  const openIcon = open ? iconForPreventionTip(open) : null;
 
   const completedToday = useHabitsStore((state) => state.completedCount());
-  const isDone = useHabitsStore((state) => (open ? state.isDone(open.id) : false));
-  const isBookmarked = useHabitsStore((state) => (open ? state.isBookmarked(open.id) : false));
-  const toggleDone = useHabitsStore((state) => state.toggleDone);
-  const toggleBookmark = useHabitsStore((state) => state.toggleBookmark);
 
   const subtitle =
     completedToday > 0
@@ -325,45 +376,7 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
           <PreventionTipCard key={tip.id} tip={tip} onPress={() => setOpen(tip)} />
         ))}
       </ScrollView>
-      <Sheet visible={open !== null} onClose={() => setOpen(null)} title={open?.title ?? ''}>
-        {open && openTone && openIcon ? (
-          <View style={styles.sheetContent}>
-            <View style={styles.sheetMetaRow}>
-              <View style={[styles.badge, { backgroundColor: palette[openTone.background] }]}>
-                <Text variant="caption" tone={openTone.color} style={styles.badgeText}>
-                  {open.category.toUpperCase()}
-                </Text>
-              </View>
-              <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
-                <Icon name={openIcon} size={18} tone={openTone.color} />
-              </View>
-            </View>
-            <Text variant="reading">{open.description}</Text>
-            {open.detailedInfo ? <Text variant="reading">{open.detailedInfo}</Text> : null}
-            <View style={styles.sheetActions}>
-              <Button
-                title={isDone ? 'Completed today ✓' : 'Mark as completed today'}
-                icon={isDone ? 'check' : 'circle'}
-                variant={isDone ? 'help' : 'primary'}
-                onPress={() => toggleDone(open.id)}
-              />
-              <Button
-                title={isBookmarked ? 'Saved in bookmarks' : 'Save habit to bookmarks'}
-                icon="bookmark"
-                variant="secondary"
-                onPress={() => toggleBookmark(open.id)}
-              />
-              <Button
-                title={`Source: ${open.sourceName}`}
-                icon="external-link"
-                variant="quiet"
-                fullWidth={false}
-                onPress={() => openWebPage(open.sourceUrl)}
-              />
-            </View>
-          </View>
-        ) : null}
-      </Sheet>
+      <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
     </Section>
   );
 }

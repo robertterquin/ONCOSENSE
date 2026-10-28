@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -9,7 +9,7 @@ import {
   GuideResults,
   LowerYourRisk,
 } from '@/components/learn/LearnSections';
-import { EmptyState, ErrorState, LoadingState, Screen, SearchField } from '@/components/ui';
+import { EmptyState, ErrorState, IconButton, LoadingState, Screen, SearchField } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { usePreventionTips } from '@/hooks/usePrevention';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
@@ -62,6 +62,14 @@ export default function LearnTab() {
       inTabs
       title="Learn"
       subtitle="Signs, self-checks and ways to lower your risk"
+      titleAside={
+        <IconButton
+          icon="search"
+          accessibilityLabel="Search OncoSense"
+          look="tinted"
+          onPress={() => router.push('/search')}
+        />
+      }
       onRefresh={refetch}
       refreshing={refreshing}
       scrollRef={scrollRef}>

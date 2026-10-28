@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import {
   LoadingState,
   Button,
   Chip,
+  IconButton,
   ListRow,
   Screen,
   Section,
@@ -50,6 +51,14 @@ export default function HelpTab() {
       inTabs
       title="Get help"
       subtitle="Hotlines, screening centers and support across the Philippines"
+      titleAside={
+        <IconButton
+          icon="search"
+          accessibilityLabel="Search OncoSense"
+          look="tinted"
+          onPress={() => router.push('/search')}
+        />
+      }
       onRefresh={() => resources.refetch()}
       refreshing={resources.isRefetching}
       scrollRef={scrollRef}>
