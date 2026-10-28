@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
@@ -49,13 +49,8 @@ const FILTERS: { id: DomainFilter; label: string }[] = [
 export default function SearchScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>();
   const { palette } = useDesign();
-  const [query, setQuery] = useState(q ?? '');
-
-  useEffect(() => {
-    if (q !== undefined) {
-      setQuery(q);
-    }
-  }, [q]);
+  const [userQuery, setUserQuery] = useState<string | null>(null);
+  const query = userQuery !== null ? userQuery : (q ?? '');
   const [filter, setFilter] = useState<DomainFilter>('all');
   const [selectedTip, setSelectedTip] = useState<PreventionTip | null>(null);
 
@@ -103,7 +98,7 @@ export default function SearchScreen() {
 
   const handleSelectSuggestion = (suggestion: string) => {
     haptics.selection();
-    setQuery(suggestion);
+    setUserQuery(suggestion);
   };
 
   const openCancer = (id: string) =>
@@ -148,7 +143,7 @@ export default function SearchScreen() {
         accessibilityLabel="Search OncoSense"
         placeholder="Search anything in OncoSense..."
         value={query}
-        onChangeText={setQuery}
+        onChangeText={setUserQuery}
         autoFocus
       />
 

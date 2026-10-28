@@ -15,6 +15,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { ToastHost } from '@/components/ui';
 import { focusFromMetadata } from '@/lib/focus';
+import { clearHabits, startHabitSync, syncHabits } from '@/lib/habitSync';
 import { initializeNotifications, startNotificationListeners } from '@/lib/notifications/service';
 import { queryClient } from '@/lib/queryClient';
 import { clearSelfChecks, startSelfCheckSync, syncSelfChecks } from '@/lib/selfCheckSync';
@@ -39,12 +40,18 @@ export default function RootLayout() {
 
   useEffect(() => startAuthListener(), []);
   useEffect(() => startSelfCheckSync(), []);
+  useEffect(() => startHabitSync(), []);
 
-  // Self-checks follow the account: load them at sign-in, drop them at sign-out.
+  // Self-checks and habits follow the account: load them at sign-in, drop them at sign-out.
   const wasSignedIn = useRef(false);
   useEffect(() => {
-    if (userId) void syncSelfChecks();
-    else if (wasSignedIn.current) clearSelfChecks();
+    if (userId) {
+      void syncSelfChecks();
+      void syncHabits();
+    } else if (wasSignedIn.current) {
+      clearSelfChecks();
+      clearHabits();
+    }
     wasSignedIn.current = userId !== null;
   }, [userId]);
 
