@@ -47,12 +47,19 @@ export const TEXT_SIZES = { default: 1, large: 1.15, larger: 1.3 } as const;
 export type TextSize = keyof typeof TEXT_SIZES;
 
 /** A type style at the user's text size (line height grows with it). */
-export function scaledType(variant: TypeVariant, size: TextSize): TextStyle {
+export function scaledType(
+  variant: TypeVariant,
+  size: TextSize,
+  highReadability = false,
+): TextStyle {
   const style: TypeStyle = typeScale[variant];
   const factor = TEXT_SIZES[size];
+  const extraLineHeight = highReadability ? 3 : 0;
+  const extraLetterSpacing = highReadability ? 0.3 : 0;
   return {
     ...style,
     fontSize: Math.round(style.fontSize * factor),
-    lineHeight: Math.round(style.lineHeight * factor),
+    lineHeight: Math.round(style.lineHeight * factor) + extraLineHeight,
+    letterSpacing: (style.letterSpacing ?? 0) + extraLetterSpacing,
   };
 }

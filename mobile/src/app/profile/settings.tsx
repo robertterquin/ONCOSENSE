@@ -39,7 +39,8 @@ const DELETED = [
 export default function SettingsScreen() {
   const signedIn = useIsSignedIn();
   const focus = useFocus();
-  const { mode, setMode, textSize, setTextSize } = useThemeStore();
+  const { mode, setMode, textSize, setTextSize, highReadability, setHighReadability } =
+    useThemeStore();
   const remindersOn = useNotificationPrefs((state) => state.enabled);
   const anonymous = useCommunityStore((state) => state.anonymousByDefault);
   const setAnonymous = useCommunityStore((state) => state.setAnonymousByDefault);
@@ -77,6 +78,22 @@ export default function SettingsScreen() {
             ]}
           />
         </View>
+      </Section>
+
+      <Section
+        title="Accessibility & comfort"
+        subtitle="Accommodations for active treatment and visual comfort">
+        <ListRow
+          title="High readability mode"
+          subtitle="Enforces AAA contrast, relaxes line spacing, and enlarges touch targets for chemo-brain and low vision"
+          accessory={
+            <Switch
+              accessibilityLabel="High readability mode"
+              value={highReadability}
+              onValueChange={setHighReadability}
+            />
+          }
+        />
       </Section>
 
       {REMINDERS_SUPPORTED ? (

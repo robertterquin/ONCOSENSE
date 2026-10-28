@@ -19,6 +19,7 @@ type SummaryInput = {
   treatments: Treatment[];
   appointments: Appointment[];
   includeNotes: boolean;
+  questions?: string[];
 };
 
 type Trend = 'better' | 'worse' | 'about the same';
@@ -36,6 +37,7 @@ export type Summary = {
   treatments: { name: string; detail: string }[];
   appointments: { title: string; when: string; where: string | null }[];
   notes: { date: string; text: string }[];
+  questions?: string[];
 };
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -119,6 +121,7 @@ export function buildSummary(input: SummaryInput): Summary {
           .filter((entry) => entry.notes)
           .map((entry) => ({ date: formatShortDate(entry.date), text: entry.notes! }))
       : [],
+    questions: input.questions?.filter((q) => q.trim().length > 0) ?? [],
   };
 }
 
@@ -176,6 +179,12 @@ export function summarySections(summary: Summary): { title: string; lines: strin
       ),
     });
   }
+  if (summary.questions?.length) {
+    sections.push({
+      title: 'Questions for my doctor',
+      lines: summary.questions,
+    });
+  }
   if (summary.notes.length) {
     sections.push({ title: 'Notes', lines: summary.notes.map((n) => `${n.date}: ${n.text}`) });
   }
@@ -185,19 +194,402 @@ export function summarySections(summary: Summary): { title: string; lines: strin
 const escapeHtml = (text: string) =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** A one-to-two page, print-friendly HTML document for expo-print. */
+/** A standardized, clinical 1-to-2 page PDF document for physician review. */
 export function summaryHtml(summary: Summary): string {
-  const body = summarySections(summary)
-    .map(
-      (section) =>
-        `<h2>${escapeHtml(section.title)}</h2><ul>${section.lines
-          .map((line) => `<li>${escapeHtml(line)}</li>`)
-          .join('')}</ul>`,
-    )
-    .join('');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>OncoSense summary</title><style>
-body{font-family:-apple-system,Helvetica,Arial,sans-serif;color:#221A36;margin:32px;font-size:13px;line-height:1.5}
-h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:20px 0 6px;border-bottom:1px solid #E3DDF2;padding-bottom:4px}
-ul{margin:0;padding-left:18px}.note{color:#5D5672;font-size:11px;margin-top:24px}
-</style></head><body><h1>Health summary for my doctor</h1>${body}<p class="note">Made with OncoSense from the check-ins I recorded. It is not a medical record.</p></body></html>`;
+  const range = isSameDay(summary.from, summary.to)
+    ? formatLongDate(summary.to)
+    : `${formatLongDate(summary.from)} to ${formatLongDate(summary.to)}`;
+
+  const painTrendClass =
+    summary.trend?.pain === 'better'
+      ? 'trend-positive'
+      : summary.trend?.pain === 'worse'
+        ? 'trend-negative'
+        : 'trend-neutral';
+  const energyTrendClass =
+    summary.trend?.energy === 'better'
+      ? 'trend-positive'
+      : summary.trend?.energy === 'worse'
+        ? 'trend-negative'
+        : 'trend-neutral';
+
+  const painTrendSymbol =
+    summary.trend?.pain === 'better' ? '↓' : summary.trend?.pain === 'worse' ? '↑' : '→';
+  const energyTrendSymbol =
+    summary.trend?.energy === 'better' ? '↑' : summary.trend?.energy === 'worse' ? '↓' : '→';
+
+  const metricsHtml = summary.averages
+    ? `
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Average Pain</div>
+        <div class="metric-value">${summary.averages.pain} <span class="metric-unit">/ 10</span></div>
+        <div class="metric-trend ${painTrendClass}">
+          ${summary.trend ? `${painTrendSymbol} ${summary.trend.pain}` : 'Baseline tracking'}
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Average Energy</div>
+        <div class="metric-value">${summary.averages.energy} <span class="metric-unit">/ 10</span></div>
+        <div class="metric-trend ${energyTrendClass}">
+          ${summary.trend ? `${energyTrendSymbol} ${summary.trend.energy}` : 'Baseline tracking'}
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Sleep Quality</div>
+        <div class="metric-value">${summary.averages.sleep} <span class="metric-unit">/ 5</span></div>
+        <div class="metric-sub">${escapeHtml(sleepWord(summary.averages.sleep))}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Overall Mood</div>
+        <div class="metric-value">${summary.averages.mood} <span class="metric-unit">/ 5</span></div>
+        <div class="metric-sub">${escapeHtml(moodWord(summary.averages.mood))}</div>
+      </div>
+    </div>`
+    : `<div class="empty-notice">No check-ins recorded during this period.</div>`;
+
+  const symptomsHtml = summary.symptoms.length
+    ? `
+    <div class="section-card">
+      <h2 class="section-title">Most Common Symptoms</h2>
+      <div class="symptom-list">
+        ${summary.symptoms
+          .map(([name, count]) => {
+            const pct = Math.min(100, Math.round((count / Math.max(1, summary.checkIns)) * 100));
+            return `
+            <div class="symptom-item">
+              <div class="symptom-header">
+                <span class="symptom-name">${escapeHtml(name)}</span>
+                <span class="symptom-meta">${count} day${count === 1 ? '' : 's'} (${pct}%)</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: ${pct}%;"></div>
+              </div>
+            </div>`;
+          })
+          .join('')}
+      </div>
+    </div>`
+    : '';
+
+  const treatmentsHtml = summary.treatments.length
+    ? `
+    <div class="section-card">
+      <h2 class="section-title">Treatments & Therapies</h2>
+      <ul class="treatment-list">
+        ${summary.treatments
+          .map(
+            (t) => `
+            <li class="treatment-item">
+              <strong>${escapeHtml(t.name)}</strong>: ${escapeHtml(t.detail)}
+            </li>`,
+          )
+          .join('')}
+      </ul>
+    </div>`
+    : '';
+
+  const appointmentsHtml = summary.appointments.length
+    ? `
+    <div class="section-card">
+      <h2 class="section-title">Upcoming Appointments & Procedures</h2>
+      <ul class="appointment-list">
+        ${summary.appointments
+          .map(
+            (a) => `
+            <li class="appointment-item">
+              <strong>${escapeHtml(a.title)}</strong> — ${escapeHtml(a.when)}${a.where ? `, <em>${escapeHtml(a.where)}</em>` : ''}
+            </li>`,
+          )
+          .join('')}
+      </ul>
+    </div>`
+    : '';
+
+  const questionsHtml = summary.questions?.length
+    ? `
+    <div class="section-card questions-card">
+      <h2 class="section-title questions-title">Key Questions for the Doctor</h2>
+      <ul class="questions-list">
+        ${summary.questions
+          .map((q) => `<li class="question-item"><strong>${escapeHtml(q)}</strong></li>`)
+          .join('')}
+      </ul>
+    </div>`
+    : '';
+
+  const notesHtml = summary.notes.length
+    ? `
+    <div class="section-card">
+      <h2 class="section-title">Patient Notes & Observations</h2>
+      <ul class="notes-list">
+        ${summary.notes
+          .map(
+            (n) => `
+            <li class="note-item">
+              <span class="note-date">${escapeHtml(n.date)}:</span>
+              <span class="note-text">${escapeHtml(n.text)}</span>
+            </li>`,
+          )
+          .join('')}
+      </ul>
+    </div>`
+    : '';
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Health summary for my doctor — OncoSense</title>
+<style>
+  @page { margin: 12mm 14mm; size: portrait; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1F1930;
+    margin: 0;
+    padding: 24px;
+    font-size: 13px;
+    line-height: 1.5;
+    background-color: #FFFFFF;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .header-card {
+    background: #2E1F66;
+    color: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .header-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.2px;
+    color: #FFFFFF;
+  }
+  .app-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.85;
+  }
+  .header-info-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .info-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    opacity: 0.75;
+  }
+  .info-val {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric-card {
+    background: #F6F4FA;
+    border: 1px solid #ECE7F8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5D5672;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #221A36;
+    line-height: 1.2;
+  }
+  .metric-unit {
+    font-size: 12px;
+    font-weight: 500;
+    color: #5D5672;
+  }
+  .metric-sub {
+    font-size: 11px;
+    color: #5D5672;
+    margin-top: 4px;
+    text-transform: capitalize;
+  }
+  .metric-trend {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-top: 6px;
+    text-transform: capitalize;
+  }
+  .trend-positive {
+    background: #E1F2EF;
+    color: #0E6B63;
+  }
+  .trend-negative {
+    background: #FBE8EF;
+    color: #C2255C;
+  }
+  .trend-neutral {
+    background: #ECE7F8;
+    color: #5D5672;
+  }
+  .section-card {
+    background: #FFFFFF;
+    border: 1px solid #ECE7F8;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #221A36;
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #F0ECF9;
+  }
+  .symptom-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .symptom-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .symptom-meta {
+    color: #5D5672;
+    font-weight: 500;
+  }
+  .bar-track {
+    width: 100%;
+    height: 7px;
+    background: #ECE7F8;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: #6A55D6;
+    border-radius: 4px;
+  }
+  ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 5px;
+  }
+  .questions-card {
+    border-color: #B4A3F5;
+    background: #FAF9FE;
+  }
+  .questions-title {
+    color: #5236B5;
+    border-bottom-color: #E3DDF2;
+  }
+  .notes-list {
+    list-style: none;
+    padding: 0;
+  }
+  .note-item {
+    padding: 8px 12px;
+    background: #F6F4FA;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .note-date {
+    font-weight: 700;
+    color: #5236B5;
+    margin-right: 8px;
+  }
+  .empty-notice {
+    padding: 16px;
+    color: #5D5672;
+    font-style: italic;
+    background: #F6F4FA;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .footer-notice {
+    color: #5D5672;
+    font-size: 11px;
+    margin-top: 24px;
+    padding-top: 10px;
+    border-top: 1px solid #ECE7F8;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="header-card">
+    <div class="header-title-row">
+      <h1>Health summary for my doctor</h1>
+      <span class="app-tag">OncoSense Report</span>
+    </div>
+    <div class="header-info-grid">
+      <div class="info-col">
+        <span class="info-label">Patient</span>
+        <span class="info-val">${escapeHtml(summary.name)}</span>
+      </div>
+      <div class="info-col">
+        <span class="info-label">Focus / Stage</span>
+        <span class="info-val">${escapeHtml(summary.focusLabel ?? 'General Tracking')}</span>
+      </div>
+      <div class="info-col">
+        <span class="info-label">Reporting Period</span>
+        <span class="info-val">${escapeHtml(range)} (${summary.checkIns} check-in${summary.checkIns === 1 ? '' : 's'})</span>
+      </div>
+      <div class="info-col">
+        <span class="info-label">Generated</span>
+        <span class="info-val">${escapeHtml(formatLongDate(summary.to))}</span>
+      </div>
+    </div>
+  </div>
+
+  ${metricsHtml}
+  ${questionsHtml}
+  ${symptomsHtml}
+  ${treatmentsHtml}
+  ${appointmentsHtml}
+  ${notesHtml}
+
+  <p class="footer-notice note">Made with OncoSense from the check-ins I recorded. It is not a medical record. Intended to facilitate clinical discussion during healthcare consultations.</p>
+</body>
+</html>`;
 }

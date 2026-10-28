@@ -2,7 +2,13 @@ import { useColorScheme } from 'react-native';
 
 import { useThemeStore, type ThemeMode } from '@/stores/themeStore';
 
-import { darkPalette, lightPalette, type Palette } from './palette';
+import {
+  darkPalette,
+  highContrastDarkPalette,
+  highContrastLightPalette,
+  lightPalette,
+  type Palette,
+} from './palette';
 import { scaledType, type TextSize, type TypeVariant } from './type';
 
 /** Whether the app should be dark, given the setting and the phone's appearance. */
@@ -20,14 +26,26 @@ export function useDesign(): {
   isDark: boolean;
   palette: Palette;
   textSize: TextSize;
+  highReadability: boolean;
   type: (variant: TypeVariant) => ReturnType<typeof scaledType>;
 } {
   const isDark = useIsDark();
   const textSize = useThemeStore((state) => state.textSize);
+  const highReadability = useThemeStore((state) => state.highReadability);
+
+  const palette = highReadability
+    ? isDark
+      ? highContrastDarkPalette
+      : highContrastLightPalette
+    : isDark
+      ? darkPalette
+      : lightPalette;
+
   return {
     isDark,
-    palette: isDark ? darkPalette : lightPalette,
+    palette,
     textSize,
-    type: (variant) => scaledType(variant, textSize),
+    highReadability,
+    type: (variant) => scaledType(variant, textSize, highReadability),
   };
 }

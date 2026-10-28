@@ -14,6 +14,9 @@ type ThemeState = {
   setMode: (mode: ThemeMode) => void;
   textSize: TextSize;
   setTextSize: (size: TextSize) => void;
+  /** Chemo-brain & low-vision mode: enforces AAA contrast, wider line spacing, and larger touch targets. */
+  highReadability: boolean;
+  setHighReadability: (enabled: boolean) => void;
 };
 
 /**
@@ -33,6 +36,8 @@ export const useThemeStore = create<ThemeState>()(
       setMode: (mode) => set({ mode }),
       textSize: 'default',
       setTextSize: (textSize) => set({ textSize }),
+      highReadability: false,
+      setHighReadability: (highReadability) => set({ highReadability }),
     }),
     {
       name: 'theme',

@@ -273,4 +273,24 @@ describe('summary for the doctor', () => {
     expect(summaryHtml(withNotes)).toContain('Felt &lt;better&gt; today');
     expect(summaryHtml(buildSummary(input))).not.toContain('Felt');
   });
+
+  it('includes patient questions for the doctor when provided', () => {
+    const withQuestions = buildSummary({
+      ...input,
+      questions: ['How can I manage peripheral neuropathy?', 'Is fatigue normal after cycle 3?'],
+    });
+    const sections = summarySections(withQuestions);
+    const questionsSection = sections.find((s) => s.title === 'Questions for my doctor');
+    expect(questionsSection).toBeDefined();
+    expect(questionsSection?.lines).toEqual([
+      'How can I manage peripheral neuropathy?',
+      'Is fatigue normal after cycle 3?',
+    ]);
+
+    const html = summaryHtml(withQuestions);
+    expect(html).toContain('Key Questions for the Doctor');
+    expect(html).toContain('How can I manage peripheral neuropathy?');
+    expect(html).toContain('Average Pain');
+    expect(html).toContain('Average Energy');
+  });
 });

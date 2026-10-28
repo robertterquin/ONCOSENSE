@@ -98,6 +98,60 @@ export const darkPalette: Palette = {
   danger: '#F27BA6',
 };
 
+/** High readability / chemo-brain light palette (WCAG AAA contrast, >= 7:1 for text). */
+export const highContrastLightPalette: Palette = {
+  ground: '#FFFFFF',
+  surface: '#F4F2F8',
+  raised: '#E2DCF0',
+  ink: '#000000',
+  muted: '#2B253D',
+  line: '#CDC4E5',
+  border: '#726694',
+  action: '#321590',
+  onAction: '#FFFFFF',
+  panel: '#1E1050',
+  onPanel: '#FFFFFF',
+  onPanelMuted: '#FFFFFF',
+  panelTop: '#2C1B6E',
+  onPanelAccent: '#FFD2E2',
+  rose: '#940038',
+  roseTint: '#FBE8F0',
+  help: '#02534C',
+  helpTint: '#E2F7F4',
+  onHelpTint: '#04433D',
+  sun: '#F5E6BF',
+  sunInk: '#664100',
+  chartPain: '#940038',
+  danger: '#940038',
+};
+
+/** High readability / chemo-brain dark palette (pure pitch black, WCAG AAA contrast, >= 7:1 for text). */
+export const highContrastDarkPalette: Palette = {
+  ground: '#000000',
+  surface: '#110E1A',
+  raised: '#221D30',
+  ink: '#FFFFFF',
+  muted: '#D6D0EA',
+  line: '#3E3456',
+  border: '#6A5B90',
+  action: '#D4C7FF',
+  onAction: '#000000',
+  panel: '#28185E',
+  onPanel: '#FFFFFF',
+  onPanelMuted: '#FFFFFF',
+  panelTop: '#372480',
+  onPanelAccent: '#FFC0D9',
+  rose: '#FFA1C2',
+  roseTint: '#3D1528',
+  help: '#7EFFF0',
+  helpTint: '#0C3833',
+  onHelpTint: '#E0FAF6',
+  sun: '#3D2F0B',
+  sunInk: '#FFD369',
+  chartPain: '#FFA1C2',
+  danger: '#FFA1C2',
+};
+
 /** Foreground/background pairs the design relies on, for the contrast test. */
 export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['ink', 'ground'],
