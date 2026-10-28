@@ -7,7 +7,7 @@ export type ResourceType = 'hotline' | 'screening_center' | 'financial_support' 
 export type Resource = {
   id: string;
   name: string;
-  /** One of `ResourceType`, kept as a string so unknown types from the database still load. */
+ 
   type: string;
   description: string;
   phone: string | null;
@@ -15,7 +15,7 @@ export type Resource = {
   address: string | null;
   website: string | null;
   email: string | null;
-  /** Only verified, reliable sources are shown. */
+ 
   isVerified: boolean;
   isActive: boolean;
   createdAt: Date;
