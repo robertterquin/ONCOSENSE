@@ -41,6 +41,41 @@ export function iconForCancer(name: string): IconName {
   return CANCER_ICONS.find(([prefix]) => key.startsWith(prefix))?.[1] ?? 'ribbon';
 }
 
+/** Visual stroke-rounded icon for a lifestyle prevention tip. */
+export function iconForPreventionTip(tip: Pick<PreventionTip, 'title' | 'category'>): IconName {
+  const title = lower(tip.title);
+  const cat = lower(tip.category);
+
+  if (title.includes('plant') || title.includes('apple') || title.includes('fruit')) return 'apple';
+  if (title.includes('diet') || title.includes('food') || cat === 'diet') return 'natural-food';
+  if (title.includes('exercise') || title.includes('run') || title.includes('walk'))
+    return 'running-shoes';
+  if (title.includes('active') || cat === 'exercise') return 'activity';
+  if (title.includes('smok') || title.includes('tobacco')) return 'cigarette-off';
+  if (title.includes('alcohol') || title.includes('drink')) return 'beer-off';
+  if (title.includes('sun') || title.includes('skin') || title.includes('uv')) return 'sun';
+  if (title.includes('sleep') || title.includes('bed')) return 'moon';
+  if (title.includes('weight') || cat === 'weight') return 'body-weight';
+  if (title.includes('screen') || cat === 'screening') return 'shield';
+  if (title.includes('vaccin') || cat === 'prevention') return 'injection';
+  if (title.includes('water') || title.includes('hydrat') || cat === 'hydration')
+    return 'glass-water';
+
+  return 'activity';
+}
+
+/** Clean short representation of health agency sources (WHO, CDC, NCI, etc.). */
+export function shortenSourceName(source: string): string {
+  const match = source.match(/\(([^)]+)\)/);
+  if (match?.[1]) return match[1];
+
+  const lowerSource = lower(source);
+  if (lowerSource.includes('american cancer society')) return 'ACS';
+  if (lowerSource.includes('american institute for cancer research')) return 'AICR';
+  if (lowerSource.includes('skin cancer foundation')) return 'Skin Cancer Fdn';
+  return source;
+}
+
 /** The cancer type an awareness month is about ("Breast Cancer"), if Learn has it. */
 export function cancerForAwareness<T extends Pick<CancerType, 'name'>>(
   cancers: T[],

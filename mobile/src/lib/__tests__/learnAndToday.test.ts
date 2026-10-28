@@ -1,5 +1,12 @@
 import { awarenessForMonth } from '@/constants/awareness';
-import { cancerForAwareness, guideForCancer, iconForCancer, searchLearn } from '@/lib/learn';
+import {
+  cancerForAwareness,
+  guideForCancer,
+  iconForCancer,
+  iconForPreventionTip,
+  searchLearn,
+  shortenSourceName,
+} from '@/lib/learn';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -41,6 +48,43 @@ describe('Learn links', () => {
     const october = awarenessForMonth(new Date(2026, 9, 24));
     expect(cancerForAwareness(cancers, october.title)?.name).toBe('Breast Cancer');
     expect(cancerForAwareness(cancers, awarenessForMonth(new Date(2026, 1, 1)).title)).toBeNull();
+  });
+
+  it('selects appropriate visual icons for lifestyle prevention tips', () => {
+    expect(iconForPreventionTip({ title: 'Healthy Diet', category: 'Diet' })).toBe('natural-food');
+    expect(iconForPreventionTip({ title: 'Plant-Based Foods', category: 'Diet' })).toBe('apple');
+    expect(iconForPreventionTip({ title: 'Regular Exercise', category: 'Exercise' })).toBe(
+      'running-shoes',
+    );
+    expect(iconForPreventionTip({ title: 'Stay Active', category: 'Exercise' })).toBe('activity');
+    expect(iconForPreventionTip({ title: 'No Smoking', category: 'Lifestyle' })).toBe(
+      'cigarette-off',
+    );
+    expect(iconForPreventionTip({ title: 'Limit Alcohol', category: 'Lifestyle' })).toBe('beer-off');
+    expect(iconForPreventionTip({ title: 'Sun Protection', category: 'Lifestyle' })).toBe('sun');
+    expect(iconForPreventionTip({ title: 'Quality Sleep', category: 'Lifestyle' })).toBe('moon');
+    expect(iconForPreventionTip({ title: 'Healthy Weight', category: 'Weight' })).toBe(
+      'body-weight',
+    );
+    expect(iconForPreventionTip({ title: 'Regular Screenings', category: 'Screening' })).toBe(
+      'shield',
+    );
+    expect(iconForPreventionTip({ title: 'Get Vaccinated', category: 'Prevention' })).toBe(
+      'injection',
+    );
+    expect(iconForPreventionTip({ title: 'Stay Hydrated', category: 'Hydration' })).toBe(
+      'glass-water',
+    );
+  });
+
+  it('shortens health agency source names cleanly', () => {
+    expect(shortenSourceName('World Health Organization (WHO)')).toBe('WHO');
+    expect(shortenSourceName('Centers for Disease Control (CDC)')).toBe('CDC');
+    expect(shortenSourceName('National Cancer Institute (NCI)')).toBe('NCI');
+    expect(shortenSourceName('American Cancer Society')).toBe('ACS');
+    expect(shortenSourceName('American Institute for Cancer Research')).toBe('AICR');
+    expect(shortenSourceName('Skin Cancer Foundation')).toBe('Skin Cancer Fdn');
+    expect(shortenSourceName('Mayo Clinic')).toBe('Mayo Clinic');
   });
 });
 

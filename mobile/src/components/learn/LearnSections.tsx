@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, Chip, ListRow, Section, Sheet, Tag, Text } from '@/components/ui';
+import { Button, Chip, Icon, ListRow, Section, Sheet, Tag, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
-import { iconForCancer } from '@/lib/learn';
+import { iconForCancer, iconForPreventionTip, shortenSourceName } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
-import { space } from '@/theme/tokens';
+import type { Palette } from '@/theme/palette';
+import { radii, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
 
@@ -171,28 +173,126 @@ export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
   );
 }
 
-/** Prevention tips as chips; each opens a sheet with the detail and its source. */
+const CARD_WIDTH = 238;
+
+function categoryTone(category: string): { background: keyof Palette; color: keyof Palette } {
+  const cat = category.toLowerCase();
+  switch (cat) {
+    case 'diet':
+      return { background: 'raised', color: 'action' };
+    case 'exercise':
+    case 'hydration':
+      return { background: 'helpTint', color: 'help' };
+    case 'lifestyle':
+      return { background: 'roseTint', color: 'rose' };
+    case 'weight':
+      return { background: 'sun', color: 'sunInk' };
+    case 'screening':
+      return { background: 'raised', color: 'action' };
+    case 'prevention':
+      return { background: 'helpTint', color: 'help' };
+    default:
+      return { background: 'raised', color: 'action' };
+  }
+}
+
+function PreventionTipCard({
+  tip,
+  onPress,
+}: {
+  tip: PreventionTip;
+  onPress: () => void;
+}) {
+  const { palette } = useDesign();
+  const tone = categoryTone(tip.category);
+  const icon = iconForPreventionTip(tip);
+  const source = shortenSourceName(tip.sourceName);
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+        },
+        pressed && styles.cardPressed,
+      ]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${tip.title}, ${tip.category}. ${tip.description}. Source: ${tip.sourceName}`}>
+      <View style={styles.cardHeader}>
+        <View style={[styles.badge, { backgroundColor: palette[tone.background] }]}>
+          <Text variant="caption" tone={tone.color} style={styles.badgeText}>
+            {tip.category.toUpperCase()}
+          </Text>
+        </View>
+        <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
+          <Icon name={icon} size={18} tone={tone.color} />
+        </View>
+      </View>
+
+      <View style={styles.cardBody}>
+        <Text variant="row" numberOfLines={2} style={styles.cardTitle}>
+          {tip.title}
+        </Text>
+        <Text variant="supporting" tone="muted" numberOfLines={2} style={styles.cardDescription}>
+          {tip.description}
+        </Text>
+      </View>
+
+      <View style={[styles.cardFooter, { borderTopColor: palette.line }]}>
+        <Text variant="caption" tone="muted" numberOfLines={1} style={styles.cardSource}>
+          {source}
+        </Text>
+        <View style={styles.cardActionRow}>
+          <Text variant="caption" tone="action" style={styles.cardActionText}>
+            View guide
+          </Text>
+          <Icon name="chevron-right" size={14} tone="action" />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+/** Prevention tips as a swipeable horizontal cards carousel; each opens a sheet with details and source. */
 export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
   const [open, setOpen] = useState<PreventionTip | null>(null);
+  const { palette } = useDesign();
+  const openTone = open ? categoryTone(open.category) : null;
+  const openIcon = open ? iconForPreventionTip(open) : null;
+
   return (
     <Section
       title="Lower your risk"
       subtitle="Everyday habits backed by health agencies"
       look="plain">
-      <View style={styles.chips}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.carouselContainer}
+        style={styles.carouselScroll}
+        decelerationRate="fast"
+        snapToInterval={CARD_WIDTH + space.md}
+        snapToAlignment="start">
         {tips.map((tip) => (
-          <Chip
-            key={tip.id}
-            label={tip.title}
-            selected={false}
-            kind="radio"
-            onPress={() => setOpen(tip)}
-          />
+          <PreventionTipCard key={tip.id} tip={tip} onPress={() => setOpen(tip)} />
         ))}
-      </View>
+      </ScrollView>
       <Sheet visible={open !== null} onClose={() => setOpen(null)} title={open?.title ?? ''}>
-        {open ? (
-          <>
+        {open && openTone && openIcon ? (
+          <View style={styles.sheetContent}>
+            <View style={styles.sheetMetaRow}>
+              <View style={[styles.badge, { backgroundColor: palette[openTone.background] }]}>
+                <Text variant="caption" tone={openTone.color} style={styles.badgeText}>
+                  {open.category.toUpperCase()}
+                </Text>
+              </View>
+              <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
+                <Icon name={openIcon} size={18} tone={openTone.color} />
+              </View>
+            </View>
             <Text variant="reading">{open.description}</Text>
             {open.detailedInfo ? <Text variant="reading">{open.detailedInfo}</Text> : null}
             <Button
@@ -202,7 +302,7 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
               fullWidth={false}
               onPress={() => openWebPage(open.sourceUrl)}
             />
-          </>
+          </View>
         ) : null}
       </Sheet>
     </Section>
@@ -212,5 +312,90 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 const styles = StyleSheet.create({
   sectionGap: { gap: space.md },
   systems: { gap: space.sm, paddingRight: space.xl },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  carouselScroll: {
+    marginHorizontal: -space.xl,
+  },
+  carouselContainer: {
+    paddingHorizontal: space.xl,
+    gap: space.md,
+    paddingTop: space.xs,
+    paddingBottom: space.md,
+  },
+  card: {
+    width: CARD_WIDTH,
+    minHeight: 188,
+    borderRadius: radii.section,
+    borderWidth: 1,
+    padding: space.lg,
+    justifyContent: 'space-between',
+    gap: space.md,
+  },
+  cardPressed: {
+    opacity: 0.8,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radii.round,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+  },
+  cardIconTile: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.tile - 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardBody: {
+    gap: space.xs,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  cardDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  cardSource: {
+    fontSize: 11,
+    fontWeight: '600',
+    flex: 1,
+    marginRight: space.xs,
+  },
+  cardActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  cardActionText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  sheetContent: {
+    gap: space.md,
+  },
+  sheetMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 });

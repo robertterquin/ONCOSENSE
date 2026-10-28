@@ -1,9 +1,13 @@
 import Activity01Icon from '@hugeicons/core-free-icons/Activity01Icon';
 import AlertCircleIcon from '@hugeicons/core-free-icons/AlertCircleIcon';
+import Apple01Icon from '@hugeicons/core-free-icons/Apple01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 import ArrowLeft02Icon from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BedDoubleIcon from '@hugeicons/core-free-icons/BedDoubleIcon';
+import BeerOffIcon from '@hugeicons/core-free-icons/BeerOffIcon';
 import BloodIcon from '@hugeicons/core-free-icons/BloodIcon';
+import BodyWeightIcon from '@hugeicons/core-free-icons/BodyWeightIcon';
 import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
 import Bookmark01Icon from '@hugeicons/core-free-icons/Bookmark01Icon';
 import BulbIcon from '@hugeicons/core-free-icons/BulbIcon';
@@ -13,6 +17,7 @@ import CallIcon from '@hugeicons/core-free-icons/CallIcon';
 import Camera01Icon from '@hugeicons/core-free-icons/Camera01Icon';
 import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import CheckmarkCircle02Icon from '@hugeicons/core-free-icons/CheckmarkCircle02Icon';
+import CigaretteOffIcon from '@hugeicons/core-free-icons/CigaretteOffIcon';
 import CircleIcon from '@hugeicons/core-free-icons/CircleIcon';
 import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Copy01Icon from '@hugeicons/core-free-icons/Copy01Icon';
@@ -21,11 +26,13 @@ import DentalToothIcon from '@hugeicons/core-free-icons/DentalToothIcon';
 import Dna01Icon from '@hugeicons/core-free-icons/Dna01Icon';
 import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
 import Flag02Icon from '@hugeicons/core-free-icons/Flag02Icon';
+import GlassWaterIcon from '@hugeicons/core-free-icons/GlassWaterIcon';
 import Globe02Icon from '@hugeicons/core-free-icons/Globe02Icon';
 import Home01Icon from '@hugeicons/core-free-icons/Home01Icon';
 import Hospital01Icon from '@hugeicons/core-free-icons/Hospital01Icon';
 import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
 import InformationCircleIcon from '@hugeicons/core-free-icons/InformationCircleIcon';
+import InjectionIcon from '@hugeicons/core-free-icons/InjectionIcon';
 import LifebuoyIcon from '@hugeicons/core-free-icons/LifebuoyIcon';
 import LiverIcon from '@hugeicons/core-free-icons/LiverIcon';
 import LinkSquare02Icon from '@hugeicons/core-free-icons/LinkSquare02Icon';
@@ -39,9 +46,11 @@ import Mic01Icon from '@hugeicons/core-free-icons/Mic01Icon';
 import MinusSignIcon from '@hugeicons/core-free-icons/MinusSignIcon';
 import Moon02Icon from '@hugeicons/core-free-icons/Moon02Icon';
 import MoreHorizontalIcon from '@hugeicons/core-free-icons/MoreHorizontalIcon';
+import NaturalFoodIcon from '@hugeicons/core-free-icons/NaturalFoodIcon';
 import Notification01Icon from '@hugeicons/core-free-icons/Notification01Icon';
 import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
 import RibbonIcon from '@hugeicons/core-free-icons/RibbonIcon';
+import RunningShoesIcon from '@hugeicons/core-free-icons/RunningShoesIcon';
 import Search01Icon from '@hugeicons/core-free-icons/Search01Icon';
 import SecurityCheckIcon from '@hugeicons/core-free-icons/SecurityCheckIcon';
 import Share08Icon from '@hugeicons/core-free-icons/Share08Icon';
@@ -84,9 +93,13 @@ import { decorative } from './a11y';
 
 const ICONS = {
   activity: Activity01Icon,
+  apple: Apple01Icon,
   back: ArrowLeft02Icon,
+  bed: BedDoubleIcon,
+  'beer-off': BeerOffIcon,
   bell: Notification01Icon,
   blood: BloodIcon,
+  'body-weight': BodyWeightIcon,
   book: BookOpen01Icon,
   bookmark: Bookmark01Icon,
   calendar: Calendar03Icon,
@@ -95,6 +108,7 @@ const ICONS = {
   check: Tick02Icon,
   'chevron-left': ArrowLeft01Icon,
   'chevron-right': ArrowRight01Icon,
+  'cigarette-off': CigaretteOffIcon,
   circle: CircleIcon,
   'circle-alert': AlertCircleIcon,
   'circle-check': CheckmarkCircle02Icon,
@@ -106,12 +120,14 @@ const ICONS = {
   eye: ViewIcon,
   'eye-off': ViewOffSlashIcon,
   flag: Flag02Icon,
+  'glass-water': GlassWaterIcon,
   globe: Globe02Icon,
   heart: FavouriteIcon,
   home: Home01Icon,
   hospital: Hospital01Icon,
   image: Image01Icon,
   info: InformationCircleIcon,
+  injection: InjectionIcon,
   lightbulb: BulbIcon,
   'life-buoy': LifebuoyIcon,
   liver: LiverIcon,
@@ -124,10 +140,12 @@ const ICONS = {
   minus: MinusSignIcon,
   moon: Moon02Icon,
   more: MoreHorizontalIcon,
+  'natural-food': NaturalFoodIcon,
   phone: CallIcon,
   pill: Medicine02Icon,
   plus: PlusSignIcon,
   ribbon: RibbonIcon,
+  'running-shoes': RunningShoesIcon,
   search: Search01Icon,
   share: Share08Icon,
   shield: SecurityCheckIcon,
