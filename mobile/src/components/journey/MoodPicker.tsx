@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon, Text } from '@/components/ui';
+import { haptics } from '@/lib/haptics';
 import { MOODS } from '@/lib/journeyLabels';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -26,7 +27,10 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
             accessibilityLabel={mood.label}
             accessibilityState={{ checked: selected, disabled }}
             disabled={disabled}
-            onPress={() => onChange(mood.value)}
+            onPress={() => {
+              haptics.selection();
+              onChange(mood.value);
+            }}
             style={({ pressed }) => [
               styles.mood,
               { backgroundColor: selected ? palette.action : palette.ground },

@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import type { Palette } from '@/theme/palette';
-import { radii, space } from '@/theme/tokens';
+import { radii, shadows, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { decorative } from './a11y';
@@ -60,12 +60,13 @@ export function NextStepPanel({
   // mismatched tiles on iOS (a visible seam).
   const [size, setSize] = useState({ width: 0, height: 0 });
   return (
-    <View
-      style={[styles.panel, { backgroundColor: palette.panel }]}
-      onLayout={({ nativeEvent: { layout } }) =>
-        setSize({ width: layout.width, height: layout.height })
-      }>
-      {size.width > 0 ? (
+    <View style={styles.panelShadow}>
+      <View
+        style={[styles.panel, { backgroundColor: palette.panel }]}
+        onLayout={({ nativeEvent: { layout } }) =>
+          setSize({ width: layout.width, height: layout.height })
+        }>
+        {size.width > 0 ? (
         <Svg
           width={size.width}
           height={size.height}
@@ -126,6 +127,7 @@ export function NextStepPanel({
           ) : null}
         </View>
       </View>
+    </View>
     </View>
   );
 }
@@ -201,6 +203,10 @@ export function BottomActionBar({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
+  panelShadow: {
+    borderRadius: radii.panel,
+    ...shadows.floating,
+  },
   panel: {
     borderRadius: radii.panel,
     overflow: 'hidden',

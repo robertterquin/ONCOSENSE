@@ -2,7 +2,7 @@ import { Children, Fragment, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
-import { radii, space } from '@/theme/tokens';
+import { radii, shadows, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Text } from './Text';
@@ -61,6 +61,7 @@ export function Section({
       <View
         style={[
           look !== 'plain' && styles.container,
+          look === 'card' && [styles.cardContainer, { borderColor: palette.border }],
           look === 'tinted' && styles.tinted,
           !divided && styles.spaced,
           { backgroundColor: background },
@@ -91,7 +92,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xs,
   },
   headingText: { flex: 1, gap: 2 },
-  container: { borderRadius: radii.section, paddingHorizontal: space.lg + 2, overflow: 'hidden' },
+  container: { borderRadius: radii.section, paddingHorizontal: space.lg + 2 },
+  cardContainer: {
+    borderWidth: 1,
+    ...shadows.card,
+  },
   tinted: { paddingVertical: space.xl },
   /** Children that aren't divided rows (buttons, fields) get room between them. */
   spaced: { gap: space.md },

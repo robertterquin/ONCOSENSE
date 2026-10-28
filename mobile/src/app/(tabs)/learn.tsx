@@ -73,7 +73,7 @@ export default function LearnTab() {
       />
 
       {queries.some((q) => q.isPending) ? (
-        <LoadingState message="Loading Learn" />
+        <LoadingState variant="learn" message="Loading Learn" />
       ) : failed ? (
         <ErrorState message={failed.error?.message ?? 'Something went wrong'} onRetry={refetch} />
       ) : noResults ? (

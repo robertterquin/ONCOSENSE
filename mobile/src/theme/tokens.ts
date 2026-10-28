@@ -48,3 +48,31 @@ export const durations = {
   medium: 300,
   long: 500,
 } as const;
+
+/** Ambient shadows for surfaces and elevated cards across iOS, Android and web. */
+export const shadows = {
+  /** Subtle lift for card sections and containers. */
+  card: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  /** Floating controls, next-step panel and tab dock. */
+  floating: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  /** Elevated modal sheets and popups. */
+  sheet: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+} as const;

@@ -10,6 +10,7 @@ import {
 import type { Palette } from '@/theme/palette';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
+import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
@@ -87,7 +88,10 @@ export function Button({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
-      onPress={onPress}
+      onPress={() => {
+        haptics.lightImpact();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.button,
         !fullWidth && styles.hug,
@@ -151,7 +155,10 @@ export function IconButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={Math.max(0, (sizes.touch - size) / 2)}
-      onPress={onPress}
+      onPress={() => {
+        haptics.lightImpact();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.iconButton,
         { width: size, height: size, borderRadius: size / 2, backgroundColor: background },

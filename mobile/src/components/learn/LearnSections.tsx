@@ -7,8 +7,9 @@ import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
 import { iconForCancer, iconForPreventionTip, shortenSourceName } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
+import { haptics } from '@/lib/haptics';
 import type { Palette } from '@/theme/palette';
-import { radii, space } from '@/theme/tokens';
+import { radii, shadows, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -218,7 +219,10 @@ function PreventionTipCard({
         },
         pressed && styles.cardPressed,
       ]}
-      onPress={onPress}
+      onPress={() => {
+        haptics.lightImpact();
+        onPress();
+      }}
       accessibilityRole="button"
       accessibilityLabel={`${tip.title}, ${tip.category}. ${tip.description}. Source: ${tip.sourceName}`}>
       <View style={styles.cardHeader}>
@@ -329,6 +333,7 @@ const styles = StyleSheet.create({
     padding: space.lg,
     justifyContent: 'space-between',
     gap: space.md,
+    ...shadows.card,
   },
   cardPressed: {
     opacity: 0.8,

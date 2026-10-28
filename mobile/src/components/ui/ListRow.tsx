@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { Palette } from '@/theme/palette';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
+import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
@@ -97,7 +98,10 @@ export function ListRow({
             accessibilityLabel ?? [title, subtitle, trailing].filter(Boolean).join(', ')
           }
           accessibilityHint={accessibilityHint}
-          onPress={onPress}
+          onPress={() => {
+            haptics.lightImpact();
+            onPress();
+          }}
           style={({ pressed }) => [styles.main, pressed && styles.pressed]}>
           {body}
         </Pressable>

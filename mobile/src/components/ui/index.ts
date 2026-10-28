@@ -12,6 +12,16 @@ export { RibbonMark } from './RibbonMark';
 export { Screen } from './Screen';
 export { Divider, Section } from './Section';
 export { Sheet } from './Sheet';
+export {
+  Skeleton,
+  SkeletonCard,
+  SkeletonCommunity,
+  SkeletonHelp,
+  SkeletonJourney,
+  SkeletonLearn,
+  SkeletonList,
+  SkeletonRow,
+} from './Skeleton';
 export { SliderRow } from './SliderRow';
 export { EmptyState, ErrorState, LoadingState } from './StateViews';
 export { Switch } from './Switch';

@@ -101,7 +101,7 @@ function Dashboard() {
       onRefresh={refresh}
       refreshing={queries.some((query) => query.isRefetching)}>
       {loading ? (
-        <LoadingState message="Loading your journey" />
+        <LoadingState variant="journey" message="Loading your journey" />
       ) : failed ? (
         <ErrorState
           message="Couldn't load your journey. Check your connection and try again."

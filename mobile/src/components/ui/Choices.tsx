@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
+import { haptics } from '@/lib/haptics';
 
 import { Icon } from './Icon';
 import { Text } from './Text';
@@ -28,7 +29,10 @@ export function Chip({ label, selected, onPress, kind = 'toggle', tone = 'action
       accessibilityRole={kind === 'radio' ? 'radio' : 'checkbox'}
       accessibilityState={{ checked: selected }}
       accessibilityLabel={label}
-      onPress={onPress}
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.chip,
         selected
@@ -75,7 +79,10 @@ export function SegmentedControl<T extends string>({
             accessibilityRole="radio"
             accessibilityState={{ checked: selected }}
             accessibilityLabel={option.label}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              haptics.selection();
+              onChange(option.value);
+            }}
             style={[
               styles.segment,
               selected && { backgroundColor: palette.surface },

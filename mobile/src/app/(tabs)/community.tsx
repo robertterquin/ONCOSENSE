@@ -126,7 +126,7 @@ export default function CommunityTab() {
       </View>
 
       {questions.isPending ? (
-        <LoadingState message="Loading questions" />
+        <LoadingState variant="community" message="Loading questions" />
       ) : questions.isError ? (
         <ErrorState
           message="Couldn't load questions. Check your connection and try again."

@@ -2,9 +2,10 @@ import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { radii, space } from '@/theme/tokens';
+import { radii, shadows, space } from '@/theme/tokens';
 import { fontFamily, TEXT_SIZES } from '@/theme/type';
 import { useDesign } from '@/theme/useTheme';
+import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
@@ -52,7 +53,10 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
               target: route.key,
               canPreventDefault: true,
             });
-            if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+            if (!focused && !event.defaultPrevented) {
+              haptics.selection();
+              navigateToTab(route.key);
+            }
           };
           return (
             <Pressable
@@ -101,6 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.panel,
     borderWidth: 1.5,
     minHeight: TAB_BAR_HEIGHT,
+    ...shadows.floating,
   },
   tab: { flex: 1, alignItems: 'center', gap: space.xs },
   pill: {

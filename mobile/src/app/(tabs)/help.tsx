@@ -77,7 +77,7 @@ export default function HelpTab() {
       </View>
 
       {resources.isPending ? (
-        <LoadingState message="Loading help contacts" />
+        <LoadingState variant="help" message="Loading help contacts" />
       ) : resources.isError ? (
         <ErrorState
           message="Couldn't load help contacts. Check your connection and try again."

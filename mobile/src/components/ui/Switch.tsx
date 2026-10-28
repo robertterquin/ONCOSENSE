@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useDesign } from '@/theme/useTheme';
+import { haptics } from '@/lib/haptics';
 
 type SwitchProps = {
   value: boolean;
@@ -28,7 +29,10 @@ export function Switch({
       accessibilityState={{ checked: value, disabled }}
       disabled={disabled}
       hitSlop={6}
-      onPress={() => onValueChange(!value)}
+      onPress={() => {
+        haptics.selection();
+        onValueChange(!value);
+      }}
       style={({ pressed }) => [
         styles.track,
         value

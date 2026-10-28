@@ -5,12 +5,42 @@ import { useDesign } from '@/theme/useTheme';
 
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
+import {
+  SkeletonCard,
+  SkeletonCommunity,
+  SkeletonHelp,
+  SkeletonJourney,
+  SkeletonLearn,
+  SkeletonList,
+} from './Skeleton';
 import { Text } from './Text';
 
 // Loading, error and empty states in the redesign style.
 
-export function LoadingState({ message }: { message?: string }) {
+export type LoadingVariant =
+  | 'spinner'
+  | 'learn'
+  | 'journey'
+  | 'community'
+  | 'help'
+  | 'list'
+  | 'card';
+
+type LoadingStateProps = {
+  message?: string;
+  variant?: LoadingVariant;
+};
+
+export function LoadingState({ message, variant }: LoadingStateProps) {
   const { palette } = useDesign();
+
+  if (variant === 'learn') return <SkeletonLearn />;
+  if (variant === 'journey') return <SkeletonJourney />;
+  if (variant === 'community') return <SkeletonCommunity />;
+  if (variant === 'help') return <SkeletonHelp />;
+  if (variant === 'list') return <SkeletonList count={4} />;
+  if (variant === 'card') return <SkeletonCard />;
+
   return (
     <View
       style={styles.container}
