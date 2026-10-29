@@ -46,7 +46,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
         style={[
           styles.bar,
           { backgroundColor: palette.surface, borderColor: palette.border },
-          elevation('floating', isDark),
+          elevation('floating', palette, isDark),
         ]}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;

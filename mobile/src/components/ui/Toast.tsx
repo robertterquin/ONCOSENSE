@@ -58,7 +58,11 @@ export function ToastHost() {
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
         onPress={hide}
-        style={[styles.toast, { backgroundColor: palette.panel }, elevation('floating', isDark)]}>
+        style={[
+          styles.toast,
+          { backgroundColor: palette.panel },
+          elevation('panel', palette, isDark),
+        ]}>
         <Icon name={LOOK[toast.type].icon} size={20} color={LOOK[toast.type].iconColor(palette)} />
         <Text variant="body" color={palette.onPanel} style={styles.message}>
           {toast.message}

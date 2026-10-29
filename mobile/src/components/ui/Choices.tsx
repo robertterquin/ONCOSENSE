@@ -41,9 +41,7 @@ export function Chip({ label, selected, onPress, kind = 'toggle', tone = 'action
           : { backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1.5 },
         pressed && styles.pressed,
       ]}>
-      {selected && kind === 'toggle' ? (
-        <Icon name="check" size={16} tone={on.text} bold />
-      ) : null}
+      {selected && kind === 'toggle' ? <Icon name="check" size={16} tone={on.text} bold /> : null}
       <Text variant={selected ? 'strong' : 'row'} tone={selected ? on.text : 'ink'}>
         {label}
       </Text>
@@ -75,7 +73,8 @@ export function SegmentedControl<T extends string>({
       style={[
         styles.segments,
         isCompact && styles.segmentsCompact,
-        { backgroundColor: palette.ground },
+        // The track is the page colour, so its edge is what shows it.
+        { backgroundColor: palette.ground, borderColor: palette.border, borderWidth: 1 },
       ]}>
       {options.map((option) => {
         const selected = option.value === value;
@@ -94,16 +93,13 @@ export function SegmentedControl<T extends string>({
               isCompact && styles.segmentCompact,
               selected && { backgroundColor: palette.surface },
               selected && !isDark && styles.raisedShadow,
-              selected && isDark && { borderWidth: 1.5, borderColor: palette.action },
+              selected && { borderWidth: 1.5, borderColor: palette.action },
             ]}>
             <Text
               variant={isCompact ? 'caption' : selected ? 'strong' : 'row'}
               tone={selected ? 'action' : 'ink'}
               numberOfLines={1}
-              style={[
-                styles.segmentLabel,
-                isCompact && selected && styles.compactSelectedLabel,
-              ]}>
+              style={[styles.segmentLabel, isCompact && selected && styles.compactSelectedLabel]}>
               {option.label}
             </Text>
           </Pressable>

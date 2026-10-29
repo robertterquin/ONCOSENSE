@@ -24,7 +24,11 @@ export function StatTile({ label, value, detail, valueTone = 'action' }: StatTil
     <View
       accessible
       accessibilityLabel={`${label}: ${value}, ${detail}`}
-      style={[styles.tile, { backgroundColor: palette.surface }, elevation('resting', isDark)]}>
+      style={[
+        styles.tile,
+        { backgroundColor: palette.surface },
+        elevation('resting', palette, isDark),
+      ]}>
       <Text variant="supporting" tone="muted">
         {label}
       </Text>
@@ -58,7 +62,7 @@ export function TopicTile({ title, subtitle, icon, iconTone = 'action', onPress 
       style={({ pressed }) => [
         styles.tile,
         { backgroundColor: palette.surface },
-        elevation('resting', isDark),
+        elevation('resting', palette, isDark),
         pressed && pressedCard,
       ]}>
       <View style={[styles.well, { backgroundColor: palette[look.background] }]}>

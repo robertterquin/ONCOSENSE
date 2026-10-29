@@ -96,7 +96,7 @@ export function SkeletonCard({
       style={[
         styles.card,
         { backgroundColor: palette.surface, width, height },
-        elevation('resting', isDark),
+        elevation('resting', palette, isDark),
         style,
       ]}>
       <View style={styles.cardHeader}>
@@ -130,7 +130,7 @@ export function SkeletonList({
       style={[
         styles.listContainer,
         { backgroundColor: palette.surface },
-        elevation('resting', isDark),
+        elevation('resting', palette, isDark),
         style,
       ]}>
       {Array.from({ length: count }).map((_, i) => (
@@ -177,7 +177,11 @@ export function SkeletonJourney() {
     <View style={styles.stack}>
       {/* Week dots */}
       <View
-        style={[styles.card, { backgroundColor: palette.surface }, elevation('resting', isDark)]}>
+        style={[
+          styles.card,
+          { backgroundColor: palette.surface },
+          elevation('resting', palette, isDark),
+        ]}>
         <View style={styles.weekDots}>
           {Array.from({ length: 7 }).map((_, i) => (
             <Skeleton key={i} width={34} height={48} borderRadius={10} />
@@ -189,7 +193,7 @@ export function SkeletonJourney() {
         style={[
           styles.card,
           { backgroundColor: palette.surface, height: 220 },
-          elevation('resting', isDark),
+          elevation('resting', palette, isDark),
         ]}>
         <Skeleton width={160} height={18} borderRadius={6} />
         <View style={styles.chartBars}>

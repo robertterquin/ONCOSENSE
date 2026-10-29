@@ -212,7 +212,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: palette.surface },
-        elevation('resting', isDark),
+        elevation('resting', palette, isDark),
         // Done today keeps a teal edge in both themes.
         isDone && { borderWidth: 1.5, borderColor: palette.help },
         pressed && pressedCard,

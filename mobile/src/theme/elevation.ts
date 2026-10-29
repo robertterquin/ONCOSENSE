@@ -1,54 +1,40 @@
 import type { ViewStyle } from 'react-native';
 
+import type { Palette } from './palette';
+
 // How far a container sits above the page (docs/redesign/README.md, 2026-10-29).
-// Light: a soft violet-tinted shadow does the work, so cards drop their border.
-// Dark: shadows barely show on a near-black page, so a faint light edge marks the card
-// and a deep black shadow separates it.
+// Card fills are within a few percent of the page in every palette, so every raised
+// container keeps a visible `border` edge; the shadow adds the lift on top. Light uses a
+// violet-tinted shadow, dark a deep black one (a shadow barely shows on a dark page).
 
-export type Elevation = 'resting' | 'floating';
+/** `resting`: cards and lists. `floating`: the tab bar. `panel`: the night-violet panels. */
+export type Elevation = 'resting' | 'floating' | 'panel';
 
-const LIGHT: Record<Elevation, ViewStyle> = {
-  resting: {
-    borderWidth: 0,
-    shadowColor: '#2E1F66',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 2,
+const SHADOW = {
+  light: {
+    resting: { color: '#2E1F66', y: 4, opacity: 0.1, radius: 14, android: 2 },
+    floating: { color: '#2E1F66', y: 12, opacity: 0.22, radius: 28, android: 8 },
   },
-  floating: {
-    borderWidth: 0,
-    shadowColor: '#2E1F66',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 28,
-    elevation: 8,
+  dark: {
+    resting: { color: '#000000', y: 6, opacity: 0.45, radius: 18, android: 3 },
+    floating: { color: '#000000', y: 14, opacity: 0.6, radius: 32, android: 10 },
   },
-};
+} as const;
 
-const DARK: Record<Elevation, ViewStyle> = {
-  resting: {
+export function elevation(level: Elevation, palette: Palette, isDark: boolean): ViewStyle {
+  const shadow = SHADOW[isDark ? 'dark' : 'light'][level === 'resting' ? 'resting' : 'floating'];
+  // A violet panel stands out on a light page by itself; on a dark page it needs an edge.
+  const edge =
+    level === 'panel' ? (isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent') : palette.border;
+  return {
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 18,
-    elevation: 3,
-  },
-  floating: {
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.6,
-    shadowRadius: 32,
-    elevation: 10,
-  },
-};
-
-export function elevation(level: Elevation, isDark: boolean): ViewStyle {
-  return (isDark ? DARK : LIGHT)[level];
+    borderColor: edge,
+    shadowColor: shadow.color,
+    shadowOffset: { width: 0, height: shadow.y },
+    shadowOpacity: shadow.opacity,
+    shadowRadius: shadow.radius,
+    elevation: shadow.android,
+  };
 }
 
 /** A tapped card settles onto the page: no shadow, 2% smaller. */

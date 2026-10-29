@@ -54,7 +54,7 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
         style={[
           styles.chartBlock,
           { backgroundColor: palette.surface },
-          elevation('resting', isDark),
+          elevation('resting', palette, isDark),
         ]}>
         <Chart summary={summary} />
         <Text variant="supporting">{weekSummaryText(summary)}</Text>

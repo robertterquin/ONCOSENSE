@@ -48,7 +48,12 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
       : `${checks.length - waiting.length} of ${checks.length} done. About 10 minutes each.`;
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.panel }, elevation('floating', isDark)]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: palette.panel },
+        elevation('panel', palette, isDark),
+      ]}>
       <View style={styles.ribbon}>
         <RibbonMark height={40} weight={16} color={palette.onPanelAccent} />
       </View>

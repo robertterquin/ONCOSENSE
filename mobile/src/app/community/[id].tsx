@@ -261,7 +261,7 @@ function AnswerRow({ answer, questionId, now }: { answer: Answer; questionId: st
       style={[
         styles.answer,
         { backgroundColor: palette.surface },
-        elevation('resting', isDark),
+        elevation('resting', palette, isDark),
         answer.isAccepted && { borderWidth: 1.5, borderColor: palette.help },
       ]}>
       <View style={styles.answerTop}>

@@ -105,7 +105,7 @@ function PanelSurface({ children }: { children: ReactNode }) {
   // mismatched tiles on iOS (a visible seam).
   const [size, setSize] = useState({ width: 0, height: 0 });
   return (
-    <View style={[styles.panelShadow, elevation('floating', isDark)]}>
+    <View style={[styles.panelShadow, elevation('panel', palette, isDark)]}>
       <View
         style={[styles.panel, { backgroundColor: palette.panel }]}
         onLayout={({ nativeEvent: { layout } }) =>
@@ -165,7 +165,11 @@ export function Banner({ tone = 'info', title, children, action }: BannerProps) 
   const { palette } = useDesign();
   const look = BANNERS[tone];
   return (
-    <View style={[styles.banner, { backgroundColor: palette[look.background] }]}>
+    <View
+      style={[
+        styles.banner,
+        { backgroundColor: palette[look.background], borderColor: palette.border },
+      ]}>
       <Icon name={look.icon} size={22} tone={look.iconTone} />
       <View style={styles.bannerText}>
         {title ? (
@@ -229,7 +233,13 @@ const styles = StyleSheet.create({
   panelActions: { gap: space.sm, marginTop: space.sm + 2 },
   steps: { flexDirection: 'row', gap: space.xs, marginTop: space.xs },
   step: { flex: 1, height: 6, borderRadius: radii.round },
-  banner: { flexDirection: 'row', gap: space.md, padding: space.lg, borderRadius: radii.control },
+  banner: {
+    flexDirection: 'row',
+    gap: space.md,
+    padding: space.lg,
+    borderRadius: radii.control,
+    borderWidth: 1,
+  },
   bannerText: { flex: 1, gap: space.xs },
   barItem: { flex: 1 },
   bottomBar: {

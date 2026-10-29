@@ -98,7 +98,7 @@ export default function CommunityTab() {
         style={[
           styles.promptCard,
           { backgroundColor: palette.surface },
-          elevation('resting', isDark),
+          elevation('resting', palette, isDark),
         ]}>
         <View style={[styles.promptIconTile, { backgroundColor: palette.raised }]}>
           <Icon name="message" size={20} tone="action" />
