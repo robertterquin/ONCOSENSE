@@ -35,7 +35,7 @@ export function useResourceBookmarks() {
     toggle: (resource: Resource) =>
       guard(() => {
         showToast(
-          isSaved(resource) ? 'Resource removed from saved' : '✅ Resource saved!',
+          isSaved(resource) ? 'Removed from saved' : 'Resource saved',
           isSaved(resource) ? 'info' : 'success',
         );
         toggle(resource);
@@ -53,7 +53,7 @@ export function useQuestionBookmarks() {
     toggle: (question: Question) =>
       guard(() => {
         showToast(
-          isSaved(question) ? 'Question removed from bookmarks' : '✅ Question bookmarked!',
+          isSaved(question) ? 'Removed from saved' : 'Question saved',
           isSaved(question) ? 'info' : 'success',
         );
         toggle(question);

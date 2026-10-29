@@ -314,7 +314,7 @@ export function Milestones({ milestones }: { milestones: Milestone[] }) {
                 accessibilityLabel={`Celebrate ${milestone.title}`}
                 onPress={() =>
                   celebrate.mutate(milestone, {
-                    onSuccess: () => showToast('Celebrated!', 'success'),
+                    onSuccess: () => showToast('Milestone celebrated', 'success'),
                     onError: (error) => showToast(error.message, 'error'),
                   })
                 }

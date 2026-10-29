@@ -125,7 +125,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
             accessibilityLabel={saved ? 'Saved. Remove from saved' : 'Save guide'}
             onPress={() => {
               toggleSaved(guide.id);
-              showToast(saved ? 'Removed from saved' : 'Saved to Profile');
+              showToast(saved ? 'Removed from saved' : 'Guide saved', saved ? 'info' : 'success');
             }}
           />
           {steps.length && !nextCheck ? (

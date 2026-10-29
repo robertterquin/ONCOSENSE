@@ -171,13 +171,13 @@ export async function setNotificationsEnabled(enabled: boolean): Promise<void> {
     }
     if (await device.requestPermission()) {
       await enableAll();
-      showToast('✅ Notifications enabled successfully!', 'success');
+      showToast('Notifications turned on', 'success');
     } else {
-      showToast('Please enable notifications in your device settings', 'error');
+      showToast("Turn on notifications in your phone's Settings.", 'error');
     }
   } catch (error) {
     console.warn('Failed to update notifications', error);
-    showToast('Could not update notifications. Please try again.', 'error');
+    showToast("Couldn't update notifications. Try again.", 'error');
   }
 }
 

@@ -33,7 +33,7 @@ export function useSignIn() {
       return user;
     },
     onSuccess: (user) => {
-      showToast('Welcome back!', 'success');
+      showToast('Welcome back', 'success');
       router.replace(homeRouteFor(user));
     },
     onError: (error) => showToast(error.message, 'error'),
@@ -46,11 +46,11 @@ export function useSignUp() {
       signUp(input.email.trim(), input.password, input.metadata),
     onSuccess: ({ session }) => {
       if (session) {
-        showToast('🎉 Welcome to OncoSense!', 'success');
+        showToast('Welcome to OncoSense', 'success');
         router.replace('/journey/focus');
       } else {
         // The project requires email confirmation before the first sign-in.
-        showToast('Account created! Check your email to confirm it, then log in.', 'success');
+        showToast('Account created. Check your email to confirm it, then sign in.', 'success');
         router.replace('/login');
       }
     },

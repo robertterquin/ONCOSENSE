@@ -181,7 +181,7 @@ export default function ComponentGalleryScreen() {
         <Button
           title="Delete account"
           variant="destructive"
-          onPress={() => showToast('Could not delete account', 'error')}
+          onPress={() => showToast("Couldn't delete your account. Try again.", 'error')}
         />
         <Button title="Show 3 more centers" variant="quiet" fullWidth={false} onPress={() => {}} />
         <Button title="Saving" loading onPress={() => {}} />

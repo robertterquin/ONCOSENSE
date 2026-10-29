@@ -21,6 +21,6 @@ export async function callPhone(phone: string) {
   try {
     await Linking.openURL(`tel:${phone.replace(/[^\d+]/g, '')}`);
   } catch {
-    showToast('Could not make phone call', 'error');
+    showToast("Couldn't start the call", 'error');
   }
 }

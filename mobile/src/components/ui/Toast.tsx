@@ -1,24 +1,27 @@
+import { useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useToastStore, type ToastType } from '@/stores/toastStore';
-import type { Palette } from '@/theme/palette';
+import { darkPalette, type Palette } from '@/theme/palette';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon, type IconName } from './Icon';
+import { TAB_BAR_HEIGHT } from './TabBar';
 import { Text } from './Text';
 
-// Short messages at the bottom of the screen, in the redesign style: dark night-violet
-// for information, teal for success, rose for errors (each with an icon, so the color
-// is never the only signal).
+// Short messages at the bottom of the screen. Every toast is the night-violet panel
+// (dark in both themes); only the icon changes with the type, so the words and the
+// icon carry the meaning, never the color alone.
 
-const LOOK: Record<ToastType, { background: keyof Palette; icon: IconName }> = {
-  success: { background: 'help', icon: 'circle-check' },
-  error: { background: 'danger', icon: 'circle-alert' },
-  info: { background: 'panel', icon: 'info' },
+const LOOK: Record<ToastType, { iconColor: (palette: Palette) => string; icon: IconName }> = {
+  // The light theme's teal is too dark on the panel, so success borrows the dark one.
+  success: { iconColor: () => darkPalette.help, icon: 'circle-check' },
+  error: { iconColor: (palette) => palette.onPanelAccent, icon: 'circle-alert' },
+  info: { iconColor: (palette) => palette.onPanelMuted, icon: 'info' },
 };
 
 const DURATION_MS = 3000;
@@ -28,7 +31,12 @@ export function ToastHost() {
   const toast = useToastStore((state) => state.toast);
   const hide = useToastStore((state) => state.hide);
   const insets = useSafeAreaInsets();
-  const { palette, isDark } = useDesign();
+  const { palette } = useDesign();
+  // On the tab screens, sit above the tab bar instead of covering it.
+  const onTabs = useSegments()[0] === '(tabs)';
+  const bottom = onTabs
+    ? TAB_BAR_HEIGHT + Math.max(insets.bottom, space.md) + space.md
+    : insets.bottom + space.xxl;
 
   useEffect(() => {
     if (!toast) return;
@@ -43,15 +51,15 @@ export function ToastHost() {
       key={toast.id}
       entering={FadeInDown}
       exiting={FadeOutDown}
-      style={[styles.container, { bottom: insets.bottom + space.xxl }]}
+      style={[styles.container, { bottom }]}
       pointerEvents="box-none">
       <Pressable
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
         onPress={hide}
-        style={[styles.toast, { backgroundColor: palette[LOOK[toast.type].background] }]}>
-        <Icon name={LOOK[toast.type].icon} size={20} color={textColor(toast.type, isDark)} />
-        <Text variant="body" color={textColor(toast.type, isDark)} style={styles.message}>
+        style={[styles.toast, { backgroundColor: palette.panel }]}>
+        <Icon name={LOOK[toast.type].icon} size={20} color={LOOK[toast.type].iconColor(palette)} />
+        <Text variant="body" color={palette.onPanel} style={styles.message}>
           {toast.message}
         </Text>
       </Pressable>
@@ -65,6 +73,8 @@ const styles = StyleSheet.create({
     left: space.lg,
     right: space.lg,
     alignItems: 'center',
+    // Above screen chrome such as the bottom action bar.
+    zIndex: 100,
   },
   toast: {
     alignSelf: 'stretch',
@@ -82,9 +92,3 @@ const styles = StyleSheet.create({
   },
   message: { flex: 1 },
 });
-
-/** Dark mode uses light toast colors, so the text turns dark. */
-function textColor(type: ToastType, isDark: boolean): string {
-  if (!isDark) return '#FFFFFF';
-  return type === 'info' ? '#FFFFFF' : '#15111F';
-}
