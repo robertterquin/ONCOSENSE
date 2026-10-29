@@ -12,7 +12,7 @@ The awareness ribbon is already the app's only illustration. In this direction i
 Three supporting changes:
 
 1. **Color tells you where you are.** Rose for self-checks, teal for help and calling, warm yellow (sun) for tips and appointments, violet for your next step. Every color is already in the palette; state is never shown by color alone.
-2. **One icon family that means something.** Hugeicons (stroke rounded): rounded line ends like the Nunito headings, and real medical icons (ribbon, lungs, stethoscope, medicine, mood faces) instead of generic ones.
+2. **One icon family that means something.** Material Symbols Rounded at weight 300: one style for controls, moods, treatments and cancer types (by medical specialty), with no emoji in the interface.
 3. **Less sameness.** Content sits in grouped lists and a few distinct blocks (a stat tile, a grid tile, a full-color help card), not the same white card repeated down every screen.
 
 ## What stays
@@ -23,7 +23,7 @@ Three supporting changes:
 
 ## Design rules added by this plan
 
-1. **Icons come from `Icon` only**, drawn from Hugeicons at a 1.8 stroke (thicker than its 1.5 default, for low vision). No other icon package in screens.
+1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 300; `bold` gives 600 for small ticks and pluses). To add one, name it in `mobile/scripts/material-icons.mjs` and rerun it. No other icon package in screens.
 2. **Section colors:** rose = self-checks, teal = help and calling, sun = tips and appointments, violet = the next step and the active tab. A color always comes with a word or icon that says the same thing.
 3. **No shadows, glass or translucency** on content. They lower contrast for older eyes. The tab bar is a solid surface with a border.
 4. **One thread per screen at most.** The ribbon thread appears on Today (panel) and Journey (week), and as the launch screen. Nowhere else.

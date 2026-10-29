@@ -246,7 +246,7 @@ export async function sendTestNotification(): Promise<void> {
     if (await device.requestPermission()) {
       await device.presentNow({
         identifier: `test-${Date.now()}`,
-        title: '🧪 Test Notification',
+        title: 'Test notification',
         body: 'OncoSense notifications are working!',
         channelId: 'health_reminders',
         color: '#D81B60',

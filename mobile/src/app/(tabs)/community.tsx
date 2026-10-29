@@ -118,7 +118,7 @@ export default function CommunityTab() {
             { backgroundColor: palette.action },
             pressed && styles.promptPillPressed,
           ]}>
-          <Icon name="plus" size={16} color={palette.onAction} strokeWidth={2.6} />
+          <Icon name="plus" size={16} color={palette.onAction} bold />
           <Text variant="caption" color={palette.onAction} style={styles.promptPillText}>
             Ask
           </Text>

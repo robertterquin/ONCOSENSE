@@ -164,9 +164,7 @@ export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
             icon={iconForCancer(cancer.name)}
             iconTone="action"
             title={cancer.name}
-            subtitle={
-              cancer.symptoms.length ? `${cancer.symptoms.length} early signs` : undefined
-            }
+            subtitle={cancer.symptoms.length ? `${cancer.symptoms.length} early signs` : undefined}
             onPress={() => openCancer(cancer.id)}
           />
         ))}
@@ -198,13 +196,7 @@ function categoryTone(category: string): { background: keyof Palette; color: key
   }
 }
 
-export function PreventionTipCard({
-  tip,
-  onPress,
-}: {
-  tip: PreventionTip;
-  onPress: () => void;
-}) {
+export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
   const { palette } = useDesign();
   const tone = categoryTone(tip.category);
   const icon = iconForPreventionTip(tip);
@@ -254,12 +246,9 @@ export function PreventionTipCard({
               name={isDone ? 'check' : 'circle'}
               size={12}
               tone={isDone ? 'help' : 'muted'}
-              strokeWidth={isDone ? 2.5 : 1.8}
+              bold={isDone}
             />
-            <Text
-              variant="caption"
-              tone={isDone ? 'help' : 'muted'}
-              style={styles.doneText}>
+            <Text variant="caption" tone={isDone ? 'help' : 'muted'} style={styles.doneText}>
               {isDone ? 'Done' : 'Today'}
             </Text>
           </Pressable>
@@ -326,7 +315,7 @@ export function PreventionDetailSheet({
           {tip.detailedInfo ? <Text variant="reading">{tip.detailedInfo}</Text> : null}
           <View style={styles.sheetActions}>
             <Button
-              title={isDone ? 'Completed today ✓' : 'Mark as completed today'}
+              title={isDone ? 'Completed today' : 'Mark as completed today'}
               icon={isDone ? 'check' : 'circle'}
               variant={isDone ? 'help' : 'primary'}
               onPress={() => toggleDone(tip.id)}

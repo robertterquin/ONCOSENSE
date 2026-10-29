@@ -201,7 +201,7 @@ function FocusOption({
           { borderColor: selected ? palette.action : palette.border },
           selected && { backgroundColor: palette.action },
         ]}>
-        {selected ? <Icon name="check" size={16} tone="onAction" strokeWidth={3} /> : null}
+        {selected ? <Icon name="check" size={16} tone="onAction" bold /> : null}
       </View>
     </Pressable>
   );

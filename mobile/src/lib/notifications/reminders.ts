@@ -94,7 +94,7 @@ function monthlySelfExamReminder(
 ): ReminderRequest {
   return {
     identifier: 'self-check-monthly',
-    title: '🩺 Monthly Self-Exam Reminder',
+    title: 'Monthly self-exam reminder',
     body: "It's time for your monthly breast self-examination. Early detection saves lives!",
     channelId: 'screening_reminders',
     color: '#D81B60',
@@ -162,7 +162,7 @@ export function screeningReminder(
 ): ReminderRequest {
   return {
     identifier: `screening-${id}`,
-    title: `🏥 ${title}`,
+    title,
     body: message,
     channelId: 'screening_reminders',
     color: '#E91E63',

@@ -59,10 +59,22 @@ export function milestoneToRow(milestone: Milestone): Row {
 }
 
 export const TREATMENT_MILESTONES = [
-  { percent: 25, title: '25% Treatment Complete! 💪', description: 'Quarter way through!' },
-  { percent: 50, title: '50% Treatment Complete! 🎯', description: 'Halfway there!' },
-  { percent: 75, title: '75% Treatment Complete! 🌟', description: 'Almost at the finish line!' },
-  { percent: 100, title: 'Treatment Complete! 🎉', description: 'You did it! Treatment finished!' },
+  {
+    percent: 25,
+    title: 'A quarter of treatment done',
+    description: 'A quarter of the way through.',
+  },
+  {
+    percent: 50,
+    title: 'Halfway through treatment',
+    description: 'Halfway there.',
+  },
+  {
+    percent: 75,
+    title: 'Three quarters of treatment done',
+    description: 'Almost at the finish line.',
+  },
+  { percent: 100, title: 'Treatment complete', description: 'Treatment finished.' },
 ];
 
 export const STREAK_MILESTONE_DAYS = [7, 14, 30, 60, 90, 180, 365];

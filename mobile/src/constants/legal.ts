@@ -1,7 +1,7 @@
 // Legal texts from lib/screens/profile/settings_screen.dart (copied by script).
 // CREDITS is updated for the React Native app; the others are unchanged.
 
-export const MEDICAL_DISCLAIMER = `⚠️ MEDICAL DISCLAIMER
+export const MEDICAL_DISCLAIMER = `MEDICAL DISCLAIMER
 
 IMPORTANT: Please Read Carefully
 
@@ -15,11 +15,11 @@ HOWEVER:
 • If you think you may have a medical emergency, call your doctor or emergency services immediately
 
 The information provided in OncoSense:
-✓ Is for educational purposes only
-✓ Is compiled from trusted sources (WHO, CDC, Mayo Clinic, NIH, Cancer.org)
-✓ Should not be used for self-diagnosis
-✓ Should not replace regular medical check-ups
-✓ May not be suitable for your specific health situation
+• Is for educational purposes only
+• Is compiled from trusted sources (WHO, CDC, Mayo Clinic, NIH, Cancer.org)
+• Should not be used for self-diagnosis
+• Should not replace regular medical check-ups
+• May not be suitable for your specific health situation
 
 Community Forum Disclaimer:
 • User-generated content reflects individual opinions
@@ -38,8 +38,8 @@ By using OncoSense, you acknowledge that:
 3. You will not use this app as a replacement for medical care
 
 For Medical Emergencies:
-🚨 Call emergency services (911 in USA, 911 in Canada, 112 in EU)
-📞 Contact your local hospital or cancer support hotline
+• Call emergency services (911 in USA, 911 in Canada, 112 in EU)
+• Contact your local hospital or cancer support hotline
 
 OncoSense Team
 Last Updated: January 2026
@@ -143,7 +143,7 @@ By using OncoSense, you agree to the collection and use of information in accord
 export const CREDITS = `Credits & Attributions
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🛠️ BUILT WITH
+BUILT WITH
 ━━━━━━━━━━━━━━━━━━━━━━
 
 • React Native & Expo
@@ -162,7 +162,7 @@ export const CREDITS = `Credits & Attributions
   Licensed under MIT License
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📚 CONTENT
+CONTENT
 ━━━━━━━━━━━━━━━━━━━━━━
 
 • Medical Information Sources:
@@ -179,20 +179,17 @@ export const CREDITS = `Credits & Attributions
   - Cleveland Clinic
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🎨 DESIGN & ASSETS
+DESIGN & ASSETS
 ━━━━━━━━━━━━━━━━━━━━━━
 
-• Hugeicons (free stroke-rounded set)
-  Licensed under the MIT License
-
-• Fluent Emoji High Contrast (mood faces), from Microsoft
-  Licensed under the MIT License
+• Material Symbols Rounded, from Google
+  Licensed under the Apache License 2.0
 
 • Atkinson Hyperlegible Next and Figtree, from Google Fonts
   Licensed under SIL Open Font License
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📦 OPEN SOURCE PACKAGES
+OPEN SOURCE PACKAGES
 ━━━━━━━━━━━━━━━━━━━━━━
 
 • expo-router, expo-image, expo-image-picker,
@@ -200,14 +197,14 @@ export const CREDITS = `Credits & Attributions
 • @supabase/supabase-js
 • @tanstack/react-query, zustand
 • react-hook-form, zod
-• @hugeicons/react-native, react-native-svg
+• react-native-svg
 • @react-native-community/datetimepicker, slider
 
 All packages are licensed under their respective licenses.
 See mobile/package.json for the complete list.
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📄 LICENSE
+LICENSE
 ━━━━━━━━━━━━━━━━━━━━━━
 
 OncoSense is released under MIT License.
@@ -216,7 +213,7 @@ Copyright © 2024-2026 OncoSense Team
 See LICENSE file in repository for full terms.
 
 ━━━━━━━━━━━━━━━━━━━━━━
-💖 ACKNOWLEDGMENTS
+ACKNOWLEDGMENTS
 ━━━━━━━━━━━━━━━━━━━━━━
 
 Special thanks to:
@@ -228,6 +225,6 @@ Special thanks to:
 
 ━━━━━━━━━━━━━━━━━━━━━━
 
-Built with 💜 for cancer awareness
+Built for cancer awareness
 Empowering Awareness. Saving Lives.
 `;

@@ -137,9 +137,7 @@ function SavedHabits() {
   }
 
   if (tips.isError) {
-    return (
-      <ErrorState message="Couldn't load saved habits." onRetry={() => tips.refetch()} />
-    );
+    return <ErrorState message="Couldn't load saved habits." onRetry={() => tips.refetch()} />;
   }
 
   const saved = (tips.data ?? []).filter((tip) => bookmarkedIds.includes(tip.id));
@@ -216,12 +214,9 @@ function HabitRow({ tip, onOpen }: { tip: PreventionTip; onOpen: () => void }) {
             name={isDone ? 'check' : 'circle'}
             size={12}
             tone={isDone ? 'help' : 'muted'}
-            strokeWidth={isDone ? 2.5 : 1.8}
+            bold={isDone}
           />
-          <Text
-            variant="caption"
-            tone={isDone ? 'help' : 'muted'}
-            style={styles.doneText}>
+          <Text variant="caption" tone={isDone ? 'help' : 'muted'} style={styles.doneText}>
             {isDone ? 'Done' : 'Today'}
           </Text>
         </Pressable>

@@ -17,7 +17,7 @@ export function guideForCancer<T extends Pick<SelfCheckGuide, 'cancerType'>>(
   return guides.find((guide) => name.startsWith(lower(guide.cancerType))) ?? null;
 }
 
-// Organ and clinical icons for cancer types (Health Icons & Hugeicons).
+// Icons for cancer types: the medical specialty for the organ, "ribbon" otherwise.
 const CANCER_ICONS: [prefix: string, icon: IconName][] = [
   ['breast', 'breast'],
   ['cervic', 'cervix'],
@@ -41,7 +41,7 @@ export function iconForCancer(name: string): IconName {
   return CANCER_ICONS.find(([prefix]) => key.startsWith(prefix))?.[1] ?? 'ribbon';
 }
 
-/** Visual stroke-rounded icon for a lifestyle prevention tip. */
+/** The icon for a lifestyle prevention tip. */
 export function iconForPreventionTip(tip: Pick<PreventionTip, 'title' | 'category'>): IconName {
   const title = lower(tip.title);
   const cat = lower(tip.category);

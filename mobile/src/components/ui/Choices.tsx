@@ -42,7 +42,7 @@ export function Chip({ label, selected, onPress, kind = 'toggle', tone = 'action
         pressed && styles.pressed,
       ]}>
       {selected && kind === 'toggle' ? (
-        <Icon name="check" size={16} tone={on.text} strokeWidth={3} />
+        <Icon name="check" size={16} tone={on.text} bold />
       ) : null}
       <Text variant={selected ? 'strong' : 'row'} tone={selected ? on.text : 'ink'}>
         {label}

@@ -173,8 +173,8 @@ export function journeyStartedMilestone(now: Date = new Date()): Milestone {
   return newMilestone(
     `${now.getTime()}_journey_start`,
     {
-      title: 'Journey Started 🌟',
-      description: 'You started tracking your cancer journey. Stay strong!',
+      title: 'Journey started',
+      description: 'You started tracking your cancer journey.',
       type: 'personal',
     },
     now,
@@ -188,8 +188,8 @@ export function streakMilestone(entries: JourneyEntry[], now: Date = new Date())
   return newMilestone(
     `${now.getTime()}_streak_${streak}`,
     {
-      title: `${streak} Day Logging Streak! 🔥`,
-      description: `You've logged your journey for ${streak} consecutive days!`,
+      title: `${streak}-day check-in streak`,
+      description: `You've checked in ${streak} days in a row.`,
       type: 'personal',
       daysCount: streak,
     },

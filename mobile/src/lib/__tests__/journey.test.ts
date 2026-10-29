@@ -64,7 +64,7 @@ describe('statistics', () => {
 
 describe('milestones', () => {
   it('awards a streak milestone only on exact milestone lengths', () => {
-    expect(streakMilestone(days(7), now)?.title).toBe('7 Day Logging Streak! 🔥');
+    expect(streakMilestone(days(7), now)?.title).toBe('7-day check-in streak');
     expect(streakMilestone(days(7), now)?.daysCount).toBe(7);
     expect(streakMilestone(days(8), now)).toBeNull();
   });
@@ -84,7 +84,7 @@ describe('milestones', () => {
       sideEffects: [],
       isActive: true,
     };
-    expect(treatmentMilestone(treatment, now)?.description).toBe('Chemo: Halfway there!');
+    expect(treatmentMilestone(treatment, now)?.description).toBe('Chemo: Halfway there.');
     expect(treatmentMilestone({ ...treatment, completedSessions: 5 }, now)).toBeNull();
     expect(treatmentMilestone({ ...treatment, totalSessions: 0 }, now)).toBeNull();
   });

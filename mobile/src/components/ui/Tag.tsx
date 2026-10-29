@@ -21,7 +21,7 @@ export function Tag({ tone, label }: { tone: TagTone; label: string }) {
   const look = TAGS[tone];
   return (
     <View style={[styles.tag, { backgroundColor: palette[look.background] }]}>
-      {tone === 'done' ? <Icon name="check" size={14} tone={look.color} strokeWidth={2.5} /> : null}
+      {tone === 'done' ? <Icon name="check" size={14} tone={look.color} bold /> : null}
       <Text variant="caption" tone={look.color}>
         {label}
       </Text>
