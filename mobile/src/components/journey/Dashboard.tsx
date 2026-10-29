@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     height: CHART_HEIGHT,
-    borderBottomWidth: StyleSheet.hairlineWidth * 2,
+    borderBottomWidth: 1,
   },
   chartDay: { flex: 1, alignItems: 'center', textAlign: 'center' },
   // Full height, so today's tint and the selected outline fill the column.

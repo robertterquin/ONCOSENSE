@@ -13,7 +13,7 @@ export type Palette = {
   ink: string;
   /** Secondary text. */
   muted: string;
-  /** Dividers between rows. */
+  /** Dividers between rows (1.35:1 against `surface`, palette.test.ts). */
   line: string;
   /** Input, chip and secondary-button borders. */
   border: string;
@@ -55,7 +55,7 @@ export const lightPalette: Palette = {
   raised: '#ECE7F8',
   ink: '#221A36',
   muted: '#5D5672',
-  line: '#ECE7F8',
+  line: '#DDD5EE',
   border: '#D8D1EA',
   action: '#5236B5',
   onAction: '#FFFFFF',
@@ -83,7 +83,7 @@ export const darkPalette: Palette = {
   raised: '#2F2747',
   ink: '#EDE9F7',
   muted: '#A9A1BF',
-  line: '#322A4A',
+  line: '#3F3659',
   border: '#463C62',
   action: '#B4A3F5',
   onAction: '#15111F',

@@ -247,6 +247,6 @@ const styles = StyleSheet.create({
     gap: space.md - 2,
     paddingHorizontal: space.xl,
     paddingTop: space.md + 2,
-    borderTopWidth: StyleSheet.hairlineWidth * 2,
+    borderTopWidth: 1,
   },
 });

@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     gap: space.sm,
     paddingHorizontal: space.xl,
     paddingTop: space.md,
-    borderTopWidth: StyleSheet.hairlineWidth * 2,
+    borderTopWidth: 1,
   },
   composerRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });

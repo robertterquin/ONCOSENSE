@@ -69,7 +69,9 @@ export function Section({
         ]}>
         {items.map((item, index) => (
           <Fragment key={index}>
-            {divided && index > 0 ? <Divider /> : null}
+            {divided && index > 0 ? (
+              <Divider color={look === 'tinted' ? tintedLine(isDark) : undefined} />
+            ) : null}
             {item}
           </Fragment>
         ))}
@@ -78,10 +80,16 @@ export function Section({
   );
 }
 
-/** Hairline between rows, indented past the icon tile when `inset` is set. */
-export function Divider({ inset = 0 }: { inset?: number }) {
+// On a tinted container (sun, rose, teal) a violet line looks off; a wash of ink suits any tint.
+const tintedLine = (isDark: boolean) =>
+  isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(34, 26, 54, 0.14)';
+
+/** Line between rows, indented past the icon tile when `inset` is set. */
+export function Divider({ inset = 0, color }: { inset?: number; color?: string }) {
   const { palette } = useDesign();
-  return <View style={[styles.divider, { backgroundColor: palette.line, marginLeft: inset }]} />;
+  return (
+    <View style={[styles.divider, { backgroundColor: color ?? palette.line, marginLeft: inset }]} />
+  );
 }
 
 const styles = StyleSheet.create({
@@ -97,5 +105,6 @@ const styles = StyleSheet.create({
   tinted: { paddingVertical: space.xl },
   /** Children that aren't divided rows (buttons, fields) get room between them. */
   spaced: { gap: space.md },
-  divider: { height: StyleSheet.hairlineWidth * 2 },
+  // A whole point: thinner lines fall between pixels and vanish on some rows.
+  divider: { height: 1 },
 });

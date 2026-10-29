@@ -60,3 +60,10 @@ describe.each(themes)('%s card edges', (_name, palette) => {
     expect(contrastRatio(palette.border, palette.surface)).toBeGreaterThanOrEqual(1.3);
   });
 });
+
+// Dividers sit on cards; at 1 pt they need this much contrast to show on every screen.
+describe.each(themes)('%s dividers', (_name, palette) => {
+  it('line stands out from the card', () => {
+    expect(contrastRatio(palette.line, palette.surface)).toBeGreaterThanOrEqual(1.35);
+  });
+});

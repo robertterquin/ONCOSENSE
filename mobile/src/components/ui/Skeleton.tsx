@@ -139,7 +139,7 @@ export function SkeletonList({
           style={[
             styles.listItem,
             i < count - 1 && {
-              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomWidth: 1,
               borderBottomColor: palette.line,
             },
           ]}>
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: space.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
   },
   carouselRow: {
     flexDirection: 'row',
