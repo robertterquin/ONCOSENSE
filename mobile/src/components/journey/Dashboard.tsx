@@ -338,6 +338,7 @@ export function RecentCheckIns({ entries }: { entries: JourneyEntry[] }) {
           <ListRow
             key={entry.id}
             icon={mood?.icon ?? 'activity'}
+            iconTone={mood?.tone}
             title={mood?.label ?? 'Check-in'}
             subtitle={`${formatShortDate(entry.date)} · pain ${entry.painLevel}, energy ${entry.energyLevel}`}
             onPress={() => editEntry(entry.id)}

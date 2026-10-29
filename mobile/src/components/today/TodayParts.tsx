@@ -97,6 +97,7 @@ export function MoodCard({ now }: { now: Date }) {
       <Section title="How are you feeling today?">
         <ListRow
           icon={saved.icon}
+          iconTone={saved.tone}
           title={saved.label}
           subtitle="Saved for today"
           accessory={
