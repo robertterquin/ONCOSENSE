@@ -63,6 +63,7 @@ export default function CommunityTab() {
   return (
     <Screen
       inTabs
+      tab="community"
       title="Community"
       subtitle="Questions and experiences from people who've been there"
       onRefresh={() => questions.refetch()}

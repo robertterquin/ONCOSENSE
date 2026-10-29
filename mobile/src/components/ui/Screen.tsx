@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { sizes, space } from '@/theme/tokens';
+import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon } from './Icon';
+import { TAB_COLORS, TAB_ICONS } from './TabBar';
 import { Text } from './Text';
 
 type ScreenProps = {
@@ -22,6 +23,8 @@ type ScreenProps = {
   subtitle?: string;
   /** Detail screens use the larger display title. */
   titleSize?: 'title' | 'display';
+  /** A tab route name: its icon in the tab's colour sits before the title. */
+  tab?: string;
   /** Next to the title (Today's profile button). */
   titleAside?: ReactNode;
   /** Back link above the title; `label` names where it goes ("Learn"). */
@@ -48,6 +51,7 @@ export function Screen({
   subtitle,
   titleSize = 'title',
   titleAside,
+  tab,
   back,
   actions,
   children,
@@ -66,6 +70,11 @@ export function Screen({
 
   const header = title ? (
     <View style={styles.titleRow}>
+      {tab ? (
+        <View style={[styles.tile, { backgroundColor: palette[TAB_COLORS[tab][1]] }]}>
+          <Icon name={TAB_ICONS[tab]} size={24} tone={TAB_COLORS[tab][0]} />
+        </View>
+      ) : null}
       <View style={styles.titleText}>
         <Text variant={titleSize} accessibilityRole="header">
           {title}
@@ -164,4 +173,11 @@ const styles = StyleSheet.create({
     paddingBottom: space.xs,
   },
   titleText: { flex: 1, gap: space.xs },
+  tile: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.tile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

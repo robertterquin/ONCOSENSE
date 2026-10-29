@@ -49,6 +49,7 @@ export default function HelpTab() {
   return (
     <Screen
       inTabs
+      tab="help"
       title="Get help"
       subtitle="Hotlines, screening centers and support across the Philippines"
       titleAside={

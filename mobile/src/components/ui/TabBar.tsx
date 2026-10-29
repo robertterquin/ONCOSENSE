@@ -3,6 +3,7 @@ import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { elevation } from '@/theme/elevation';
+import type { Palette } from '@/theme/palette';
 import { radii, space } from '@/theme/tokens';
 import { fontFamily, TEXT_SIZES } from '@/theme/type';
 import { useDesign } from '@/theme/useTheme';
@@ -23,9 +24,18 @@ export const TAB_ICONS: Record<string, IconName> = {
   help: 'life-buoy',
 };
 
+/** Each tab's quiet colour, [mark, tint]: the active pill and the screen's title tile. */
+export const TAB_COLORS: Record<string, [keyof Palette, keyof Palette]> = {
+  today: ['action', 'raised'],
+  learn: ['rose', 'roseTint'],
+  journey: ['action', 'raised'],
+  community: ['community', 'communityTint'],
+  help: ['help', 'helpTint'],
+};
+
 /**
- * A light floating dock with every tab named: the open tab gets a lavender pill behind its
- * icon and a bold label. Sits below the screens rather than over them, so nothing scrolls
+ * A light floating dock with every tab named: the open tab gets a pill in its own colour
+ * behind its icon and a bold label. Sits below the screens rather than over them, so nothing scrolls
  * behind it. Pass to `<Tabs tabBar={(props) => <TabBar {...props} />}>`.
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
@@ -52,6 +62,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
           const focused = state.index === index;
           const { options } = descriptors[route.key];
           const label = options.title ?? route.name;
+          const [mark, tint] = TAB_COLORS[route.name] ?? TAB_COLORS.today;
           const onPress = () => {
             const event = emitter.emit({
               type: 'tabPress',
@@ -72,16 +83,16 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
               onPress={onPress}
               onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
               style={styles.tab}>
-              <View style={[styles.pill, focused && { backgroundColor: palette.raised }]}>
+              <View style={[styles.pill, focused && { backgroundColor: palette[tint] }]}>
                 <Icon
                   name={TAB_ICONS[route.name] ?? 'home'}
                   size={22}
-                  tone={focused ? 'action' : 'muted'}
+                  tone={focused ? mark : 'muted'}
                 />
               </View>
               <Text
                 variant="caption"
-                tone={focused ? 'action' : 'muted'}
+                tone={focused ? mark : 'muted'}
                 numberOfLines={1}
                 adjustsFontSizeToFit
                 minimumFontScale={0.8}
