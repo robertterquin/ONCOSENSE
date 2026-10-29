@@ -38,9 +38,11 @@ Three supporting changes:
 | 3 | Learn | [03-phase-3-learn.md](03-phase-3-learn.md) | 2–3 days | Merged into `main` |
 | 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Merged into `main` |
 | 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Merged into `main` |
-| 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Built on `design/phase-6`, checked on web and iOS; VoiceOver, store screenshots and release left; not committed |
-
-| 7 | Quick polish: sentence case, plain menus, dark-theme depth | [07-phase-7-polish.md](07-phase-7-polish.md) | 1 day | Built on `design/phase-7`; title SQL for the owner to run |
+| 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Merged into `main`; VoiceOver, store screenshots and release left |
+| 7 | Quick polish: sentence case, plain menus, dark-theme depth | [07-phase-7-polish.md](07-phase-7-polish.md) | 1 day | Merged into `main`; title SQL run |
+| 8 | The cancer page header | [08-phase-8-cancer-header.md](08-phase-8-cancer-header.md) | 1 day | Built on `design/phase-8` |
+| 9 | The ribbon moment and illustrated empty states | — | 1–2 days | Planned |
+| 10 | Tab colors and the Journey chart | — | 2–3 days | Planned |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 

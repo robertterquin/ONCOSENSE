@@ -5,7 +5,14 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Icon, ListRow, Section, Sheet, Tag, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
-import { iconForCancer, iconForPreventionTip, shortenSourceName } from '@/lib/learn';
+import {
+  BODY_SYSTEMS,
+  bodySystemForCancer,
+  iconForCancer,
+  iconForPreventionTip,
+  shortenSourceName,
+  type BodySystem,
+} from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
@@ -75,48 +82,6 @@ export function GuideResults({ statuses }: { statuses: GuideStatus[] }) {
       ))}
     </Section>
   );
-}
-
-const BODY_SYSTEMS = ['All', 'Reproductive', 'Digestive', 'Respiratory', 'Blood', 'Skin'] as const;
-type BodySystem = (typeof BODY_SYSTEMS)[number];
-
-function bodySystemForCancer(name: string): BodySystem {
-  const lower = name.toLowerCase();
-  if (
-    lower.includes('breast') ||
-    lower.includes('cervical') ||
-    lower.includes('ovarian') ||
-    lower.includes('prostate') ||
-    lower.includes('testicular')
-  ) {
-    return 'Reproductive';
-  }
-  if (
-    lower.includes('colorectal') ||
-    lower.includes('colon') ||
-    lower.includes('liver') ||
-    lower.includes('stomach') ||
-    lower.includes('gastric') ||
-    lower.includes('esophag') ||
-    lower.includes('pancrea')
-  ) {
-    return 'Digestive';
-  }
-  if (lower.includes('lung')) {
-    return 'Respiratory';
-  }
-  if (
-    lower.includes('leukemia') ||
-    lower.includes('lymphoma') ||
-    lower.includes('blood') ||
-    lower.includes('myeloma')
-  ) {
-    return 'Blood';
-  }
-  if (lower.includes('skin') || lower.includes('melanoma')) {
-    return 'Skin';
-  }
-  return 'All';
 }
 
 /** Cancer types categorized by body systems (Option 2), with filter chips and clean grouped list. */
