@@ -107,3 +107,59 @@ export function searchLearn(lists: LearnLists, text: string): LearnLists {
     tips: lists.tips.filter((t) => matches(query, t.title, t.description, t.category)),
   };
 }
+
+/** Learn's body-system filter; `All` is the filter's own "no filter" choice. */
+export const BODY_SYSTEMS = [
+  'All',
+  'Reproductive',
+  'Digestive',
+  'Respiratory',
+  'Blood',
+  'Skin',
+] as const;
+export type BodySystem = (typeof BODY_SYSTEMS)[number];
+
+export function bodySystemForCancer(name: string): BodySystem {
+  const lower = name.toLowerCase();
+  if (
+    lower.includes('breast') ||
+    lower.includes('cervical') ||
+    lower.includes('ovarian') ||
+    lower.includes('prostate') ||
+    lower.includes('testicular')
+  ) {
+    return 'Reproductive';
+  }
+  if (
+    lower.includes('colorectal') ||
+    lower.includes('colon') ||
+    lower.includes('liver') ||
+    lower.includes('stomach') ||
+    lower.includes('gastric') ||
+    lower.includes('esophag') ||
+    lower.includes('pancrea')
+  ) {
+    return 'Digestive';
+  }
+  if (lower.includes('lung')) {
+    return 'Respiratory';
+  }
+  if (
+    lower.includes('leukemia') ||
+    lower.includes('lymphoma') ||
+    lower.includes('blood') ||
+    lower.includes('myeloma')
+  ) {
+    return 'Blood';
+  }
+  if (lower.includes('skin') || lower.includes('melanoma')) {
+    return 'Skin';
+  }
+  return 'All';
+}
+
+/** The first sentence of a cancer's statistics, for its page header ("Most common cancer in women worldwide."). */
+export function firstSentence(text: string | null): string | null {
+  const sentence = text?.trim().match(/^.*?[.!?](?=\s|$)/)?.[0];
+  return sentence || text?.trim() || null;
+}

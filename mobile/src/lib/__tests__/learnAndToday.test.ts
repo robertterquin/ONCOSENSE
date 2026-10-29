@@ -1,6 +1,8 @@
 import { awarenessForMonth } from '@/constants/awareness';
 import {
+  bodySystemForCancer,
   cancerForAwareness,
+  firstSentence,
   guideForCancer,
   iconForCancer,
   iconForPreventionTip,
@@ -116,5 +118,26 @@ describe('Today header', () => {
   it('shows the date and the first name', () => {
     expect(formatTodayDate(new Date(2026, 9, 24))).toBe('Saturday, October 24');
     expect(firstName('  Ana  Reyes ')).toBe('Ana');
+  });
+});
+
+describe('cancer page header', () => {
+  it('takes the first sentence of the statistics', () => {
+    expect(
+      firstSentence('Most common cancer in women worldwide. 1 in 8 women will develop it.'),
+    ).toBe('Most common cancer in women worldwide.');
+    expect(firstSentence('Most common cancer in men (excluding skin cancer). More text.')).toBe(
+      'Most common cancer in men (excluding skin cancer).',
+    );
+    expect(firstSentence('No full stop here')).toBe('No full stop here');
+    expect(firstSentence(null)).toBeNull();
+    expect(firstSentence('  ')).toBeNull();
+  });
+
+  it('names the body system, or All when it is unknown', () => {
+    expect(bodySystemForCancer('Breast cancer')).toBe('Reproductive');
+    expect(bodySystemForCancer('Stomach cancer')).toBe('Digestive');
+    expect(bodySystemForCancer('Leukemia')).toBe('Blood');
+    expect(bodySystemForCancer('Brain tumor')).toBe('All');
   });
 });

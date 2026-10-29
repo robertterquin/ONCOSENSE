@@ -4,16 +4,27 @@ import { useRef, useState } from 'react';
 import { StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { ErrorState, LoadingState, Chip, ListRow, Screen, Section, Text } from '@/components/ui';
+import {
+  Button,
+  ErrorState,
+  Icon,
+  LoadingState,
+  ListRow,
+  Screen,
+  Section,
+  Text,
+} from '@/components/ui';
 import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
-import { guideForCancer, iconForCancer } from '@/lib/learn';
+import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
 import { space } from '@/theme/tokens';
 import type { CancerType } from '@/types/cancerType';
 
-// A cancer type in Learn (redesign Phase 3): signs, risks, how it's found and when to
-// see a doctor, with "On this page" links, the related self-check and screening centers.
+// A cancer type in Learn (redesign Phase 3, header from design refresh Phase 8): the
+// header names the cancer and its body system; its fact rows count what's on the page and
+// jump there, and open the related self-check. Then signs, risks, how it's found and
+// when to see a doctor.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
 
@@ -47,16 +58,14 @@ export default function CancerTypeScreen() {
 
 type SectionKey = 'signs' | 'risk' | 'found' | 'doctor';
 
-const ON_THIS_PAGE: { key: SectionKey; label: string }[] = [
-  { key: 'signs', label: 'Signs' },
-  { key: 'risk', label: 'Risks' },
-  { key: 'found', label: 'How it’s found' },
-  { key: 'doctor', label: 'When to see a doctor' },
-];
+/** "6 signs to watch for"; a section with nothing in it gets no row. */
+const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 function CancerDetails({ cancer }: { cancer: CancerType }) {
   const guides = useSelfCheckGuides();
   const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
+  const system = bodySystemForCancer(cancer.name);
+  const statistic = firstSentence(cancer.statistics);
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const reduceMotion = useReducedMotion();
   const [offsets, setOffsets] = useState<Partial<Record<SectionKey, number>>>({});
@@ -73,49 +82,60 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   };
 
   return (
-    <Screen
-      back={{ label: 'Learn', onPress: back }}
-      title={cancer.name}
-      titleSize="display"
-      background="surface"
-      scrollRef={scrollRef}>
-      <Text variant="reading">{cancer.description}</Text>
-
-      <View style={styles.onThisPage}>
-        <Text variant="caption" tone="muted">
-          On this page
+    <Screen back={{ label: 'Learn', onPress: back }} background="surface" scrollRef={scrollRef}>
+      <View style={styles.header}>
+        {system !== 'All' ? (
+          <View style={styles.system}>
+            <Icon name={iconForCancer(cancer.name)} size={24} tone="rose" />
+            <Text variant="caption" tone="muted">
+              {system}
+            </Text>
+          </View>
+        ) : null}
+        <Text variant="display" accessibilityRole="header">
+          {cancer.name}
         </Text>
-        <View style={styles.chips}>
-          {ON_THIS_PAGE.map((item) => (
-            <Chip
-              key={item.key}
-              kind="radio"
-              label={item.label}
-              selected={false}
-              onPress={() => jump(item.key)}
-            />
-          ))}
-        </View>
+        {statistic ? (
+          <Text variant="body" tone="rose">
+            {statistic}
+          </Text>
+        ) : null}
       </View>
 
-      <Section look="plain">
+      <Section>
+        {cancer.symptoms.length ? (
+          <ListRow
+            title={plural(cancer.symptoms.length, 'sign to watch for', 'signs to watch for')}
+            onPress={() => jump('signs')}
+          />
+        ) : null}
+        {cancer.riskFactors.length ? (
+          <ListRow
+            title={plural(
+              cancer.riskFactors.length,
+              'thing that raises risk',
+              'things that raise risk',
+            )}
+            onPress={() => jump('risk')}
+          />
+        ) : null}
+        {cancer.screeningMethods.length ? (
+          <ListRow
+            title={plural(cancer.screeningMethods.length, 'way it’s found', 'ways it’s found')}
+            onPress={() => jump('found')}
+          />
+        ) : null}
         {guide ? (
           <ListRow
-            icon={iconForCancer(guide.cancerType)}
-            iconTone="rose"
             title={guide.title}
             subtitle={`${guide.frequency} self-check, about 10 minutes`}
+            titleTone="rose"
             onPress={() => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } })}
           />
         ) : null}
-        <ListRow
-          icon="hospital"
-          iconTone="help"
-          title="Find a screening center"
-          subtitle="Screening centers near you, in Help"
-          onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
-        />
       </Section>
+
+      <Text variant="reading">{cancer.description}</Text>
 
       <View {...place('signs')}>
         <Topic title="Signs to watch for" items={cancer.symptoms} />
@@ -128,6 +148,14 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           {cancer.earlyDetectionInfo ? (
             <Text variant="reading">{cancer.earlyDetectionInfo}</Text>
           ) : null}
+          <Button
+            title="Find a screening center"
+            icon="hospital"
+            variant="quiet"
+            small
+            style={styles.link}
+            onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
+          />
         </Topic>
       </View>
       <View {...place('doctor')}>
@@ -175,8 +203,10 @@ function Topic({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  onThisPage: { gap: space.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  header: { gap: space.sm },
+  system: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  // Lines up with the text above; the pill's padding sits outside it.
+  link: { alignSelf: 'flex-start', marginLeft: -space.lg },
   topic: { gap: space.sm, paddingTop: space.sm },
   bullet: { flexDirection: 'row', gap: space.sm },
   afterList: { marginTop: space.sm },
