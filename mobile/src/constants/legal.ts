@@ -188,7 +188,7 @@ export const CREDITS = `Credits & Attributions
 • Fluent Emoji High Contrast (mood faces), from Microsoft
   Licensed under the MIT License
 
-• Atkinson Hyperlegible Next and Nunito, from Google Fonts
+• Atkinson Hyperlegible Next and Figtree, from Google Fonts
   Licensed under SIL Open Font License
 
 ━━━━━━━━━━━━━━━━━━━━━━

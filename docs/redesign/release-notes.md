@@ -34,7 +34,7 @@ Draft for the first release of the redesigned app (redesign Phase 7). Check the 
 
 ### A warmer look (design refresh)
 
-- **Headings in a rounder font** (Nunito), with body text still in Atkinson Hyperlegible.
+- **Headings in a rounder font** (Figtree), with body text still in Atkinson Hyperlegible.
 - **New icons** with soft, rounded lines, including organs for the cancers that have one and five faces for how you feel.
 - **A floating tab bar** that names every tab.
 - **Today** shows how many steps a self-check has and sets the tip apart in warm yellow.

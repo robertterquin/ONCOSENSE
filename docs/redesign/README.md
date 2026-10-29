@@ -60,7 +60,7 @@ Routes: `/today`, `/learn`, `/journey`, `/community`, `/help` (tabs); `/learn/ca
 ## Design rules
 
 1. **Tokens only.** Colors, type sizes, spacing and radii come from `src/theme/`. No hex values or font sizes in screens.
-2. **Atkinson Hyperlegible Next** for all text except headings, which use **Nunito** ExtraBold. Body 17–18, never below 15. Supports the text-size setting (Default, Large, Larger).
+2. **Atkinson Hyperlegible Next** for all text except headings, which use **Figtree** ExtraBold. Body 17–18, never below 15. Supports the text-size setting (Default, Large, Larger).
 3. **WCAG AA in both themes.** Text 4.5:1, chart marks and controls 3:1. Check new color pairs before using them.
 4. **One job per screen.** Large plain titles, white sections of rows, no gradient headers, no identical floating cards.
 5. **Touch targets ≥ 44 px** (rows 64–72, main buttons 52–56).
@@ -118,3 +118,4 @@ Same as the migration:
 | 2026-10-25 | Tab bar becomes a floating violet pill; only the open tab shows its name | Robert preferred the look; screen readers still announce every tab name, and the trade-off is that closed tabs show icons only | Robert |
 | 2026-10-29 | Prevention habits (ticks and bookmarks) sync to the account through `habit_completions` and `habit_bookmarks` (RLS per user); guests keep them on the phone until they sign in | The habit sync code wrote to tables that didn't exist; matches how self-checks follow the account | — |
 | 2026-10-29 | Add the missing `UNIQUE (user_id, question_id)` and `UNIQUE (user_id, resource_id)` to the bookmark tables, removing duplicates first; failed bookmark saves now show an error toast | Every save was rejected because the app's upsert targets those constraints, and the failure was hidden | — |
+| 2026-10-29 | Headings move from Nunito to Figtree ExtraBold; text stays Atkinson Hyperlegible Next | Figtree is warm without looking childish; body text keeps the font that tells I, l and 1 apart best. Neither font has the ₱ sign, so the phone's own font draws it (as before) | Robert |

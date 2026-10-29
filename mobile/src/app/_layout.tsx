@@ -4,7 +4,7 @@ import {
   AtkinsonHyperlegibleNext_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/atkinson-hyperlegible-next';
-import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito/800ExtraBold';
+import { Figtree_800ExtraBold } from '@expo-google-fonts/figtree/800ExtraBold';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,7 +29,7 @@ export default function RootLayout() {
     AtkinsonHyperlegibleNext_400Regular,
     AtkinsonHyperlegibleNext_600SemiBold,
     AtkinsonHyperlegibleNext_800ExtraBold,
-    Nunito_800ExtraBold,
+    Figtree_800ExtraBold,
   });
   const sessionRestored = useAuthStore((state) => state.isRestored);
   const userId = useUserId();

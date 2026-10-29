@@ -4,7 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/atkinson-hyperlegible-next": "^0.4.1",
-    "@expo-google-fonts/nunito": "^0.4.2",
+    "@expo-google-fonts/figtree": "^0.4.1",
     "@hookform/resolvers": "^5.9.2",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react-native": "^1.0.16",

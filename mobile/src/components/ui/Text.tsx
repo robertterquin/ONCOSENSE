@@ -16,7 +16,7 @@ export type TextProps = RNTextProps & {
 const HEADINGS: TypeVariant[] = ['display', 'title', 'panel', 'heading', 'section'];
 export const MAX_FONT_SCALE = 2;
 
-/** The app's type (Atkinson Hyperlegible Next, Nunito headings) at the user's text size, in the active theme. */
+/** The app's type (Atkinson Hyperlegible Next, Figtree headings) at the user's text size, in the active theme. */
 export function Text({ variant = 'body', tone = 'ink', color, style, ...rest }: TextProps) {
   const { palette, type } = useDesign();
   return (

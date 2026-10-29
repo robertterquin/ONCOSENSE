@@ -1,15 +1,15 @@
 import type { TextStyle } from 'react-native';
 
 // Redesign type scale (docs/redesign/02-phase-2-foundations.md). Text is Atkinson
-// Hyperlegible Next, built by the Braille Institute for low vision; headings use rounded
-// Nunito for warmth, since they're large and short. Sizes are at the
+// Hyperlegible Next, built by the Braille Institute for low vision; headings use Figtree
+// ExtraBold, a friendly rounded sans, since they're large and short. Sizes are at the
 // "Default" text size; `scaledType` applies the user's Large or Larger setting.
 
 export const fontFamily = {
   regular: 'AtkinsonHyperlegibleNext_400Regular',
   semiBold: 'AtkinsonHyperlegibleNext_600SemiBold',
   extraBold: 'AtkinsonHyperlegibleNext_800ExtraBold',
-  heading: 'Nunito_800ExtraBold',
+  heading: 'Figtree_800ExtraBold',
 } as const;
 
 type TypeStyle = Required<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'lineHeight'>> &
