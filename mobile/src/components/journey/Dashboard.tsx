@@ -144,10 +144,13 @@ function Chart({ summary }: { summary: WeekSummary }) {
         {summary.days.map((day, index) => {
           const isSelected = selectedDayIndex === index;
           const isToday = index === summary.days.length - 1;
+          // A chosen day stays bright while the other six fade back.
+          const faded = selectedDayIndex !== null && !isSelected;
           return (
             <Pressable
               key={day.date.toDateString()}
               accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`${formatShortDate(day.date)}: Energy ${day.energy ?? 'none'}, Pain ${day.pain ?? 'none'}`}
               onPress={() => {
                 haptics.selection();
@@ -157,39 +160,41 @@ function Chart({ summary }: { summary: WeekSummary }) {
                 styles.chartDay,
                 styles.chartColumn,
                 isToday && { backgroundColor: palette.raised },
-                isSelected && { borderColor: palette.action },
               ]}>
-              <View style={styles.bars}>
+              <View style={[styles.bars, faded && styles.faded]}>
                 {bar(day.energy, palette.action)}
                 {bar(day.pain, palette.chartPain)}
               </View>
             </Pressable>
           );
         })}
-        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
-          {(
-            [
-              [summary.averageEnergy, palette.action],
-              [summary.averagePain, palette.chartPain],
-            ] as const
-          ).map(([average, color]) => {
-            if (average === null) return null;
-            const y = CHART_HEIGHT - (average / 10) * CHART_HEIGHT;
-            return (
-              <Line
-                key={color}
-                x1="0"
-                x2="100%"
-                y1={y}
-                y2={y}
-                stroke={color}
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                opacity={0.6}
-              />
-            );
-          })}
-        </Svg>
+        {/* On iOS an SVG takes touches even with pointerEvents on it; the View lets taps reach the days. */}
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Svg width="100%" height="100%">
+            {(
+              [
+                [summary.averageEnergy, palette.action],
+                [summary.averagePain, palette.chartPain],
+              ] as const
+            ).map(([average, color]) => {
+              if (average === null) return null;
+              const y = CHART_HEIGHT - (average / 10) * CHART_HEIGHT;
+              return (
+                <Line
+                  key={color}
+                  x1="0"
+                  x2="100%"
+                  y1={y}
+                  y2={y}
+                  stroke={color}
+                  strokeWidth={1.5}
+                  strokeDasharray="4 4"
+                  opacity={0.6}
+                />
+              );
+            })}
+          </Svg>
+        </View>
       </View>
       <View style={styles.chartLabels}>
         {summary.days.map((day, index) => {
@@ -438,14 +443,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   chartDay: { flex: 1, alignItems: 'center', textAlign: 'center' },
-  // Full height, so today's tint and the selected outline fill the column.
-  chartColumn: {
-    height: '100%',
-    justifyContent: 'flex-end',
-    borderRadius: radii.control,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
+  // Full height, so today's tint fills the column.
+  chartColumn: { height: '100%', justifyContent: 'flex-end', borderRadius: radii.control },
+  faded: { opacity: 0.3 },
   selectedDayLabel: {
     fontWeight: '700',
   },
