@@ -1,12 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { GuideRow, PreventionDetailSheet } from '@/components/learn/LearnSections';
 import {
-  Button,
   EmptyState,
   ErrorState,
   Icon,
@@ -26,7 +25,7 @@ import { iconForPreventionTip } from '@/lib/learn';
 import { useIsSignedIn } from '@/stores/authStore';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
-import { radii, space } from '@/theme/tokens';
+import { radii } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { PreventionTip } from '@/types/preventionTip';
 
@@ -88,7 +87,8 @@ function SavedQuestions() {
   }
   if (!questions.data.length) {
     return (
-      <Empty
+      <EmptyState
+        icon="bookmark"
         title="No saved questions"
         message="Tap Save on a question in Community to keep it here."
         action={{ label: 'Go to Community', onPress: () => router.navigate('/community') }}
@@ -111,7 +111,8 @@ function SavedGuides() {
   if (query.isPending && savedIds.length) return <LoadingState message="Loading saved guides" />;
   if (!saved.length) {
     return (
-      <Empty
+      <EmptyState
+        icon="bookmark"
         title="No saved guides"
         message="Tap Save on a self-check guide in Learn to keep it here."
         action={{ label: 'Go to Learn', onPress: () => router.navigate('/learn') }}
@@ -144,7 +145,8 @@ function SavedHabits() {
 
   if (!saved.length) {
     return (
-      <Empty
+      <EmptyState
+        icon="bookmark"
         title="No saved habits"
         message="Tap Save on an everyday habit in Learn to keep it here."
         action={{
@@ -237,7 +239,8 @@ function SavedContacts() {
   }
   if (!resources.data.length) {
     return (
-      <Empty
+      <EmptyState
+        icon="bookmark"
         title="No saved help contacts"
         message="Use the More button on a contact in Help to save it here."
         action={{ label: 'Go to Help', onPress: () => router.navigate('/help') }}
@@ -255,7 +258,8 @@ function SavedContacts() {
 
 function SignInToSave({ what }: { what: string }) {
   return (
-    <Empty
+    <EmptyState
+      icon="bookmark"
       title={`Sign in to save ${what}`}
       message="Saved questions and contacts are kept in your account. Guides and habits save on this phone."
       action={{ label: 'Sign in', onPress: () => router.push('/login') }}
@@ -263,32 +267,7 @@ function SignInToSave({ what }: { what: string }) {
   );
 }
 
-function Empty({
-  title,
-  message,
-  action,
-}: {
-  title: string;
-  message: string;
-  action: { label: string; onPress: () => void };
-}) {
-  return (
-    <View style={styles.empty}>
-      <EmptyState icon="bookmark" title={title} message={message} />
-      <Button
-        title={action.label}
-        variant="secondary"
-        fullWidth={false}
-        style={styles.centered}
-        onPress={action.onPress}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  empty: { alignItems: 'center', gap: space.md },
-  centered: { alignSelf: 'center' },
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',

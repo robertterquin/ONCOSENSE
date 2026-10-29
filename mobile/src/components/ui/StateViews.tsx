@@ -1,8 +1,10 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
+import { decorative } from './a11y';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import {
@@ -18,13 +20,7 @@ import { Text } from './Text';
 // Loading, error and empty states in the redesign style.
 
 export type LoadingVariant =
-  | 'spinner'
-  | 'learn'
-  | 'journey'
-  | 'community'
-  | 'help'
-  | 'list'
-  | 'card';
+  'spinner' | 'learn' | 'journey' | 'community' | 'help' | 'list' | 'card';
 
 type LoadingStateProps = {
   message?: string;
@@ -82,16 +78,40 @@ export function ErrorState({ message = 'Something went wrong.', onRetry }: Error
   );
 }
 
+// One-line drawings in the ribbon's rounded stroke (120 x 100). Other icons use a tile.
+const DRAWINGS: Partial<Record<IconName, string>> = {
+  message:
+    'M18 20C18 12 24 8 32 8H88C96 8 102 12 102 20V54C102 62 96 66 88 66H52L34 84V66H32C24 66 18 62 18 54Z M50 30C50 22 70 22 70 30C70 38 60 38 60 46 M60 55V55',
+  bookmark: 'M40 8H80C85 8 88 11 88 16V90L60 70L32 90V16C32 11 35 8 40 8Z M48 30H72',
+  search: 'M76 44A24 24 0 1 1 28 44A24 24 0 1 1 76 44Z M69 61L92 84 M40 40C42 34 46 31 52 30',
+};
+
 type EmptyStateProps = {
   title: string;
   message?: string;
   icon?: IconName;
+  /** The next step, as a button under the message. */
+  action?: { label: string; onPress: () => void };
 };
 
-export function EmptyState({ title, message, icon = 'info' }: EmptyStateProps) {
+export function EmptyState({ title, message, icon = 'info', action }: EmptyStateProps) {
+  const { palette } = useDesign();
+  const drawing = DRAWINGS[icon];
   return (
     <View style={styles.container}>
-      <StateIcon name={icon} tone="muted" />
+      {drawing ? (
+        <Svg width={108} height={90} viewBox="0 0 120 100" fill="none" {...decorative}>
+          <Path
+            d={drawing}
+            stroke={palette.action}
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      ) : (
+        <StateIcon name={icon} tone="muted" />
+      )}
       <Text variant="section" style={styles.centered}>
         {title}
       </Text>
@@ -99,6 +119,15 @@ export function EmptyState({ title, message, icon = 'info' }: EmptyStateProps) {
         <Text variant="body" tone="muted" style={styles.centered}>
           {message}
         </Text>
+      ) : null}
+      {action ? (
+        <Button
+          title={action.label}
+          variant="secondary"
+          fullWidth={false}
+          style={styles.button}
+          onPress={action.onPress}
+        />
       ) : null}
     </View>
   );

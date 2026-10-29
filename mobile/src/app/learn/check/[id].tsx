@@ -11,6 +11,7 @@ import {
   Button,
   IconButton,
   ProgressSegments,
+  RibbonMark,
   Tag,
   Screen,
   Section,
@@ -24,6 +25,7 @@ import { formatMonthDay } from '@/lib/selfCheck';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 // The guided self-check (redesign Phase 3): one step at a time with the rest as a list,
@@ -58,6 +60,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
   const saved = useSelfCheckStore((state) => state.savedGuides.includes(guide.id));
   const toggleSaved = useSelfCheckStore((state) => state.toggleSavedGuide);
   const steps = guide.steps;
+  const { palette } = useDesign();
   const step = steps[current];
   const last = current === steps.length - 1;
 
@@ -143,9 +146,15 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       background="surface"
       bottomBar={bottomBar}>
       {nextCheck ? (
-        <Banner tone="info" title="Done">
-          {`Nice work. Your next check is on ${formatMonthDay(nextCheck)}. We'll remind you.`}
-        </Banner>
+        <View style={styles.done} accessibilityLiveRegion="polite">
+          <RibbonMark height={96} weight={18} color={palette.rose} draw />
+          <Text variant="heading" accessibilityRole="header">
+            Done
+          </Text>
+          <Text variant="body" tone="muted" style={styles.centered}>
+            {`Your next check is on ${formatMonthDay(nextCheck)}. We'll remind you.`}
+          </Text>
+        </View>
       ) : (
         <>
           <Text variant="reading">{guide.description}</Text>
@@ -222,6 +231,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
+  done: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
+  centered: { textAlign: 'center', maxWidth: 320 },
   flex2: { flex: 2 },
   progress: { gap: space.sm },
   progressLine: { flexDirection: 'row', alignItems: 'center', gap: space.sm },

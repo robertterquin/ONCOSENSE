@@ -171,6 +171,7 @@ export default function SearchScreen() {
           <SkeletonList count={4} />
         ) : filteredCount === 0 ? (
           <EmptyState
+            icon="search"
             title={`No results for "${trimmedQuery}"`}
             message={
               filter !== 'all'
