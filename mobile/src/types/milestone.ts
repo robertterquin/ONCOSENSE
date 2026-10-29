@@ -32,11 +32,20 @@ function parseMilestoneType(value: unknown): MilestoneType {
   return MILESTONE_TYPES.find((type) => type === value) ?? 'personal';
 }
 
+// The Flutter app saved titles like "Journey Started 🌟"; the app uses icons, not emoji.
+// Ranges rather than \p{Extended_Pictographic}, which Hermes on iOS may not support.
+const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{FE0F}\u{200D}]/gu;
+const withoutEmoji = (text: string) =>
+  text
+    .replace(EMOJI, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 export function milestoneFromRow(row: Row): Milestone {
   return {
     id: requireString(row, 'id'),
-    title: requireString(row, 'title'),
-    description: requireString(row, 'description'),
+    title: withoutEmoji(requireString(row, 'title')),
+    description: withoutEmoji(requireString(row, 'description')),
     type: parseMilestoneType(row.type),
     dateAchieved: parseDbTimestamp(requireString(row, 'date_achieved')),
     isCelebrated: booleanOr(row, 'is_celebrated', false),

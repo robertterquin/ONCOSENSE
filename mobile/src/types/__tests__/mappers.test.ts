@@ -167,6 +167,17 @@ describe('journey models', () => {
     expect(milestoneFromRow({ ...base, type: 5 }).type).toBe('anniversary');
     expect(milestoneFromRow({ ...base, type: 'nope' }).type).toBe('personal');
   });
+
+  it('drops emoji the Flutter app saved in milestone text', () => {
+    const milestone = milestoneFromRow({
+      id: 'm2',
+      title: 'Journey Started 🌟',
+      description: 'Well done 🎉 keep going ⭐️',
+      date_achieved: '2026-10-01T10:00:00',
+    });
+    expect(milestone.title).toBe('Journey Started');
+    expect(milestone.description).toBe('Well done keep going');
+  });
 });
 
 describe('resources', () => {
