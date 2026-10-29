@@ -7,6 +7,8 @@ import { ResourceRow } from '@/components/help/ResourceRow';
 import {
   ErrorState,
   LoadingState,
+  Arrive,
+  useArrival,
   Button,
   Chip,
   IconButton,
@@ -46,6 +48,7 @@ export default function HelpTab() {
     }, [section, offsets, reduceMotion]),
   );
 
+  const arrived = useArrival(resources.isPending);
   return (
     <Screen
       inTabs
@@ -88,27 +91,31 @@ export default function HelpTab() {
 
       {resources.isPending ? (
         <LoadingState variant="help" message="Loading help contacts" />
-      ) : resources.isError ? (
-        <ErrorState
-          message="Couldn't load help contacts. Check your connection and try again."
-          onRetry={() => resources.refetch()}
-        />
       ) : (
-        HELP_SECTIONS.map((helpSection) => (
-          <View
-            key={helpSection.key}
-            onLayout={(event) => {
-              const y = event.nativeEvent.layout.y;
-              setOffsets((current) =>
-                current[helpSection.key] === y ? current : { ...current, [helpSection.key]: y },
-              );
-            }}>
-            <ResourceSection
-              section={helpSection}
-              resources={resources.data[helpSection.list].filter((r) => isNear(r, region))}
+        <Arrive animate={arrived}>
+          {resources.isError ? (
+            <ErrorState
+              message="Couldn't load help contacts. Check your connection and try again."
+              onRetry={() => resources.refetch()}
             />
-          </View>
-        ))
+          ) : (
+            HELP_SECTIONS.map((helpSection) => (
+              <View
+                key={helpSection.key}
+                onLayout={(event) => {
+                  const y = event.nativeEvent.layout.y;
+                  setOffsets((current) =>
+                    current[helpSection.key] === y ? current : { ...current, [helpSection.key]: y },
+                  );
+                }}>
+                <ResourceSection
+                  section={helpSection}
+                  resources={resources.data[helpSection.list].filter((r) => isNear(r, region))}
+                />
+              </View>
+            ))
+          )}
+        </Arrive>
       )}
     </Screen>
   );

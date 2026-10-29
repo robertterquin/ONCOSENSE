@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, Keyframe, LinearTransition } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
 
 import {
@@ -19,6 +20,7 @@ import { lastSevenDays, sevenDayTrend, weekSummaryText, type WeekSummary } from 
 import { MOODS } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
 import { elevation } from '@/theme/elevation';
+import { DURATION, EASE_FN, useTransition } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { Appointment } from '@/types/appointment';
@@ -74,18 +76,30 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
 }
 
 const CHART_HEIGHT = 120;
+// A tapped day's details fade in above the chart, which slides down to make room.
+const DETAIL_IN = FadeIn.duration(DURATION.base);
+const DETAIL_OUT = FadeOut.duration(DURATION.fast);
+const DETAIL_LAYOUT = LinearTransition.duration(DURATION.base);
+// Bars rise from the baseline when the chart first appears; a new check-in eases them.
+const BAR_GROW = new Keyframe({
+  0: { transform: [{ scaleY: 0 }] },
+  100: { transform: [{ scaleY: 1 }], easing: EASE_FN },
+}).duration(DURATION.slow);
 const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function Chart({ summary }: { summary: WeekSummary }) {
   const { palette } = useDesign();
+  const grow = useTransition('slow', 'height');
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
   const selectedDay = selectedDayIndex !== null ? summary.days[selectedDayIndex] : null;
 
   const bar = (value: number | null, color: string) => (
-    <View
+    <Animated.View
+      entering={BAR_GROW}
       style={[
         styles.bar,
+        grow,
         {
           height: value === null ? 4 : Math.max(4, (value / 10) * CHART_HEIGHT),
           backgroundColor: value === null ? palette.line : color,
@@ -106,7 +120,9 @@ function Chart({ summary }: { summary: WeekSummary }) {
       </View>
 
       {selectedDay ? (
-        <View
+        <Animated.View
+          entering={DETAIL_IN}
+          exiting={DETAIL_OUT}
           style={[
             styles.dayInspector,
             { backgroundColor: palette.raised, borderColor: palette.line },
@@ -137,10 +153,12 @@ function Chart({ summary }: { summary: WeekSummary }) {
               No check-in recorded for this day
             </Text>
           ) : null}
-        </View>
+        </Animated.View>
       ) : null}
 
-      <View style={[styles.chart, { borderBottomColor: palette.line }]}>
+      <Animated.View
+        layout={DETAIL_LAYOUT}
+        style={[styles.chart, { borderBottomColor: palette.line }]}>
         {summary.days.map((day, index) => {
           const isSelected = selectedDayIndex === index;
           const isToday = index === summary.days.length - 1;
@@ -195,8 +213,8 @@ function Chart({ summary }: { summary: WeekSummary }) {
             })}
           </Svg>
         </View>
-      </View>
-      <View style={styles.chartLabels}>
+      </Animated.View>
+      <Animated.View layout={DETAIL_LAYOUT} style={styles.chartLabels}>
         {summary.days.map((day, index) => {
           const isToday = index === summary.days.length - 1;
           const isSelected = selectedDayIndex === index;
@@ -216,7 +234,7 @@ function Chart({ summary }: { summary: WeekSummary }) {
             </Text>
           );
         })}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -456,7 +474,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  bar: { width: 14, borderTopLeftRadius: 7, borderTopRightRadius: 7 },
+  bar: { width: 14, borderTopLeftRadius: 7, borderTopRightRadius: 7, transformOrigin: 'bottom' },
   chartLabels: { flexDirection: 'row', paddingTop: space.xs },
   treatment: { paddingBottom: space.sm },
   treatmentProgress: {

@@ -7,6 +7,8 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  Arrive,
+  useArrival,
   Banner,
   Chip,
   Icon,
@@ -60,6 +62,7 @@ export default function CommunityTab() {
     if (!text) setSearchQuery(null);
   };
 
+  const arrived = useArrival(questions.isPending);
   return (
     <Screen
       inTabs
@@ -130,24 +133,30 @@ export default function CommunityTab() {
 
       {questions.isPending ? (
         <LoadingState variant="community" message="Loading questions" />
-      ) : questions.isError ? (
-        <ErrorState
-          message="Couldn't load questions. Check your connection and try again."
-          onRetry={() => questions.refetch()}
-        />
-      ) : questions.data.length === 0 ? (
-        <EmptyState
-          icon="message"
-          title={searchQuery ? `No questions about "${searchQuery}"` : 'No questions yet'}
-          message={searchQuery ? 'Try other words, or ask it yourself.' : 'Be the first to ask.'}
-          action={{ label: 'Ask a question', onPress: () => askQuestion(signedIn) }}
-        />
       ) : (
-        <Section>
-          {questions.data.map((question) => (
-            <QuestionRow key={question.id} question={question} now={now} />
-          ))}
-        </Section>
+        <Arrive animate={arrived}>
+          {questions.isError ? (
+            <ErrorState
+              message="Couldn't load questions. Check your connection and try again."
+              onRetry={() => questions.refetch()}
+            />
+          ) : questions.data.length === 0 ? (
+            <EmptyState
+              icon="message"
+              title={searchQuery ? `No questions about "${searchQuery}"` : 'No questions yet'}
+              message={
+                searchQuery ? 'Try other words, or ask it yourself.' : 'Be the first to ask.'
+              }
+              action={{ label: 'Ask a question', onPress: () => askQuestion(signedIn) }}
+            />
+          ) : (
+            <Section>
+              {questions.data.map((question) => (
+                <QuestionRow key={question.id} question={question} now={now} />
+              ))}
+            </Section>
+          )}
+        </Arrive>
       )}
     </Screen>
   );

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
 import { elevation, pressedCard } from '@/theme/elevation';
@@ -6,6 +6,7 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon, type IconName } from './Icon';
+import { PressableScale } from './PressableScale';
 import { TILES, type TileTone } from './ListRow';
 import { Text } from './Text';
 
@@ -55,7 +56,7 @@ export function TopicTile({ title, subtitle, icon, iconTone = 'action', onPress 
   const { palette, isDark } = useDesign();
   const look = TILES[iconTone];
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
       onPress={onPress}
@@ -74,7 +75,7 @@ export function TopicTile({ title, subtitle, icon, iconTone = 'action', onPress 
           {subtitle}
         </Text>
       ) : null}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -88,5 +89,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: space.xs,
   },
-  pressed: { opacity: 0.8 },
 });

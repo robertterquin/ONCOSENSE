@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
+import { DURATION, useTransition } from '@/theme/motion';
 import type { Palette } from '@/theme/palette';
 import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -26,6 +28,7 @@ export function ProgressSegments({
   accessibilityLabel,
 }: ProgressSegmentsProps) {
   const { palette } = useDesign();
+  const fill = useTransition('slow', 'backgroundColor');
   return (
     <View
       accessibilityRole="progressbar"
@@ -33,10 +36,11 @@ export function ProgressSegments({
       accessibilityValue={{ min: 0, max: total, now: done, text: `${done} of ${total}` }}
       style={styles.segments}>
       {Array.from({ length: total }, (_, index) => (
-        <View
+        <Animated.View
           key={index}
           style={[
             styles.segment,
+            fill,
             { backgroundColor: index < done ? palette[tone] : palette.raised },
           ]}
         />
@@ -55,12 +59,17 @@ type StepListProps = {
   children?: ReactNode;
 };
 
+// Moving to the next step: rows slide to their new heights and the new detail fades in.
+const STEP_LAYOUT = LinearTransition.duration(DURATION.base);
+const STEP_DETAIL = FadeIn.duration(DURATION.base);
+
 /**
  * Numbered steps joined by a line: done steps show a check, the current one is
  * expanded with `children`, the rest are one-line titles.
  */
 export function StepList({ steps, current, children }: StepListProps) {
   const { palette } = useDesign();
+  const fill = useTransition('base', 'backgroundColor');
   return (
     <View accessibilityRole="list">
       {steps.map((step, index) => {
@@ -69,14 +78,20 @@ export function StepList({ steps, current, children }: StepListProps) {
         const last = index === steps.length - 1;
         const state = done ? 'done' : active ? 'current step' : 'not started';
         return (
-          <View key={index} style={styles.step}>
+          <Animated.View key={index} layout={STEP_LAYOUT} style={styles.step}>
             <View style={styles.rail} {...decorative}>
-              <View
+              <Animated.View
                 style={[
                   styles.marker,
+                  fill,
                   done && { backgroundColor: palette.rose },
                   active && { backgroundColor: palette.panel },
-                  !done && !active && { borderWidth: 2, borderColor: palette.border },
+                  !done &&
+                    !active && {
+                      backgroundColor: 'transparent',
+                      borderWidth: 2,
+                      borderColor: palette.border,
+                    },
                 ]}>
                 {done ? (
                   <Icon name="check" size={18} color={palette.onAction} bold />
@@ -85,10 +100,14 @@ export function StepList({ steps, current, children }: StepListProps) {
                     {String(index + 1)}
                   </Text>
                 )}
-              </View>
+              </Animated.View>
               {last ? null : (
-                <View
-                  style={[styles.line, { backgroundColor: done ? palette.rose : palette.raised }]}
+                <Animated.View
+                  style={[
+                    styles.line,
+                    fill,
+                    { backgroundColor: done ? palette.rose : palette.raised },
+                  ]}
                 />
               )}
             </View>
@@ -99,9 +118,9 @@ export function StepList({ steps, current, children }: StepListProps) {
                 accessibilityLabel={`Step ${index + 1} of ${steps.length}, ${state}: ${step.title}`}>
                 {step.title}
               </Text>
-              {active ? children : null}
+              {active ? <Animated.View entering={STEP_DETAIL}>{children}</Animated.View> : null}
             </View>
-          </View>
+          </Animated.View>
         );
       })}
     </View>

@@ -6,6 +6,7 @@ export { Chip, SegmentedControl } from './Choices';
 export { DateField, type DateFieldProps } from './DateField';
 export { Icon, ICON_NAMES, type IconName } from './Icon';
 export { ListRow, type TileTone } from './ListRow';
+export { PressableScale } from './PressableScale';
 export { Banner, BottomActionBar, NextStepPanel } from './Panels';
 export { ProgressSegments, StepList } from './Progress';
 export { RibbonMark } from './RibbonMark';
@@ -23,7 +24,7 @@ export {
   SkeletonRow,
 } from './Skeleton';
 export { SliderRow } from './SliderRow';
-export { EmptyState, ErrorState, LoadingState } from './StateViews';
+export { Arrive, EmptyState, ErrorState, LoadingState, useArrival } from './StateViews';
 export { Switch } from './Switch';
 export { Tag, type TagTone } from './Tag';
 export { TAB_BAR_HEIGHT, TAB_ICONS, TabBar } from './TabBar';

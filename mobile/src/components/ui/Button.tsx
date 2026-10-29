@@ -1,18 +1,13 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
+import { useTransition } from '@/theme/motion';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
+import { PressableScale } from './PressableScale';
 import { Text } from './Text';
 
 export type ButtonVariant =
@@ -85,7 +80,7 @@ export function Button({
   const textColor = palette[look.text];
 
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityHint={accessibilityHint}
@@ -95,7 +90,7 @@ export function Button({
         haptics.lightImpact();
         onPress();
       }}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         !fullWidth && styles.hug,
         small && styles.small,
@@ -104,7 +99,6 @@ export function Button({
             look.background === 'transparent' ? 'transparent' : palette[look.background],
           borderColor: look.border ? palette[look.border] : 'transparent',
         },
-        pressed && styles.pressed,
         disabled && styles.disabled,
         style,
       ]}>
@@ -123,7 +117,7 @@ export function Button({
           </Text>
         </View>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -158,8 +152,10 @@ export function IconButton({
           : 'transparent';
   const color =
     look === 'primary' ? palette.onAction : look === 'help' ? palette.help : palette.action;
+  // Saving a guide turns the button tinted; the fill fades in rather than appearing.
+  const fill = useTransition('base', 'backgroundColor');
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={Math.max(0, (sizes.touch - size) / 2)}
@@ -167,14 +163,14 @@ export function IconButton({
         haptics.lightImpact();
         onPress();
       }}
-      style={({ pressed }) => [
+      style={[
         styles.iconButton,
+        fill,
         { width: size, height: size, borderRadius: size / 2, backgroundColor: background },
-        pressed && styles.pressed,
         style,
       ]}>
       <Icon name={icon} size={Math.round(size * 0.44)} color={color} />
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -196,7 +192,6 @@ const styles = StyleSheet.create({
   },
   content: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
   label: { flexShrink: 1, textAlign: 'center' },
-  pressed: { opacity: 0.8 },
   disabled: { opacity: 0.45 },
   iconButton: { alignItems: 'center', justifyContent: 'center' },
 });

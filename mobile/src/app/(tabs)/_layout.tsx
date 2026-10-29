@@ -27,6 +27,8 @@ export default function TabsLayout() {
         headerShown: false,
         // Keep each tab's state when switching, like Flutter's IndexedStack.
         lazy: true,
+        // A short cross-fade between tabs instead of a cut; a fade suits Reduce Motion too.
+        animation: 'fade',
       }}>
       {TABS.map((tab) => (
         <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />

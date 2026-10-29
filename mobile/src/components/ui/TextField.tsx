@@ -1,6 +1,8 @@
 import { useId, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { useTransition } from '@/theme/motion';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -17,11 +19,14 @@ type TextFieldProps = Omit<TextInputProps, 'style' | 'secureTextEntry'> & {
 };
 
 /** Labelled text input, 56 pt tall (multi-line grows from three lines). */
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
 export function TextField({ label, error, secure = false, multiline, ...input }: TextFieldProps) {
   const { palette, type } = useDesign();
   const [hidden, setHidden] = useState(true);
   const [focused, setFocused] = useState(false);
   const id = useId();
+  const border = useTransition('base', ['borderColor', 'borderWidth']);
 
   return (
     <View style={styles.field}>
@@ -29,7 +34,7 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
         {label}
       </Text>
       <View>
-        <TextInput
+        <AnimatedTextInput
           maxFontSizeMultiplier={MAX_FONT_SCALE}
           accessibilityLabel={label}
           accessibilityLabelledBy={`${id}-label`}
@@ -50,6 +55,7 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
           style={[
             type('body'),
             styles.input,
+            border,
             multiline && styles.multiline,
             secure && styles.withButton,
             {

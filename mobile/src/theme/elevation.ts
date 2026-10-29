@@ -37,9 +37,8 @@ export function elevation(level: Elevation, palette: Palette, isDark: boolean): 
   };
 }
 
-/** A tapped card settles onto the page: no shadow, 2% smaller. */
+/** A tapped card settles onto the page: no shadow (PressableScale eases the scale). */
 export const pressedCard: ViewStyle = {
   shadowOpacity: 0,
   elevation: 0,
-  transform: [{ scale: 0.98 }],
 };

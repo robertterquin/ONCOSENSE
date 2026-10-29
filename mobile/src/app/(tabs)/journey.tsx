@@ -12,6 +12,8 @@ import { ThreadWeek } from '@/components/journey/ThreadWeek';
 import {
   ErrorState,
   LoadingState,
+  Arrive,
+  useArrival,
   Banner,
   Button,
   RibbonMark,
@@ -93,6 +95,7 @@ function Dashboard() {
   const entryList = entries.data ?? [];
   const checkedInToday = entryForDate(entryList, now) !== undefined;
 
+  const arrived = useArrival(loading);
   return (
     <Screen
       inTabs
@@ -103,35 +106,39 @@ function Dashboard() {
       refreshing={queries.some((query) => query.isRefetching)}>
       {loading ? (
         <LoadingState variant="journey" message="Loading your journey" />
-      ) : failed ? (
-        <ErrorState
-          message="Couldn't load your journey. Check your connection and try again."
-          onRetry={refresh}
-        />
       ) : (
-        <>
-          <ThreadWeek entries={entryList} now={now} />
-          <Button
-            title={
-              checkedInToday
-                ? 'Edit today’s check-in'
-                : forFocus(focus, 'Check in for today', 'Check in for them')
-            }
-            icon={checkedInToday ? 'check' : 'plus'}
-            onPress={() => router.push('/journey/check-in')}
-          />
-          <EnergyAndPain entries={entryList} now={now} />
-          <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
-          <Treatments treatments={treatments.data ?? []} />
-          <Milestones milestones={milestones.data ?? []} />
-          <RecentCheckIns entries={entryList} />
-          <Button
-            title="Share a summary with my doctor"
-            icon="share"
-            variant="secondary"
-            onPress={() => router.push('/journey/summary')}
-          />
-        </>
+        <Arrive animate={arrived}>
+          {failed ? (
+            <ErrorState
+              message="Couldn't load your journey. Check your connection and try again."
+              onRetry={refresh}
+            />
+          ) : (
+            <>
+              <ThreadWeek entries={entryList} now={now} />
+              <Button
+                title={
+                  checkedInToday
+                    ? 'Edit today’s check-in'
+                    : forFocus(focus, 'Check in for today', 'Check in for them')
+                }
+                icon={checkedInToday ? 'check' : 'plus'}
+                onPress={() => router.push('/journey/check-in')}
+              />
+              <EnergyAndPain entries={entryList} now={now} />
+              <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
+              <Treatments treatments={treatments.data ?? []} />
+              <Milestones milestones={milestones.data ?? []} />
+              <RecentCheckIns entries={entryList} />
+              <Button
+                title="Share a summary with my doctor"
+                icon="share"
+                variant="secondary"
+                onPress={() => router.push('/journey/summary')}
+              />
+            </>
+          )}
+        </Arrive>
       )}
     </Screen>
   );

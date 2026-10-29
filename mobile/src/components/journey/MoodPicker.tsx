@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Icon, Text } from '@/components/ui';
+import { Icon, PressableScale, Text } from '@/components/ui';
 import { haptics } from '@/lib/haptics';
 import { MOODS } from '@/lib/journeyLabels';
+import { useTransition } from '@/theme/motion';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -16,12 +17,13 @@ type MoodPickerProps = {
 
 export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProps) {
   const { palette } = useDesign();
+  const fill = useTransition('base', 'backgroundColor');
   return (
     <View style={styles.moods} accessibilityRole="radiogroup" accessibilityLabel="Mood">
       {MOODS.map((mood) => {
         const selected = value === mood.value;
         return (
-          <Pressable
+          <PressableScale
             key={mood.value}
             accessibilityRole="radio"
             accessibilityLabel={mood.label}
@@ -31,10 +33,10 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
               haptics.selection();
               onChange(mood.value);
             }}
-            style={({ pressed }) => [
+            style={[
               styles.mood,
+              fill,
               { backgroundColor: selected ? palette.action : palette.ground },
-              pressed && styles.pressed,
             ]}>
             <Icon
               name={mood.icon}
@@ -45,7 +47,7 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
             <Text variant="caption" tone={selected ? 'onAction' : 'muted'} numberOfLines={1}>
               {mood.label}
             </Text>
-          </Pressable>
+          </PressableScale>
         );
       })}
     </View>
@@ -62,5 +64,4 @@ const styles = StyleSheet.create({
     borderRadius: radii.tile,
     minHeight: sizes.touch,
   },
-  pressed: { opacity: 0.6 },
 });

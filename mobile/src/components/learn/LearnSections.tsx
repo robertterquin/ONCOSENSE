@@ -1,8 +1,18 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, Chip, Icon, ListRow, Section, Sheet, Tag, Text } from '@/components/ui';
+import {
+  Button,
+  Chip,
+  Icon,
+  ListRow,
+  PressableScale,
+  Section,
+  Sheet,
+  Tag,
+  Text,
+} from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
 import {
@@ -18,6 +28,7 @@ import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
 import type { Palette } from '@/theme/palette';
 import { elevation, pressedCard } from '@/theme/elevation';
+import { useTransition } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
@@ -171,9 +182,10 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
   const source = shortenSourceName(tip.sourceName);
   const isDone = useHabitsStore((state) => state.isDone(tip.id));
   const toggleDone = useHabitsStore((state) => state.toggleDone);
+  const colorTransition = useTransition('base', ['backgroundColor', 'borderColor']);
 
   return (
-    <Pressable
+    <PressableScale
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: palette.surface },
@@ -195,7 +207,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
               {sentenceCase(tip.category)}
             </Text>
           </View>
-          <Pressable
+          <PressableScale
             hitSlop={8}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: isDone }}
@@ -206,6 +218,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
             }}
             style={[
               styles.actionPill,
+              colorTransition,
               isDone
                 ? { backgroundColor: palette.helpTint, borderColor: palette.help }
                 : { backgroundColor: palette.raised, borderColor: palette.line },
@@ -219,7 +232,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
             <Text variant="caption" tone={isDone ? 'help' : 'muted'}>
               {isDone ? 'Done' : 'Today'}
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
         <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
           <Icon name={icon} size={20} tone={tone.color} />
@@ -246,7 +259,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
           <Icon name="chevron-right" size={18} tone="action" />
         </View>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
