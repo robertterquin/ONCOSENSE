@@ -140,6 +140,8 @@ export default function ComponentGalleryScreen() {
           <RibbonMark height={80} color={palette.action} />
           <RibbonMark height={48} color={palette.rose} weight={24} />
           <RibbonMark height={80} color={palette.panel} highlight={palette.raised} weight={26} />
+          {/* The "Mark as done" moment; draws each time this page opens. */}
+          <RibbonMark height={80} color={palette.rose} weight={18} draw />
         </View>
       </Section>
 

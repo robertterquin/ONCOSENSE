@@ -6,7 +6,6 @@ import {
   chooseNextStep,
   chosenGuides,
   dueLabel,
-  formatMonthDay,
   isDue,
   isSnoozed,
   lastDoneDate,
@@ -63,11 +62,10 @@ export function useSelfChecks(now: Date = new Date()) {
   };
 }
 
-/** Marks a guide done, says when the next one is, and moves the reminder. */
+/** Marks a guide done and moves the reminder; returns the next due date for the screen. */
 export function markSelfCheckDone(guide: SelfCheckGuide, now: Date = new Date()): Date {
   useSelfCheckStore.getState().markDone(guide.id, now);
   const next = nextDue(guide, now, now);
-  showToast(`Done. Next check: ${formatMonthDay(next)}.`, 'success');
   void rescheduleSelfCheckReminder();
   return next;
 }
