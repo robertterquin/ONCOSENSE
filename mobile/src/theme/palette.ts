@@ -50,13 +50,13 @@ export type Palette = {
 };
 
 export const lightPalette: Palette = {
-  ground: '#F6F4FA',
+  ground: '#EBE8F2',
   surface: '#FFFFFF',
-  raised: '#ECE7F8',
+  raised: '#E0D8F5',
   ink: '#221A36',
   muted: '#5D5672',
   line: '#DDD5EE',
-  border: '#D8D1EA',
+  border: '#CEC6E2',
   action: '#5236B5',
   onAction: '#FFFFFF',
   panel: '#2E1F66',
@@ -78,7 +78,7 @@ export const lightPalette: Palette = {
 };
 
 export const darkPalette: Palette = {
-  ground: '#15111F',
+  ground: '#0C0913',
   surface: '#231D37',
   raised: '#2F2747',
   ink: '#EDE9F7',

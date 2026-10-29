@@ -1,4 +1,5 @@
 import { contrastRatio } from '../contrast';
+import { TONAL_CONTRAST } from '../elevation';
 import {
   MARK_PAIRS,
   TEXT_PAIRS,
@@ -66,4 +67,13 @@ describe.each(themes)('%s dividers', (_name, palette) => {
   it('line stands out from the card', () => {
     expect(contrastRatio(palette.line, palette.surface)).toBeGreaterThanOrEqual(1.35);
   });
+});
+
+// Cards drop their outline in light and dark (theme/elevation.ts), so tone alone has to
+// separate them from the page.
+it.each([
+  ['light', lightPalette],
+  ['dark', darkPalette],
+])('%s cards are a clear step off the page', (_name, palette) => {
+  expect(contrastRatio(palette.surface, palette.ground)).toBeGreaterThanOrEqual(TONAL_CONTRAST);
 });

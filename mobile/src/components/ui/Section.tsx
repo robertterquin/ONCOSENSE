@@ -64,7 +64,7 @@ export function Section({
       <View
         style={[
           look !== 'plain' && styles.container,
-          look !== 'plain' && elevation('resting', palette, isDark),
+          look !== 'plain' && elevation('resting', palette, isDark, background),
           look === 'tinted' && styles.tinted,
           !divided && styles.spaced,
           { backgroundColor: background },
