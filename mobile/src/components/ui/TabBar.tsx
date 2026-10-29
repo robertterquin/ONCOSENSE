@@ -41,8 +41,8 @@ export const TAB_COLORS: Record<string, [keyof Palette, keyof Palette]> = {
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const { palette, textSize, isDark } = useDesign();
   // Phones shrink a long label to fit (`adjustsFontSizeToFit`); browsers can't, so the
-  // web keeps labels at the default size ("Community" would be cut off at 375 px).
-  const labelSize = Platform.OS === 'web' ? 12 : Math.round(13 * TEXT_SIZES[textSize]);
+  // web uses a fixed 11 pt, the size where Lexend's "Community" still fits at 375 px.
+  const labelSize = Platform.OS === 'web' ? 11 : Math.round(13 * TEXT_SIZES[textSize]);
   const insets = useSafeAreaInsets();
 
   return (

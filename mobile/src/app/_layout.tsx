@@ -1,9 +1,9 @@
 import {
-  AtkinsonHyperlegibleNext_400Regular,
-  AtkinsonHyperlegibleNext_600SemiBold,
-  AtkinsonHyperlegibleNext_800ExtraBold,
+  Lexend_400Regular,
+  Lexend_600SemiBold,
+  Lexend_800ExtraBold,
   useFonts,
-} from '@expo-google-fonts/atkinson-hyperlegible-next';
+} from '@expo-google-fonts/lexend';
 import { Figtree_800ExtraBold } from '@expo-google-fonts/figtree/800ExtraBold';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
@@ -26,9 +26,9 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    AtkinsonHyperlegibleNext_400Regular,
-    AtkinsonHyperlegibleNext_600SemiBold,
-    AtkinsonHyperlegibleNext_800ExtraBold,
+    Lexend_400Regular,
+    Lexend_600SemiBold,
+    Lexend_800ExtraBold,
     Figtree_800ExtraBold,
   });
   const sessionRestored = useAuthStore((state) => state.isRestored);

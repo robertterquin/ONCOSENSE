@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import {
@@ -207,7 +207,11 @@ function Chart({ summary }: { summary: WeekSummary }) {
               tone={isToday || isSelected ? 'ink' : 'muted'}
               numberOfLines={1}
               adjustsFontSizeToFit
-              style={[styles.chartDay, (isToday || isSelected) && styles.selectedDayLabel]}>
+              style={[
+                styles.chartDay,
+                (isToday || isSelected) && styles.selectedDayLabel,
+                isToday && Platform.OS === 'web' && styles.todayLabel,
+              ]}>
               {isToday ? 'Today' : DAY_LETTERS[day.date.getDay()]}
             </Text>
           );
@@ -446,6 +450,8 @@ const styles = StyleSheet.create({
   // Full height, so today's tint fills the column.
   chartColumn: { height: '100%', justifyContent: 'flex-end', borderRadius: radii.control },
   faded: { opacity: 0.3 },
+  // Web can't shrink "Today" to fit its column, so it spills into the gutter instead.
+  todayLabel: { marginHorizontal: -space.sm },
   selectedDayLabel: {
     fontWeight: '700',
   },

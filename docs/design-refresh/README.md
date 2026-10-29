@@ -18,7 +18,7 @@ Three supporting changes:
 ## What stays
 
 - Scope, navigation, routes and data: no new features or tables.
-- Palette, Atkinson Hyperlegible Next for text, Figtree ExtraBold for headings, text sizes, contrast rules.
+- Palette, Lexend for text (Atkinson Hyperlegible Next until 2026-10-30), Figtree ExtraBold for headings, text sizes, contrast rules.
 - Every design rule in [the redesign plan](../redesign/README.md#design-rules). Rule 6 ("the ribbon line is the only illustration") is extended, not broken: the thread *is* the ribbon line.
 
 ## Design rules added by this plan

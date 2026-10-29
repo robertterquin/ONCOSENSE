@@ -185,7 +185,7 @@ DESIGN & ASSETS
 • Material Symbols Rounded, from Google
   Licensed under the Apache License 2.0
 
-• Atkinson Hyperlegible Next and Figtree, from Google Fonts
+• Lexend and Figtree, from Google Fonts
   Licensed under SIL Open Font License
 
 ━━━━━━━━━━━━━━━━━━━━━━

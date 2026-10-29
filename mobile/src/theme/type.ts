@@ -1,14 +1,14 @@
 import type { TextStyle } from 'react-native';
 
-// Redesign type scale (docs/redesign/02-phase-2-foundations.md). Text is Atkinson
-// Hyperlegible Next, built by the Braille Institute for low vision; headings use Figtree
+// Redesign type scale (docs/redesign/02-phase-2-foundations.md). Text is Lexend, made
+// to ease reading fatigue, with plain round zeros in dates and scores; headings use Figtree
 // ExtraBold, a friendly rounded sans, since they're large and short. Sizes are at the
 // "Default" text size; `scaledType` applies the user's Large or Larger setting.
 
 export const fontFamily = {
-  regular: 'AtkinsonHyperlegibleNext_400Regular',
-  semiBold: 'AtkinsonHyperlegibleNext_600SemiBold',
-  extraBold: 'AtkinsonHyperlegibleNext_800ExtraBold',
+  regular: 'Lexend_400Regular',
+  semiBold: 'Lexend_600SemiBold',
+  extraBold: 'Lexend_800ExtraBold',
   heading: 'Figtree_800ExtraBold',
 } as const;
 
