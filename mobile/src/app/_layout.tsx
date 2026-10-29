@@ -6,7 +6,7 @@ import {
 } from '@expo-google-fonts/lexend';
 import { Figtree_800ExtraBold } from '@expo-google-fonts/figtree/800ExtraBold';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
@@ -79,6 +79,12 @@ export default function RootLayout() {
     if (ready && userId && hasFocus) initializeNotifications();
   }, [ready, userId, hasFocus]);
 
+  const baseTheme = isDark ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...baseTheme,
+    colors: { ...baseTheme.colors, background: palette.ground, card: palette.surface },
+  };
+
   // Keep the native splash screen (logo on white) until fonts and the session are ready.
   if (!ready) return null;
 
@@ -86,9 +92,15 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <View style={{ flex: 1, backgroundColor: palette.ground }}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Stack
-          screenOptions={{ headerShown: false, animation: reduceMotion ? 'fade' : 'default' }}
-        />
+        {/* The navigator's own colours match the app's, so nothing light shows between screens. */}
+        <ThemeProvider value={navigationTheme}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: reduceMotion ? 'fade' : 'default',
+            }}
+          />
+        </ThemeProvider>
         <ToastHost />
       </View>
     </QueryClientProvider>
