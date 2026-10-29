@@ -116,3 +116,4 @@ Same as the migration:
 | 2026-10-25 | Create the missing `reports` table (people can send reports, not read them) | The Report button wrote to a table that never existed | — |
 | 2026-10-25 | Headings use Nunito ExtraBold; all other text stays Atkinson Hyperlegible Next | Rounded headings feel warmer; headings are large and short, so legibility holds, and body text keeps the low-vision font | Robert |
 | 2026-10-25 | Tab bar becomes a floating violet pill; only the open tab shows its name | Robert preferred the look; screen readers still announce every tab name, and the trade-off is that closed tabs show icons only | Robert |
+| 2026-10-29 | Prevention habits (ticks and bookmarks) sync to the account through `habit_completions` and `habit_bookmarks` (RLS per user); guests keep them on the phone until they sign in | The habit sync code wrote to tables that didn't exist; matches how self-checks follow the account | — |

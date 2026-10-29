@@ -109,6 +109,8 @@ Deno.serve(async (req) => {
       'journey_appointments',
       'reports',
       'self_check_progress',
+      'habit_completions',
+      'habit_bookmarks',
     ]) {
       const { error } = await admin.from(table).delete().eq('user_id', userId);
       // A table this project hasn't created yet (before its migration is applied) has
