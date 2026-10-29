@@ -157,6 +157,6 @@ describe('searchUniversal', () => {
 
   it('has non-empty suggested searches', () => {
     expect(SUGGESTED_SEARCHES.length).toBeGreaterThan(0);
-    expect(SUGGESTED_SEARCHES).toContain('Breast Self-Exam');
+    expect(SUGGESTED_SEARCHES).toContain('Breast self-exam');
   });
 });

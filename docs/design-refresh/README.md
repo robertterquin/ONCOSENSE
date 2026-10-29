@@ -25,7 +25,7 @@ Three supporting changes:
 
 1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 300; `bold` gives 600 for small ticks and pluses). To add one, name it in `mobile/scripts/material-icons.mjs` and rerun it. No other icon package in screens.
 2. **Section colors:** rose = self-checks, teal = help and calling, sun = tips and appointments, violet = the next step and the active tab. A color always comes with a word or icon that says the same thing.
-3. **No shadows, glass or translucency** on content. They lower contrast for older eyes. The tab bar is a solid surface with a border.
+3. **Depth comes from `theme/elevation.ts` only:** resting cards, the floating tab bar and the violet panels. Every raised container keeps a visible edge; shadows add lift, never replace the edge. No glass or translucency on content: it lowers contrast for older eyes.
 4. **One thread per screen at most.** The ribbon thread appears on Today (panel) and Journey (week), and as the launch screen. Nowhere else.
 5. **Mock-up content is never shipped.** Every hotline, number and medical line comes from the database or an approved source.
 
@@ -39,6 +39,8 @@ Three supporting changes:
 | 4 | Journey and the thread | [04-phase-4-journey.md](04-phase-4-journey.md) | 3–4 days | Merged into `main` |
 | 5 | Community and Help | [05-phase-5-community-and-help.md](05-phase-5-community-and-help.md) | 2–3 days | Merged into `main` |
 | 6 | Account screens, QA and release | [06-phase-6-account-qa.md](06-phase-6-account-qa.md) | 3–4 days | Built on `design/phase-6`, checked on web and iOS; VoiceOver, store screenshots and release left; not committed |
+
+| 7 | Quick polish: sentence case, plain menus, dark-theme depth | [07-phase-7-polish.md](07-phase-7-polish.md) | 1 day | Built on `design/phase-7`; title SQL for the owner to run |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 

@@ -74,12 +74,12 @@ export const lightPalette: Palette = {
 
 export const darkPalette: Palette = {
   ground: '#15111F',
-  surface: '#1F1930',
-  raised: '#2A2340',
+  surface: '#272040',
+  raised: '#342B4F',
   ink: '#EDE9F7',
   muted: '#A9A1BF',
-  line: '#2A2340',
-  border: '#3A3152',
+  line: '#362D51',
+  border: '#4A3F68',
   action: '#B4A3F5',
   onAction: '#15111F',
   panel: '#352578',

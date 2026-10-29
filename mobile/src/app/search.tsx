@@ -136,7 +136,7 @@ export default function SearchScreen() {
     <Screen
       back={{ label: 'Back', onPress: backAction }}
       title="Search"
-      subtitle="Find cancer info, self-checks, habits, centers & discussions">
+      subtitle="Find cancer info, self-checks, habits, centers and discussions">
       <SearchField
         accessibilityLabel="Search OncoSense"
         placeholder="Search anything in OncoSense..."
@@ -245,7 +245,7 @@ export default function SearchScreen() {
             {showCommunity ? (
               <Section
                 title={`Community Discussions (${results.questions.length})`}
-                subtitle="Real questions and shared experiences from survivors & caregivers"
+                subtitle="Real questions and shared experiences from survivors and caregivers"
                 look="card">
                 {results.questions.map((question) => (
                   <QuestionRow key={question.id} question={question} now={now} />
@@ -289,35 +289,35 @@ export default function SearchScreen() {
             <ListRow
               icon="stethoscope"
               iconTone="action"
-              title="Cancer Types & Signs"
+              title="Cancer types and signs"
               subtitle="Symptoms, stages, screening methods, and statistics"
               onPress={() => handleSelectSuggestion('symptoms')}
             />
             <ListRow
               icon="check"
               iconTone="rose"
-              title="Self-Check Steps"
+              title="Self-check guides"
               subtitle="Step-by-step guides for breast, skin, oral and testicular checks"
               onPress={() => handleSelectSuggestion('Self-Exam')}
             />
             <ListRow
               icon="activity"
               iconTone="action"
-              title="Daily Prevention Habits"
+              title="Everyday prevention habits"
               subtitle="Nutrition, physical activity, UV protection, and tobacco cessation"
               onPress={() => handleSelectSuggestion('nutrition')}
             />
             <ListRow
               icon="phone"
               iconTone="help"
-              title="Screening Centers & Hotlines"
+              title="Screening centers and hotlines"
               subtitle="Verified clinics, oncology hotlines, and financial assistance"
               onPress={() => handleSelectSuggestion('Screening')}
             />
             <ListRow
               icon="message"
               iconTone="action"
-              title="Survivor & Caregiver Q&A"
+              title="Questions from survivors and caregivers"
               subtitle="Community questions on treatments, side effects, and hope"
               onPress={() => handleSelectSuggestion('fatigue')}
             />

@@ -140,11 +140,7 @@ export default function SettingsScreen() {
       <Section title="Account">
         {signedIn ? (
           <>
-            <ListRow
-              icon="shield"
-              title="Change password"
-              onPress={() => router.push('/profile/password')}
-            />
+            <ListRow title="Change password" onPress={() => router.push('/profile/password')} />
             <ListRow
               icon="trash"
               iconTone="danger"
@@ -154,11 +150,7 @@ export default function SettingsScreen() {
             />
           </>
         ) : (
-          <ListRow
-            icon="user"
-            title="Sign in or create an account"
-            onPress={() => router.push('/welcome')}
-          />
+          <ListRow title="Sign in or create an account" onPress={() => router.push('/welcome')} />
         )}
       </Section>
 

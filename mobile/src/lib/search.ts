@@ -86,7 +86,7 @@ export function searchUniversal(data: SearchableData, rawQuery: string): Univers
 }
 
 export const SUGGESTED_SEARCHES = [
-  'Breast Self-Exam',
+  'Breast self-exam',
   'Colorectal screening',
   'Managing fatigue',
   'Diet and nutrition',
