@@ -200,7 +200,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
           <Button
             title="Find a screening center"
             variant="quiet"
-            fullWidth={false}
+            small
+            style={styles.link}
             onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
           />
         }>
@@ -211,7 +212,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
         title={`Source: ${guide.sourceName}`}
         icon="external-link"
         variant="quiet"
-        fullWidth={false}
+        small
+        style={styles.link}
         onPress={() => openWebPage(guide.sourceUrl)}
       />
     </Screen>
@@ -224,4 +226,6 @@ const styles = StyleSheet.create({
   progress: { gap: space.sm },
   progressLine: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
+  // Links line up with the text above them; the pill's padding sits outside the text.
+  link: { alignSelf: 'flex-start', marginLeft: -space.lg },
 });

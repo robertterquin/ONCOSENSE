@@ -146,7 +146,9 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
           <Button title="Save" loading={save.isPending} onPress={submit} />
         </BottomActionBar>
       }>
-      <Section title="Type" look="plain">
+      {/* Labelled like the text fields around it. */}
+      <View style={styles.field}>
+        <Text variant="row">Type</Text>
         <View style={styles.chips} accessibilityRole="radiogroup">
           {TREATMENT_TYPES.map((option) => (
             <Chip
@@ -158,7 +160,7 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
             />
           ))}
         </View>
-      </Section>
+      </View>
 
       <TextField
         label="Name"
@@ -189,13 +191,16 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
       {sessions ? (
         <Section look="card" divided={false}>
           <ListRow
-            title="Number of sessions"
+            title="Sessions"
             subtitle={
-              existing ? `${existing.completedSessions} done so far` : 'You can change this later'
+              existing
+                ? `${existing.completedSessions} done so far`
+                : 'How many in total. You can change this later.'
             }
             accessory={
               <View style={styles.stepper}>
                 <IconButton
+                  size={44}
                   icon="minus"
                   accessibilityLabel="One session fewer"
                   onPress={() => setTotalSessions((n) => Math.max(1, n - 1))}
@@ -207,6 +212,7 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
                   {totalSessions}
                 </Text>
                 <IconButton
+                  size={44}
                   icon="plus"
                   accessibilityLabel="One more session"
                   onPress={() => setTotalSessions((n) => Math.min(60, n + 1))}
@@ -217,7 +223,8 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
         </Section>
       ) : null}
 
-      <Section title="Side effects (optional)" look="plain">
+      <View style={styles.field}>
+        <Text variant="row">Side effects (optional)</Text>
         <View style={styles.chips}>
           {SIDE_EFFECTS.map((effect) => (
             <Chip
@@ -228,7 +235,7 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
             />
           ))}
         </View>
-      </Section>
+      </View>
 
       <TextField
         label="Notes (optional)"

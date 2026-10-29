@@ -100,14 +100,7 @@ export function MoodCard({ now }: { now: Date }) {
           iconTone={saved.tone}
           title={saved.label}
           subtitle="Saved for today"
-          accessory={
-            <Button
-              title="Edit"
-              variant="quiet"
-              fullWidth={false}
-              onPress={() => setEditing(true)}
-            />
-          }
+          accessory={<Button title="Edit" variant="quiet" small onPress={() => setEditing(true)} />}
         />
         <ListRow title="Add pain, energy and symptoms" icon="activity" onPress={openCheckIn} />
       </Section>

@@ -41,6 +41,8 @@ type ButtonProps = {
   disabled?: boolean;
   /** Stretches to the container's width (default) or hugs the label. */
   fullWidth?: boolean;
+  /** A 44 pt pill that hugs its label, for an action inside a row. */
+  small?: boolean;
   accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
 };
@@ -73,6 +75,7 @@ export function Button({
   loading = false,
   disabled = false,
   fullWidth = true,
+  small = false,
   accessibilityHint,
   style,
 }: ButtonProps) {
@@ -95,6 +98,7 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         !fullWidth && styles.hug,
+        small && styles.small,
         {
           backgroundColor:
             look.background === 'transparent' ? 'transparent' : palette[look.background],
@@ -110,7 +114,11 @@ export function Button({
         <View style={styles.content}>
           {icon ? <Icon name={icon} size={20} color={textColor} /> : null}
           {/* Two lines rather than "…" for long labels at large text sizes. */}
-          <Text variant="strong" color={textColor} numberOfLines={2} style={styles.label}>
+          <Text
+            variant={small ? 'row' : 'strong'}
+            color={textColor}
+            numberOfLines={2}
+            style={styles.label}>
             {title}
           </Text>
         </View>
@@ -180,6 +188,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   hug: { alignSelf: 'flex-start' },
+  small: {
+    alignSelf: 'center',
+    minHeight: sizes.touch,
+    paddingHorizontal: space.lg,
+    borderRadius: radii.round,
+  },
   content: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
   label: { flexShrink: 1, textAlign: 'center' },
   pressed: { opacity: 0.8 },

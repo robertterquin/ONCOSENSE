@@ -216,7 +216,7 @@ function HabitRow({ tip, onOpen }: { tip: PreventionTip; onOpen: () => void }) {
             tone={isDone ? 'help' : 'muted'}
             bold={isDone}
           />
-          <Text variant="caption" tone={isDone ? 'help' : 'muted'} style={styles.doneText}>
+          <Text variant="caption" tone={isDone ? 'help' : 'muted'}>
             {isDone ? 'Done' : 'Today'}
           </Text>
         </Pressable>
@@ -297,9 +297,5 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: radii.round,
     borderWidth: 1,
-  },
-  doneText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
 });

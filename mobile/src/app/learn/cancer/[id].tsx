@@ -167,7 +167,8 @@ function Topic({
           </Text>
         </View>
       ))}
-      {children}
+      {/* A paragraph after a list needs more room than between bullets. */}
+      {children ? <View style={items.length ? styles.afterList : null}>{children}</View> : null}
     </View>
   );
 }
@@ -178,5 +179,6 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   topic: { gap: space.sm, paddingTop: space.sm },
   bullet: { flexDirection: 'row', gap: space.sm },
+  afterList: { marginTop: space.sm },
   footer: { paddingTop: space.lg },
 });

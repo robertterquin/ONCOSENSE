@@ -18,9 +18,8 @@ export function ResourceRow({ resource }: { resource: Resource }) {
   const bookmarks = useResourceBookmarks();
   const [menu, setMenu] = useState(false);
   const saved = bookmarks.isSaved(resource);
-  const detail = [resource.location, resource.phone ?? resource.website]
-    .filter(Boolean)
-    .join(' · ');
+  // Own line for the number, so it never breaks in the middle.
+  const detail = [resource.location, resource.phone ?? resource.website].filter(Boolean).join('\n');
 
   const copyNumber = async () => {
     setMenu(false);
@@ -40,6 +39,7 @@ export function ResourceRow({ resource }: { resource: Resource }) {
               <IconButton
                 icon="phone"
                 look="help"
+                size={44}
                 accessibilityLabel={callLabel(resource)}
                 onPress={() => callPhone(resource.phone!)}
               />
@@ -47,12 +47,14 @@ export function ResourceRow({ resource }: { resource: Resource }) {
               <IconButton
                 icon="external-link"
                 look="tinted"
+                size={44}
                 accessibilityLabel={`Open ${resource.name}'s website`}
                 onPress={() => openWebPage(resource.website!)}
               />
             ) : null}
             <IconButton
               icon="more"
+              size={44}
               accessibilityLabel={`More for ${resource.name}`}
               onPress={() => setMenu(true)}
             />

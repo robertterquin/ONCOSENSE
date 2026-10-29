@@ -279,7 +279,7 @@ function TreatmentRow({ treatment }: { treatment: Treatment }) {
             <Button
               title="+1 session"
               variant="secondary"
-              fullWidth={false}
+              small
               loading={increment.isPending}
               onPress={() =>
                 increment.increment(treatment, {
@@ -340,7 +340,8 @@ export function RecentCheckIns({ entries }: { entries: JourneyEntry[] }) {
             icon={mood?.icon ?? 'activity'}
             iconTone={mood?.tone}
             title={mood?.label ?? 'Check-in'}
-            subtitle={`${formatShortDate(entry.date)} · pain ${entry.painLevel}, energy ${entry.energyLevel}`}
+            // Two lines, so a number never ends up alone on the next line.
+            subtitle={`${formatShortDate(entry.date)}\nPain ${entry.painLevel}, energy ${entry.energyLevel}`}
             onPress={() => editEntry(entry.id)}
           />
         );

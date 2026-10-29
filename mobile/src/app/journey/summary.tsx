@@ -188,35 +188,28 @@ export default function SummaryScreen() {
       <Section
         title="Questions for your doctor"
         subtitle="Bring questions to your appointment so you don't forget">
-        <View style={styles.questionInputRow}>
-          <View style={styles.questionInputField}>
-            <TextField
-              label="New question"
-              placeholder="e.g. Ask about fatigue medication"
-              value={questionInput}
-              onChangeText={setQuestionInput}
-              onSubmitEditing={addQuestion}
-              returnKeyType="done"
-            />
+        <View style={styles.questionForm}>
+          <TextField
+            label="New question"
+            placeholder="What can help with my fatigue?"
+            value={questionInput}
+            onChangeText={setQuestionInput}
+            onSubmitEditing={addQuestion}
+            returnKeyType="done"
+          />
+          <View style={styles.questionActions}>
+            <Button title="Add question" variant="secondary" small onPress={addQuestion} />
+            {bookmarkedQuestions.data?.length ? (
+              <Button
+                title={`Import saved (${bookmarkedQuestions.data.length})`}
+                icon="bookmark"
+                variant="quiet"
+                small
+                onPress={importSavedQuestions}
+              />
+            ) : null}
           </View>
-          <Button
-            title="Add"
-            variant="secondary"
-            fullWidth={false}
-            onPress={addQuestion}
-            style={styles.addBtn}
-          />
         </View>
-
-        {bookmarkedQuestions.data?.length ? (
-          <Button
-            title={`Import saved questions (${bookmarkedQuestions.data.length})`}
-            icon="bookmark"
-            variant="quiet"
-            fullWidth={false}
-            onPress={importSavedQuestions}
-          />
-        ) : null}
 
         {questions.length ? (
           <View style={styles.questionsList}>
@@ -281,17 +274,9 @@ const styles = StyleSheet.create({
   section: { gap: space.xs },
   statsGrid: { gap: space.sm },
   statsRow: { flexDirection: 'row', gap: space.sm },
-  questionInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: space.sm,
-  },
-  questionInputField: {
-    flex: 1,
-  },
-  addBtn: {
-    marginBottom: space.xs,
-  },
+  // One block in the card (no divider inside), padded like the card's rows.
+  questionForm: { gap: space.md, paddingVertical: space.lg },
+  questionActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
   questionsList: {
     gap: space.xs,
     marginTop: space.xs,

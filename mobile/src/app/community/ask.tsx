@@ -12,6 +12,7 @@ import {
   Screen,
   Section,
   Switch,
+  Text,
   TextField,
 } from '@/components/ui';
 import { askQuestionSchema, type AskQuestionForm } from '@/constants/validation';
@@ -74,7 +75,8 @@ export default function AskScreen() {
           control={control}
           name="category"
           render={({ field }) => (
-            <Section title="Topic" look="plain">
+            <View style={styles.field}>
+              <Text variant="row">Topic</Text>
               <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Topic">
                 {FORUM_CATEGORIES.map((topic) => (
                   <Chip
@@ -86,7 +88,7 @@ export default function AskScreen() {
                   />
                 ))}
               </View>
-            </Section>
+            </View>
           )}
         />
         <Controller
@@ -149,6 +151,8 @@ export default function AskScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Labelled like a text field.
+  field: { gap: space.sm },
   fill: { flex: 1 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 });

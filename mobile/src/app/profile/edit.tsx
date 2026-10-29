@@ -15,7 +15,6 @@ import {
   Icon,
   ListRow,
   Screen,
-  Section,
   Sheet,
   Text,
   TextField,
@@ -131,7 +130,8 @@ export default function EditProfileScreen() {
           control={control}
           name="gender"
           render={({ field }) => (
-            <Section title="Gender (optional)" look="plain">
+            <View style={styles.field}>
+              <Text variant="row">Gender (optional)</Text>
               <View style={styles.chips} accessibilityRole="radiogroup">
                 {PROFILE_GENDER_OPTIONS.map((option) => (
                   <Chip
@@ -143,7 +143,7 @@ export default function EditProfileScreen() {
                   />
                 ))}
               </View>
-            </Section>
+            </View>
           )}
         />
       </Screen>
@@ -174,6 +174,8 @@ export default function EditProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Labelled like a text field.
+  field: { gap: space.sm },
   fill: { flex: 1, width: '100%', height: '100%' },
   photoWrap: { alignSelf: 'center' },
   photo: {

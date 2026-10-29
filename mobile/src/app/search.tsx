@@ -127,12 +127,10 @@ export default function SearchScreen() {
   const showCancers = (filter === 'all' || filter === 'cancers') && results.cancers.length > 0;
   const showHabits = (filter === 'all' || filter === 'habits') && results.tips.length > 0;
   const showHelp = (filter === 'all' || filter === 'help') && results.resources.length > 0;
-  const showCommunity = (filter === 'all' || filter === 'community') && results.questions.length > 0;
+  const showCommunity =
+    (filter === 'all' || filter === 'community') && results.questions.length > 0;
 
-  const filteredCount =
-    filter === 'all'
-      ? results.totalCount
-      : countForFilter(filter);
+  const filteredCount = filter === 'all' ? results.totalCount : countForFilter(filter);
 
   return (
     <Screen
@@ -227,11 +225,7 @@ export default function SearchScreen() {
                   decelerationRate="fast"
                   snapToAlignment="start">
                   {results.tips.map((tip) => (
-                    <PreventionTipCard
-                      key={tip.id}
-                      tip={tip}
-                      onPress={() => setSelectedTip(tip)}
-                    />
+                    <PreventionTipCard key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
                   ))}
                 </ScrollView>
               </Section>
@@ -282,9 +276,7 @@ export default function SearchScreen() {
                     pressed && styles.pressed,
                   ]}>
                   <Icon name="search" size={14} tone="muted" />
-                  <Text variant="row" style={styles.suggestionText}>
-                    {item}
-                  </Text>
+                  <Text variant="caption">{item}</Text>
                 </Pressable>
               ))}
             </View>
@@ -333,10 +325,7 @@ export default function SearchScreen() {
         </View>
       )}
 
-      <PreventionDetailSheet
-        tip={selectedTip}
-        onClose={() => setSelectedTip(null)}
-      />
+      <PreventionDetailSheet tip={selectedTip} onClose={() => setSelectedTip(null)} />
     </Screen>
   );
 }
@@ -372,9 +361,6 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
     borderRadius: radii.round,
     borderWidth: 1.5,
-  },
-  suggestionText: {
-    fontSize: 14,
   },
   pressed: {
     opacity: 0.7,

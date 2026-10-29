@@ -173,7 +173,9 @@ export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
   );
 }
 
-const CARD_WIDTH = 238;
+const CARD_WIDTH = 256;
+
+const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 function categoryTone(category: string): { background: keyof Palette; color: keyof Palette } {
   const cat = category.toLowerCase();
@@ -223,12 +225,12 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
       <View style={styles.cardHeader}>
         <View style={styles.badgeRow}>
           <View style={[styles.badge, { backgroundColor: palette[tone.background] }]}>
-            <Text variant="caption" tone={tone.color} style={styles.badgeText}>
-              {tip.category.toUpperCase()}
+            <Text variant="caption" tone={tone.color}>
+              {sentenceCase(tip.category)}
             </Text>
           </View>
           <Pressable
-            hitSlop={6}
+            hitSlop={8}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: isDone }}
             accessibilityLabel={`Mark ${tip.title} as completed today`}
@@ -244,25 +246,25 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
             ]}>
             <Icon
               name={isDone ? 'check' : 'circle'}
-              size={12}
+              size={16}
               tone={isDone ? 'help' : 'muted'}
               bold={isDone}
             />
-            <Text variant="caption" tone={isDone ? 'help' : 'muted'} style={styles.doneText}>
+            <Text variant="caption" tone={isDone ? 'help' : 'muted'}>
               {isDone ? 'Done' : 'Today'}
             </Text>
           </Pressable>
         </View>
         <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
-          <Icon name={icon} size={18} tone={tone.color} />
+          <Icon name={icon} size={20} tone={tone.color} />
         </View>
       </View>
 
       <View style={styles.cardBody}>
-        <Text variant="row" numberOfLines={2} style={styles.cardTitle}>
+        <Text variant="row" numberOfLines={2}>
           {tip.title}
         </Text>
-        <Text variant="supporting" tone="muted" numberOfLines={2} style={styles.cardDescription}>
+        <Text variant="supporting" tone="muted" numberOfLines={2}>
           {tip.description}
         </Text>
       </View>
@@ -272,10 +274,10 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
           {source}
         </Text>
         <View style={styles.cardActionRow}>
-          <Text variant="caption" tone="action" style={styles.cardActionText}>
+          <Text variant="caption" tone="action">
             View guide
           </Text>
-          <Icon name="chevron-right" size={14} tone="action" />
+          <Icon name="chevron-right" size={18} tone="action" />
         </View>
       </View>
     </Pressable>
@@ -303,8 +305,8 @@ export function PreventionDetailSheet({
         <View style={styles.sheetContent}>
           <View style={styles.sheetMetaRow}>
             <View style={[styles.badge, { backgroundColor: palette[openTone.background] }]}>
-              <Text variant="caption" tone={openTone.color} style={styles.badgeText}>
-                {tip.category.toUpperCase()}
+              <Text variant="caption" tone={openTone.color}>
+                {sentenceCase(tip.category)}
               </Text>
             </View>
             <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
@@ -330,7 +332,7 @@ export function PreventionDetailSheet({
               title={`Source: ${tip.sourceName}`}
               icon="external-link"
               variant="quiet"
-              fullWidth={false}
+              small
               onPress={() => openWebPage(tip.sourceUrl)}
             />
           </View>
@@ -401,8 +403,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: space.sm,
+    paddingVertical: space.xs,
     borderRadius: radii.round,
   },
   badgeRow: {
@@ -413,40 +415,21 @@ const styles = StyleSheet.create({
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    gap: space.xs,
+    paddingHorizontal: space.sm,
+    paddingVertical: space.xs,
     borderRadius: radii.round,
     borderWidth: 1,
   },
-  doneText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-  },
   cardIconTile: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: radii.tile - 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardBody: {
     gap: space.xs,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    minHeight: 40,
-    justifyContent: 'center',
-  },
-  cardDescription: {
-    fontSize: 13,
-    lineHeight: 18,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -456,8 +439,6 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   cardSource: {
-    fontSize: 11,
-    fontWeight: '600',
     flex: 1,
     marginRight: space.xs,
   },
@@ -465,10 +446,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-  },
-  cardActionText: {
-    fontSize: 12,
-    fontWeight: '700',
   },
   sheetContent: {
     gap: space.md,

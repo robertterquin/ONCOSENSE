@@ -379,7 +379,7 @@ function Composer({ questionId }: { questionId: string }) {
         </Text>
         <Button
           title="Post"
-          fullWidth={false}
+          small
           disabled={!content.trim()}
           loading={post.isPending}
           onPress={submit}

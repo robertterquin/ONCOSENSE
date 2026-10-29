@@ -55,28 +55,32 @@ export default function SettingsScreen() {
     <Screen back={{ label: 'Profile', onPress: back }} title="Settings">
       <Section title="Display" divided={false}>
         <View style={styles.display}>
-          <Text variant="row">Theme</Text>
-          <SegmentedControl<ThemeMode>
-            accessibilityLabel="Theme"
-            value={mode}
-            onChange={setMode}
-            options={[
-              { value: 'light', label: 'Light' },
-              { value: 'dark', label: 'Dark' },
-              { value: 'system', label: 'Phone' },
-            ]}
-          />
-          <Text variant="row">Text size</Text>
-          <SegmentedControl<TextSize>
-            accessibilityLabel="Text size"
-            value={textSize}
-            onChange={setTextSize}
-            options={[
-              { value: 'default', label: 'Default' },
-              { value: 'large', label: 'Large' },
-              { value: 'larger', label: 'Larger' },
-            ]}
-          />
+          <View style={styles.group}>
+            <Text variant="row">Theme</Text>
+            <SegmentedControl<ThemeMode>
+              accessibilityLabel="Theme"
+              value={mode}
+              onChange={setMode}
+              options={[
+                { value: 'light', label: 'Light' },
+                { value: 'dark', label: 'Dark' },
+                { value: 'system', label: 'Phone' },
+              ]}
+            />
+          </View>
+          <View style={styles.group}>
+            <Text variant="row">Text size</Text>
+            <SegmentedControl<TextSize>
+              accessibilityLabel="Text size"
+              value={textSize}
+              onChange={setTextSize}
+              options={[
+                { value: 'default', label: 'Default' },
+                { value: 'large', label: 'Large' },
+                { value: 'larger', label: 'Larger' },
+              ]}
+            />
+          </View>
         </View>
       </Section>
 
@@ -188,5 +192,7 @@ function DeleteAccountSheet({ visible, onClose }: { visible: boolean; onClose: (
 }
 
 const styles = StyleSheet.create({
-  display: { gap: space.md, paddingVertical: space.lg },
+  // More room between the two settings than between a label and its control.
+  display: { gap: space.xl, paddingVertical: space.lg },
+  group: { gap: space.sm },
 });

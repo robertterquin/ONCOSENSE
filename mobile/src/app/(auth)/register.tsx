@@ -7,7 +7,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { FormTextField } from '@/components/account/FormTextField';
 import { LegalSheet, type LegalTitle } from '@/components/account/LegalSheet';
 import { PasswordRules } from '@/components/account/PasswordRules';
-import { Button, Chip, Screen, Section, Text } from '@/components/ui';
+import { Button, Chip, Screen, Text } from '@/components/ui';
 import { GENDER_OPTIONS } from '@/constants/app';
 import { MESSAGES, registerSchema, type RegisterForm } from '@/constants/validation';
 import { useSignUp } from '@/hooks/useAuth';
@@ -107,10 +107,11 @@ export default function CreateAccountScreen() {
           control={control}
           name="gender"
           render={({ field }) => (
-            <Section
-              title="Gender (optional)"
-              subtitle="Helps us suggest the right self-checks"
-              look="plain">
+            <View style={styles.field}>
+              <Text variant="row">Gender (optional)</Text>
+              <Text variant="supporting" tone="muted">
+                Helps us suggest the right self-checks
+              </Text>
               <View style={styles.chips} accessibilityRole="radiogroup">
                 {GENDER_OPTIONS.map((option) => (
                   <Chip
@@ -122,7 +123,7 @@ export default function CreateAccountScreen() {
                   />
                 ))}
               </View>
-            </Section>
+            </View>
           )}
         />
         <View style={styles.terms}>
@@ -135,13 +136,13 @@ export default function CreateAccountScreen() {
             <Button
               title="Read the terms"
               variant="quiet"
-              fullWidth={false}
+              small
               onPress={() => setLegal('Terms of service')}
             />
             <Button
               title="Read the privacy policy"
               variant="quiet"
-              fullWidth={false}
+              small
               onPress={() => setLegal('Privacy policy')}
             />
           </View>
@@ -151,12 +152,7 @@ export default function CreateAccountScreen() {
           <Text variant="supporting" tone="muted">
             Already have an account?
           </Text>
-          <Button
-            title="Sign in"
-            variant="quiet"
-            fullWidth={false}
-            onPress={() => router.replace('/login')}
-          />
+          <Button title="Sign in" variant="quiet" small onPress={() => router.replace('/login')} />
         </View>
       </Screen>
       <LegalSheet open={legal} onClose={() => setLegal(null)} />
@@ -166,7 +162,9 @@ export default function CreateAccountScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  // Matches a text field: label, then the control.
+  field: { gap: space.xs },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
   terms: { gap: space.xs },
   links: { flexDirection: 'row', flexWrap: 'wrap' },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },
