@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  type DimensionValue,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -9,6 +15,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { elevation } from '@/theme/elevation';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -23,12 +30,7 @@ type SkeletonProps = {
  * Animated skeleton block with a gentle breathing pulse.
  * Respects system reduced motion and theme tokens.
  */
-export function Skeleton({
-  width = '100%',
-  height = 16,
-  borderRadius = 8,
-  style,
-}: SkeletonProps) {
+export function Skeleton({ width = '100%', height = 16, borderRadius = 8, style }: SkeletonProps) {
   const { palette } = useDesign();
   const reduceMotion = useReducedMotion();
   const opacity = useSharedValue(0.4);
@@ -39,10 +41,7 @@ export function Skeleton({
       return;
     }
     opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.85, { duration: 850 }),
-        withTiming(0.4, { duration: 850 }),
-      ),
+      withSequence(withTiming(0.85, { duration: 850 }), withTiming(0.4, { duration: 850 })),
       -1,
       true,
     );
@@ -91,12 +90,13 @@ export function SkeletonCard({
   height?: DimensionValue;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   return (
     <View
       style={[
         styles.card,
-        { backgroundColor: palette.surface, borderColor: palette.border, width, height },
+        { backgroundColor: palette.surface, width, height },
+        elevation('resting', isDark),
         style,
       ]}>
       <View style={styles.cardHeader}>
@@ -124,12 +124,13 @@ export function SkeletonList({
   count?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   return (
     <View
       style={[
         styles.listContainer,
-        { backgroundColor: palette.surface, borderColor: palette.border },
+        { backgroundColor: palette.surface },
+        elevation('resting', isDark),
         style,
       ]}>
       {Array.from({ length: count }).map((_, i) => (
@@ -137,7 +138,10 @@ export function SkeletonList({
           key={i}
           style={[
             styles.listItem,
-            i < count - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.line },
+            i < count - 1 && {
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: palette.line,
+            },
           ]}>
           <SkeletonRow />
         </View>
@@ -168,11 +172,12 @@ export function SkeletonLearn() {
 
 /** Pre-assembled skeleton layout matching the Journey tab. */
 export function SkeletonJourney() {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   return (
     <View style={styles.stack}>
       {/* Week dots */}
-      <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+      <View
+        style={[styles.card, { backgroundColor: palette.surface }, elevation('resting', isDark)]}>
         <View style={styles.weekDots}>
           {Array.from({ length: 7 }).map((_, i) => (
             <Skeleton key={i} width={34} height={48} borderRadius={10} />
@@ -180,16 +185,16 @@ export function SkeletonJourney() {
         </View>
       </View>
       {/* Chart placeholder */}
-      <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border, height: 220 }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.surface, height: 220 },
+          elevation('resting', isDark),
+        ]}>
         <Skeleton width={160} height={18} borderRadius={6} />
         <View style={styles.chartBars}>
           {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton
-              key={i}
-              width={22}
-              height={50 + (i % 3) * 35}
-              borderRadius={6}
-            />
+            <Skeleton key={i} width={22} height={50 + (i % 3) * 35} borderRadius={6} />
           ))}
         </View>
       </View>
@@ -250,7 +255,6 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     borderRadius: radii.section,
-    borderWidth: 1,
     overflow: 'hidden',
   },
   listItem: {
@@ -258,7 +262,6 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radii.section,
-    borderWidth: 1,
     padding: space.lg,
     justifyContent: 'space-between',
     gap: space.md,

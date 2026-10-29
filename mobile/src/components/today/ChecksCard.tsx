@@ -11,7 +11,8 @@ import {
   formatWeekdayDate,
   startOfDay,
 } from '@/lib/selfCheck';
-import { radii, shadows, sizes, space } from '@/theme/tokens';
+import { elevation } from '@/theme/elevation';
+import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 // Today's checks card: flat night violet, a small outline ribbon, and words doing the
@@ -29,7 +30,7 @@ type ChecksCardProps = {
 };
 
 export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const byDue = [...checks].sort((a, b) => a.due.getTime() - b.due.getTime());
   const waiting = byDue.filter((check) => check.isDue);
   const allDone = waiting.length === 0;
@@ -47,7 +48,7 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
       : `${checks.length - waiting.length} of ${checks.length} done. About 10 minutes each.`;
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.panel }]}>
+    <View style={[styles.card, { backgroundColor: palette.panel }, elevation('floating', isDark)]}>
       <View style={styles.ribbon}>
         <RibbonMark height={40} weight={16} color={palette.onPanelAccent} />
       </View>
@@ -173,7 +174,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.panel,
     padding: space.xxl,
     gap: space.md,
-    ...shadows.floating,
   },
   ribbon: { position: 'absolute', right: space.xl, top: space.xl },
   // Clear of the ribbon.

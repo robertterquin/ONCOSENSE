@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useToastStore, type ToastType } from '@/stores/toastStore';
 import { darkPalette, type Palette } from '@/theme/palette';
+import { elevation } from '@/theme/elevation';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -31,7 +32,7 @@ export function ToastHost() {
   const toast = useToastStore((state) => state.toast);
   const hide = useToastStore((state) => state.hide);
   const insets = useSafeAreaInsets();
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   // On the tab screens, sit above the tab bar instead of covering it.
   const onTabs = useSegments()[0] === '(tabs)';
   const bottom = onTabs
@@ -57,7 +58,7 @@ export function ToastHost() {
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
         onPress={hide}
-        style={[styles.toast, { backgroundColor: palette.panel }]}>
+        style={[styles.toast, { backgroundColor: palette.panel }, elevation('floating', isDark)]}>
         <Icon name={LOOK[toast.type].icon} size={20} color={LOOK[toast.type].iconColor(palette)} />
         <Text variant="body" color={palette.onPanel} style={styles.message}>
           {toast.message}
@@ -84,11 +85,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.control,
     paddingHorizontal: space.lg,
     paddingVertical: space.md + 2,
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 6,
   },
   message: { flex: 1 },
 });

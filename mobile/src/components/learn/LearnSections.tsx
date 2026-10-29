@@ -10,7 +10,8 @@ import { openWebPage } from '@/lib/links';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
 import type { Palette } from '@/theme/palette';
-import { radii, shadows, space } from '@/theme/tokens';
+import { elevation, pressedCard } from '@/theme/elevation';
+import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
@@ -199,7 +200,7 @@ function categoryTone(category: string): { background: keyof Palette; color: key
 }
 
 export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const tone = categoryTone(tip.category);
   const icon = iconForPreventionTip(tip);
   const source = shortenSourceName(tip.sourceName);
@@ -210,11 +211,11 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
     <Pressable
       style={({ pressed }) => [
         styles.card,
-        {
-          backgroundColor: palette.surface,
-          borderColor: isDone ? palette.help : palette.border,
-        },
-        pressed && styles.cardPressed,
+        { backgroundColor: palette.surface },
+        elevation('resting', isDark),
+        // Done today keeps a teal edge in both themes.
+        isDone && { borderWidth: 1.5, borderColor: palette.help },
+        pressed && pressedCard,
       ]}
       onPress={() => {
         haptics.lightImpact();
@@ -388,14 +389,9 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     minHeight: 188,
     borderRadius: radii.section,
-    borderWidth: 1,
     padding: space.lg,
     justifyContent: 'space-between',
     gap: space.md,
-    ...shadows.card,
-  },
-  cardPressed: {
-    opacity: 0.8,
   },
   cardHeader: {
     flexDirection: 'row',

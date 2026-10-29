@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
+import { elevation, pressedCard } from '@/theme/elevation';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -18,12 +19,12 @@ type StatTileProps = {
 
 /** A big number with its label and trend, read as one sentence ("Energy, 7 days: 6.2, of 10, up from 5"). */
 export function StatTile({ label, value, detail, valueTone = 'action' }: StatTileProps) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   return (
     <View
       accessible
       accessibilityLabel={`${label}: ${value}, ${detail}`}
-      style={[styles.tile, { backgroundColor: palette.surface }]}>
+      style={[styles.tile, { backgroundColor: palette.surface }, elevation('resting', isDark)]}>
       <Text variant="supporting" tone="muted">
         {label}
       </Text>
@@ -47,7 +48,7 @@ type TopicTileProps = {
 
 /** A tappable tile for two-column grids: icon tile, title and one short line. */
 export function TopicTile({ title, subtitle, icon, iconTone = 'action', onPress }: TopicTileProps) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const look = TILES[iconTone];
   return (
     <Pressable
@@ -57,7 +58,8 @@ export function TopicTile({ title, subtitle, icon, iconTone = 'action', onPress 
       style={({ pressed }) => [
         styles.tile,
         { backgroundColor: palette.surface },
-        pressed && styles.pressed,
+        elevation('resting', isDark),
+        pressed && pressedCard,
       ]}>
       <View style={[styles.well, { backgroundColor: palette[look.background] }]}>
         <Icon name={icon} size={22} tone={look.color} />

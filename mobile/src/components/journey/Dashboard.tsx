@@ -17,6 +17,7 @@ import { formatShortDate, formatTime } from '@/lib/dates';
 import { lastSevenDays, sevenDayTrend, weekSummaryText, type WeekSummary } from '@/lib/journey';
 import { MOODS } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
+import { elevation } from '@/theme/elevation';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { Appointment } from '@/types/appointment';
@@ -30,7 +31,7 @@ const editEntry = (id: string) => router.push({ pathname: '/journey/check-in', p
 
 /** Paired bars for energy and pain over the last 7 days, with the numbers in words. */
 export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const summary = lastSevenDays(entries, now);
   const energy = sevenDayTrend(entries, 'averageEnergy', now);
   const pain = sevenDayTrend(entries, 'averagePain', now);
@@ -49,7 +50,12 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
           valueTone="rose"
         />
       </View>
-      <View style={[styles.chartBlock, { backgroundColor: palette.surface }]}>
+      <View
+        style={[
+          styles.chartBlock,
+          { backgroundColor: palette.surface },
+          elevation('resting', isDark),
+        ]}>
         <Chart summary={summary} />
         <Text variant="supporting">{weekSummaryText(summary)}</Text>
         {summary.topSymptoms.length ? (

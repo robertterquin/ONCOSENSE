@@ -39,6 +39,7 @@ import { formatRelativeTime } from '@/lib/dates';
 import { useIsSignedIn, useUserId } from '@/stores/authStore';
 import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
+import { elevation } from '@/theme/elevation';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { answerDisplayName, type Answer } from '@/types/answer';
@@ -232,7 +233,7 @@ function QuestionActions({ question }: { question: Question }) {
 }
 
 function AnswerRow({ answer, questionId, now }: { answer: Answer; questionId: string; now: Date }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const userId = useUserId();
   const signedIn = useIsSignedIn();
   const upvoted = useHasUpvotedAnswer(answer.id).data ?? false;
@@ -259,10 +260,9 @@ function AnswerRow({ answer, questionId, now }: { answer: Answer; questionId: st
     <View
       style={[
         styles.answer,
-        {
-          backgroundColor: palette.ground,
-          borderColor: answer.isAccepted ? palette.help : palette.line,
-        },
+        { backgroundColor: palette.surface },
+        elevation('resting', isDark),
+        answer.isAccepted && { borderWidth: 1.5, borderColor: palette.help },
       ]}>
       <View style={styles.answerTop}>
         <View style={[styles.avatar, { backgroundColor: palette.raised }]}>
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   pressed: { opacity: 0.6 },
   header: { gap: space.sm },
-  answer: { gap: space.sm, padding: space.lg, borderRadius: radii.control, borderWidth: 1.5 },
+  answer: { gap: space.sm, padding: space.lg, borderRadius: radii.control },
   answerTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   avatar: {
     width: 36,

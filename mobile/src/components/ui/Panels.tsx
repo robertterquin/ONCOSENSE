@@ -11,7 +11,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import type { Palette } from '@/theme/palette';
-import { radii, shadows, space } from '@/theme/tokens';
+import { elevation } from '@/theme/elevation';
+import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { decorative } from './a11y';
@@ -99,12 +100,12 @@ export function NextStepPanel({
 
 /** The panel's night-violet surface and fade, with the ribbon line in the top-right corner. */
 function PanelSurface({ children }: { children: ReactNode }) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   // The fade is drawn at the panel's measured size: a percent-sized gradient renders in
   // mismatched tiles on iOS (a visible seam).
   const [size, setSize] = useState({ width: 0, height: 0 });
   return (
-    <View style={styles.panelShadow}>
+    <View style={[styles.panelShadow, elevation('floating', isDark)]}>
       <View
         style={[styles.panel, { backgroundColor: palette.panel }]}
         onLayout={({ nativeEvent: { layout } }) =>
@@ -213,7 +214,6 @@ export function BottomActionBar({ children }: { children: ReactNode }) {
 const styles = StyleSheet.create({
   panelShadow: {
     borderRadius: radii.panel,
-    ...shadows.floating,
   },
   panel: {
     borderRadius: radii.panel,

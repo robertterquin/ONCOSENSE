@@ -2,7 +2,8 @@ import { Children, Fragment, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
-import { radii, shadows, space } from '@/theme/tokens';
+import { elevation } from '@/theme/elevation';
+import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Text } from './Text';
@@ -36,7 +37,7 @@ export function Section({
   divided = look === 'card',
   style,
 }: SectionProps) {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const items = Children.toArray(children).filter(Boolean);
   const background =
     look === 'card' ? palette.surface : look === 'tinted' ? palette[tint] : 'transparent';
@@ -61,7 +62,7 @@ export function Section({
       <View
         style={[
           look !== 'plain' && styles.container,
-          look === 'card' && [styles.cardContainer, { borderColor: palette.border }],
+          look !== 'plain' && elevation('resting', isDark),
           look === 'tinted' && styles.tinted,
           !divided && styles.spaced,
           { backgroundColor: background },
@@ -93,10 +94,6 @@ const styles = StyleSheet.create({
   },
   headingText: { flex: 1, gap: 2 },
   container: { borderRadius: radii.section, paddingHorizontal: space.lg + 2 },
-  cardContainer: {
-    borderWidth: 1,
-    ...shadows.card,
-  },
   tinted: { paddingVertical: space.xl },
   /** Children that aren't divided rows (buttons, fields) get room between them. */
   spaced: { gap: space.md },

@@ -19,6 +19,7 @@ import { useQuestions } from '@/hooks/useCommunity';
 import { useNow } from '@/hooks/useNow';
 import { confirm } from '@/lib/confirm';
 import { useIsSignedIn } from '@/stores/authStore';
+import { elevation } from '@/theme/elevation';
 import { radii, space } from '@/theme/tokens';
 import { fontFamily } from '@/theme/type';
 import { useDesign } from '@/theme/useTheme';
@@ -44,7 +45,7 @@ async function askQuestion(signedIn: boolean) {
 }
 
 export default function CommunityTab() {
-  const { palette } = useDesign();
+  const { palette, isDark } = useDesign();
   const signedIn = useIsSignedIn();
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
@@ -96,7 +97,8 @@ export default function CommunityTab() {
       <View
         style={[
           styles.promptCard,
-          { backgroundColor: palette.surface, borderColor: palette.border },
+          { backgroundColor: palette.surface },
+          elevation('resting', isDark),
         ]}>
         <View style={[styles.promptIconTile, { backgroundColor: palette.raised }]}>
           <Icon name="message" size={20} tone="action" />
@@ -157,7 +159,6 @@ const styles = StyleSheet.create({
     gap: space.md,
     padding: space.md,
     borderRadius: radii.section,
-    borderWidth: 1.5,
   },
   promptIconTile: {
     width: 44,
