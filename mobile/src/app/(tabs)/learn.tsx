@@ -9,7 +9,14 @@ import {
   GuideResults,
   LowerYourRisk,
 } from '@/components/learn/LearnSections';
-import { EmptyState, ErrorState, IconButton, LoadingState, Screen, SearchField } from '@/components/ui';
+import {
+  EmptyState,
+  ErrorState,
+  IconButton,
+  LoadingState,
+  Screen,
+  SearchField,
+} from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { usePreventionTips } from '@/hooks/usePrevention';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
@@ -37,8 +44,7 @@ export default function LearnTab() {
         scrollRef.current?.scrollTo({ y: riskY, animated: !reduceMotion });
       else if (section === 'cancers' && cancersY !== null)
         scrollRef.current?.scrollTo({ y: cancersY, animated: !reduceMotion });
-      else if (!section)
-        scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion });
+      else if (!section) scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion });
     }, [section, riskY, cancersY, reduceMotion]),
   );
 
@@ -60,6 +66,7 @@ export default function LearnTab() {
   return (
     <Screen
       inTabs
+      tab="learn"
       title="Learn"
       subtitle="Signs, self-checks and ways to lower your risk"
       titleAside={

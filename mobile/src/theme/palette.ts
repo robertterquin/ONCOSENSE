@@ -32,6 +32,9 @@ export type Palette = {
   /** Self-checks. */
   rose: string;
   roseTint: string;
+  /** The Community tab's colour: a bluer lavender, apart from Journey's violet. */
+  community: string;
+  communityTint: string;
   /** Help and calling. */
   help: string;
   helpTint: string;
@@ -63,6 +66,8 @@ export const lightPalette: Palette = {
   onPanelAccent: '#F7B6CF',
   rose: '#C2255C',
   roseTint: '#FBE8EF',
+  community: '#4549B8',
+  communityTint: '#E8E9FA',
   help: '#0E6B63',
   helpTint: '#E1F2EF',
   onHelpTint: '#0B4F49',
@@ -89,6 +94,8 @@ export const darkPalette: Palette = {
   onPanelAccent: '#F7B6CF',
   rose: '#F27BA6',
   roseTint: '#3A1A2A',
+  community: '#AEB4FF',
+  communityTint: '#272A55',
   help: '#6FD3C5',
   helpTint: '#0F3D39',
   onHelpTint: '#CFEDE8',
@@ -116,6 +123,8 @@ export const highContrastLightPalette: Palette = {
   onPanelAccent: '#FFD2E2',
   rose: '#940038',
   roseTint: '#FBE8F0',
+  community: '#24288A',
+  communityTint: '#E6E7FA',
   help: '#02534C',
   helpTint: '#E2F7F4',
   onHelpTint: '#04433D',
@@ -143,6 +152,8 @@ export const highContrastDarkPalette: Palette = {
   onPanelAccent: '#FFC0D9',
   rose: '#FFA1C2',
   roseTint: '#3D1528',
+  community: '#C9CCFF',
+  communityTint: '#1D2050',
   help: '#7EFFF0',
   helpTint: '#0C3833',
   onHelpTint: '#E0FAF6',
@@ -174,6 +185,9 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['rose', 'roseTint'],
   ['help', 'surface'],
   ['onHelpTint', 'helpTint'],
+  ['community', 'surface'],
+  ['community', 'ground'],
+  ['community', 'communityTint'],
   ['sunInk', 'sun'],
   ['danger', 'surface'],
   ['danger', 'ground'],

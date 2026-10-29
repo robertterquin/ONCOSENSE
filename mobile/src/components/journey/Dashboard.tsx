@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Svg, { Line } from 'react-native-svg';
 
 import {
   Button,
@@ -29,7 +30,10 @@ import { iconForTreatment, treatmentTypeLabel, type Treatment } from '@/types/tr
 
 const editEntry = (id: string) => router.push({ pathname: '/journey/check-in', params: { id } });
 
-/** Paired bars for energy and pain over the last 7 days, with the numbers in words. */
+/**
+ * Paired bars for energy and pain over the last 7 days, with a dashed line at each
+ * week's average, today's column tinted, and the numbers in words.
+ */
 export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
   const { palette, isDark } = useDesign();
   const summary = lastSevenDays(entries, now);
@@ -69,7 +73,8 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
   );
 }
 
-const CHART_HEIGHT = 96;
+const CHART_HEIGHT = 120;
+const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function Chart({ summary }: { summary: WeekSummary }) {
   const { palette } = useDesign();
@@ -82,7 +87,7 @@ function Chart({ summary }: { summary: WeekSummary }) {
       style={[
         styles.bar,
         {
-          height: value === null ? 3 : Math.max(3, (value / 10) * CHART_HEIGHT),
+          height: value === null ? 4 : Math.max(4, (value / 10) * CHART_HEIGHT),
           backgroundColor: value === null ? palette.line : color,
         },
       ]}
@@ -138,6 +143,7 @@ function Chart({ summary }: { summary: WeekSummary }) {
       <View style={[styles.chart, { borderBottomColor: palette.line }]}>
         {summary.days.map((day, index) => {
           const isSelected = selectedDayIndex === index;
+          const isToday = index === summary.days.length - 1;
           return (
             <Pressable
               key={day.date.toDateString()}
@@ -149,7 +155,9 @@ function Chart({ summary }: { summary: WeekSummary }) {
               }}
               style={[
                 styles.chartDay,
-                isSelected && [styles.selectedDayColumn, { backgroundColor: palette.raised }],
+                styles.chartColumn,
+                isToday && { backgroundColor: palette.raised },
+                isSelected && { borderColor: palette.action },
               ]}>
               <View style={styles.bars}>
                 {bar(day.energy, palette.action)}
@@ -158,17 +166,44 @@ function Chart({ summary }: { summary: WeekSummary }) {
             </Pressable>
           );
         })}
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
+          {(
+            [
+              [summary.averageEnergy, palette.action],
+              [summary.averagePain, palette.chartPain],
+            ] as const
+          ).map(([average, color]) => {
+            if (average === null) return null;
+            const y = CHART_HEIGHT - (average / 10) * CHART_HEIGHT;
+            return (
+              <Line
+                key={color}
+                x1="0"
+                x2="100%"
+                y1={y}
+                y2={y}
+                stroke={color}
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                opacity={0.6}
+              />
+            );
+          })}
+        </Svg>
       </View>
       <View style={styles.chartLabels}>
         {summary.days.map((day, index) => {
+          const isToday = index === summary.days.length - 1;
           const isSelected = selectedDayIndex === index;
           return (
             <Text
               key={day.date.toDateString()}
-              variant="caption"
-              tone={isSelected ? 'action' : 'muted'}
-              style={[styles.chartDay, isSelected && styles.selectedDayLabel]}>
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'][day.date.getDay()]}
+              variant="supporting"
+              tone={isToday || isSelected ? 'ink' : 'muted'}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={[styles.chartDay, (isToday || isSelected) && styles.selectedDayLabel]}>
+              {isToday ? 'Today' : DAY_LETTERS[day.date.getDay()]}
             </Text>
           );
         })}
@@ -403,15 +438,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth * 2,
   },
   chartDay: { flex: 1, alignItems: 'center', textAlign: 'center' },
-  selectedDayColumn: {
-    borderRadius: 8,
-    paddingBottom: 2,
+  // Full height, so today's tint and the selected outline fill the column.
+  chartColumn: {
+    height: '100%',
+    justifyContent: 'flex-end',
+    borderRadius: radii.control,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
   selectedDayLabel: {
     fontWeight: '700',
   },
-  bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
-  bar: { width: 10, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
+  bar: { width: 14, borderTopLeftRadius: 7, borderTopRightRadius: 7 },
   chartLabels: { flexDirection: 'row', paddingTop: space.xs },
   treatment: { paddingBottom: space.sm },
   treatmentProgress: {

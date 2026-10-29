@@ -96,6 +96,7 @@ function Dashboard() {
   return (
     <Screen
       inTabs
+      tab="journey"
       title="My journey"
       subtitle={focusSubtitle(focus, diagnosisDate, cancerFreeDate)}
       onRefresh={refresh}
@@ -151,7 +152,7 @@ function Invitation({
 }) {
   const { palette } = useDesign();
   return (
-    <Screen inTabs title="Journey">
+    <Screen inTabs tab="journey" title="Journey">
       <View style={styles.invitation}>
         <RibbonMark height={96} color={palette.action} />
         <Text variant="heading" style={styles.centered} accessibilityRole="header">
