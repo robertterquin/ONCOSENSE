@@ -139,6 +139,7 @@ export default function CommunityTab() {
           icon="message"
           title={searchQuery ? `No questions about "${searchQuery}"` : 'No questions yet'}
           message={searchQuery ? 'Try other words, or ask it yourself.' : 'Be the first to ask.'}
+          action={{ label: 'Ask a question', onPress: () => askQuestion(signedIn) }}
         />
       ) : (
         <Section>
