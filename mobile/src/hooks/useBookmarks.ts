@@ -9,6 +9,7 @@ import {
   removeResourceBookmark,
 } from '@/api/bookmarks';
 import { useUserId } from '@/stores/authStore';
+import { showToast } from '@/stores/toastStore';
 import type { Question } from '@/types/question';
 import type { Resource } from '@/types/resource';
 
@@ -59,8 +60,9 @@ function useToggleBookmark<T>(options: {
       );
       return { previous };
     },
-    onError: (_error, _vars, context) => {
+    onError: (error, { save }, context) => {
       if (context) queryClient.setQueryData(queryKey, context.previous);
+      showToast(`Couldn't ${save ? 'save' : 'remove'} it: ${error.message}`, 'error');
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
