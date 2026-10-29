@@ -56,6 +56,60 @@ export function NextStepPanel({
   secondary,
 }: NextStepPanelProps) {
   const { palette } = useDesign();
+  return (
+    <PanelSurface>
+      {due ? (
+        <Tag tone="due" label={status} />
+      ) : (
+        <View style={styles.status}>
+          <Icon name={statusIcon} size={18} color="#D9CFF5" />
+          <Text variant="caption" color="#D9CFF5">
+            {status}
+          </Text>
+        </View>
+      )}
+      <Text variant="panel" tone="onPanel" accessibilityRole="header" style={styles.panelTitle}>
+        {title}
+      </Text>
+      <Text variant="body" tone="onPanelMuted" style={styles.panelBody}>
+        {body}
+      </Text>
+      {steps ? (
+        <View accessible accessibilityLabel={`${steps} steps`} style={styles.steps}>
+          {Array.from({ length: steps }, (_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.step,
+                { backgroundColor: index === 0 ? palette.onPanelAccent : STEP_REST },
+              ]}
+            />
+          ))}
+        </View>
+      ) : null}
+      <View style={styles.panelActions}>
+        <Button title={primary.label} onPress={primary.onPress} variant="onPanel" />
+        {secondary ? (
+          <Button title={secondary.label} onPress={secondary.onPress} variant="onPanelAccent" />
+        ) : null}
+      </View>
+    </PanelSurface>
+  );
+}
+
+/** The panel's night-violet surface and fade, with the ribbon line in the top-right corner. */
+export function PanelSurface({
+  children,
+  ribbonHeight = 229,
+  ribbonTop = (-26 * ribbonHeight) / 229,
+}: {
+  children: ReactNode;
+  /** The ribbon's height; it keeps the same corner placement at any size. */
+  ribbonHeight?: number;
+  /** Raise the ribbon (more negative) to keep its tails clear of the content. */
+  ribbonTop?: number;
+}) {
+  const { palette } = useDesign();
   // The fade is drawn at the panel's measured size: a percent-sized gradient renders in
   // mismatched tiles on iOS (a visible seam).
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -67,67 +121,31 @@ export function NextStepPanel({
           setSize({ width: layout.width, height: layout.height })
         }>
         {size.width > 0 ? (
-        <Svg
-          width={size.width}
-          height={size.height}
-          style={StyleSheet.absoluteFill}
-          {...decorative}>
-          <Defs>
-            <LinearGradient
-              id="panelFade"
-              gradientUnits="userSpaceOnUse"
-              x1={size.width * 0.25}
-              y1={0}
-              x2={size.width * 0.75}
-              y2={size.height}>
-              <Stop offset="0" stopColor={palette.panelTop} />
-              <Stop offset="1" stopColor={palette.panel} />
-            </LinearGradient>
-          </Defs>
-          <Rect width={size.width} height={size.height} fill="url(#panelFade)" />
-        </Svg>
-      ) : null}
-      <View style={styles.ribbon}>
-        <RibbonMark height={229} color={palette.panelTop} gradient={RIBBON_GRADIENT} />
-      </View>
-      <View style={styles.panelContent}>
-        {due ? (
-          <Tag tone="due" label={status} />
-        ) : (
-          <View style={styles.status}>
-            <Icon name={statusIcon} size={18} color="#D9CFF5" />
-            <Text variant="caption" color="#D9CFF5">
-              {status}
-            </Text>
-          </View>
-        )}
-        <Text variant="panel" tone="onPanel" accessibilityRole="header" style={styles.panelTitle}>
-          {title}
-        </Text>
-        <Text variant="body" tone="onPanelMuted" style={styles.panelBody}>
-          {body}
-        </Text>
-        {steps ? (
-          <View accessible accessibilityLabel={`${steps} steps`} style={styles.steps}>
-            {Array.from({ length: steps }, (_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.step,
-                  { backgroundColor: index === 0 ? palette.onPanelAccent : STEP_REST },
-                ]}
-              />
-            ))}
-          </View>
+          <Svg
+            width={size.width}
+            height={size.height}
+            style={StyleSheet.absoluteFill}
+            {...decorative}>
+            <Defs>
+              <LinearGradient
+                id="panelFade"
+                gradientUnits="userSpaceOnUse"
+                x1={size.width * 0.25}
+                y1={0}
+                x2={size.width * 0.75}
+                y2={size.height}>
+                <Stop offset="0" stopColor={palette.panelTop} />
+                <Stop offset="1" stopColor={palette.panel} />
+              </LinearGradient>
+            </Defs>
+            <Rect width={size.width} height={size.height} fill="url(#panelFade)" />
+          </Svg>
         ) : null}
-        <View style={styles.panelActions}>
-          <Button title={primary.label} onPress={primary.onPress} variant="onPanel" />
-          {secondary ? (
-            <Button title={secondary.label} onPress={secondary.onPress} variant="onPanelAccent" />
-          ) : null}
+        <View style={[styles.ribbon, { right: (-34 * ribbonHeight) / 229, top: ribbonTop }]}>
+          <RibbonMark height={ribbonHeight} color={palette.panelTop} gradient={RIBBON_GRADIENT} />
         </View>
+        <View style={styles.panelContent}>{children}</View>
       </View>
-    </View>
     </View>
   );
 }
@@ -213,7 +231,7 @@ const styles = StyleSheet.create({
     padding: space.xxl,
     paddingTop: space.xxl + 2,
   },
-  ribbon: { position: 'absolute', right: -34, top: -26 },
+  ribbon: { position: 'absolute' },
   panelContent: { gap: space.sm + 2 },
   status: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
   panelTitle: { maxWidth: 250 },

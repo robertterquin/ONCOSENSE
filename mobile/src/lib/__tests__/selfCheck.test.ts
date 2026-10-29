@@ -1,6 +1,7 @@
 import { toDbTimestamp } from '@/lib/dates';
 import {
   addMonths,
+  checkStatusLabel,
   chooseNextStep,
   chosenGuides,
   dueLabel,
@@ -134,5 +135,25 @@ describe('self-check reminder', () => {
     expect(next.body).toBe('Breast Self-Exam is due today. It takes about 10 minutes.');
     expect(next.trigger).toEqual({ kind: 'date', date: new Date(2026, 10, 10, 9) });
     expect(remindersForType('self_check')[0].trigger).toMatchObject({ kind: 'monthly' });
+  });
+});
+
+describe('checkStatusLabel', () => {
+  // `now` is Saturday, October 24.
+  it('names the day an up-to-date check was done', () => {
+    const done = new Date(2026, 9, 3, 9, 0);
+    expect(checkStatusLabel(done, nextDue(skin, done, now), now)).toBe('Done October 3');
+  });
+
+  it('says a never-done check is not done yet', () => {
+    expect(checkStatusLabel(null, nextDue(skin, null, now), now)).toBe('Not done yet');
+  });
+
+  it('counts how long a done check has waited', () => {
+    const label = (done: Date) => checkStatusLabel(done, nextDue(skin, done, now), now);
+    expect(label(new Date(2026, 8, 24))).toBe('Due today');
+    expect(label(new Date(2026, 8, 23))).toBe('Waiting since yesterday');
+    expect(label(new Date(2026, 8, 19))).toBe('Waiting since Monday');
+    expect(label(new Date(2026, 8, 10))).toBe('Waiting since October 10');
   });
 });

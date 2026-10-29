@@ -60,6 +60,23 @@ export function dueLabel(due: Date, now: Date = new Date()): string {
   return `Next: ${formatMonthDay(due)}`;
 }
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/**
+ * One check's line on Today's checks card: "Done November 3" when up to date, else how
+ * long it has waited ("Not done yet", "Due today", "Waiting since Monday").
+ */
+export function checkStatusLabel(lastDone: Date | null, due: Date, now: Date = new Date()): string {
+  const today = startOfDay(now);
+  if (lastDone && due.getTime() > today.getTime()) return `Done ${formatMonthDay(lastDone)}`;
+  if (!lastDone) return 'Not done yet';
+  const waited = differenceInWholeDays(today, startOfDay(due));
+  if (waited <= 0) return 'Due today';
+  if (waited === 1) return 'Waiting since yesterday';
+  if (waited < 7) return `Waiting since ${WEEKDAYS[due.getDay()]}`;
+  return `Waiting since ${formatMonthDay(due)}`;
+}
+
 /** Guides shown first for a profile's gender (`cancer_type` values). Editable in Phase 6. */
 function defaultGuideTypes(gender: string | null): string[] {
   if (gender === 'Female') return ['Breast', 'Skin', 'Oral'];

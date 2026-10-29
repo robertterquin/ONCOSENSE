@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { hasCompletedJourneySetup, userDisplayName, userProfilePictureUrl } from '@/api/auth';
+import { ChecksCard } from '@/components/today/ChecksCard';
 import {
   AwarenessRow,
   ComingUpToday,
@@ -23,7 +24,8 @@ import { useUser } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
 import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment';
 
-// The Today tab (redesign Phase 3, appointments from Phase 4): one next step, a quick
+// The Today tab (redesign Phase 3, appointments from Phase 4): the self-checks card (or
+// an appointment within a day when no check is waiting), a quick
 // mood check-in and what's coming up for Journey users, the tip of the day, the
 // awareness month and a pointer to Help.
 
@@ -31,7 +33,7 @@ export default function TodayTab() {
   const user = useUser();
   const now = useNow(60_000);
   const tip = useDailyHealthTip();
-  const { nextStep, snoozed } = useSelfChecks(now);
+  const { mine, nextStep, snoozed } = useSelfChecks(now);
   const focus = useFocus();
   const appointments = useAppointments();
   const name = user ? userDisplayName(user) : '';
@@ -62,19 +64,7 @@ export default function TodayTab() {
       </View>
 
       {nextStep.kind === 'self-check' ? (
-        <NextStepPanel
-          status="Due today"
-          due
-          steps={nextStep.guide.steps.length}
-          title={nextStep.guide.title}
-          body={`Your ${nextStep.guide.frequency.toLowerCase()} check, ${nextStep.guide.steps.length} steps. About 10 minutes, one at a time.`}
-          primary={{
-            label: 'Start self-check',
-            onPress: () =>
-              router.push({ pathname: '/learn/check/[id]', params: { id: nextStep.guide.id } }),
-          }}
-          secondary={{ label: 'Remind me tomorrow', onPress: snoozeSelfCheck }}
-        />
+        <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
       ) : soon ? (
         <NextStepPanel
           status={`${isSameDay(soon.startsAt, now) ? 'Today' : 'Tomorrow'} at ${formatTime(soon.startsAt)}`}
@@ -87,6 +77,8 @@ export default function TodayTab() {
               router.push({ pathname: '/journey/appointment', params: { id: soon.id } }),
           }}
         />
+      ) : mine.length ? (
+        <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
       ) : (
         <NextStepPanel
           status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
