@@ -31,6 +31,8 @@ export function isDue(guide: Frequency, lastDone: Date | null, now: Date = new D
   return nextDue(guide, lastDone, now).getTime() <= startOfDay(now).getTime();
 }
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 const MONTHS = [
   'January',
   'February',
@@ -51,6 +53,16 @@ export function formatMonthDay(date: Date): string {
   return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
 }
 
+/** "November" */
+export function formatMonth(date: Date): string {
+  return MONTHS[date.getMonth()];
+}
+
+/** "Tuesday, November 25" */
+export function formatWeekdayDate(date: Date): string {
+  return `${WEEKDAYS[date.getDay()]}, ${formatMonthDay(date)}`;
+}
+
 /** "Due today", "Due tomorrow", "Due in 3 days", "Next: November 24". */
 export function dueLabel(due: Date, now: Date = new Date()): string {
   const days = differenceInWholeDays(startOfDay(due), startOfDay(now));
@@ -59,8 +71,6 @@ export function dueLabel(due: Date, now: Date = new Date()): string {
   if (days < 7) return `Due in ${days} days`;
   return `Next: ${formatMonthDay(due)}`;
 }
-
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /**
  * One check's line on Today's checks card: "Done November 3" when up to date, else how

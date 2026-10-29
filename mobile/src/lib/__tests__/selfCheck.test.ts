@@ -2,6 +2,7 @@ import { toDbTimestamp } from '@/lib/dates';
 import {
   addMonths,
   checkStatusLabel,
+  formatWeekdayDate,
   chooseNextStep,
   chosenGuides,
   dueLabel,
@@ -156,4 +157,8 @@ describe('checkStatusLabel', () => {
     expect(label(new Date(2026, 8, 19))).toBe('Waiting since Monday');
     expect(label(new Date(2026, 8, 10))).toBe('Waiting since October 10');
   });
+});
+
+it('formats a weekday date', () => {
+  expect(formatWeekdayDate(new Date(2026, 10, 25))).toBe('Wednesday, November 25');
 });

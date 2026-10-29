@@ -6,7 +6,7 @@ export { Chip, SegmentedControl } from './Choices';
 export { DateField, type DateFieldProps } from './DateField';
 export { Icon, ICON_NAMES, type IconName } from './Icon';
 export { ListRow, type TileTone } from './ListRow';
-export { Banner, BottomActionBar, NextStepPanel, PanelSurface } from './Panels';
+export { Banner, BottomActionBar, NextStepPanel } from './Panels';
 export { ProgressSegments, StepList } from './Progress';
 export { RibbonMark } from './RibbonMark';
 export { Screen } from './Screen';

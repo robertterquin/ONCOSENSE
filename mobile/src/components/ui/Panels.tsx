@@ -98,17 +98,7 @@ export function NextStepPanel({
 }
 
 /** The panel's night-violet surface and fade, with the ribbon line in the top-right corner. */
-export function PanelSurface({
-  children,
-  ribbonHeight = 229,
-  ribbonTop = (-26 * ribbonHeight) / 229,
-}: {
-  children: ReactNode;
-  /** The ribbon's height; it keeps the same corner placement at any size. */
-  ribbonHeight?: number;
-  /** Raise the ribbon (more negative) to keep its tails clear of the content. */
-  ribbonTop?: number;
-}) {
+function PanelSurface({ children }: { children: ReactNode }) {
   const { palette } = useDesign();
   // The fade is drawn at the panel's measured size: a percent-sized gradient renders in
   // mismatched tiles on iOS (a visible seam).
@@ -141,8 +131,8 @@ export function PanelSurface({
             <Rect width={size.width} height={size.height} fill="url(#panelFade)" />
           </Svg>
         ) : null}
-        <View style={[styles.ribbon, { right: (-34 * ribbonHeight) / 229, top: ribbonTop }]}>
-          <RibbonMark height={ribbonHeight} color={palette.panelTop} gradient={RIBBON_GRADIENT} />
+        <View style={styles.ribbon}>
+          <RibbonMark height={229} color={palette.panelTop} gradient={RIBBON_GRADIENT} />
         </View>
         <View style={styles.panelContent}>{children}</View>
       </View>
@@ -231,7 +221,7 @@ const styles = StyleSheet.create({
     padding: space.xxl,
     paddingTop: space.xxl + 2,
   },
-  ribbon: { position: 'absolute' },
+  ribbon: { position: 'absolute', right: -34, top: -26 },
   panelContent: { gap: space.sm + 2 },
   status: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
   panelTitle: { maxWidth: 250 },
