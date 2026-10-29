@@ -25,6 +25,8 @@ const SHADOW = {
   },
 } as const;
 
+const TOP_LIGHT = 'rgba(255, 255, 255, 0.12)';
+
 export function elevation(
   level: Elevation,
   palette: Palette,
@@ -42,9 +44,12 @@ export function elevation(
       : level === 'resting' && tonal
         ? 'transparent'
         : palette.border;
+  // Dark tonal cards are lit from above: a faint top edge that tapers into the corners.
+  const lit = isDark && tonal && level !== 'floating';
   return {
     borderWidth: 1,
     borderColor: edge,
+    ...(lit && { borderTopColor: TOP_LIGHT }),
     shadowColor: shadow.color,
     shadowOffset: { width: 0, height: shadow.y },
     shadowOpacity: shadow.opacity,
