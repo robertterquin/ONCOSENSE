@@ -156,13 +156,13 @@ export default function SummaryScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statsRow}>
             <StatTile
-              label="Average Pain"
+              label="Average pain"
               value={`${summary.averages.pain}`}
               detail={summary.trend ? `Trend: ${summary.trend.pain}` : 'out of 10'}
               valueTone={summary.trend?.pain === 'worse' ? 'danger' : 'ink'}
             />
             <StatTile
-              label="Average Energy"
+              label="Average energy"
               value={`${summary.averages.energy}`}
               detail={summary.trend ? `Trend: ${summary.trend.energy}` : 'out of 10'}
               valueTone={summary.trend?.energy === 'better' ? 'help' : 'ink'}
@@ -170,13 +170,13 @@ export default function SummaryScreen() {
           </View>
           <View style={styles.statsRow}>
             <StatTile
-              label="Sleep Quality"
+              label="Sleep quality"
               value={`${summary.averages.sleep}`}
               detail="out of 5 average"
               valueTone="action"
             />
             <StatTile
-              label="Overall Mood"
+              label="Overall mood"
               value={`${summary.averages.mood}`}
               detail="out of 5 average"
               valueTone="action"

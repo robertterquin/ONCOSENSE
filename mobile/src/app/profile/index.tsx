@@ -91,33 +91,22 @@ export default function ProfileScreen() {
 
       <Section>
         <ListRow
-          icon="bookmark"
           title="Saved"
           trailing={savedCount ? `${savedCount}` : undefined}
           onPress={() => router.push('/profile/saved')}
         />
         <ListRow
-          icon="bell"
-          iconTone="sun"
           title="Reminders"
           trailing={REMINDERS_SUPPORTED ? (remindersOn ? `${remindersOn} on` : 'Off') : undefined}
           onPress={() => router.push('/profile/settings')}
         />
-        <ListRow icon="sliders" title="Settings" onPress={() => router.push('/profile/settings')} />
+        <ListRow title="Settings" onPress={() => router.push('/profile/settings')} />
       </Section>
 
       <Section>
-        <ListRow icon="info" title="About OncoSense" onPress={() => setAbout(true)} />
-        <ListRow
-          icon="shield"
-          title="Privacy and terms"
-          onPress={() => setLegal('Privacy policy')}
-        />
-        <ListRow
-          icon="circle-alert"
-          title="Medical disclaimer"
-          onPress={() => setLegal('Medical disclaimer')}
-        />
+        <ListRow title="About OncoSense" onPress={() => setAbout(true)} />
+        <ListRow title="Privacy and terms" onPress={() => setLegal('Privacy policy')} />
+        <ListRow title="Medical disclaimer" onPress={() => setLegal('Medical disclaimer')} />
       </Section>
 
       {user ? (

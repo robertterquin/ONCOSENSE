@@ -79,11 +79,11 @@ export function treatmentProgress(treatment: Treatment): number {
 const TYPE_INFO: Record<TreatmentType, { label: string; icon: string }> = {
   surgery: { label: 'Surgery', icon: 'medical_services' },
   chemotherapy: { label: 'Chemotherapy', icon: 'science' },
-  radiation: { label: 'Radiation Therapy', icon: 'radio_button_checked' },
+  radiation: { label: 'Radiation therapy', icon: 'radio_button_checked' },
   immunotherapy: { label: 'Immunotherapy', icon: 'security' },
-  hormoneTherapy: { label: 'Hormone Therapy', icon: 'medication' },
-  targetedTherapy: { label: 'Targeted Therapy', icon: 'track_changes' },
-  stemCell: { label: 'Stem Cell Transplant', icon: 'biotech' },
+  hormoneTherapy: { label: 'Hormone therapy', icon: 'medication' },
+  targetedTherapy: { label: 'Targeted therapy', icon: 'track_changes' },
+  stemCell: { label: 'Stem cell transplant', icon: 'biotech' },
   other: { label: 'Other', icon: 'healing' },
 };
 

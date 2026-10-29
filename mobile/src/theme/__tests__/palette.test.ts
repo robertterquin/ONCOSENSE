@@ -51,3 +51,12 @@ describe.each(highContrastThemes)('%s AAA compliance', (_name, palette) => {
     expect(contrastRatio(palette[fg], palette[bg])).toBeGreaterThanOrEqual(7);
   });
 });
+
+// Card fills sit within a few percent of the page, so the `border` edge is what makes a
+// card visible (theme/elevation.ts). Keep it clearly distinct from the page and the card.
+describe.each(themes)('%s card edges', (_name, palette) => {
+  it('border stands out from the page and the card', () => {
+    expect(contrastRatio(palette.border, palette.ground)).toBeGreaterThanOrEqual(1.3);
+    expect(contrastRatio(palette.border, palette.surface)).toBeGreaterThanOrEqual(1.3);
+  });
+});

@@ -288,9 +288,9 @@ describe('summary for the doctor', () => {
     ]);
 
     const html = summaryHtml(withQuestions);
-    expect(html).toContain('Key Questions for the Doctor');
+    expect(html).toContain('Questions for the doctor');
     expect(html).toContain('How can I manage peripheral neuropathy?');
-    expect(html).toContain('Average Pain');
-    expect(html).toContain('Average Energy');
+    expect(html).toContain('Average pain');
+    expect(html).toContain('Average energy');
   });
 });

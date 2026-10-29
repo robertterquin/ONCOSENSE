@@ -222,26 +222,26 @@ export function summaryHtml(summary: Summary): string {
     ? `
     <div class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-label">Average Pain</div>
+        <div class="metric-label">Average pain</div>
         <div class="metric-value">${summary.averages.pain} <span class="metric-unit">/ 10</span></div>
         <div class="metric-trend ${painTrendClass}">
           ${summary.trend ? `${painTrendSymbol} ${summary.trend.pain}` : 'Baseline tracking'}
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Average Energy</div>
+        <div class="metric-label">Average energy</div>
         <div class="metric-value">${summary.averages.energy} <span class="metric-unit">/ 10</span></div>
         <div class="metric-trend ${energyTrendClass}">
           ${summary.trend ? `${energyTrendSymbol} ${summary.trend.energy}` : 'Baseline tracking'}
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Sleep Quality</div>
+        <div class="metric-label">Sleep quality</div>
         <div class="metric-value">${summary.averages.sleep} <span class="metric-unit">/ 5</span></div>
         <div class="metric-sub">${escapeHtml(sleepWord(summary.averages.sleep))}</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Overall Mood</div>
+        <div class="metric-label">Overall mood</div>
         <div class="metric-value">${summary.averages.mood} <span class="metric-unit">/ 5</span></div>
         <div class="metric-sub">${escapeHtml(moodWord(summary.averages.mood))}</div>
       </div>
@@ -251,7 +251,7 @@ export function summaryHtml(summary: Summary): string {
   const symptomsHtml = summary.symptoms.length
     ? `
     <div class="section-card">
-      <h2 class="section-title">Most Common Symptoms</h2>
+      <h2 class="section-title">Most common symptoms</h2>
       <div class="symptom-list">
         ${summary.symptoms
           .map(([name, count]) => {
@@ -275,7 +275,7 @@ export function summaryHtml(summary: Summary): string {
   const treatmentsHtml = summary.treatments.length
     ? `
     <div class="section-card">
-      <h2 class="section-title">Treatments & Therapies</h2>
+      <h2 class="section-title">Treatments</h2>
       <ul class="treatment-list">
         ${summary.treatments
           .map(
@@ -292,7 +292,7 @@ export function summaryHtml(summary: Summary): string {
   const appointmentsHtml = summary.appointments.length
     ? `
     <div class="section-card">
-      <h2 class="section-title">Upcoming Appointments & Procedures</h2>
+      <h2 class="section-title">Upcoming appointments</h2>
       <ul class="appointment-list">
         ${summary.appointments
           .map(
@@ -309,7 +309,7 @@ export function summaryHtml(summary: Summary): string {
   const questionsHtml = summary.questions?.length
     ? `
     <div class="section-card questions-card">
-      <h2 class="section-title questions-title">Key Questions for the Doctor</h2>
+      <h2 class="section-title questions-title">Questions for the doctor</h2>
       <ul class="questions-list">
         ${summary.questions
           .map((q) => `<li class="question-item"><strong>${escapeHtml(q)}</strong></li>`)
@@ -321,7 +321,7 @@ export function summaryHtml(summary: Summary): string {
   const notesHtml = summary.notes.length
     ? `
     <div class="section-card">
-      <h2 class="section-title">Patient Notes & Observations</h2>
+      <h2 class="section-title">Notes</h2>
       <ul class="notes-list">
         ${summary.notes
           .map(
@@ -568,11 +568,11 @@ export function summaryHtml(summary: Summary): string {
         <span class="info-val">${escapeHtml(summary.name)}</span>
       </div>
       <div class="info-col">
-        <span class="info-label">Focus / Stage</span>
+        <span class="info-label">Focus</span>
         <span class="info-val">${escapeHtml(summary.focusLabel ?? 'General Tracking')}</span>
       </div>
       <div class="info-col">
-        <span class="info-label">Reporting Period</span>
+        <span class="info-label">Reporting period</span>
         <span class="info-val">${escapeHtml(range)} (${summary.checkIns} check-in${summary.checkIns === 1 ? '' : 's'})</span>
       </div>
       <div class="info-col">
