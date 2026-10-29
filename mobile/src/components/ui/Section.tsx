@@ -1,8 +1,10 @@
-import { Children, Fragment, type ReactNode } from 'react';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import type { Palette } from '@/theme/palette';
 import { elevation } from '@/theme/elevation';
+import { DURATION } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -68,17 +70,24 @@ export function Section({
           { backgroundColor: background },
         ]}>
         {items.map((item, index) => (
-          <Fragment key={index}>
+          // Keyed by the row's own key, so removing a row fades it out and the rest close up.
+          <Animated.View
+            key={isValidElement(item) && item.key !== null ? item.key : index}
+            layout={ROW_LAYOUT}
+            exiting={ROW_EXIT}>
             {divided && index > 0 ? (
               <Divider color={look === 'tinted' ? tintedLine(isDark) : undefined} />
             ) : null}
             {item}
-          </Fragment>
+          </Animated.View>
         ))}
       </View>
     </View>
   );
 }
+
+const ROW_LAYOUT = LinearTransition.duration(DURATION.base);
+const ROW_EXIT = FadeOut.duration(DURATION.fast);
 
 // On a tinted container (sun, rose, teal) a violet line looks off; a wash of ink suits any tint.
 const tintedLine = (isDark: boolean) =>

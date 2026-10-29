@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { Palette } from '@/theme/palette';
 import { radii, sizes, space } from '@/theme/tokens';
@@ -7,6 +7,7 @@ import { useDesign } from '@/theme/useTheme';
 import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
+import { PressableScale } from './PressableScale';
 import { Text } from './Text';
 
 /** Icon tile colors by section: lavender, rose (self-checks), teal (help), sun (tips and reminders), danger. */
@@ -92,7 +93,8 @@ export function ListRow({
   return (
     <View style={styles.row}>
       {onPress ? (
-        <Pressable
+        <PressableScale
+          feedback="fade"
           accessibilityRole="button"
           accessibilityLabel={
             accessibilityLabel ?? [title, subtitle, trailing].filter(Boolean).join(', ')
@@ -102,9 +104,9 @@ export function ListRow({
             haptics.lightImpact();
             onPress();
           }}
-          style={({ pressed }) => [styles.main, pressed && styles.pressed]}>
+          style={styles.main}>
           {body}
-        </Pressable>
+        </PressableScale>
       ) : (
         <View style={styles.main} accessible={!accessory} accessibilityLabel={accessibilityLabel}>
           {body}
@@ -124,7 +126,6 @@ const styles = StyleSheet.create({
     gap: space.md + 2,
     paddingVertical: space.md,
   },
-  pressed: { opacity: 0.6 },
   tile: {
     width: 44,
     height: 44,

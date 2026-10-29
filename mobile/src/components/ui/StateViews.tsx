@@ -1,6 +1,9 @@
+import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
+import { DURATION } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -49,6 +52,29 @@ export function LoadingState({ message, variant }: LoadingStateProps) {
         </Text>
       ) : null}
     </View>
+  );
+}
+
+// Content that replaces a skeleton eases up 6 pt as it fades in. Layout animations skip
+// themselves when Reduce Motion is on.
+const ARRIVE = FadeInDown.duration(DURATION.slow).withInitialValues({
+  opacity: 0,
+  transform: [{ translateY: 6 }],
+});
+
+/** True once `loading` has been true, so content animates in only after a skeleton. */
+export function useArrival(loading: boolean) {
+  const [sawLoading, setSawLoading] = useState(loading);
+  if (loading && !sawLoading) setSawLoading(true);
+  return sawLoading;
+}
+
+/** Wraps what a screen shows after loading; keeps the screen's spacing between children. */
+export function Arrive({ animate, children }: { animate: boolean; children: ReactNode }) {
+  return (
+    <Animated.View entering={animate ? ARRIVE : undefined} style={styles.arrive}>
+      {children}
+    </Animated.View>
   );
 }
 
@@ -158,5 +184,6 @@ const styles = StyleSheet.create({
     marginBottom: space.xs,
   },
   centered: { textAlign: 'center', maxWidth: 320 },
+  arrive: { gap: space.lg },
   button: { alignSelf: 'center', marginTop: space.xs },
 });

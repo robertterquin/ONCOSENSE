@@ -1,10 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Animated, {
+  useAnimatedProps,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import Svg, { Circle, G, Path } from 'react-native-svg';
 
 import { Section, Text } from '@/components/ui';
 import { decorative } from '@/components/ui/a11y';
 import { weekStrip, weekThreadText } from '@/lib/journey';
+import { DURATION, EASE_FN } from '@/theme/motion';
 import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { JourneyEntry } from '@/types/journeyEntry';
@@ -12,6 +19,8 @@ import type { JourneyEntry } from '@/types/journeyEntry';
 // "This week" as the ribbon thread (docs/design-refresh/04-phase-4-journey.md): one
 // line from Monday to Sunday with a knot per day. A filled knot with a check is a
 // check-in; an outlined knot is a missed day; today is the larger ringed knot.
+
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 const HEIGHT = 64;
 const MIDDLE = 32;
@@ -100,19 +109,37 @@ function Knot({
   future: boolean;
 }) {
   const { palette } = useDesign();
+  const reduceMotion = useReducedMotion();
   const radius = isToday ? 14 : 11;
   const ring = isToday ? palette.action : future ? palette.line : palette.border;
+  // The filled knot fades in over the empty one when a check-in is saved.
+  const filled = useSharedValue(checkedIn ? 1 : 0);
+  useEffect(() => {
+    filled.value = withTiming(checkedIn ? 1 : 0, {
+      duration: reduceMotion ? 0 : DURATION.slow,
+      easing: EASE_FN,
+    });
+  }, [checkedIn, reduceMotion, filled]);
+  const fillProps = useAnimatedProps(() => ({ opacity: filled.value }));
   return (
     <>
       <Circle
         cx={cx}
         cy={MIDDLE}
         r={radius}
-        fill={checkedIn ? palette.action : palette.surface}
-        stroke={checkedIn && !isToday ? palette.action : ring}
+        fill={palette.surface}
+        stroke={ring}
         strokeWidth={isToday ? 3 : 2.5}
       />
-      {checkedIn ? (
+      <AnimatedG animatedProps={fillProps}>
+        <Circle
+          cx={cx}
+          cy={MIDDLE}
+          r={radius}
+          fill={palette.action}
+          stroke={isToday ? ring : palette.action}
+          strokeWidth={isToday ? 3 : 2.5}
+        />
         <Path
           d={`M ${cx - 5} ${MIDDLE} L ${cx - 1.5} ${MIDDLE + 3.5} L ${cx + 5} ${MIDDLE - 4}`}
           stroke={palette.onAction}
@@ -121,7 +148,7 @@ function Knot({
           strokeLinejoin="round"
           fill="none"
         />
-      ) : null}
+      </AnimatedG>
     </>
   );
 }

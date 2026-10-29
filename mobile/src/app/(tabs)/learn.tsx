@@ -14,6 +14,8 @@ import {
   ErrorState,
   IconButton,
   LoadingState,
+  Arrive,
+  useArrival,
   Screen,
   SearchField,
 } from '@/components/ui';
@@ -63,6 +65,7 @@ export default function LearnTab() {
   const noResults =
     query && !results.cancers.length && !results.guides.length && !results.tips.length;
 
+  const arrived = useArrival(queries.some((q) => q.isPending));
   return (
     <Screen
       inTabs
@@ -89,32 +92,41 @@ export default function LearnTab() {
 
       {queries.some((q) => q.isPending) ? (
         <LoadingState variant="learn" message="Loading Learn" />
-      ) : failed ? (
-        <ErrorState message={failed.error?.message ?? 'Something went wrong'} onRetry={refetch} />
-      ) : noResults ? (
-        <EmptyState
-          icon="search"
-          title={`No results for "${query}"`}
-          message="Try a cancer type, a symptom or a self-check."
-        />
-      ) : query ? (
-        <>
-          {results.guides.length ? (
-            <GuideResults statuses={checks.all.filter((s) => results.guides.includes(s.guide))} />
-          ) : null}
-          {results.cancers.length ? <CancerTypes cancers={results.cancers} /> : null}
-          {results.tips.length ? <LowerYourRisk tips={results.tips} /> : null}
-        </>
       ) : (
-        <>
-          <CheckYourself mine={checks.mine} all={checks.all} />
-          <View onLayout={(event) => setCancersY(event.nativeEvent.layout.y)}>
-            <CancerTypes cancers={lists.cancers} />
-          </View>
-          <View onLayout={(event) => setRiskY(event.nativeEvent.layout.y)}>
-            <LowerYourRisk tips={lists.tips} />
-          </View>
-        </>
+        <Arrive animate={arrived}>
+          {failed ? (
+            <ErrorState
+              message={failed.error?.message ?? 'Something went wrong'}
+              onRetry={refetch}
+            />
+          ) : noResults ? (
+            <EmptyState
+              icon="search"
+              title={`No results for "${query}"`}
+              message="Try a cancer type, a symptom or a self-check."
+            />
+          ) : query ? (
+            <>
+              {results.guides.length ? (
+                <GuideResults
+                  statuses={checks.all.filter((s) => results.guides.includes(s.guide))}
+                />
+              ) : null}
+              {results.cancers.length ? <CancerTypes cancers={results.cancers} /> : null}
+              {results.tips.length ? <LowerYourRisk tips={results.tips} /> : null}
+            </>
+          ) : (
+            <>
+              <CheckYourself mine={checks.mine} all={checks.all} />
+              <View onLayout={(event) => setCancersY(event.nativeEvent.layout.y)}>
+                <CancerTypes cancers={lists.cancers} />
+              </View>
+              <View onLayout={(event) => setRiskY(event.nativeEvent.layout.y)}>
+                <LowerYourRisk tips={lists.tips} />
+              </View>
+            </>
+          )}
+        </Arrive>
       )}
     </Screen>
   );

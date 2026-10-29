@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ReportSheet } from '@/components/community/ReportSheet';
@@ -12,6 +12,7 @@ import {
   Icon,
   IconButton,
   ListRow,
+  PressableScale,
   Screen,
   Section,
   Sheet,
@@ -40,6 +41,7 @@ import { useIsSignedIn, useUserId } from '@/stores/authStore';
 import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
 import { elevation } from '@/theme/elevation';
+import { useTransition } from '@/theme/motion';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { answerDisplayName, type Answer } from '@/types/answer';
@@ -306,24 +308,25 @@ function HelpfulButton({
   onPress: () => void;
 }) {
   const { palette } = useDesign();
+  const colorTransition = useTransition('base', ['backgroundColor', 'borderColor']);
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       accessibilityLabel={`Helpful, ${count} ${count === 1 ? 'person' : 'people'}`}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.helpful,
+        colorTransition,
         active
           ? { backgroundColor: palette.raised, borderColor: palette.action, borderWidth: 2 }
-          : { borderColor: palette.border, borderWidth: 1.5 },
-        pressed && styles.pressed,
+          : { backgroundColor: 'transparent', borderColor: palette.border, borderWidth: 1.5 },
       ]}>
       <Icon name="thumbs-up" size={18} tone={active ? 'action' : 'muted'} />
       <Text variant={active ? 'strong' : 'row'} tone={active ? 'action' : 'ink'}>
         Helpful{count ? ` · ${count}` : ''}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -413,7 +416,6 @@ function SignInToAnswer() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   flex: { flex: 1 },
-  pressed: { opacity: 0.6 },
   header: { gap: space.sm },
   answer: { gap: space.sm, padding: space.lg, borderRadius: radii.control },
   answerTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
