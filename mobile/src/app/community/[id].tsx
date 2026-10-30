@@ -89,7 +89,6 @@ export default function QuestionScreen() {
       <Screen
         back={{ label: 'Community', onPress: back }}
         actions={<QuestionActions question={question.data} />}
-        background="surface"
         bottomBar={signedIn ? <Composer questionId={id} /> : <SignInToAnswer />}>
         <QuestionHeader question={question.data} now={now} />
 

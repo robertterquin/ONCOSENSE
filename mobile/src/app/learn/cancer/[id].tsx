@@ -92,7 +92,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   };
 
   return (
-    <Screen back={{ label: 'Learn', onPress: back }} background="surface" scrollRef={scrollRef}>
+    <Screen back={{ label: 'Learn', onPress: back }} scrollRef={scrollRef}>
       <View style={styles.header}>
         {system !== 'All' ? (
           <View style={styles.system}>

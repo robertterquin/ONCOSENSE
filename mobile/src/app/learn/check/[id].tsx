@@ -143,7 +143,6 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       }
       title={guide.title}
       subtitle={[guide.frequency, guide.ageRecommendation].filter(Boolean).join(' · ')}
-      background="surface"
       bottomBar={bottomBar}>
       {nextCheck ? (
         <View style={styles.done} accessibilityLiveRegion="polite">

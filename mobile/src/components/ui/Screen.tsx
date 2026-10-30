@@ -39,8 +39,6 @@ type ScreenProps = {
   scroll?: boolean;
   onRefresh?: () => void;
   refreshing?: boolean;
-  /** `ground` (lavender-white) or `surface` (white, for reading screens). */
-  background?: 'ground' | 'surface';
   /** Tab screens: the tab bar below already covers the home indicator. */
   inTabs?: boolean;
   /** Sticky actions under the content (a `BottomActionBar`). */
@@ -62,7 +60,6 @@ export function Screen({
   scroll = true,
   onRefresh,
   refreshing = false,
-  background = 'ground',
   inTabs = false,
   bottomBar,
   scrollRef,
@@ -106,7 +103,7 @@ export function Screen({
   ];
 
   return (
-    <View style={[styles.root, { backgroundColor: palette[background] }]}>
+    <View style={[styles.root, { backgroundColor: palette.ground }]}>
       {hasTopBar ? (
         <View style={[styles.topBar, { paddingTop: insets.top + space.xs }]}>
           {back ? (
@@ -162,7 +159,7 @@ export function Screen({
             fade,
             {
               height: insets.top + sizes.touch,
-              backgroundColor: palette[background],
+              backgroundColor: palette.ground,
               borderBottomColor: palette.line,
               opacity: collapsed ? 1 : 0,
             },
