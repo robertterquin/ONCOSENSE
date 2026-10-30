@@ -139,7 +139,7 @@ export function AwarenessRow({ now }: { now: Date }) {
         onPress={() =>
           cancer
             ? router.push({ pathname: '/learn/cancer/[id]', params: { id: cancer.id } })
-            : router.navigate('/learn')
+            : router.navigate({ pathname: '/learn', params: { section: 'cancers' } })
         }
       />
     </Section>

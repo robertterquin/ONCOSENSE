@@ -46,6 +46,7 @@ Three supporting changes:
 | 11 | Device QA for Phases 8–10 | [11-phase-11-device-qa.md](11-phase-11-device-qa.md) | ½ day | Merged into `main` |
 | 12 | Motion | [12-phase-12-motion.md](12-phase-12-motion.md) | 1–2 days | Merged into `main` |
 | 13 | iOS header and rows | [13-phase-13-ios-header-and-rows.md](13-phase-13-ios-header-and-rows.md) | 1 day | Merged into `main` |
+| 14 | Learn in three parts | [14-phase-14-learn-in-three.md](14-phase-14-learn-in-three.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 

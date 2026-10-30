@@ -85,7 +85,10 @@ export default function TodayTab() {
           statusIcon={snoozed ? 'bell' : 'circle-check'}
           title="Learn the early signs"
           body="Knowing what's normal for you makes changes easier to spot."
-          primary={{ label: 'Explore Learn', onPress: () => router.navigate('/learn') }}
+          primary={{
+            label: 'Explore Learn',
+            onPress: () => router.navigate({ pathname: '/learn', params: { section: 'cancers' } }),
+          }}
         />
       )}
 

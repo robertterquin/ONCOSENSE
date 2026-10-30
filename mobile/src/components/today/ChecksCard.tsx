@@ -107,7 +107,7 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
           variant="onPanelAccent"
           small
           style={styles.link}
-          onPress={() => router.navigate('/learn')}
+          onPress={() => router.navigate({ pathname: '/learn', params: { section: 'cancers' } })}
         />
       ) : snoozed ? null : (
         <Button
