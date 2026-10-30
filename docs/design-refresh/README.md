@@ -48,6 +48,7 @@ Three supporting changes:
 | 13 | iOS header and rows | [13-phase-13-ios-header-and-rows.md](13-phase-13-ios-header-and-rows.md) | 1 day | Merged into `main` |
 | 14 | Learn in three parts | [14-phase-14-learn-in-three.md](14-phase-14-learn-in-three.md) | 1 day | Merged into `main` |
 | 15 | Community and Help, iOS layout | [15-phase-15-community-and-help.md](15-phase-15-community-and-help.md) | 1 day | Merged into `main` |
+| 16 | Search, iOS layout | [16-phase-16-search.md](16-phase-16-search.md) | ½ day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 

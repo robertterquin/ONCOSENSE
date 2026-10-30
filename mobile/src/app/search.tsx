@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
@@ -12,13 +12,11 @@ import {
 import {
   Chip,
   EmptyState,
-  Icon,
   ListRow,
   Screen,
   SearchField,
   Section,
   SkeletonList,
-  Text,
 } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useQuestions } from '@/hooks/useCommunity';
@@ -29,8 +27,7 @@ import { useSelfChecks } from '@/hooks/useSelfChecks';
 import { haptics } from '@/lib/haptics';
 import { iconForCancer } from '@/lib/learn';
 import { searchUniversal, SUGGESTED_SEARCHES } from '@/lib/search';
-import { radii, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
 import type { Resource } from '@/types/resource';
@@ -39,7 +36,7 @@ type DomainFilter = 'all' | 'guides' | 'cancers' | 'habits' | 'help' | 'communit
 
 const FILTERS: { id: DomainFilter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'guides', label: 'Guides' },
+  { id: 'guides', label: 'Checks' },
   { id: 'cancers', label: 'Cancers' },
   { id: 'habits', label: 'Habits' },
   { id: 'help', label: 'Help' },
@@ -48,7 +45,6 @@ const FILTERS: { id: DomainFilter; label: string }[] = [
 
 export default function SearchScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>();
-  const { palette } = useDesign();
   const [userQuery, setUserQuery] = useState<string | null>(null);
   const query = userQuery !== null ? userQuery : (q ?? '');
   const [filter, setFilter] = useState<DomainFilter>('all');
@@ -133,38 +129,34 @@ export default function SearchScreen() {
   const filteredCount = filter === 'all' ? results.totalCount : countForFilter(filter);
 
   return (
-    <Screen
-      back={{ label: 'Back', onPress: backAction }}
-      title="Search"
-      subtitle="Find cancer info, self-checks, habits, centers and discussions">
+    <Screen back={{ label: 'Back', onPress: backAction }} title="Search">
       <SearchField
         accessibilityLabel="Search OncoSense"
-        placeholder="Search anything in OncoSense..."
+        placeholder="Search OncoSense"
         value={query}
         onChangeText={setUserQuery}
         autoFocus
       />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterScroll}
-        accessibilityRole="radiogroup"
-        accessibilityLabel="Filter by category">
-        {FILTERS.map((f) => {
-          const count = trimmedQuery ? countForFilter(f.id) : null;
-          const label = count !== null ? `${f.label} (${count})` : f.label;
-          return (
+      {/* Like an iOS scope bar: the filters appear once there's something to filter. */}
+      {trimmedQuery ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Filter by category">
+          {FILTERS.map((f) => (
             <Chip
               key={f.id}
               kind="radio"
-              label={label}
+              label={`${f.label} (${countForFilter(f.id)})`}
               selected={filter === f.id}
               onPress={() => setFilter(f.id)}
             />
-          );
-        })}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      ) : null}
 
       {trimmedQuery ? (
         isDataLoading ? (
@@ -182,10 +174,7 @@ export default function SearchScreen() {
         ) : (
           <View style={styles.resultsContainer}>
             {showGuides ? (
-              <Section
-                title={`Self-Check Guides (${results.guides.length})`}
-                subtitle="Guided, step-by-step checks you can do at home"
-                look="card">
+              <Section title="Self-checks">
                 {results.guides.map((guide) => (
                   <GuideRow key={guide.id} status={checks.status(guide)} />
                 ))}
@@ -193,10 +182,7 @@ export default function SearchScreen() {
             ) : null}
 
             {showCancers ? (
-              <Section
-                title={`Cancer Types (${results.cancers.length})`}
-                subtitle="Symptoms, risks, and early detection pathways"
-                look="card">
+              <Section title="Cancer types">
                 {results.cancers.map((cancer: CancerType) => (
                   <ListRow
                     key={cancer.id}
@@ -215,28 +201,22 @@ export default function SearchScreen() {
             ) : null}
 
             {showHabits ? (
-              <Section
-                title={`Everyday Prevention Habits (${results.tips.length})`}
-                subtitle="Evidence-backed habits to lower lifetime cancer risk"
-                look="plain">
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.habitsScroll}
-                  decelerationRate="fast"
-                  snapToAlignment="start">
+              <Section title="Habits" look="plain">
+                <View style={styles.habits}>
                   {results.tips.map((tip) => (
-                    <PreventionTipCard key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
+                    <PreventionTipCard
+                      key={tip.id}
+                      tip={tip}
+                      onPress={() => setSelectedTip(tip)}
+                      fill
+                    />
                   ))}
-                </ScrollView>
+                </View>
               </Section>
             ) : null}
 
             {showHelp ? (
-              <Section
-                title={`Hotlines & Screening Centers (${results.resources.length})`}
-                subtitle="Medical centers and counseling resources across the Philippines"
-                look="card">
+              <Section title="Hotlines and centers">
                 {results.resources.map((resource: Resource) => (
                   <ResourceRow key={resource.id} resource={resource} />
                 ))}
@@ -244,10 +224,7 @@ export default function SearchScreen() {
             ) : null}
 
             {showCommunity ? (
-              <Section
-                title={`Community Discussions (${results.questions.length})`}
-                subtitle="Real questions and shared experiences from survivors and caregivers"
-                look="card">
+              <Section title="Community">
                 {results.questions.map((question) => (
                   <QuestionRow key={question.id} question={question} now={now} />
                 ))}
@@ -256,74 +233,17 @@ export default function SearchScreen() {
           </View>
         )
       ) : (
-        <View style={styles.suggestionsContainer}>
-          <Section
-            title="Suggested searches"
-            subtitle="Popular topics and questions searched by others"
-            look="plain">
-            <View style={styles.pillWrap}>
-              {SUGGESTED_SEARCHES.map((item) => (
-                <Pressable
-                  key={item}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Search for ${item}`}
-                  onPress={() => handleSelectSuggestion(item)}
-                  style={({ pressed }) => [
-                    styles.suggestionPill,
-                    {
-                      backgroundColor: palette.surface,
-                      borderColor: palette.border,
-                    },
-                    pressed && styles.pressed,
-                  ]}>
-                  <Icon name="search" size={14} tone="muted" />
-                  <Text variant="caption">{item}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </Section>
-
-          <Section
-            title="What you can search"
-            subtitle="Search across the entire OncoSense ecosystem"
-            look="card">
+        <Section title="Suggestions">
+          {SUGGESTED_SEARCHES.map((item) => (
             <ListRow
-              icon="stethoscope"
-              iconTone="action"
-              title="Cancer types and signs"
-              subtitle="Symptoms, stages, screening methods, and statistics"
-              onPress={() => handleSelectSuggestion('symptoms')}
+              key={item}
+              icon="search"
+              title={item}
+              accessibilityLabel={`Search for ${item}`}
+              onPress={() => handleSelectSuggestion(item)}
             />
-            <ListRow
-              icon="check"
-              iconTone="action"
-              title="Self-check guides"
-              subtitle="Step-by-step guides for breast, skin, oral and testicular checks"
-              onPress={() => handleSelectSuggestion('Self-Exam')}
-            />
-            <ListRow
-              icon="activity"
-              iconTone="action"
-              title="Everyday prevention habits"
-              subtitle="Nutrition, physical activity, UV protection, and tobacco cessation"
-              onPress={() => handleSelectSuggestion('nutrition')}
-            />
-            <ListRow
-              icon="phone"
-              iconTone="help"
-              title="Screening centers and hotlines"
-              subtitle="Verified clinics, oncology hotlines, and financial assistance"
-              onPress={() => handleSelectSuggestion('Screening')}
-            />
-            <ListRow
-              icon="message"
-              iconTone="action"
-              title="Questions from survivors and caregivers"
-              subtitle="Community questions on treatments, side effects, and hope"
-              onPress={() => handleSelectSuggestion('fatigue')}
-            />
-          </Section>
-        </View>
+          ))}
+        </Section>
       )}
 
       <PreventionDetailSheet tip={selectedTip} onClose={() => setSelectedTip(null)} />
@@ -340,30 +260,5 @@ const styles = StyleSheet.create({
     gap: space.lg,
     paddingTop: space.sm,
   },
-  habitsScroll: {
-    gap: space.md,
-    paddingTop: space.xs,
-    paddingBottom: space.xs,
-  },
-  suggestionsContainer: {
-    gap: space.lg,
-    paddingTop: space.sm,
-  },
-  pillWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: space.sm,
-  },
-  suggestionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.xs + 2,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    borderRadius: radii.round,
-    borderWidth: 1.5,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
+  habits: { gap: space.md },
 });
