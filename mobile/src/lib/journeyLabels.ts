@@ -32,11 +32,11 @@ export function energyValueText(level: number): string {
 /**
  * Mood choices for a check-in (`moodLevel` 1–5); also Today's quick mood buttons.
  * The redesign's gentler labels; stored values are unchanged. `tone` is a gentle
- * scale (rose, sun, teal) that backs up the face; the face and label carry the meaning.
+ * scale (violet, sun, teal) that backs up the face, with no alarm colour for a hard day; the face and label carry the meaning.
  */
 export const MOODS = [
-  { icon: 'mood-rough', label: 'Rough', value: 1, tone: 'rose' },
-  { icon: 'mood-low', label: 'Low', value: 2, tone: 'rose' },
+  { icon: 'mood-rough', label: 'Rough', value: 1, tone: 'action' },
+  { icon: 'mood-low', label: 'Low', value: 2, tone: 'action' },
   { icon: 'mood-okay', label: 'Okay', value: 3, tone: 'sun' },
   { icon: 'mood-good', label: 'Good', value: 4, tone: 'help' },
   { icon: 'mood-great', label: 'Great', value: 5, tone: 'help' },
