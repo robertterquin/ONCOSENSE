@@ -19,7 +19,7 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 // Profile (redesign Phase 6): who you are, what the app is set up for, and the way to
-// Saved, reminders, Settings and the legal pages.
+// Saved, Settings and the legal pages.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
 
@@ -50,62 +50,71 @@ export default function ProfileScreen() {
     <Screen back={{ label: 'Back', onPress: back }}>
       <View style={styles.header}>
         <Avatar name={user ? name : null} pictureUrl={userProfilePictureUrl(user)} />
-        <View style={styles.flex}>
-          <Text variant="title" accessibilityRole="header">
+        <View style={styles.headerText}>
+          <Text variant="title" accessibilityRole="header" style={styles.centered}>
             {name}
           </Text>
-          <Text variant="supporting" tone="muted">
+          <Text variant="supporting" tone="muted" style={styles.centered}>
             {user?.email ?? 'Looking around without an account'}
           </Text>
         </View>
+        {user ? (
+          <Button
+            title="Edit profile"
+            variant="secondary"
+            small
+            fullWidth={false}
+            onPress={() => router.push('/profile/edit')}
+          />
+        ) : (
+          <Button
+            title="Sign in or create an account"
+            fullWidth={false}
+            onPress={() => router.push('/welcome')}
+          />
+        )}
       </View>
-      {user ? (
-        <Button
-          title="Edit profile"
-          variant="secondary"
-          icon="user"
-          onPress={() => router.push('/profile/edit')}
-        />
-      ) : (
-        <Button title="Sign in or create an account" onPress={() => router.push('/welcome')} />
-      )}
-
-      <Section look="tinted" tint="raised">
-        <ListRow
-          icon="flag"
-          title={
-            focusTitle
-              ? `The app is set up for ${focusTitle.toLowerCase()}`
-              : 'What brings you here?'
-          }
-          subtitle={focusTitle ? 'Change' : 'Choose what the app shows you'}
-          onPress={() => router.push('/journey/focus')}
-        />
-      </Section>
 
       <Section>
         <ListRow
+          icon="flag"
+          title="Focus"
+          subtitle={focusTitle ?? 'Choose what the app shows you'}
+          onPress={() => router.push('/journey/focus')}
+        />
+        <ListRow
+          icon="bookmark"
           title="Saved"
           trailing={savedCount ? `${savedCount}` : undefined}
           onPress={() => router.push('/profile/saved')}
         />
-        <ListRow title="Settings" onPress={() => router.push('/profile/settings')} />
+        <ListRow icon="sliders" title="Settings" onPress={() => router.push('/profile/settings')} />
       </Section>
 
       <Section>
-        <ListRow title="About OncoSense" onPress={() => setAbout(true)} />
-        <ListRow title="Privacy and terms" onPress={() => setLegal('Privacy policy')} />
-        <ListRow title="Medical disclaimer" onPress={() => setLegal('Medical disclaimer')} />
+        <ListRow icon="info" title="About OncoSense" onPress={() => setAbout(true)} />
+        <ListRow
+          icon="shield"
+          title="Privacy and terms"
+          onPress={() => setLegal('Privacy policy')}
+        />
+        <ListRow
+          icon="stethoscope"
+          title="Medical disclaimer"
+          onPress={() => setLegal('Medical disclaimer')}
+        />
       </Section>
 
       {user ? (
-        <Button
-          title="Log out"
-          variant="destructive"
-          icon="log-out"
-          loading={signOut.isPending}
-          onPress={logOut}
-        />
+        <Section>
+          <ListRow
+            icon="log-out"
+            iconTone="danger"
+            title={signOut.isPending ? 'Logging out' : 'Log out'}
+            titleTone="danger"
+            onPress={signOut.isPending ? undefined : logOut}
+          />
+        </Section>
       ) : null}
       <Text variant="caption" tone="muted" style={styles.version}>
         OncoSense {APP_VERSION}
@@ -168,12 +177,14 @@ function Avatar({ name, pictureUrl }: { name: string | null; pictureUrl: string 
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   fill: { width: '100%', height: '100%' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
+  // Centered, like the Apple ID page: photo, name and email, then a small edit button.
+  header: { alignItems: 'center', gap: space.md, paddingBottom: space.sm },
+  headerText: { alignItems: 'center', gap: 2 },
+  centered: { textAlign: 'center' },
   avatar: {
-    width: 72,
-    height: 72,
+    width: 96,
+    height: 96,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
