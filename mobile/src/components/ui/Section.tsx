@@ -1,4 +1,4 @@
-import { Children, isValidElement, type ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
@@ -8,6 +8,7 @@ import { DURATION } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
+import { flattenRows } from './flattenRows';
 import { Text } from './Text';
 
 type SectionProps = {
@@ -40,7 +41,7 @@ export function Section({
   style,
 }: SectionProps) {
   const { palette, isDark } = useDesign();
-  const items = Children.toArray(children).filter(Boolean);
+  const items = flattenRows(children);
   const background =
     look === 'card' ? palette.surface : look === 'tinted' ? palette[tint] : 'transparent';
 
