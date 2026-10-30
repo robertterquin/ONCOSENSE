@@ -6,6 +6,7 @@ import {
   CancerTypes,
   CheckYourself,
   GuideResults,
+  HabitResults,
   LowerYourRisk,
 } from '@/components/learn/LearnSections';
 import {
@@ -19,7 +20,7 @@ import {
   SegmentedControl,
 } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { usePreventionTips } from '@/hooks/usePrevention';
+import { HABITS } from '@/constants/habits';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
 import { searchLearn } from '@/lib/learn';
 
@@ -34,7 +35,6 @@ export default function LearnTab() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const [search, setSearch] = useState('');
   const cancers = useCancerTypes();
-  const tips = usePreventionTips();
   const checks = useSelfChecks();
   const [part, setPart] = useState<Part>('checks');
 
@@ -48,7 +48,7 @@ export default function LearnTab() {
     }, [section]),
   );
 
-  const queries = [cancers, tips, checks.query];
+  const queries = [cancers, checks.query];
   const failed = queries.find((query) => query.isError);
   const refetch = () => Promise.all(queries.map((query) => query.refetch()));
   const refreshing = queries.some((query) => query.isRefetching);
@@ -56,7 +56,7 @@ export default function LearnTab() {
   const lists = {
     cancers: cancers.data ?? [],
     guides: checks.all.map((status) => status.guide),
-    tips: tips.data ?? [],
+    tips: HABITS,
   };
   const query = search.trim();
   const results = searchLearn(lists, query);
@@ -114,13 +114,15 @@ export default function LearnTab() {
                 />
               ) : null}
               {results.cancers.length ? <CancerTypes cancers={results.cancers} /> : null}
-              {results.tips.length ? <LowerYourRisk tips={results.tips} /> : null}
+              {results.tips.length ? (
+                <HabitResults habits={HABITS.filter((habit) => results.tips.includes(habit))} />
+              ) : null}
             </>
           ) : (
             {
               checks: <CheckYourself mine={checks.mine} all={checks.all} />,
               cancers: <CancerTypes cancers={lists.cancers} />,
-              habits: <LowerYourRisk tips={lists.tips} />,
+              habits: <LowerYourRisk />,
             }[part]
           )}
         </Arrive>

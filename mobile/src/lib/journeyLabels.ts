@@ -1,5 +1,4 @@
 import type { IconName } from '@/components/ui/Icon';
-import type { TileTone } from '@/components/ui/ListRow';
 
 // Words for check-in values (redesign Phase 4). Started from add_entry_screen.dart.
 
@@ -31,16 +30,16 @@ export function energyValueText(level: number): string {
 
 /**
  * Mood choices for a check-in (`moodLevel` 1–5); also Today's quick mood buttons.
- * The redesign's gentler labels; stored values are unchanged. `tone` is a gentle
- * scale (violet, sun, teal) that backs up the face, with no alarm colour for a hard day; the face and label carry the meaning.
+ * The redesign's gentler labels; stored values are unchanged. No colour per mood: the
+ * face and label carry the meaning, and the app's violet marks the chosen one.
  */
 export const MOODS = [
-  { icon: 'mood-rough', label: 'Rough', value: 1, tone: 'action' },
-  { icon: 'mood-low', label: 'Low', value: 2, tone: 'action' },
-  { icon: 'mood-okay', label: 'Okay', value: 3, tone: 'sun' },
-  { icon: 'mood-good', label: 'Good', value: 4, tone: 'help' },
-  { icon: 'mood-great', label: 'Great', value: 5, tone: 'help' },
-] as const satisfies readonly { icon: IconName; label: string; value: number; tone: TileTone }[];
+  { icon: 'mood-rough', label: 'Rough', value: 1 },
+  { icon: 'mood-low', label: 'Low', value: 2 },
+  { icon: 'mood-okay', label: 'Okay', value: 3 },
+  { icon: 'mood-good', label: 'Good', value: 4 },
+  { icon: 'mood-great', label: 'Great', value: 5 },
+] as const satisfies readonly { icon: IconName; label: string; value: number }[];
 
 /** How someone slept (`sleepQuality` 1–5). */
 export const SLEEP = [

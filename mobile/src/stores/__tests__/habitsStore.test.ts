@@ -36,6 +36,16 @@ describe('habitsStore', () => {
     expect(useHabitsStore.getState().completedCount(today)).toBe(0);
   });
 
+  it('keeps a once-only habit done on later days, and clears it from every day', () => {
+    useHabitsStore.setState({ completedByDate: { '2026-10-01': ['hpv'], '2026-10-02': ['a'] } });
+    expect(useHabitsStore.getState().isDoneEver('hpv')).toBe(true);
+    useHabitsStore.getState().toggleOnce('hpv');
+    expect(useHabitsStore.getState().isDoneEver('hpv')).toBe(false);
+    expect(useHabitsStore.getState().completedByDate['2026-10-02']).toEqual(['a']);
+    useHabitsStore.getState().toggleOnce('hpv');
+    expect(useHabitsStore.getState().isDone('hpv')).toBe(true);
+  });
+
   it('toggles bookmarks for habits', () => {
     const habitId = 'habit-diet';
 

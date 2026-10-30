@@ -406,7 +406,6 @@ export function RecentCheckIns({ entries }: { entries: JourneyEntry[] }) {
           <ListRow
             key={entry.id}
             icon={mood?.icon ?? 'activity'}
-            iconTone={mood?.tone}
             title={mood?.label ?? 'Check-in'}
             // Two lines, so a number never ends up alone on the next line.
             subtitle={`${formatShortDate(entry.date)}\nPain ${entry.painLevel}, energy ${entry.energyLevel}`}

@@ -1,33 +1,29 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
-import { GuideRow, PreventionDetailSheet } from '@/components/learn/LearnSections';
+import {
+  GuideRow,
+  HabitInfoRow,
+  HabitRow,
+  PreventionDetailSheet,
+} from '@/components/learn/LearnSections';
 import {
   EmptyState,
   ErrorState,
-  Icon,
-  ListRow,
   LoadingState,
   Screen,
   Section,
   SegmentedControl,
-  Text,
-  type TileTone,
 } from '@/components/ui';
 import { useBookmarkedQuestions, useBookmarkedResources } from '@/hooks/useBookmarks';
+import { HABITS, type Habit } from '@/constants/habits';
 import { useNow } from '@/hooks/useNow';
-import { usePreventionTips } from '@/hooks/usePrevention';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
-import { iconForPreventionTip } from '@/lib/learn';
 import { useIsSignedIn } from '@/stores/authStore';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
-import { radii } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
-import type { PreventionTip } from '@/types/preventionTip';
 
 // Everything saved, in one place: questions and help contacts from
 // the account, self-check guides and prevention habits from this phone.
@@ -129,19 +125,9 @@ function SavedGuides() {
 }
 
 function SavedHabits() {
-  const [selectedTip, setSelectedTip] = useState<PreventionTip | null>(null);
+  const [selectedTip, setSelectedTip] = useState<Habit | null>(null);
   const bookmarkedIds = useHabitsStore((state) => state.bookmarkedHabits);
-  const tips = usePreventionTips();
-
-  if (tips.isPending && bookmarkedIds.length) {
-    return <LoadingState message="Loading saved habits" />;
-  }
-
-  if (tips.isError) {
-    return <ErrorState message="Couldn't load saved habits." onRetry={() => tips.refetch()} />;
-  }
-
-  const saved = (tips.data ?? []).filter((tip) => bookmarkedIds.includes(tip.id));
+  const saved = HABITS.filter((tip) => bookmarkedIds.includes(tip.id));
 
   if (!saved.length) {
     return (
@@ -160,70 +146,21 @@ function SavedHabits() {
   return (
     <>
       <Section>
-        {saved.map((tip) => (
-          <HabitRow key={tip.id} tip={tip} onOpen={() => setSelectedTip(tip)} />
-        ))}
+        {saved.map((tip) =>
+          tip.kind === 'wellbeing' ? (
+            <HabitInfoRow key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
+          ) : (
+            <HabitRow
+              key={tip.id}
+              tip={tip}
+              once={tip.kind === 'once'}
+              onPress={() => setSelectedTip(tip)}
+            />
+          ),
+        )}
       </Section>
       <PreventionDetailSheet tip={selectedTip} onClose={() => setSelectedTip(null)} />
     </>
-  );
-}
-
-function tileToneForCategory(category: string): TileTone {
-  const cat = category.toLowerCase();
-  switch (cat) {
-    case 'exercise':
-    case 'hydration':
-    case 'prevention':
-      return 'help';
-    case 'lifestyle':
-      return 'action';
-    case 'weight':
-      return 'sun';
-    case 'diet':
-    case 'screening':
-    default:
-      return 'action';
-  }
-}
-
-function HabitRow({ tip, onOpen }: { tip: PreventionTip; onOpen: () => void }) {
-  const { palette } = useDesign();
-  const isDone = useHabitsStore((state) => state.isDone(tip.id));
-  const toggleDone = useHabitsStore((state) => state.toggleDone);
-
-  return (
-    <ListRow
-      icon={iconForPreventionTip(tip)}
-      iconTone={tileToneForCategory(tip.category)}
-      title={tip.title}
-      subtitle={tip.description}
-      onPress={onOpen}
-      accessory={
-        <Pressable
-          hitSlop={8}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: isDone }}
-          accessibilityLabel={`Mark ${tip.title} as ${isDone ? 'incomplete' : 'completed today'}`}
-          onPress={() => toggleDone(tip.id)}
-          style={[
-            styles.actionPill,
-            isDone
-              ? { backgroundColor: palette.helpTint, borderColor: palette.help }
-              : { backgroundColor: palette.raised, borderColor: palette.line },
-          ]}>
-          <Icon
-            name={isDone ? 'check' : 'circle'}
-            size={12}
-            tone={isDone ? 'help' : 'muted'}
-            bold={isDone}
-          />
-          <Text variant="caption" tone={isDone ? 'help' : 'muted'}>
-            {isDone ? 'Done' : 'Today'}
-          </Text>
-        </Pressable>
-      }
-    />
   );
 }
 
@@ -266,15 +203,3 @@ function SignInToSave({ what }: { what: string }) {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  actionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: radii.round,
-    borderWidth: 1,
-  },
-});

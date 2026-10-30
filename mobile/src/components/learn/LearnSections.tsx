@@ -4,8 +4,21 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import Svg, { Circle } from 'react-native-svg';
 
-import { Button, Chip, Icon, ListRow, PressableScale, Section, Sheet, Text } from '@/components/ui';
+import {
+  Button,
+  Chip,
+  Icon,
+  ListRow,
+  PressableScale,
+  Section,
+  SegmentedControl,
+  Sheet,
+  Text,
+} from '@/components/ui';
 import { decorative } from '@/components/ui/a11y';
+import { HABITS, MAX_TRACKED, type Habit } from '@/constants/habits';
+import { useFocus } from '@/hooks/useFocus';
+import { useHabitPlan } from '@/hooks/useHabits';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate, formatShortMonthDay } from '@/lib/dates';
 import {
@@ -16,8 +29,10 @@ import {
   type BodySystem,
 } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
+import { habitWeek, type Smoker } from '@/lib/habits';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
+import { showToast } from '@/stores/toastStore';
 import type { Palette } from '@/theme/palette';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -177,17 +192,28 @@ function categoryTone(category: string): { background: keyof Palette; color: key
 }
 
 /**
- * One habit as a Reminders-style row: the circle marks it done today (tap again to undo),
- * the rest of the row opens the details.
+ * One habit as a Reminders-style row: the circle marks it done (today, or for good when
+ * `once`), and tapping again undoes it; the rest of the row opens the details.
  */
-export function HabitRow({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
-  const isDone = useHabitsStore((state) => state.isDone(tip.id));
+export function HabitRow({
+  tip,
+  onPress,
+  once = false,
+}: {
+  tip: PreventionTip;
+  onPress: () => void;
+  once?: boolean;
+}) {
+  const isDone = useHabitsStore((state) =>
+    once ? state.isDoneEver(tip.id) : state.isDone(tip.id),
+  );
   const toggleDone = useHabitsStore((state) => state.toggleDone);
+  const toggleOnce = useHabitsStore((state) => state.toggleOnce);
   return (
     <ListRow
       title={tip.title}
       titleTone={isDone ? 'muted' : 'ink'}
-      subtitle={isDone ? 'Done today' : tip.description}
+      subtitle={isDone ? (once ? 'Done' : 'Done today') : tip.description}
       subtitleTone={isDone ? 'help' : 'muted'}
       onPress={onPress}
       accessibilityHint="Opens the details"
@@ -196,10 +222,11 @@ export function HabitRow({ tip, onPress }: { tip: PreventionTip; onPress: () => 
           hitSlop={8}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: isDone }}
-          accessibilityLabel={`${tip.title}, done today`}
+          accessibilityLabel={once ? `${tip.title}, done` : `${tip.title}, done today`}
           onPress={() => {
             haptics.selection();
-            toggleDone(tip.id);
+            if (once) toggleOnce(tip.id);
+            else toggleDone(tip.id);
           }}
           style={styles.check}>
           <Icon
@@ -213,19 +240,35 @@ export function HabitRow({ tip, onPress }: { tip: PreventionTip; onPress: () => 
   );
 }
 
+/** A habit that only opens its details (search results, the wellbeing ones). */
+export function HabitInfoRow({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
+  return (
+    <ListRow
+      icon={iconForPreventionTip(tip)}
+      title={tip.title}
+      subtitle={tip.description}
+      onPress={onPress}
+    />
+  );
+}
+
 export function PreventionDetailSheet({
   tip,
   onClose,
 }: {
-  tip: PreventionTip | null;
+  tip: Habit | null;
   onClose: () => void;
 }) {
   const { palette } = useDesign();
   const openTone = tip ? categoryTone(tip.category) : null;
   const openIcon = tip ? iconForPreventionTip(tip) : null;
-  const isDone = useHabitsStore((state) => (tip ? state.isDone(tip.id) : false));
+  const once = tip?.kind === 'once';
+  const isDone = useHabitsStore((state) =>
+    tip ? (once ? state.isDoneEver(tip.id) : state.isDone(tip.id)) : false,
+  );
   const isBookmarked = useHabitsStore((state) => (tip ? state.isBookmarked(tip.id) : false));
   const toggleDone = useHabitsStore((state) => state.toggleDone);
+  const toggleOnce = useHabitsStore((state) => state.toggleOnce);
   const toggleBookmark = useHabitsStore((state) => state.toggleBookmark);
 
   return (
@@ -245,12 +288,22 @@ export function PreventionDetailSheet({
           <Text variant="reading">{tip.description}</Text>
           {tip.detailedInfo ? <Text variant="reading">{tip.detailedInfo}</Text> : null}
           <View style={styles.sheetActions}>
-            <Button
-              title={isDone ? 'Completed today' : 'Mark as completed today'}
-              icon={isDone ? 'check' : 'circle'}
-              variant={isDone ? 'help' : 'primary'}
-              onPress={() => toggleDone(tip.id)}
-            />
+            {tip.kind === 'wellbeing' ? null : (
+              <Button
+                title={
+                  once
+                    ? isDone
+                      ? 'Done'
+                      : 'Mark as done'
+                    : isDone
+                      ? 'Completed today'
+                      : 'Mark as completed today'
+                }
+                icon={isDone ? 'check' : 'circle'}
+                variant={isDone ? 'help' : 'primary'}
+                onPress={() => (once ? toggleOnce(tip.id) : toggleDone(tip.id))}
+              />
+            )}
             <Button
               title={isBookmarked ? 'Saved in bookmarks' : 'Save habit to bookmarks'}
               icon="bookmark"
@@ -271,34 +324,201 @@ export function PreventionDetailSheet({
   );
 }
 
-/** Habits under a ring that fills as they're done today (Apple Fitness), then the rows. */
-export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
-  const [open, setOpen] = useState<PreventionTip | null>(null);
-  const done = useHabitsStore((state) => tips.filter((tip) => state.isDone(tip.id)).length);
+/** Habits found by a search: rows that open their details. */
+export function HabitResults({ habits }: { habits: Habit[] }) {
+  const [open, setOpen] = useState<Habit | null>(null);
+  return (
+    <Section title="Habits">
+      {habits.map((habit) => (
+        <HabitInfoRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
+      ))}
+      <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
+    </Section>
+  );
+}
+
+/**
+ * Learn › Habits: the daily habits someone tracks under a ring and their week, then the
+ * once-only list and the wellbeing ones. Treatment shows gentle "feel better" habits.
+ */
+export function LowerYourRisk() {
+  const plan = useHabitPlan();
+  const inTreatment = useFocus() === 'treatment';
+  const [open, setOpen] = useState<Habit | null>(null);
+  const [choosing, setChoosing] = useState(false);
+  const trackedIds = plan.tracked.map((habit) => habit.id);
+  const completedByDate = useHabitsStore((state) => state.completedByDate);
+  const done = useHabitsStore((state) => trackedIds.filter((id) => state.isDone(id)).length);
+  const week = habitWeek(completedByDate, trackedIds);
+  const left = plan.tracked.length - done;
 
   return (
     <View style={styles.sectionGap}>
       <Section>
         <View
           accessible
-          accessibilityLabel={`${done} of ${tips.length} habits done today`}
+          accessibilityLabel={`${done} of ${plan.tracked.length} habits done today`}
           style={styles.progress}>
-          <ProgressRing done={done} total={tips.length} />
+          <ProgressRing done={done} total={plan.tracked.length} />
           <View style={styles.progressText}>
-            <Text variant="strong">Today&apos;s habits</Text>
+            <Text variant="strong">
+              {inTreatment ? 'Feel a bit better today' : 'Your daily habits'}
+            </Text>
             <Text variant="supporting" tone="muted">
-              Small steps that lower your risk, backed by health agencies
+              {left === 0
+                ? 'All done today'
+                : left === 1
+                  ? 'One more to finish today'
+                  : inTreatment
+                    ? 'Small things that help during treatment'
+                    : 'Small steps that lower your risk'}
             </Text>
           </View>
         </View>
+        <View
+          accessible
+          accessibilityLabel={`${week.filter((day) => day.done).length} of the last 7 days complete`}
+          style={styles.week}>
+          {week.map((day) => (
+            <View key={day.key} style={styles.day}>
+              <Text variant="caption" tone={day.isToday ? 'ink' : 'muted'}>
+                {day.label}
+              </Text>
+              <WeekDot done={day.done} today={day.isToday} />
+            </View>
+          ))}
+        </View>
       </Section>
+
       <Section>
-        {tips.map((tip) => (
-          <HabitRow key={tip.id} tip={tip} onPress={() => setOpen(tip)} />
+        {plan.tracked.map((habit) => (
+          <HabitRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
+        ))}
+        {inTreatment ? null : (
+          <ListRow title="Change habits" titleTone="action" onPress={() => setChoosing(true)} />
+        )}
+      </Section>
+      {inTreatment ? (
+        <Text variant="supporting" tone="muted" style={styles.footnote}>
+          Even short walks can ease treatment tiredness. Ask your care team what&apos;s right for
+          you.
+        </Text>
+      ) : null}
+
+      {plan.once.length ? (
+        <Section title="Protect yourself" subtitle="Once, not every day">
+          {plan.once.map((habit) => (
+            <HabitRow key={habit.id} tip={habit} once onPress={() => setOpen(habit)} />
+          ))}
+        </Section>
+      ) : null}
+
+      <Section
+        title="Feel well"
+        subtitle={inTreatment ? undefined : 'Good for you, not proven to lower cancer risk'}>
+        {plan.wellbeing.map((habit) => (
+          <HabitInfoRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
         ))}
       </Section>
+
       <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
+      <ChooseHabits
+        visible={choosing}
+        onClose={() => setChoosing(false)}
+        options={plan.options}
+        tracked={trackedIds}
+      />
     </View>
+  );
+}
+
+function WeekDot({ done, today }: { done: boolean; today: boolean }) {
+  const { palette } = useDesign();
+  return (
+    <View
+      style={[
+        styles.dot,
+        { backgroundColor: done ? palette.help : palette.raised },
+        today && !done && { borderWidth: 1.5, borderColor: palette.help },
+      ]}
+    />
+  );
+}
+
+/** Pick up to three daily habits, and say once whether you smoke. */
+function ChooseHabits({
+  visible,
+  onClose,
+  options,
+  tracked,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  options: Habit[];
+  tracked: string[];
+}) {
+  const smoker = useHabitsStore((state) => state.smoker);
+  const setSmoker = useHabitsStore((state) => state.setSmoker);
+  const setChosen = useHabitsStore((state) => state.setChosenHabits);
+  const toggle = (id: string) => {
+    if (tracked.includes(id)) {
+      // At least one, so the ring always has something to fill.
+      if (tracked.length > 1) setChosen(tracked.filter((item) => item !== id));
+    } else if (tracked.length < MAX_TRACKED) {
+      setChosen([...tracked, id]);
+    } else {
+      showToast(`Pick up to ${MAX_TRACKED}. Untick one first.`);
+    }
+  };
+  return (
+    <Sheet visible={visible} onClose={onClose} title="Your habits">
+      <Text variant="body" tone="muted">
+        Pick up to {MAX_TRACKED}. A few habits you keep beat many you don&apos;t.
+      </Text>
+      <Section>
+        {options.map((habit) => {
+          const on = tracked.includes(habit.id);
+          return (
+            <ListRow
+              key={habit.id}
+              title={habit.title}
+              subtitle={habit.description}
+              accessibilityLabel={`${habit.title}, ${on ? 'tracked' : 'not tracked'}`}
+              onPress={() => toggle(habit.id)}
+              accessory={
+                <Icon
+                  name={on ? 'circle-check' : 'circle'}
+                  size={26}
+                  tone={on ? 'action' : 'muted'}
+                />
+              }
+            />
+          );
+        })}
+      </Section>
+      <Text variant="section" accessibilityRole="header">
+        Do you smoke or vape?
+      </Text>
+      <SegmentedControl<Smoker>
+        accessibilityLabel="Do you smoke or vape?"
+        value={smoker ?? 'no'}
+        onChange={(value) => {
+          setSmoker(value);
+          // Smoke-free goes first for smokers; their other picks fill the rest.
+          const smokeFree = HABITS.find((habit) => habit.smokersOnly)?.id;
+          if (smokeFree && value === 'yes' && !tracked.includes(smokeFree)) {
+            setChosen([smokeFree, ...tracked].slice(0, MAX_TRACKED));
+          }
+        }}
+        options={[
+          { value: 'no', label: 'No' },
+          { value: 'yes', label: 'Yes' },
+        ]}
+      />
+      <Text variant="supporting" tone="muted">
+        If you do, a smoke-free day is added to your habits.
+      </Text>
+    </Sheet>
   );
 }
 
@@ -355,6 +575,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  week: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: space.sm,
+    paddingBottom: space.lg,
+  },
+  day: { alignItems: 'center', gap: space.xs, minWidth: 28 },
+  dot: { width: 14, height: 14, borderRadius: radii.round },
+  footnote: { paddingHorizontal: space.xs },
   check: { minWidth: 32, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   progress: {
     flexDirection: 'row',

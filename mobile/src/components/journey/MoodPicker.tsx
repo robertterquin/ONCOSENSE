@@ -41,8 +41,8 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
             <Icon
               name={mood.icon}
               size={34}
-              // Sun's text-safe shade; violet and teal are already readable on the page.
-              tone={selected ? 'onAction' : mood.tone === 'sun' ? 'sunInk' : mood.tone}
+              // Quiet until chosen, so only the chosen face carries colour.
+              tone={selected ? 'onAction' : 'muted'}
             />
             <Text variant="caption" tone={selected ? 'onAction' : 'muted'} numberOfLines={1}>
               {mood.label}

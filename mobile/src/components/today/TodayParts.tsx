@@ -7,10 +7,10 @@ import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import { usePreventionTips } from '@/hooks/usePrevention';
+import { useHabitPlan } from '@/hooks/useHabits';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { MOODS } from '@/lib/journeyLabels';
-import { useHabitsStore } from '@/stores/habitsStore';
+import { toDayKey, useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
 import type { Appointment } from '@/types/appointment';
@@ -57,7 +57,6 @@ export function MoodCard({ now }: { now: Date }) {
       <Section title="How are you feeling today?">
         <ListRow
           icon={saved.icon}
-          iconTone={saved.tone}
           title={saved.label}
           subtitle="Saved for today"
           accessory={<Button title="Edit" variant="quiet" small onPress={() => setEditing(true)} />}
@@ -101,18 +100,25 @@ export function ComingUpToday({ appointments }: { appointments: Appointment[] })
   );
 }
 
-/** Today's habits as one row: the ring and the count, opening Learn's Habits. */
+/** Today's habits as one row: the ring and what's left, opening Learn's Habits. */
 export function HabitsRow() {
-  const tips = usePreventionTips();
-  const list = tips.data ?? [];
-  const done = useHabitsStore((state) => list.filter((tip) => state.isDone(tip.id)).length);
-  if (!list.length) return null;
+  const { tracked } = useHabitPlan();
+  const today = useHabitsStore((state) => state.completedByDate[toDayKey()]);
+  const undone = tracked.filter((habit) => !today?.includes(habit.id));
+  const done = tracked.length - undone.length;
+  if (!tracked.length) return null;
   return (
     <Section>
       <ListRow
-        leading={<ProgressRing done={done} total={list.length} />}
+        leading={<ProgressRing done={done} total={tracked.length} />}
         title="Today's habits"
-        subtitle={done ? `${done} of ${list.length} done` : 'Small steps that lower your risk'}
+        subtitle={
+          undone.length === 0
+            ? 'All done today'
+            : undone.length === 1
+              ? `1 left: ${undone[0].title.toLowerCase()}`
+              : `${undone.length} left today`
+        }
         onPress={() => router.navigate({ pathname: '/learn', params: { section: 'risk' } })}
       />
     </Section>

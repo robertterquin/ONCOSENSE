@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
-import { GuideRow, HabitRow, PreventionDetailSheet } from '@/components/learn/LearnSections';
+import { GuideRow, HabitInfoRow, PreventionDetailSheet } from '@/components/learn/LearnSections';
 import {
   Chip,
   EmptyState,
@@ -14,10 +14,10 @@ import {
   Section,
   SkeletonList,
 } from '@/components/ui';
+import { HABITS } from '@/constants/habits';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useQuestions } from '@/hooks/useCommunity';
 import { useNow } from '@/hooks/useNow';
-import { usePreventionTips } from '@/hooks/usePrevention';
 import { useAllResources } from '@/hooks/useResources';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
 import { haptics } from '@/lib/haptics';
@@ -45,17 +45,16 @@ export default function SearchScreen() {
   const query = userQuery !== null ? userQuery : (q ?? '');
   const [filter, setFilter] = useState<DomainFilter>('all');
   const [selectedTip, setSelectedTip] = useState<PreventionTip | null>(null);
+  const selectedHabit = HABITS.find((habit) => habit.id === selectedTip?.id) ?? null;
 
   const now = useNow(30_000);
   const cancersQuery = useCancerTypes();
-  const tipsQuery = usePreventionTips();
   const checks = useSelfChecks(now);
   const resourcesQuery = useAllResources();
   const questionsQuery = useQuestions({ sortBy: 'recent' });
 
   const isDataLoading =
     cancersQuery.isLoading ||
-    tipsQuery.isLoading ||
     checks.query.isLoading ||
     resourcesQuery.isLoading ||
     questionsQuery.isLoading;
@@ -75,11 +74,11 @@ export default function SearchScreen() {
     () => ({
       cancers: cancersQuery.data ?? [],
       guides: checks.all.map((s) => s.guide),
-      tips: tipsQuery.data ?? [],
+      tips: HABITS,
       resources: flattenedResources,
       questions: questionsQuery.data ?? [],
     }),
-    [cancersQuery.data, checks.all, tipsQuery.data, flattenedResources, questionsQuery.data],
+    [cancersQuery.data, checks.all, flattenedResources, questionsQuery.data],
   );
 
   const trimmedQuery = query.trim();
@@ -199,7 +198,7 @@ export default function SearchScreen() {
             {showHabits ? (
               <Section title="Habits">
                 {results.tips.map((tip) => (
-                  <HabitRow key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
+                  <HabitInfoRow key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
                 ))}
               </Section>
             ) : null}
@@ -235,7 +234,7 @@ export default function SearchScreen() {
         </Section>
       )}
 
-      <PreventionDetailSheet tip={selectedTip} onClose={() => setSelectedTip(null)} />
+      <PreventionDetailSheet tip={selectedHabit} onClose={() => setSelectedTip(null)} />
     </Screen>
   );
 }
