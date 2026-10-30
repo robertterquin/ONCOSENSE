@@ -4,17 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { hasCompletedJourneySetup, userDisplayName } from '@/api/auth';
 import { ProfileButton } from '@/components/account/ProfileButton';
 import { ChecksCard } from '@/components/today/ChecksCard';
-import {
-  AwarenessRow,
-  ComingUpToday,
-  HelpRow,
-  MoodCard,
-  TipCard,
-} from '@/components/today/TodayParts';
+import { ComingUpToday, HabitsRow, MoodCard, SupportCard } from '@/components/today/TodayParts';
 import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
 import { useFocus } from '@/hooks/useFocus';
-import { useDailyHealthTip } from '@/hooks/useHome';
-import { useAppointments } from '@/hooks/useJourney';
+import { useAppointments, useJourneyEntries } from '@/hooks/useJourney';
 import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
 import { useNow } from '@/hooks/useNow';
 import { formatTime, isSameDay } from '@/lib/dates';
@@ -25,14 +18,13 @@ import { space } from '@/theme/tokens';
 import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment';
 
 // The Today tab (redesign Phase 3, appointments from Phase 4): the self-checks card (or
-// an appointment within a day when no check is waiting), a quick
-// mood check-in and what's coming up for Journey users, the tip of the day, the
-// awareness month and a pointer to Help.
+// an appointment within a day when no check is waiting), a quick mood check-in and
+// what's coming up for Journey users, and today's habits. After a Rough or Low mood,
+// a support card comes first.
 
 export default function TodayTab() {
   const user = useUser();
   const now = useNow(60_000);
-  const tip = useDailyHealthTip();
   const { mine, nextStep, snoozed } = useSelfChecks(now);
   const focus = useFocus();
   const appointments = useAppointments();
@@ -40,6 +32,10 @@ export default function TodayTab() {
   const journeyUser = user !== null && usesJourney(focus) && hasCompletedJourneySetup(user);
   const upcoming = journeyUser ? upcomingAppointments(appointments.data ?? [], now) : [];
   const soon = journeyUser ? appointmentWithinDay(upcoming, now) : null;
+  const entries = useJourneyEntries();
+  const todaysMood = entries.data?.find((entry) => isSameDay(entry.date, now))?.moodLevel;
+  // Rough (1) or Low (2): support comes first today.
+  const hardDay = journeyUser && todaysMood !== undefined && todaysMood <= 2;
 
   return (
     <Screen inTabs tab="today">
@@ -62,6 +58,8 @@ export default function TodayTab() {
           <ProfileButton />
         </View>
       </View>
+
+      {hardDay ? <SupportCard /> : null}
 
       {nextStep.kind === 'self-check' ? (
         <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
@@ -94,9 +92,7 @@ export default function TodayTab() {
 
       {journeyUser ? <MoodCard now={now} /> : null}
       {journeyUser ? <ComingUpToday appointments={upcoming.slice(0, 2)} /> : null}
-      <TipCard tip={tip} />
-      <AwarenessRow now={now} />
-      <HelpRow />
+      <HabitsRow />
     </Screen>
   );
 }

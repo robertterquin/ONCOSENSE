@@ -5,17 +5,15 @@ import { StyleSheet, View } from 'react-native';
 import { newJourneyId } from '@/api/journey';
 import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
-import { awarenessForMonth } from '@/constants/awareness';
-import { useCancerTypes } from '@/hooks/useCancerInfo';
+import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
+import { usePreventionTips } from '@/hooks/usePrevention';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { MOODS } from '@/lib/journeyLabels';
-import { cancerForAwareness } from '@/lib/learn';
+import { useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
-import { radii, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 import type { Appointment } from '@/types/appointment';
-import type { HealthTip } from '@/types/healthTip';
 import type { JourneyEntry } from '@/types/journeyEntry';
 
 // Pieces of the redesigned Today tab (docs/redesign/03-phase-3-today-and-learn.md).
@@ -103,62 +101,38 @@ export function ComingUpToday({ appointments }: { appointments: Appointment[] })
   );
 }
 
-/** The tip of the day, linking to Learn's ways to lower your risk. */
-export function TipCard({ tip }: { tip: HealthTip }) {
-  const { palette } = useDesign();
+/** Today's habits as one row: the ring and the count, opening Learn's Habits. */
+export function HabitsRow() {
+  const tips = usePreventionTips();
+  const list = tips.data ?? [];
+  const done = useHabitsStore((state) => list.filter((tip) => state.isDone(tip.id)).length);
+  if (!list.length) return null;
   return (
-    <Section title="Tip for today" look="tinted" tint="sun" divided>
-      <View style={styles.tip}>
-        <View style={[styles.tipWell, { backgroundColor: palette.surface }]}>
-          <Icon name="lightbulb" tone="sunInk" />
-        </View>
-        <Text variant="body" style={styles.flex}>
-          {tip.tip}
-        </Text>
-      </View>
+    <Section>
       <ListRow
-        title="More ways to lower your risk"
-        titleTone="sunInk"
+        leading={<ProgressRing done={done} total={list.length} />}
+        title="Today's habits"
+        subtitle={done ? `${done} of ${list.length} done` : 'Small steps that lower your risk'}
         onPress={() => router.navigate({ pathname: '/learn', params: { section: 'risk' } })}
       />
     </Section>
   );
 }
 
-/** This month's awareness campaign, opening its cancer type when Learn has it. */
-export function AwarenessRow({ now }: { now: Date }) {
-  const awareness = awarenessForMonth(now);
-  const cancers = useCancerTypes();
-  const cancer = cancers.data ? cancerForAwareness(cancers.data, awareness.title) : null;
-  return (
-    <Section>
-      <ListRow
-        icon="ribbon"
-        title={`${awareness.title} Awareness Month`}
-        subtitle={`${awareness.month}: ${awareness.subtitle.toLowerCase()}`}
-        onPress={() =>
-          cancer
-            ? router.push({ pathname: '/learn/cancer/[id]', params: { id: cancer.id } })
-            : router.navigate({ pathname: '/learn', params: { section: 'cancers' } })
-        }
-      />
-    </Section>
-  );
-}
-
-/** Teal pointer to the Help tab. */
-export function HelpRow() {
+/** Shown at the top only after a Rough or Low check-in, so it stands out when it matters. */
+export function SupportCard() {
   return (
     <Section look="tinted" tint="helpTint">
-      <ListRow
-        icon="life-buoy"
-        iconTone="help"
-        title="Need someone to talk to?"
-        titleTone="onHelpTint"
-        subtitle="Free hotlines and support groups"
-        subtitleTone="onHelpTint"
-        onPress={() => router.navigate('/help')}
-      />
+      <View style={styles.support}>
+        <Icon name="life-buoy" tone="help" />
+        <Text variant="strong" tone="onHelpTint" accessibilityRole="header" style={styles.flex}>
+          Rough day? You don&apos;t have to carry it alone.
+        </Text>
+      </View>
+      <Text variant="body" tone="onHelpTint">
+        Free, confidential hotlines and support groups are in Help.
+      </Text>
+      <Button title="Talk to someone" variant="help" onPress={() => router.navigate('/help')} />
     </Section>
   );
 }
@@ -166,18 +140,5 @@ export function HelpRow() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   moodPicker: { paddingTop: space.lg },
-  tip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingTop: space.lg,
-    paddingBottom: space.md,
-  },
-  tipWell: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.tile,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  support: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });

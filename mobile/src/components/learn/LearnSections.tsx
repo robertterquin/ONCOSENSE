@@ -305,7 +305,8 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 const RING = 56;
 const RING_STROKE = 5;
 
-function ProgressRing({ done, total }: { done: number; total: number }) {
+/** How many of today's habits are done, as a ring that fills clockwise. */
+export function ProgressRing({ done, total }: { done: number; total: number }) {
   const { palette } = useDesign();
   const radius = (RING - RING_STROKE) / 2;
   const length = 2 * Math.PI * radius;
