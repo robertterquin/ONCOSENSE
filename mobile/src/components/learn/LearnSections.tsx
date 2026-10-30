@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, Chip, Icon, ListRow, PressableScale, Section, Sheet, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
-import { formatShortDate } from '@/lib/dates';
+import { formatShortDate, formatShortMonthDay } from '@/lib/dates';
 import {
   BODY_SYSTEMS,
   bodySystemForCancer,
@@ -33,7 +33,10 @@ const openCancer = (id: string) => router.push({ pathname: '/learn/cancer/[id]',
 export function GuideRow({ status }: { status: GuideStatus }) {
   const { guide, isDue, label, lastDone } = status;
   const done = !isDue && lastDone ? `Done ${formatShortDate(lastDone)}` : null;
-  const subtitle = isDue ? guide.frequency : `${guide.frequency} · ${label}`;
+  // "Nov 28" keeps the line short enough not to wrap beside the status.
+  const subtitle = isDue
+    ? guide.frequency
+    : `${guide.frequency} · Next ${formatShortMonthDay(status.due)}`;
   return (
     <ListRow
       icon={iconForCancer(guide.cancerType)}
@@ -50,26 +53,35 @@ export function GuideRow({ status }: { status: GuideStatus }) {
 /** Soonest due first. */
 const byDue = (a: GuideStatus, b: GuideStatus) => a.due.getTime() - b.due.getTime();
 
-/** The person's guides first, then the rest on request. */
+/** The person's checks split into due now and up to date, then the rest on request. */
 export function CheckYourself({ mine, all }: { mine: GuideStatus[]; all: GuideStatus[] }) {
   const [showAll, setShowAll] = useState(false);
+  const own = [...mine].sort(byDue);
+  const due = own.filter((status) => status.isDue);
+  const upToDate = own.filter((status) => !status.isDue);
   const others = all
-    .filter((item) => !mine.some((own) => own.guide.id === item.guide.id))
+    .filter((item) => !mine.some((check) => check.guide.id === item.guide.id))
     .sort(byDue);
+  // Someone who follows no checks yet sees them all at once.
+  const showOthers = showAll || !own.length;
+  const row = (status: GuideStatus) => <GuideRow key={status.guide.id} status={status} />;
   return (
-    <Section title="Check yourself" subtitle="Short, guided checks you can do at home">
-      {[...mine].sort(byDue).map((status) => (
-        <GuideRow key={status.guide.id} status={status} />
-      ))}
-      {showAll ? others.map((status) => <GuideRow key={status.guide.id} status={status} />) : null}
-      {others.length && !showAll ? (
-        <ListRow
-          title={`See all ${all.length} guides`}
-          titleTone="action"
-          onPress={() => setShowAll(true)}
-        />
+    <>
+      {due.length ? <Section title="Due now">{due.map(row)}</Section> : null}
+      {upToDate.length ? <Section title="Up to date">{upToDate.map(row)}</Section> : null}
+      {others.length ? (
+        <Section title={own.length ? 'More checks' : 'All checks'}>
+          {showOthers ? others.map(row) : null}
+          {showOthers ? null : (
+            <ListRow
+              title={`Show ${others.length} more`}
+              titleTone="action"
+              onPress={() => setShowAll(true)}
+            />
+          )}
+        </Section>
       ) : null}
-    </Section>
+    </>
   );
 }
 
@@ -163,7 +175,16 @@ function categoryTone(category: string): { background: keyof Palette; color: key
   }
 }
 
-export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
+export function PreventionTipCard({
+  tip,
+  onPress,
+  fill = false,
+}: {
+  tip: PreventionTip;
+  onPress: () => void;
+  /** Full width in a list, instead of a fixed-width card in a carousel. */
+  fill?: boolean;
+}) {
   const { palette, isDark } = useDesign();
   const tone = categoryTone(tip.category);
   const icon = iconForPreventionTip(tip);
@@ -176,6 +197,7 @@ export function PreventionTipCard({ tip, onPress }: { tip: PreventionTip; onPres
     <PressableScale
       style={({ pressed }) => [
         styles.card,
+        fill && styles.cardFill,
         { backgroundColor: palette.surface },
         elevation('resting', palette, isDark),
         // Done today keeps a teal edge in both themes.
@@ -322,18 +344,11 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 
   return (
     <Section title="Lower your risk" subtitle={subtitle} look="plain">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContainer}
-        style={styles.carouselScroll}
-        decelerationRate="fast"
-        snapToInterval={CARD_WIDTH + space.md}
-        snapToAlignment="start">
+      <View style={styles.tipList}>
         {tips.map((tip) => (
-          <PreventionTipCard key={tip.id} tip={tip} onPress={() => setOpen(tip)} />
+          <PreventionTipCard key={tip.id} tip={tip} onPress={() => setOpen(tip)} fill />
         ))}
-      </ScrollView>
+      </View>
       <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
     </Section>
   );
@@ -342,15 +357,8 @@ export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
 const styles = StyleSheet.create({
   sectionGap: { gap: space.md },
   systems: { gap: space.sm, paddingRight: space.xl },
-  carouselScroll: {
-    marginHorizontal: -space.xl,
-  },
-  carouselContainer: {
-    paddingHorizontal: space.xl,
-    gap: space.md,
-    paddingTop: space.xs,
-    paddingBottom: space.md,
-  },
+  tipList: { gap: space.md },
+  cardFill: { width: '100%', minHeight: 0 },
   card: {
     width: CARD_WIDTH,
     minHeight: 188,

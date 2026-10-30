@@ -76,6 +76,11 @@ export function differenceInWholeDays(later: Date, earlier: Date): number {
   return Math.trunc((later.getTime() - earlier.getTime()) / MS_PER_DAY);
 }
 
+/** "Oct 22" */
+export function formatShortMonthDay(date: Date): string {
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
 /** "Oct 22, 2026" */
 export function formatShortDate(date: Date): string {
   return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
