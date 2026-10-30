@@ -24,6 +24,15 @@ import { useDesign } from '@/theme/useTheme';
 
 SplashScreen.preventAutoHideAsync();
 
+const SHEETS = [
+  'journey/check-in',
+  'journey/appointment',
+  'journey/treatment',
+  'community/ask',
+  'profile/edit',
+  'profile/password',
+];
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Lexend_400Regular,
@@ -98,8 +107,12 @@ export default function RootLayout() {
             screenOptions={{
               headerShown: false,
               animation: reduceMotion ? 'fade' : 'default',
-            }}
-          />
+            }}>
+            {/* Forms slide up as sheets (swipe down to cancel), like adding an event in Calendar. */}
+            {SHEETS.map((name) => (
+              <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
+            ))}
+          </Stack>
         </ThemeProvider>
         <ToastHost />
       </View>

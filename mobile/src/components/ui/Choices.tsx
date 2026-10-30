@@ -62,7 +62,7 @@ type SegmentedControlProps<T extends string> = {
   onChange: (value: T) => void;
 };
 
-/** One-of-a-few choice (theme, text size, filters). */
+/** One-of-a-few choice (theme, text size, filters): an iOS filled track with a raised thumb. */
 export function SegmentedControl<T extends string>({
   accessibilityLabel,
   options,
@@ -76,19 +76,14 @@ export function SegmentedControl<T extends string>({
   // The selection is one shape that glides between options, so it's measured, not per option.
   const inset = isCompact ? 3 : space.xs;
   const gap = isCompact ? 4 : space.xs;
-  const segment = (width - 2 - 2 * inset - gap * (options.length - 1)) / options.length;
+  const segment = (width - 2 * inset - gap * (options.length - 1)) / options.length;
   const index = options.findIndex((option) => option.value === value);
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-      style={[
-        styles.segments,
-        isCompact && styles.segmentsCompact,
-        // The track is the page colour, so its edge is what shows it.
-        { backgroundColor: palette.ground, borderColor: palette.border, borderWidth: 1 },
-      ]}>
+      style={[styles.segments, isCompact && styles.segmentsCompact, { backgroundColor: palette.raised }]}>
       {width > 0 && index >= 0 ? (
         <Animated.View
           pointerEvents="none"
@@ -101,8 +96,8 @@ export function SegmentedControl<T extends string>({
               bottom: inset,
               width: segment,
               left: inset + index * (segment + gap),
-              backgroundColor: palette.surface,
-              borderColor: palette.action,
+              // Dark mode lifts the thumb a step above the track instead of shadowing it.
+              backgroundColor: isDark ? palette.border : palette.surface,
             },
           ]}
         />
@@ -122,7 +117,7 @@ export function SegmentedControl<T extends string>({
             style={[styles.segment, isCompact && styles.segmentCompact]}>
             <Text
               variant={isCompact ? 'caption' : selected ? 'strong' : 'row'}
-              tone={selected ? 'action' : 'ink'}
+              tone="ink"
               numberOfLines={1}
               style={[styles.segmentLabel, isCompact && selected && styles.compactSelectedLabel]}>
               {option.label}
@@ -156,7 +151,7 @@ const styles = StyleSheet.create({
   segmentCompact: {
     paddingHorizontal: 4,
   },
-  selection: { position: 'absolute', borderWidth: 1.5, borderRadius: radii.control - 4 },
+  selection: { position: 'absolute', borderRadius: radii.control - 4 },
   segmentLabel: { textAlign: 'center' },
   compactSelectedLabel: { fontFamily: fontFamily.extraBold },
   raisedShadow: {

@@ -4,11 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
-import {
-  GuideRow,
-  PreventionDetailSheet,
-  PreventionTipCard,
-} from '@/components/learn/LearnSections';
+import { GuideRow, HabitRow, PreventionDetailSheet } from '@/components/learn/LearnSections';
 import {
   Chip,
   EmptyState,
@@ -201,17 +197,10 @@ export default function SearchScreen() {
             ) : null}
 
             {showHabits ? (
-              <Section title="Habits" look="plain">
-                <View style={styles.habits}>
-                  {results.tips.map((tip) => (
-                    <PreventionTipCard
-                      key={tip.id}
-                      tip={tip}
-                      onPress={() => setSelectedTip(tip)}
-                      fill
-                    />
-                  ))}
-                </View>
+              <Section title="Habits">
+                {results.tips.map((tip) => (
+                  <HabitRow key={tip.id} tip={tip} onPress={() => setSelectedTip(tip)} />
+                ))}
               </Section>
             ) : null}
 
@@ -260,5 +249,4 @@ const styles = StyleSheet.create({
     gap: space.lg,
     paddingTop: space.sm,
   },
-  habits: { gap: space.md },
 });

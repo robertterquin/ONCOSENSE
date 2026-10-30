@@ -12,6 +12,7 @@ import {
   Screen,
   Section,
   Text,
+  type IconName,
 } from '@/components/ui';
 import { useFocus, useSaveFocus } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
@@ -144,6 +145,7 @@ export default function FocusScreen() {
         {FOCUS_OPTIONS.map((option) => (
           <FocusOption
             key={option.value}
+            icon={FOCUS_ICONS[option.value]}
             title={option.title}
             description={option.description}
             selected={focus === option.value}
@@ -160,12 +162,22 @@ export default function FocusScreen() {
   );
 }
 
+const FOCUS_ICONS: Record<JourneyFocus, IconName> = {
+  learning: 'book',
+  treatment: 'pill',
+  finished: 'flag',
+  caring: 'heart',
+};
+
+/** An onboarding card (Headspace-style): icon tile, title and line; picked fills in. */
 function FocusOption({
+  icon,
   title,
   description,
   selected,
   onPress,
 }: {
+  icon: IconName;
   title: string;
   description: string;
   selected: boolean;
@@ -182,27 +194,20 @@ function FocusOption({
         styles.option,
         {
           backgroundColor: selected ? palette.raised : palette.surface,
-          borderColor: selected ? palette.action : palette.border,
-          borderWidth: selected ? 2 : 1.5,
+          borderColor: selected ? palette.action : 'transparent',
         },
         pressed && styles.pressed,
       ]}>
+      <View style={[styles.tile, { backgroundColor: selected ? palette.action : palette.raised }]}>
+        <Icon name={icon} size={22} tone={selected ? 'onAction' : 'action'} />
+      </View>
       <View style={styles.optionText}>
-        <Text variant="row" tone={selected ? 'action' : 'ink'}>
-          {title}
-        </Text>
+        <Text variant={selected ? 'strong' : 'row'}>{title}</Text>
         <Text variant="supporting" tone="muted">
           {description}
         </Text>
       </View>
-      <View
-        style={[
-          styles.radio,
-          { borderColor: selected ? palette.action : palette.border },
-          selected && { backgroundColor: palette.action },
-        ]}>
-        {selected ? <Icon name="check" size={16} tone="onAction" bold /> : null}
-      </View>
+      {selected ? <Icon name="circle-check" size={24} tone="action" /> : null}
     </Pressable>
   );
 }
@@ -270,14 +275,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.md,
     padding: space.lg,
-    borderRadius: radii.control,
+    borderRadius: radii.section,
+    borderWidth: 2,
   },
   optionText: { flex: 1, gap: 2 },
-  radio: {
-    width: 26,
-    height: 26,
-    borderRadius: radii.round,
-    borderWidth: 2,
+  tile: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.tile,
     alignItems: 'center',
     justifyContent: 'center',
   },

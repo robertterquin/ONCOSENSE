@@ -50,6 +50,7 @@ Three supporting changes:
 | 15 | Community and Help, iOS layout | [15-phase-15-community-and-help.md](15-phase-15-community-and-help.md) | 1 day | Merged into `main` |
 | 16 | Search, iOS layout | [16-phase-16-search.md](16-phase-16-search.md) | ½ day | Merged into `main` |
 | 17 | The remaining screens and QA | [17-phase-17-screen-qa.md](17-phase-17-screen-qa.md) | ½ day | Merged into `main` |
+| 18 | iOS forms, controls and inner pages | [18-phase-18-ios-forms-and-controls.md](18-phase-18-ios-forms-and-controls.md) | 2 days | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -71,3 +72,6 @@ Same as the redesign:
 | 2026-10-25 | Hugeicons (stroke rounded, MIT) replaces Lucide | Has all 51 icons the app uses plus ribbon, lungs, stethoscope and five mood faces; rounded ends match Nunito; no two-tone fills that fade for low vision | Robert |
 | 2026-10-25 | Launch screen: lavender ribbon on night violet, matching Welcome | The old pink Flutter ribbon on white no longer matched the app | Robert |
 | 2026-10-25 | Keep five moods (Rough to Great), drawn as Hugeicons faces | The mock-up showed four; the data and the check-in use five | — |
+| 2026-10-31 | Forms open as sheets with grouped fields, but labels stay above each field | iOS look, while the field's name stays visible after typing, which suits older or tired users | Robert |
+| 2026-10-31 | Check-in asks only the mood; the rest folds open in place | A hard day is one tap; tabs or one question per screen hid questions or added screens | Robert |
+| 2026-10-31 | Habits: a progress ring over Reminders-style rows | The rows stay readable, and the ring gives a small daily win | Robert |

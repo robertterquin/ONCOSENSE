@@ -1,33 +1,39 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
 import { MoodPicker } from '@/components/journey/MoodPicker';
 import {
-  LoadingState,
   BottomActionBar,
   Button,
   Chip,
+  Icon,
+  ListRow,
+  LoadingState,
+  PressableScale,
   Screen,
   Section,
   SliderRow,
   Text,
   TextField,
+  type IconName,
 } from '@/components/ui';
 import { useFocus } from '@/hooks/useFocus';
 import { useDeleteJourneyEntry, useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
 import { confirm } from '@/lib/confirm';
 import { formatLongDate, isSameDay } from '@/lib/dates';
 import { forFocus } from '@/lib/focus';
+import { haptics } from '@/lib/haptics';
 import { energyValueText, painValueText, SLEEP } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
-import { space } from '@/theme/tokens';
+import { radii, sizes, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
 import { COMMON_SYMPTOMS, type JourneyEntry } from '@/types/journeyEntry';
 
-// The daily check-in (redesign Phase 4). Opened with `?id=` to edit an older entry;
-// without it, today's entry is edited if there is one. Voice notes use the keyboard's
-// dictation key.
+// The daily check-in (redesign Phase 4; a sheet with mood first since Phase 18). Opened
+// with `?id=` to edit an older entry; without it, today's entry is edited if there is
+// one. Voice notes use the keyboard's dictation key.
 
 const close = () => (router.canGoBack() ? router.back() : router.replace('/journey'));
 
@@ -39,7 +45,7 @@ export default function CheckInScreen() {
   const entries = useJourneyEntries();
   if (entries.isPending) {
     return (
-      <Screen back={{ label: 'Journey', onPress: close }}>
+      <Screen sheet={{ title: 'Check-in', onCancel: close }}>
         <LoadingState message="Loading your check-ins" />
       </Screen>
     );
@@ -68,6 +74,13 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
       existing?.symptoms.some((s) => !COMMON_SYMPTOMS.slice(0, FIRST_SYMPTOMS).includes(s)) ??
       false,
   );
+  // An older entry opens with what it recorded beyond the defaults.
+  const [open, setOpen] = useState<Record<Part, boolean>>({
+    body: false,
+    sleep: false,
+    symptoms: Boolean(existing?.symptoms.length),
+    note: Boolean(existing?.notes),
+  });
   const isToday = !existing || isSameDay(existing.date, new Date());
   const they = (self: string, caregiver: string) => forFocus(focus, self, caregiver);
 
@@ -125,25 +138,38 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
   };
 
   const shownSymptoms = allSymptoms ? COMMON_SYMPTOMS : COMMON_SYMPTOMS.slice(0, FIRST_SYMPTOMS);
+  const sleepLabel = SLEEP.find((option) => option.value === sleep)?.label ?? '';
+  const toggle = (part: Part) => setOpen((list) => ({ ...list, [part]: !list[part] }));
 
   return (
     <Screen
-      back={{ label: 'Journey', onPress: close }}
-      title={isToday ? 'Daily check-in' : 'Edit check-in'}
-      subtitle={formatLongDate(existing?.date ?? new Date())}
+      sheet={{
+        title: isToday ? 'Check-in' : 'Edit check-in',
+        onCancel: close,
+        done: { label: 'Save', onPress: submit, loading: save.isPending },
+      }}
       bottomBar={
         <BottomActionBar>
           <Button title="Save check-in" loading={save.isPending} onPress={submit} />
         </BottomActionBar>
       }>
-      <Section title={they('How are you feeling?', 'How are they feeling?')} divided={false}>
+      <Section
+        title={they('How are you feeling?', 'How are they feeling?')}
+        subtitle={formatLongDate(existing?.date ?? new Date())}
+        divided={false}>
         <View style={styles.padded}>
           <MoodPicker value={mood} onChange={setMood} />
         </View>
       </Section>
 
-      <Section title="Pain and energy" divided={false}>
-        <View style={styles.padded}>
+      {/* Only the mood is needed; the rest folds open in place, so a hard day is one tap. */}
+      <Section title="Add more" subtitle="Optional">
+        <Fold
+          icon="activity"
+          title="Pain and energy"
+          summary={`Pain ${pain} of 10, energy ${energy} of 10`}
+          open={open.body}
+          onToggle={() => toggle('body')}>
           <SliderRow
             label="Pain"
             value={pain}
@@ -164,68 +190,148 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
             minLabel="Exhausted"
             maxLabel="Full of energy"
           />
-        </View>
-      </Section>
-
-      <Section title={they('How did you sleep?', 'How did they sleep?')} look="plain">
-        <View style={styles.chips} accessibilityRole="radiogroup">
-          {SLEEP.map((option) => (
-            <Chip
-              key={option.value}
-              kind="radio"
-              label={option.label}
-              selected={sleep === option.value}
-              onPress={() => setSleep(option.value)}
+        </Fold>
+        <Fold
+          icon="moon"
+          title={they('Sleep', 'Their sleep')}
+          summary={sleepLabel}
+          open={open.sleep}
+          onToggle={() => toggle('sleep')}>
+          <View style={styles.chips} accessibilityRole="radiogroup">
+            {SLEEP.map((option) => (
+              <Chip
+                key={option.value}
+                kind="radio"
+                label={option.label}
+                selected={sleep === option.value}
+                onPress={() => setSleep(option.value)}
+              />
+            ))}
+          </View>
+        </Fold>
+        <Fold
+          icon="stethoscope"
+          title="Symptoms"
+          summary={symptoms.length ? symptoms.join(', ') : 'None'}
+          open={open.symptoms}
+          onToggle={() => toggle('symptoms')}>
+          <View style={styles.chips}>
+            {shownSymptoms.map((name) => (
+              <Chip
+                key={name}
+                label={name}
+                selected={symptoms.includes(name)}
+                onPress={() => toggleSymptom(name)}
+              />
+            ))}
+          </View>
+          {allSymptoms ? null : (
+            <Button
+              title="More symptoms"
+              variant="quiet"
+              fullWidth={false}
+              onPress={() => setAllSymptoms(true)}
             />
-          ))}
-        </View>
-      </Section>
-
-      <Section title="Any symptoms?" subtitle="Choose all that apply" look="plain">
-        <View style={styles.chips}>
-          {shownSymptoms.map((name) => (
-            <Chip
-              key={name}
-              label={name}
-              selected={symptoms.includes(name)}
-              onPress={() => toggleSymptom(name)}
-            />
-          ))}
-        </View>
-        {allSymptoms ? null : (
-          <Button
-            title="More symptoms"
-            variant="quiet"
-            fullWidth={false}
-            onPress={() => setAllSymptoms(true)}
+          )}
+        </Fold>
+        <Fold
+          icon="message"
+          title="Note"
+          summary={notes.trim() || 'None'}
+          open={open.note}
+          onToggle={() => toggle('note')}>
+          <TextField
+            label="Note"
+            placeholder="Anything you want to remember or tell your doctor"
+            multiline
+            value={notes}
+            onChangeText={setNotes}
           />
-        )}
+          <Text variant="caption" tone="muted">
+            Tip: use the microphone on your keyboard to speak your notes.
+          </Text>
+        </Fold>
       </Section>
-
-      <TextField
-        label="Notes (optional)"
-        placeholder="Anything you want to remember or tell your doctor"
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-      />
-      <Text variant="caption" tone="muted">
-        Tip: use the microphone on your keyboard to speak your notes.
-      </Text>
 
       {existing ? (
-        <Button
-          title="Delete check-in"
-          variant="destructive"
-          loading={remove.isPending}
-          onPress={onDelete}
-        />
+        <Section>
+          <ListRow
+            icon="trash"
+            iconTone="danger"
+            title={remove.isPending ? 'Deleting' : 'Delete check-in'}
+            titleTone="danger"
+            onPress={remove.isPending ? undefined : onDelete}
+          />
+        </Section>
       ) : null}
     </Screen>
   );
 }
 
+type Part = 'body' | 'sleep' | 'symptoms' | 'note';
+
+/** A row that opens its controls underneath, showing the current answer while closed. */
+function Fold({
+  icon,
+  title,
+  summary,
+  open,
+  onToggle,
+  children,
+}: {
+  icon: IconName;
+  title: string;
+  summary: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const { palette } = useDesign();
+  return (
+    <View>
+      <PressableScale
+        feedback="fade"
+        accessibilityRole="button"
+        accessibilityLabel={`${title}, ${summary}`}
+        accessibilityState={{ expanded: open }}
+        onPress={() => {
+          haptics.selection();
+          onToggle();
+        }}
+        style={styles.foldRow}>
+        <View style={[styles.tile, { backgroundColor: palette.raised }]}>
+          <Icon name={icon} size={20} tone="action" />
+        </View>
+        <View style={styles.flex1}>
+          <Text variant="row">{title}</Text>
+          <Text variant="supporting" tone="muted" numberOfLines={1}>
+            {summary}
+          </Text>
+        </View>
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={22} tone="muted" />
+      </PressableScale>
+      {open ? <View style={styles.foldBody}>{children}</View> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  padded: { paddingVertical: space.lg, gap: space.xl },
+  padded: { paddingVertical: space.lg },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  flex1: { flex: 1 },
+  foldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: sizes.row - 8,
+    paddingVertical: space.sm,
+  },
+  tile: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.tile - 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  foldBody: { gap: space.lg, paddingBottom: space.lg },
 });

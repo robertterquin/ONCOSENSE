@@ -4,6 +4,7 @@
 export { Button, IconButton, type ButtonVariant } from './Button';
 export { Chip, SegmentedControl } from './Choices';
 export { DateField, type DateFieldProps } from './DateField';
+export { DateRow, PickerRow } from './FormRows';
 export { Icon, ICON_NAMES, type IconName } from './Icon';
 export { ListRow, type TileTone } from './ListRow';
 export { PressableScale } from './PressableScale';

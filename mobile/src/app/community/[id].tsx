@@ -88,6 +88,7 @@ export default function QuestionScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen
         back={{ label: 'Community', onPress: back }}
+        navTitle="Question"
         actions={<QuestionActions question={question.data} />}
         bottomBar={signedIn ? <Composer questionId={id} /> : <SignInToAnswer />}>
         <QuestionHeader question={question.data} now={now} answers={list.length} />

@@ -16,12 +16,24 @@ type TextFieldProps = Omit<TextInputProps, 'style' | 'secureTextEntry'> & {
   error?: string | null;
   /** Password field with a Show / Hide button. */
   secure?: boolean;
+  /**
+   * A row inside a `Section` card (iOS grouped form): the label stays above in small
+   * type, the input has no box of its own, and the label turns violet while typing.
+   */
+  grouped?: boolean;
 };
 
 /** Labelled text input, 56 pt tall (multi-line grows from three lines). */
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function TextField({ label, error, secure = false, multiline, ...input }: TextFieldProps) {
+export function TextField({
+  label,
+  error,
+  secure = false,
+  grouped = false,
+  multiline,
+  ...input
+}: TextFieldProps) {
   const { palette, type } = useDesign();
   const [hidden, setHidden] = useState(true);
   const [focused, setFocused] = useState(false);
@@ -29,8 +41,11 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
   const border = useTransition('base', ['borderColor', 'borderWidth']);
 
   return (
-    <View style={styles.field}>
-      <Text variant="row" nativeID={`${id}-label`}>
+    <View style={grouped ? styles.groupedField : styles.field}>
+      <Text
+        variant={grouped ? 'caption' : 'row'}
+        tone={grouped ? (error ? 'danger' : focused ? 'action' : 'muted') : 'ink'}
+        nativeID={`${id}-label`}>
         {label}
       </Text>
       <View>
@@ -54,12 +69,12 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
           }}
           style={[
             type('body'),
-            styles.input,
-            border,
-            multiline && styles.multiline,
+            grouped ? styles.groupedInput : styles.input,
+            !grouped && border,
+            multiline && (grouped ? styles.groupedMultiline : styles.multiline),
             secure && styles.withButton,
-            {
-              color: palette.ink,
+            { color: palette.ink },
+            !grouped && {
               backgroundColor: palette.surface,
               borderColor: error ? palette.danger : focused ? palette.action : palette.border,
               borderWidth: error || focused ? 2 : 1.5,
@@ -73,7 +88,7 @@ export function TextField({ label, error, secure = false, multiline, ...input }:
               hidden ? `Show ${label.toLowerCase()}` : `Hide ${label.toLowerCase()}`
             }
             onPress={() => setHidden((value) => !value)}
-            style={styles.showButton}>
+            style={[styles.showButton, grouped && styles.groupedShow]}>
             <Text variant="strong" tone="action">
               {hidden ? 'Show' : 'Hide'}
             </Text>
@@ -97,13 +112,13 @@ type SearchFieldProps = Omit<TextInputProps, 'style'> & {
   accessibilityLabel: string;
 };
 
-/** Search input with a magnifier, for lists. */
+/** Search input with a magnifier, for lists: slim and filled, like an iOS search bar. */
 export function SearchField({ accessibilityLabel, ...input }: SearchFieldProps) {
   const { palette, type } = useDesign();
   return (
     <View>
       <View style={styles.searchIcon} pointerEvents="none">
-        <Icon name="search" size={22} tone="muted" />
+        <Icon name="search" size={18} tone="muted" />
       </View>
       <TextInput
         maxFontSizeMultiplier={MAX_FONT_SCALE}
@@ -114,9 +129,8 @@ export function SearchField({ accessibilityLabel, ...input }: SearchFieldProps) 
         {...input}
         style={[
           type('body'),
-          styles.input,
           styles.search,
-          { color: palette.ink, backgroundColor: palette.surface, borderColor: palette.border },
+          { color: palette.ink, backgroundColor: palette.surface },
         ]}
       />
     </View>
@@ -133,6 +147,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   multiline: { minHeight: 112 },
+  groupedField: { gap: 2, paddingVertical: space.md },
+  groupedInput: { minHeight: sizes.touch, paddingVertical: space.xs },
+  groupedMultiline: { minHeight: 72 },
+  groupedShow: { right: -space.md },
   withButton: { paddingRight: 72 },
   showButton: {
     position: 'absolute',
@@ -145,10 +163,16 @@ const styles = StyleSheet.create({
   },
   error: { flexDirection: 'row', alignItems: 'flex-start', gap: space.xs + 2 },
   errorText: { flex: 1 },
-  search: { paddingLeft: 48, borderRadius: radii.control },
+  search: {
+    minHeight: sizes.touch,
+    paddingLeft: 38,
+    paddingRight: space.md,
+    paddingVertical: space.sm,
+    borderRadius: 12,
+  },
   searchIcon: {
     position: 'absolute',
-    left: space.lg,
+    left: space.md,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
