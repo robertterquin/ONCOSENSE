@@ -33,9 +33,10 @@ const openCancer = (id: string) => router.push({ pathname: '/learn/cancer/[id]',
 export function GuideRow({ status }: { status: GuideStatus }) {
   const { guide, isDue, label, lastDone } = status;
   const done = !isDue && lastDone ? `Done ${formatShortDate(lastDone)}` : null;
-  // "Nov 28" keeps the line short enough not to wrap beside the status.
+  // Short enough not to wrap beside the status: "Nov 28", and a plain "Due" tag with
+  // when it's due ("Due today") in this line.
   const subtitle = isDue
-    ? guide.frequency
+    ? `${guide.frequency} · ${label}`
     : `${guide.frequency} · Next ${formatShortMonthDay(status.due)}`;
   return (
     <ListRow
@@ -43,7 +44,9 @@ export function GuideRow({ status }: { status: GuideStatus }) {
       iconTone="action"
       title={guide.title}
       subtitle={subtitle}
-      status={isDue ? { kind: 'due', label } : done ? { kind: 'done', label: done } : undefined}
+      status={
+        isDue ? { kind: 'due', label: 'Due' } : done ? { kind: 'done', label: done } : undefined
+      }
       accessibilityLabel={[guide.title, isDue ? label : done, subtitle].filter(Boolean).join(', ')}
       onPress={() => openGuide(guide.id)}
     />

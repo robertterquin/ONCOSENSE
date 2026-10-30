@@ -1,16 +1,19 @@
+import { Image } from 'expo-image';
 import { router, useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, RibbonMark, Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
 import { continueAsGuest } from '@/hooks/useAuth';
 import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-// Welcome (redesign Phase 6): the night-violet panel with the ribbon, in light and
-// dark alike.
+// Welcome (redesign Phase 6): the night-violet panel with the satin ribbon logo (the
+// splash image, so the first two screens match), in light and dark alike.
+
+const LOGO = require('../../../assets/images/splash.png');
 
 export default function WelcomeScreen() {
   const { palette } = useDesign();
@@ -26,7 +29,7 @@ export default function WelcomeScreen() {
           { paddingTop: insets.top + space.xxxl, paddingBottom: insets.bottom + space.xl },
         ]}>
         <View style={styles.hero}>
-          <RibbonMark height={168} color="#7B63D6" highlight="#B4A3F5" weight={24} />
+          <Image source={LOGO} style={styles.logo} contentFit="contain" accessible={false} />
           <Text variant="display" tone="onPanel" accessibilityRole="header" style={styles.center}>
             {APP_NAME}
           </Text>
@@ -65,5 +68,7 @@ const styles = StyleSheet.create({
   },
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg },
   center: { textAlign: 'center' },
+  // The ribbon fills about two thirds of the square image.
+  logo: { width: 220, height: 220, marginVertical: -space.xl },
   actions: { gap: space.md },
 });
