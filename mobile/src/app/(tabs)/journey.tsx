@@ -117,18 +117,16 @@ function Dashboard() {
             />
           ) : (
             <>
-              <ThreadWeek entries={entryList} now={now}>
-                <Button
-                  title={
-                    checkedInToday
-                      ? 'Edit today’s check-in'
-                      : forFocus(focus, 'Check in for today', 'Check in for them')
-                  }
-                  icon={checkedInToday ? 'check' : 'plus'}
-                  variant={checkedInToday ? 'secondary' : 'primary'}
-                  onPress={() => router.push('/journey/check-in')}
-                />
-              </ThreadWeek>
+              <ThreadWeek entries={entryList} now={now} />
+              <Button
+                title={
+                  checkedInToday
+                    ? 'Edit today’s check-in'
+                    : forFocus(focus, 'Check in for today', 'Check in for them')
+                }
+                icon={checkedInToday ? 'check' : 'plus'}
+                onPress={() => router.push('/journey/check-in')}
+              />
               <EnergyAndPain entries={entryList} now={now} />
               <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
               <Treatments treatments={treatments.data ?? []} />

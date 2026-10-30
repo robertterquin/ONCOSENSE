@@ -15,7 +15,7 @@
 | Create account | Fine |
 | Welcome | **Fixed:** showed the old line ribbon; now the satin logo (the splash image), so launch and Welcome match |
 | Sign in | **Fixed:** "New to OncoSense? Create an account" wrapped to three lines because the button took the full width |
-| Journey | **Changed:** the check-in button moves into the "This week" card; once you've checked in it's a quieter outlined button |
+| Journey | Tried the check-in button inside the "This week" card; reverted after review, so it stays a full button under the card |
 | Learn, Due now | **Fixed (found in light mode):** the "Due today" tag squeezed titles to three lines; the tag now says "Due" and the line below says when |
 | Learn, larger text | **Fixed:** the search placeholder was cut off; it now says "Search Learn" |
 
