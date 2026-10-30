@@ -8,6 +8,7 @@ import { haptics } from '@/lib/haptics';
 
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
+import { Tag } from './Tag';
 import { Text } from './Text';
 
 /** Icon tile colors by section: lavender (most things), teal (help), sun (tips and reminders), danger. */
@@ -31,6 +32,8 @@ type ListRowProps = {
   badge?: ReactNode;
   /** Short text before the chevron ("6 items"). */
   trailing?: string;
+  /** At the right edge, iOS style: a teal check when done, a small tag when due. */
+  status?: { kind: 'done' | 'due'; label: string };
   /** Replaces the chevron (a switch, a call button). Keep it outside `onPress`. */
   accessory?: ReactNode;
   onPress?: () => void;
@@ -53,6 +56,7 @@ export function ListRow({
   iconTone = 'action',
   badge,
   trailing,
+  status,
   accessory,
   onPress,
   accessibilityLabel,
@@ -85,6 +89,8 @@ export function ListRow({
           {trailing}
         </Text>
       ) : null}
+      {status?.kind === 'done' ? <Icon name="circle-check" size={22} tone="help" /> : null}
+      {status?.kind === 'due' ? <Tag tone="due" label={status.label} /> : null}
       {onPress && !accessory ? <Icon name="chevron-right" size={20} tone="muted" /> : null}
     </>
   );
@@ -96,7 +102,8 @@ export function ListRow({
           feedback="fade"
           accessibilityRole="button"
           accessibilityLabel={
-            accessibilityLabel ?? [title, subtitle, trailing].filter(Boolean).join(', ')
+            accessibilityLabel ??
+            [title, subtitle, status?.label, trailing].filter(Boolean).join(', ')
           }
           accessibilityHint={accessibilityHint}
           onPress={() => {

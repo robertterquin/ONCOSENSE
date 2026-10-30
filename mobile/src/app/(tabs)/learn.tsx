@@ -1,8 +1,9 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
+import { ProfileButton } from '@/components/account/ProfileButton';
 import {
   CancerTypes,
   CheckYourself,
@@ -12,7 +13,6 @@ import {
 import {
   EmptyState,
   ErrorState,
-  IconButton,
   LoadingState,
   Arrive,
   useArrival,
@@ -71,15 +71,7 @@ export default function LearnTab() {
       inTabs
       tab="learn"
       title="Learn"
-      subtitle="Signs, self-checks and ways to lower your risk"
-      titleAside={
-        <IconButton
-          icon="search"
-          accessibilityLabel="Search OncoSense"
-          look="tinted"
-          onPress={() => router.push('/search')}
-        />
-      }
+      titleAside={<ProfileButton />}
       onRefresh={refetch}
       refreshing={refreshing}
       scrollRef={scrollRef}>
