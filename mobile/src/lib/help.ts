@@ -83,6 +83,19 @@ export function isNear(resource: Pick<Resource, 'location'>, region: Region | nu
   return own === region || own === 'Nationwide' || own === 'Online';
 }
 
+/** Whether a resource matches Help's search: its name, place, number or description. */
+export function matchesResource(
+  resource: Pick<Resource, 'name' | 'location' | 'phone' | 'description'>,
+  query: string,
+): boolean {
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const text = [resource.name, resource.location, resource.phone, resource.description]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return words.every((word) => text.includes(word));
+}
+
 export type HelpSection = {
   type: ResourceType;
   /** Where `useAllResources()` keeps this section's rows. */

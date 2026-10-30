@@ -1,4 +1,4 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -12,21 +12,30 @@ import {
   useArrival,
   Button,
   Chip,
-  IconButton,
+  EmptyState,
   ListRow,
   Screen,
+  SearchField,
   Section,
   Text,
 } from '@/components/ui';
 import { CRISIS_LINE } from '@/constants/crisis';
 import { useAllResources } from '@/hooks/useResources';
-import { HELP_SECTIONS, isNear, REGIONS, type HelpSection, type Region } from '@/lib/help';
+import {
+  HELP_SECTIONS,
+  isNear,
+  matchesResource,
+  REGIONS,
+  type HelpSection,
+  type Region,
+} from '@/lib/help';
 import { callPhone } from '@/lib/links';
 import { space } from '@/theme/tokens';
 import type { Resource } from '@/types/resource';
 
-// The Help tab (redesign Phase 5): the crisis line first, then hotlines, screening
-// centers, help with costs and support groups, filtered by region. Learn opens it at
+// The Help tab (redesign Phase 5, search in Phase 15): the crisis line first, then
+// hotlines, screening centers, help with costs and support groups, filtered by region
+// and by what's typed in the search field. Learn opens it at
 // screening centers (`?section=screening`).
 
 /** Rows shown in a section before "Show N more". */
@@ -36,6 +45,7 @@ export default function HelpTab() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const resources = useAllResources();
   const [region, setRegion] = useState<Region | null>(null);
+  const [search, setSearch] = useState('');
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const reduceMotion = useReducedMotion();
   const [offsets, setOffsets] = useState<Record<string, number>>({});
@@ -55,20 +65,16 @@ export default function HelpTab() {
       inTabs
       tab="help"
       title="Help"
-      titleAside={
-        <View style={styles.headerButtons}>
-          <IconButton
-            icon="search"
-            accessibilityLabel="Search OncoSense"
-            look="tinted"
-            onPress={() => router.push('/search')}
-          />
-          <ProfileButton />
-        </View>
-      }
+      titleAside={<ProfileButton />}
       onRefresh={() => resources.refetch()}
       refreshing={resources.isRefetching}
       scrollRef={scrollRef}>
+      <SearchField
+        accessibilityLabel="Search hotlines and centers"
+        placeholder="Hotlines and centers"
+        value={search}
+        onChangeText={setSearch}
+      />
       <CrisisPanel />
 
       <View style={styles.near}>
@@ -101,6 +107,16 @@ export default function HelpTab() {
               message="Couldn't load help contacts. Check your connection and try again."
               onRetry={() => resources.refetch()}
             />
+          ) : search.trim() &&
+            HELP_SECTIONS.every(
+              (helpSection) =>
+                !resources.data[helpSection.list].some((r) => matchesResource(r, search)),
+            ) ? (
+            <EmptyState
+              icon="search"
+              title={`Nothing for "${search.trim()}"`}
+              message="Try a city, a hospital name or a number."
+            />
           ) : (
             HELP_SECTIONS.map((helpSection) => (
               <View
@@ -113,7 +129,10 @@ export default function HelpTab() {
                 }}>
                 <ResourceSection
                   section={helpSection}
-                  resources={resources.data[helpSection.list].filter((r) => isNear(r, region))}
+                  resources={resources.data[helpSection.list].filter(
+                    (r) => isNear(r, region) && (!search.trim() || matchesResource(r, search)),
+                  )}
+                  searching={Boolean(search.trim())}
                 />
               </View>
             ))
@@ -147,9 +166,19 @@ function CrisisPanel() {
   );
 }
 
-function ResourceSection({ section, resources }: { section: HelpSection; resources: Resource[] }) {
+function ResourceSection({
+  section,
+  resources,
+  searching,
+}: {
+  section: HelpSection;
+  resources: Resource[];
+  searching: boolean;
+}) {
   const [showAll, setShowAll] = useState(false);
-  const shown = showAll ? resources : resources.slice(0, FIRST_ROWS);
+  // While searching, every match shows and sections without one step aside.
+  if (searching && !resources.length) return null;
+  const shown = showAll || searching ? resources : resources.slice(0, FIRST_ROWS);
   const hidden = resources.length - shown.length;
   return (
     <Section title={section.title}>
@@ -170,7 +199,6 @@ function ResourceSection({ section, resources }: { section: HelpSection; resourc
 }
 
 const styles = StyleSheet.create({
-  headerButtons: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
   near: { gap: space.sm },
   chips: { gap: space.sm, paddingRight: space.xl },
   crisis: { gap: space.md },

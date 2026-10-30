@@ -1,6 +1,6 @@
 import { CRISIS_LINE } from '@/constants/crisis';
 import { initials, questionMeta } from '@/lib/community';
-import { callLabel, HELP_SECTIONS, isNear, regionFor } from '@/lib/help';
+import { callLabel, HELP_SECTIONS, isNear, matchesResource, regionFor } from '@/lib/help';
 import { FORUM_CATEGORIES } from '@/types/question';
 
 describe('regions for the Near filter', () => {
@@ -77,5 +77,19 @@ describe('question rows', () => {
     expect(initials('Ana Reyes')).toBe('AR');
     expect(initials('  ana ')).toBe('A');
     expect(initials(null)).toBe('?');
+  });
+});
+
+describe('matchesResource', () => {
+  const doh = {
+    name: 'Department of Health',
+    location: 'Philippines',
+    phone: '1555',
+    description: 'National health hotline',
+  };
+  it('matches every typed word against name, place, number and description', () => {
+    expect(matchesResource(doh, 'health 1555')).toBe(true);
+    expect(matchesResource(doh, '  DEPARTMENT  ')).toBe(true);
+    expect(matchesResource(doh, 'health cebu')).toBe(false);
   });
 });

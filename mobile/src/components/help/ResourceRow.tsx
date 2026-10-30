@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { IconButton, ListRow, Sheet, Text } from '@/components/ui';
 import { useResourceBookmarks } from '@/hooks/useBookmarkToggle';
-import { callLabel } from '@/lib/help';
+import { callLabel, regionFor } from '@/lib/help';
 import { callPhone, openWebPage } from '@/lib/links';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
@@ -18,8 +18,10 @@ export function ResourceRow({ resource }: { resource: Resource }) {
   const bookmarks = useResourceBookmarks();
   const [menu, setMenu] = useState(false);
   const saved = bookmarks.isSaved(resource);
-  // Own line for the number, so it never breaks in the middle.
-  const detail = [resource.location, resource.phone ?? resource.website].filter(Boolean).join('\n');
+  // The place only when it narrows things down ("Philippines" says nothing), and the
+  // number on its own line so it never breaks in the middle.
+  const place = regionFor(resource.location) === 'Nationwide' ? null : resource.location;
+  const detail = [place, resource.phone ?? resource.website].filter(Boolean).join('\n');
 
   const copyNumber = async () => {
     setMenu(false);
