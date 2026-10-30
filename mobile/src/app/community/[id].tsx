@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ReportSheet } from '@/components/community/ReportSheet';
@@ -16,9 +16,8 @@ import {
   Screen,
   Section,
   Sheet,
-  Switch,
+  Tag,
   Text,
-  TextField,
 } from '@/components/ui';
 import { useQuestionBookmarks } from '@/hooks/useBookmarkToggle';
 import {
@@ -41,13 +40,14 @@ import { useIsSignedIn, useUserId } from '@/stores/authStore';
 import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
 import { elevation } from '@/theme/elevation';
-import { useTransition } from '@/theme/motion';
-import { radii, sizes, space } from '@/theme/tokens';
+import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { answerDisplayName, type Answer } from '@/types/answer';
 import { questionDisplayName, type Question } from '@/types/question';
 
-// A question and its answers (redesign Phase 5). "Helpful" is the existing upvote.
+// A question and its answers (redesign Phase 5, iOS grouped layout after Phase 17): the
+// question in a card with its author and a quiet actions row, answers together in one
+// card, and a one-line answer bar like Messages. "Helpful" is the existing upvote.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/community'));
 
@@ -90,12 +90,9 @@ export default function QuestionScreen() {
         back={{ label: 'Community', onPress: back }}
         actions={<QuestionActions question={question.data} />}
         bottomBar={signedIn ? <Composer questionId={id} /> : <SignInToAnswer />}>
-        <QuestionHeader question={question.data} now={now} />
+        <QuestionHeader question={question.data} now={now} answers={list.length} />
 
-        <Section
-          title={list.length === 1 ? '1 answer' : `${list.length} answers`}
-          look="plain"
-          divided={false}>
+        <Section title="Answers" look={list.length ? 'card' : 'plain'} divided={list.length > 0}>
           {answers.isPending ? (
             <LoadingState message="Loading answers" />
           ) : answers.isError ? (
@@ -111,47 +108,93 @@ export default function QuestionScreen() {
                 <AnswerRow key={answer.id} answer={answer} questionId={id} now={now} />
               ))}
               {!showAll && list.length > FIRST_ANSWERS ? (
-                <Button
+                <ListRow
                   title={`Show ${list.length - FIRST_ANSWERS} more answers`}
-                  variant="quiet"
-                  fullWidth={false}
+                  titleTone="action"
                   onPress={() => setShowAll(true)}
                 />
               ) : null}
             </>
           )}
         </Section>
+        <Text variant="caption" tone="muted" style={styles.footer}>
+          Answers come from members, not doctors.
+        </Text>
       </Screen>
     </KeyboardAvoidingView>
   );
 }
 
-function QuestionHeader({ question, now }: { question: Question; now: Date }) {
+function QuestionHeader({
+  question,
+  now,
+  answers,
+}: {
+  question: Question;
+  now: Date;
+  answers: number;
+}) {
+  const { palette, isDark } = useDesign();
   const upvoted = useHasUpvotedQuestion(question.id).data ?? false;
   const toggle = useToggleQuestionUpvote(question.id);
   const signedIn = useIsSignedIn();
   const by = question.isAnonymous ? 'Shared anonymously' : questionDisplayName(question);
   return (
-    <View style={styles.header}>
-      <Text variant="caption" tone="action">
-        {question.category}
-      </Text>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: palette.surface },
+        elevation('resting', palette, isDark),
+      ]}>
+      <Author
+        label={question.isAnonymous ? '?' : initials(by)}
+        name={by}
+        detail={formatRelativeTime(question.createdAt, now)}
+      />
+      <View style={styles.topic}>
+        <Tag tone="next" label={question.category} />
+      </View>
       <Text variant="heading" accessibilityRole="header">
         {question.title}
       </Text>
       <Text variant="reading">{question.content}</Text>
-      <Text variant="supporting" tone="muted">
-        {by} · {formatRelativeTime(question.createdAt, now)}
-      </Text>
-      <HelpfulButton
-        count={question.upvotes}
-        active={upvoted}
-        onPress={() =>
-          signedIn
-            ? toggle.mutate(undefined, { onError: (error) => showToast(error.message, 'error') })
-            : showToast('Sign in to mark questions as helpful')
-        }
-      />
+      <View style={[styles.actionsRow, { borderTopColor: palette.line }]}>
+        <HelpfulButton
+          count={question.upvotes}
+          active={upvoted}
+          onPress={() =>
+            signedIn
+              ? toggle.mutate(undefined, { onError: (error) => showToast(error.message, 'error') })
+              : showToast('Sign in to mark questions as helpful')
+          }
+        />
+        <View style={styles.count}>
+          <Icon name="message" size={16} tone="muted" />
+          <Text variant="caption" tone="muted">
+            {answers === 1 ? '1 answer' : `${answers} answers`}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** Avatar initials, name and when: the question's and each answer's top line. */
+function Author({ label, name, detail }: { label: string; name: string; detail: string }) {
+  const { palette } = useDesign();
+  return (
+    <View style={styles.author}>
+      <View style={[styles.avatar, { backgroundColor: palette.raised }]}>
+        <Text variant="caption" tone="action">
+          {label}
+        </Text>
+      </View>
+      <View style={styles.flex}>
+        <Text variant="strong">{name}</Text>
+        <Text variant="caption" tone="muted">
+          {detail}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -234,7 +277,6 @@ function QuestionActions({ question }: { question: Question }) {
 }
 
 function AnswerRow({ answer, questionId, now }: { answer: Answer; questionId: string; now: Date }) {
-  const { palette, isDark } = useDesign();
   const userId = useUserId();
   const signedIn = useIsSignedIn();
   const upvoted = useHasUpvotedAnswer(answer.id).data ?? false;
@@ -258,49 +300,41 @@ function AnswerRow({ answer, questionId, now }: { answer: Answer; questionId: st
   };
 
   return (
-    <View
-      style={[
-        styles.answer,
-        { backgroundColor: palette.surface },
-        elevation('resting', palette, isDark),
-        answer.isAccepted && {
-          borderWidth: 1.5,
-          borderColor: palette.help,
-          borderTopColor: palette.help,
-        },
-      ]}>
+    <View style={styles.answer}>
       <View style={styles.answerTop}>
-        <View style={[styles.avatar, { backgroundColor: palette.raised }]}>
-          <Text variant="caption" tone="action">
-            {answer.isAnonymous ? '?' : initials(name)}
-          </Text>
-        </View>
         <View style={styles.flex}>
-          <Text variant="row">{name}</Text>
-          <Text variant="caption" tone="muted">
-            {formatRelativeTime(answer.createdAt, now)}
-            {answer.isAccepted ? ' · Marked most helpful by the asker' : ''}
-          </Text>
+          <Author
+            label={answer.isAnonymous ? '?' : initials(name)}
+            name={name}
+            detail={formatRelativeTime(answer.createdAt, now)}
+          />
         </View>
         {userId === answer.userId ? (
           <IconButton icon="trash" accessibilityLabel="Delete your answer" onPress={onDelete} />
         ) : null}
       </View>
-      <Text variant="reading">{answer.content}</Text>
-      <HelpfulButton
-        count={answer.upvotes}
-        active={upvoted}
-        onPress={() =>
-          signedIn
-            ? toggle.mutate(undefined, { onError: (error) => showToast(error.message, 'error') })
-            : showToast('Sign in to mark answers as helpful')
-        }
-      />
+      <View style={styles.answerBody}>
+        {answer.isAccepted ? (
+          <Text variant="caption" tone="help">
+            Marked most helpful by the asker
+          </Text>
+        ) : null}
+        <Text variant="reading">{answer.content}</Text>
+        <HelpfulButton
+          count={answer.upvotes}
+          active={upvoted}
+          onPress={() =>
+            signedIn
+              ? toggle.mutate(undefined, { onError: (error) => showToast(error.message, 'error') })
+              : showToast('Sign in to mark answers as helpful')
+          }
+        />
+      </View>
     </View>
   );
 }
 
-/** "Helpful · 5": a toggle that differs in fill and weight, not only color. */
+/** "Helpful · 5": a quiet text toggle; on, it turns violet and bold, not only coloured. */
 function HelpfulButton({
   count,
   active,
@@ -310,32 +344,26 @@ function HelpfulButton({
   active: boolean;
   onPress: () => void;
 }) {
-  const { palette } = useDesign();
-  const colorTransition = useTransition('base', ['backgroundColor', 'borderColor']);
   return (
     <PressableScale
+      feedback="fade"
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       accessibilityLabel={`Helpful, ${count} ${count === 1 ? 'person' : 'people'}`}
+      hitSlop={8}
       onPress={onPress}
-      style={[
-        styles.helpful,
-        colorTransition,
-        active
-          ? { backgroundColor: palette.raised, borderColor: palette.action, borderWidth: 2 }
-          : { backgroundColor: 'transparent', borderColor: palette.border, borderWidth: 1.5 },
-      ]}>
-      <Icon name="thumbs-up" size={18} tone={active ? 'action' : 'muted'} />
-      <Text variant={active ? 'strong' : 'row'} tone={active ? 'action' : 'ink'}>
+      style={styles.helpful}>
+      <Icon name="thumbs-up" size={16} tone={active ? 'action' : 'muted'} />
+      <Text variant={active ? 'strong' : 'caption'} tone={active ? 'action' : 'muted'}>
         Helpful{count ? ` · ${count}` : ''}
       </Text>
     </PressableScale>
   );
 }
 
-/** The answer box pinned at the bottom. */
+/** The answer bar pinned at the bottom: anonymous toggle, a field that grows, and Post. */
 function Composer({ questionId }: { questionId: string }) {
-  const { palette } = useDesign();
+  const { palette, type } = useDesign();
   const insets = useSafeAreaInsets();
   const anonymousByDefault = useCommunityStore((state) => state.anonymousByDefault);
   const [content, setContent] = useState('');
@@ -369,30 +397,38 @@ function Composer({ questionId }: { questionId: string }) {
           paddingBottom: Math.max(insets.bottom, space.md),
         },
       ]}>
-      <TextField
-        label="Your answer"
-        placeholder="Share what helped you, or what you went through"
+      <IconButton
+        icon="eye-off"
+        size={40}
+        look={anonymous ? 'tinted' : 'plain'}
+        accessibilityLabel={
+          anonymous
+            ? 'Posting anonymously. Double tap to post with your name'
+            : 'Posting with your name. Double tap to post anonymously'
+        }
+        onPress={() => setAnonymous((value) => !value)}
+      />
+      <TextInput
+        accessibilityLabel="Your answer"
+        placeholder={anonymous ? 'Answer anonymously' : 'Write an answer'}
+        placeholderTextColor={palette.muted}
         multiline
         value={content}
         onChangeText={setContent}
+        style={[
+          type('body'),
+          styles.field,
+          { color: palette.ink, backgroundColor: palette.ground },
+        ]}
       />
-      <View style={styles.composerRow}>
-        <Switch
-          accessibilityLabel="Post anonymously"
-          value={anonymous}
-          onValueChange={setAnonymous}
-        />
-        <Text variant="supporting" style={styles.flex}>
-          Post anonymously
-        </Text>
-        <Button
-          title="Post"
-          small
-          disabled={!content.trim()}
-          loading={post.isPending}
-          onPress={submit}
-        />
-      </View>
+      <Button
+        title="Post"
+        small
+        fullWidth={false}
+        disabled={!content.trim()}
+        loading={post.isPending}
+        onPress={submit}
+      />
     </View>
   );
 }
@@ -410,10 +446,16 @@ function SignInToAnswer() {
           paddingBottom: Math.max(insets.bottom, space.md),
         },
       ]}>
-      <Text variant="supporting" tone="muted">
+      <Text variant="supporting" tone="muted" style={styles.flex}>
         Sign in to answer, mark answers helpful or save questions.
       </Text>
-      <Button title="Sign in" variant="secondary" onPress={() => router.push('/login')} />
+      <Button
+        title="Sign in"
+        variant="secondary"
+        small
+        fullWidth={false}
+        onPress={() => router.push('/login')}
+      />
     </View>
   );
 }
@@ -421,30 +463,52 @@ function SignInToAnswer() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   flex: { flex: 1 },
-  header: { gap: space.sm },
-  answer: { gap: space.sm, padding: space.lg, borderRadius: radii.control },
-  answerTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  card: { gap: space.sm, padding: space.lg, borderRadius: radii.section },
+  author: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   avatar: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  topic: { flexDirection: 'row', paddingTop: space.xs },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xl,
+    marginTop: space.xs,
+    paddingTop: space.sm,
+    borderTopWidth: 1,
+  },
+  count: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  answer: { gap: space.xs, paddingVertical: space.md },
+  answerTop: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  // Lines the answer up with the name, past the avatar.
+  answerBody: { gap: space.xs, paddingLeft: 32 + space.sm },
   helpful: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: space.xs,
-    minHeight: sizes.touch,
-    paddingHorizontal: space.lg,
-    borderRadius: radii.round,
+    minHeight: 32,
   },
+  footer: { paddingHorizontal: space.xs },
   composer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: space.sm,
-    paddingHorizontal: space.xl,
-    paddingTop: space.md,
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
     borderTopWidth: 1,
   },
-  composerRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  field: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 120,
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
+    paddingBottom: space.sm,
+    borderRadius: 20,
+  },
 });
