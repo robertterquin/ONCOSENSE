@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedProps,
@@ -28,7 +28,16 @@ const WAVE = 20;
 const EDGE = 16;
 const LABEL_WIDTH = 56;
 
-export function ThreadWeek({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
+export function ThreadWeek({
+  entries,
+  now,
+  children,
+}: {
+  entries: JourneyEntry[];
+  now: Date;
+  /** Under the week, inside the card (today's check-in button). */
+  children?: ReactNode;
+}) {
   const { palette } = useDesign();
   const [width, setWidth] = useState(0);
   const days = weekStrip(entries, now);
@@ -93,6 +102,7 @@ export function ThreadWeek({ entries, now }: { entries: JourneyEntry[]; now: Dat
             ))}
         </View>
       </View>
+      {children}
     </Section>
   );
 }

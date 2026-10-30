@@ -74,7 +74,7 @@ export default function LearnTab() {
       refreshing={refreshing}>
       <SearchField
         accessibilityLabel="Search Learn"
-        placeholder="Cancers, checks and habits"
+        placeholder="Search Learn"
         value={search}
         onChangeText={setSearch}
       />

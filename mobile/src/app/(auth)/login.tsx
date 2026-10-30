@@ -84,6 +84,7 @@ export default function SignInScreen() {
             title="Create an account"
             variant="quiet"
             small
+            fullWidth={false}
             onPress={() => router.replace('/register')}
           />
         </View>
