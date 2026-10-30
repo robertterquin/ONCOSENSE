@@ -2,17 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import {
-  Button,
-  Chip,
-  Icon,
-  ListRow,
-  PressableScale,
-  Section,
-  Sheet,
-  Tag,
-  Text,
-} from '@/components/ui';
+import { Button, Chip, Icon, ListRow, PressableScale, Section, Sheet, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate } from '@/lib/dates';
 import {
@@ -39,7 +29,7 @@ import type { PreventionTip } from '@/types/preventionTip';
 const openGuide = (id: string) => router.push({ pathname: '/learn/check/[id]', params: { id } });
 const openCancer = (id: string) => router.push({ pathname: '/learn/cancer/[id]', params: { id } });
 
-/** One self-check guide: a "Due" tag when it's due, else when it was last done. */
+/** One self-check guide: a "Due" tag at the right when it's due, else a check and the next date. */
 export function GuideRow({ status }: { status: GuideStatus }) {
   const { guide, isDue, label, lastDone } = status;
   const done = !isDue && lastDone ? `Done ${formatShortDate(lastDone)}` : null;
@@ -50,9 +40,7 @@ export function GuideRow({ status }: { status: GuideStatus }) {
       iconTone="action"
       title={guide.title}
       subtitle={subtitle}
-      badge={
-        isDue ? <Tag tone="due" label={label} /> : done ? <Tag tone="done" label={done} /> : null
-      }
+      status={isDue ? { kind: 'due', label } : done ? { kind: 'done', label: done } : undefined}
       accessibilityLabel={[guide.title, isDue ? label : done, subtitle].filter(Boolean).join(', ')}
       onPress={() => openGuide(guide.id)}
     />

@@ -1,7 +1,6 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
 import { MoodPicker } from '@/components/journey/MoodPicker';
@@ -13,50 +12,13 @@ import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { MOODS } from '@/lib/journeyLabels';
 import { cancerForAwareness } from '@/lib/learn';
 import { showToast } from '@/stores/toastStore';
-import { radii, sizes, space } from '@/theme/tokens';
+import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { Appointment } from '@/types/appointment';
 import type { HealthTip } from '@/types/healthTip';
 import type { JourneyEntry } from '@/types/journeyEntry';
 
 // Pieces of the redesigned Today tab (docs/redesign/03-phase-3-today-and-learn.md).
-
-/** Profile picture or initials, opening Profile. */
-export function ProfileButton({ pictureUrl, name }: { pictureUrl: string | null; name: string }) {
-  const { palette } = useDesign();
-  const [pictureFailed, setPictureFailed] = useState(false);
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? '')
-    .join('');
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Profile and settings"
-      onPress={() => router.push('/profile')}
-      style={({ pressed }) => [
-        styles.avatar,
-        { backgroundColor: palette.raised },
-        pressed && styles.pressed,
-      ]}>
-      {pictureUrl && !pictureFailed ? (
-        <Image
-          source={{ uri: pictureUrl }}
-          style={styles.avatarImage}
-          contentFit="cover"
-          onError={() => setPictureFailed(true)}
-        />
-      ) : initials ? (
-        <Text variant="strong" tone="action">
-          {initials}
-        </Text>
-      ) : (
-        <Icon name="user" tone="action" />
-      )}
-    </Pressable>
-  );
-}
 
 /** Quick mood for today's check-in; the full check-in adds pain, energy and symptoms. */
 export function MoodCard({ now }: { now: Date }) {
@@ -203,16 +165,6 @@ export function HelpRow() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  pressed: { opacity: 0.6 },
-  avatar: {
-    width: sizes.touch + 4,
-    height: sizes.touch + 4,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: { width: '100%', height: '100%' },
   moodPicker: { paddingTop: space.lg },
   tip: {
     flexDirection: 'row',

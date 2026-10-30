@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
+import { ProfileButton } from '@/components/account/ProfileButton';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import {
   ErrorState,
@@ -53,15 +54,17 @@ export default function HelpTab() {
     <Screen
       inTabs
       tab="help"
-      title="Get help"
-      subtitle="Hotlines, screening centers and support across the Philippines"
+      title="Help"
       titleAside={
-        <IconButton
-          icon="search"
-          accessibilityLabel="Search OncoSense"
-          look="tinted"
-          onPress={() => router.push('/search')}
-        />
+        <View style={styles.headerButtons}>
+          <IconButton
+            icon="search"
+            accessibilityLabel="Search OncoSense"
+            look="tinted"
+            onPress={() => router.push('/search')}
+          />
+          <ProfileButton />
+        </View>
       }
       onRefresh={() => resources.refetch()}
       refreshing={resources.isRefetching}
@@ -167,6 +170,7 @@ function ResourceSection({ section, resources }: { section: HelpSection; resourc
 }
 
 const styles = StyleSheet.create({
+  headerButtons: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
   near: { gap: space.sm },
   chips: { gap: space.sm, paddingRight: space.xl },
   crisis: { gap: space.md },

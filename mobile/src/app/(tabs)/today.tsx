@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { hasCompletedJourneySetup, userDisplayName, userProfilePictureUrl } from '@/api/auth';
+import { hasCompletedJourneySetup, userDisplayName } from '@/api/auth';
+import { ProfileButton } from '@/components/account/ProfileButton';
 import { ChecksCard } from '@/components/today/ChecksCard';
 import {
   AwarenessRow,
   ComingUpToday,
   HelpRow,
   MoodCard,
-  ProfileButton,
   TipCard,
 } from '@/components/today/TodayParts';
 import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
@@ -42,7 +42,7 @@ export default function TodayTab() {
   const soon = journeyUser ? appointmentWithinDay(upcoming, now) : null;
 
   return (
-    <Screen inTabs>
+    <Screen inTabs tab="today">
       <View style={styles.header}>
         <View style={styles.headerText}>
           <Text variant="supporting" tone="muted">
@@ -59,7 +59,7 @@ export default function TodayTab() {
             look="tinted"
             onPress={() => router.push('/search')}
           />
-          <ProfileButton pictureUrl={userProfilePictureUrl(user)} name={name} />
+          <ProfileButton />
         </View>
       </View>
 

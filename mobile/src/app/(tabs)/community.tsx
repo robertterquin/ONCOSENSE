@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { ProfileButton } from '@/components/account/ProfileButton';
 import { QuestionRow } from '@/components/community/QuestionRow';
 import {
   EmptyState,
@@ -68,7 +69,7 @@ export default function CommunityTab() {
       inTabs
       tab="community"
       title="Community"
-      subtitle="Questions and experiences from people who've been there"
+      titleAside={<ProfileButton />}
       onRefresh={() => questions.refetch()}
       refreshing={questions.isRefetching}>
       <SearchField

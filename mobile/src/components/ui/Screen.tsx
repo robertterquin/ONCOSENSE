@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import type { ReactNode, RefObject } from 'react';
+import { useState, type ReactNode, type RefObject } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -8,13 +8,14 @@ import {
   View,
   type ScrollViewInstance,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { radii, sizes, space } from '@/theme/tokens';
+import { useTransition } from '@/theme/motion';
+import { sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon } from './Icon';
-import { TAB_ICONS } from './TabBar';
 import { Text } from './Text';
 
 type ScreenProps = {
@@ -23,9 +24,12 @@ type ScreenProps = {
   subtitle?: string;
   /** Detail screens use the larger display title. */
   titleSize?: 'title' | 'display';
-  /** A tab route name: its icon in the tab's colour sits before the title. */
+  /**
+   * A tab route name. Tab screens get the iOS header: a large title with `titleAside`
+   * on the right, and a small title bar that fades in once the title scrolls away.
+   */
   tab?: string;
-  /** Next to the title (Today's profile button). */
+  /** At the right of the title row (search, the profile button). */
   titleAside?: ReactNode;
   /** Back link above the title; `label` names where it goes ("Learn"). */
   back?: { label: string; onPress?: () => void };
@@ -66,15 +70,15 @@ export function Screen({
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
   const hasTopBar = Boolean(back || actions);
+  // Past the large title, a small bar names the tab and keeps content off the status bar.
+  const [collapsed, setCollapsed] = useState(false);
+  const fade = useTransition('fast', 'opacity');
+  const compactBar = Boolean(tab && scroll && !hasTopBar);
+  const barTitle = title ?? (tab ? tab.charAt(0).toUpperCase() + tab.slice(1) : '');
   const bottomSpace = inTabs || bottomBar ? space.xxl : insets.bottom + space.xxxl;
 
   const header = title ? (
     <View style={styles.titleRow}>
-      {tab ? (
-        <View style={[styles.tile, { backgroundColor: palette.raised }]}>
-          <Icon name={TAB_ICONS[tab]} size={24} tone="action" />
-        </View>
-      ) : null}
       <View style={styles.titleText}>
         <Text variant={titleSize} accessibilityRole="header">
           {title}
@@ -127,6 +131,12 @@ export function Screen({
           ref={scrollRef}
           contentContainerStyle={contentStyle}
           keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={
+            compactBar
+              ? (event) => setCollapsed(event.nativeEvent.contentOffset.y > COLLAPSE_AT)
+              : undefined
+          }
           refreshControl={
             onRefresh ? (
               <RefreshControl
@@ -142,6 +152,26 @@ export function Screen({
       ) : (
         <View style={[contentStyle, styles.fill]}>{content}</View>
       )}
+      {compactBar ? (
+        <Animated.View
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={[
+            styles.compactBar,
+            fade,
+            {
+              height: insets.top + sizes.touch,
+              backgroundColor: palette[background],
+              borderBottomColor: palette.line,
+              opacity: collapsed ? 1 : 0,
+            },
+          ]}>
+          <Text variant="strong" numberOfLines={1}>
+            {barTitle}
+          </Text>
+        </Animated.View>
+      ) : null}
       {bottomBar}
     </View>
   );
@@ -173,11 +203,17 @@ const styles = StyleSheet.create({
     paddingBottom: space.xs,
   },
   titleText: { flex: 1, gap: space.xs },
-  tile: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.tile,
+  compactBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: space.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });
+
+/** Scroll distance (points) at which the large title has mostly left the screen. */
+const COLLAPSE_AT = 56;

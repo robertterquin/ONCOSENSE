@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { ProfileButton } from '@/components/account/ProfileButton';
 import {
   ComingUp,
   EnergyAndPain,
@@ -100,8 +101,9 @@ function Dashboard() {
     <Screen
       inTabs
       tab="journey"
-      title="My journey"
+      title="Journey"
       subtitle={focusSubtitle(focus, diagnosisDate, cancerFreeDate)}
+      titleAside={<ProfileButton />}
       onRefresh={refresh}
       refreshing={queries.some((query) => query.isRefetching)}>
       {loading ? (
@@ -159,7 +161,7 @@ function Invitation({
 }) {
   const { palette } = useDesign();
   return (
-    <Screen inTabs tab="journey" title="Journey">
+    <Screen inTabs tab="journey" title="Journey" titleAside={<ProfileButton />}>
       <View style={styles.invitation}>
         <RibbonMark height={96} color={palette.action} />
         <Text variant="heading" style={styles.centered} accessibilityRole="header">
