@@ -9,21 +9,21 @@ import {
   ErrorState,
   Icon,
   LoadingState,
-  ListRow,
+  PressableScale,
   Screen,
-  Section,
   Text,
 } from '@/components/ui';
 import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
 import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
-import { space } from '@/theme/tokens';
+import { radii, space } from '@/theme/tokens';
+import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 
 // A cancer type in Learn (redesign Phase 3, header from design refresh Phase 8): the
-// header names the cancer and its body system; its fact rows count what's on the page and
-// jump there, and open the related self-check. Then signs, risks, how it's found and
+// header names the cancer and its body system; number tiles count what's on the page and
+// jump there, and the related self-check gets its own card with Start. Then signs, risks, how it's found and
 // when to see a doctor.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
@@ -58,10 +58,20 @@ export default function CancerTypeScreen() {
 
 type SectionKey = 'signs' | 'risk' | 'found' | 'doctor';
 
-/** "6 signs to watch for"; a section with nothing in it gets no row. */
-const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+/** What each tile counts, singular and plural; a section with nothing in it gets no tile. */
+const TILES: { key: SectionKey; one: string; many: string; list: (c: CancerType) => string[] }[] = [
+  { key: 'signs', one: 'sign to watch for', many: 'signs to watch for', list: (c) => c.symptoms },
+  {
+    key: 'risk',
+    one: 'thing that raises risk',
+    many: 'things that raise risk',
+    list: (c) => c.riskFactors,
+  },
+  { key: 'found', one: 'way it’s found', many: 'ways it’s found', list: (c) => c.screeningMethods },
+];
 
 function CancerDetails({ cancer }: { cancer: CancerType }) {
+  const { palette } = useDesign();
   const guides = useSelfCheckGuides();
   const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
   const system = bodySystemForCancer(cancer.name);
@@ -102,38 +112,47 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
         ) : null}
       </View>
 
-      <Section>
-        {cancer.symptoms.length ? (
-          <ListRow
-            title={plural(cancer.symptoms.length, 'sign to watch for', 'signs to watch for')}
-            onPress={() => jump('signs')}
-          />
-        ) : null}
-        {cancer.riskFactors.length ? (
-          <ListRow
-            title={plural(
-              cancer.riskFactors.length,
-              'thing that raises risk',
-              'things that raise risk',
-            )}
-            onPress={() => jump('risk')}
-          />
-        ) : null}
-        {cancer.screeningMethods.length ? (
-          <ListRow
-            title={plural(cancer.screeningMethods.length, 'way it’s found', 'ways it’s found')}
-            onPress={() => jump('found')}
-          />
-        ) : null}
-        {guide ? (
-          <ListRow
-            title={guide.title}
-            subtitle={`${guide.frequency} self-check, about 10 minutes`}
-            titleTone="action"
+      <View style={styles.tiles}>
+        {TILES.filter((tile) => tile.list(cancer).length).map((tile) => {
+          const count = tile.list(cancer).length;
+          const label = count === 1 ? tile.one : tile.many;
+          return (
+            <PressableScale
+              key={tile.key}
+              accessibilityRole="button"
+              accessibilityLabel={`${count} ${label}`}
+              accessibilityHint="Scrolls to that part of the page"
+              onPress={() => jump(tile.key)}
+              style={[styles.tile, { backgroundColor: palette.raised }]}>
+              <Text variant="title">{String(count)}</Text>
+              <Text variant="caption" tone="muted">
+                {label}
+              </Text>
+            </PressableScale>
+          );
+        })}
+      </View>
+
+      {guide ? (
+        <View style={[styles.selfCheck, { backgroundColor: palette.panel }]}>
+          <View style={styles.checkText}>
+            <Text variant="strong" tone="onPanel">
+              {guide.title}
+            </Text>
+            <Text variant="caption" tone="onPanelMuted">
+              {guide.frequency}, about 10 minutes
+            </Text>
+          </View>
+          <Button
+            title="Start"
+            variant="onPanel"
+            small
+            fullWidth={false}
+            accessibilityHint={`Opens the ${guide.title} guide`}
             onPress={() => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } })}
           />
-        ) : null}
-      </Section>
+        </View>
+      ) : null}
 
       <Text variant="reading">{cancer.description}</Text>
 
@@ -203,6 +222,17 @@ function Topic({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  checkText: { flex: 1, gap: 2 },
+  tiles: { flexDirection: 'row', gap: space.sm },
+  // Three across; the number leads and the label wraps under it.
+  tile: { flex: 1, gap: 2, padding: space.md, borderRadius: radii.tile },
+  selfCheck: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    padding: space.lg,
+    borderRadius: radii.section,
+  },
   header: { gap: space.sm },
   system: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   // Lines up with the text above; the pill's padding sits outside it.
