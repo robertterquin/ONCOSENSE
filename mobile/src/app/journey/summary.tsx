@@ -255,23 +255,31 @@ export default function SummaryScreen() {
       </Banner>
 
       {sections.map((section) => (
-        <View key={section.title} style={styles.section}>
-          <Text variant="strong" accessibilityRole="header">
-            {section.title}
-          </Text>
-          {section.lines.map((line, index) => (
-            <Text key={index} variant="body">
-              {line}
-            </Text>
+        <Section key={section.title} title={section.title}>
+          {section.rows.map((row, index) => (
+            <ListRow
+              key={index}
+              title={row.label}
+              trailing={row.value}
+              subtitle={row.detail ?? (row.trend ? TREND_TEXT[row.trend] : undefined)}
+              subtitleTone={row.trend ? TREND_TONE[row.trend] : 'muted'}
+            />
           ))}
-        </View>
+        </Section>
       ))}
     </Screen>
   );
 }
 
+// Pain and energy rows say which way they went; amber when worse, teal when better.
+const TREND_TEXT = {
+  better: 'Better over the period',
+  worse: 'Worse over the period',
+  'about the same': 'About the same over the period',
+} as const;
+const TREND_TONE = { better: 'help', worse: 'sunInk', 'about the same': 'muted' } as const;
+
 const styles = StyleSheet.create({
-  section: { gap: space.xs },
   statsGrid: { gap: space.sm },
   statsRow: { flexDirection: 'row', gap: space.sm },
   // One block in the card (no divider inside), padded like the card's rows.

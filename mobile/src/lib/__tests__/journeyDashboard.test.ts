@@ -237,30 +237,39 @@ describe('summary for the doctor', () => {
     expect(summarySections(buildSummary(input))).toEqual([
       {
         title: 'About',
-        lines: [
-          'Ana Reyes',
-          'Going through treatment',
-          'Covers September 25, 2026 to October 24, 2026',
+        rows: [
+          { label: 'Name', value: 'Ana Reyes' },
+          { label: 'Focus', value: 'Going through treatment' },
+          { label: 'Covers', detail: 'September 25, 2026 to October 24, 2026' },
         ],
       },
       {
         title: 'Check-ins',
-        lines: [
-          '4 check-ins',
-          'Mood: 3.5 of 5 on average (good)',
-          'Pain: 3.5 of 10 on average',
-          'Energy: 5.5 of 10 on average',
-          'Sleep: 3 of 5 on average (fair)',
-          'Pain over the period: better',
-          'Energy over the period: better',
+        rows: [
+          { label: 'Days logged', value: '4' },
+          { label: 'Mood', value: '3.5 of 5, good' },
+          { label: 'Pain', value: '3.5 of 10', trend: 'better' },
+          { label: 'Energy', value: '5.5 of 10', trend: 'better' },
+          { label: 'Sleep', value: '3 of 5, fair' },
         ],
       },
-      { title: 'Most common symptoms', lines: ['Nausea: 2 days', 'Fatigue: 1 day'] },
+      {
+        title: 'Most common symptoms',
+        rows: [
+          { label: 'Nausea', value: '2 days' },
+          { label: 'Fatigue', value: '1 day' },
+        ],
+      },
       {
         title: 'Treatments',
-        lines: ['Chemotherapy: Chemotherapy, started Jul 1, 2026, 3 of 6 sessions'],
+        rows: [
+          { label: 'Chemotherapy', detail: 'Chemotherapy, started Jul 1, 2026, 3 of 6 sessions' },
+        ],
       },
-      { title: 'Upcoming appointments', lines: ['Blood test: October 28, 2026, 8:00 AM'] },
+      {
+        title: 'Upcoming appointments',
+        rows: [{ label: 'Blood test', detail: 'October 28, 2026, 8:00 AM' }],
+      },
     ]);
   });
 
@@ -268,7 +277,7 @@ describe('summary for the doctor', () => {
     const withNotes = buildSummary({ ...input, includeNotes: true });
     expect(summarySections(withNotes).at(-1)).toEqual({
       title: 'Notes',
-      lines: ['Oct 15, 2026: Felt <better> today'],
+      rows: [{ label: 'Oct 15, 2026', detail: 'Felt <better> today' }],
     });
     expect(summaryHtml(withNotes)).toContain('Felt &lt;better&gt; today');
     expect(summaryHtml(buildSummary(input))).not.toContain('Felt');
@@ -282,9 +291,9 @@ describe('summary for the doctor', () => {
     const sections = summarySections(withQuestions);
     const questionsSection = sections.find((s) => s.title === 'Questions for my doctor');
     expect(questionsSection).toBeDefined();
-    expect(questionsSection?.lines).toEqual([
-      'How can I manage peripheral neuropathy?',
-      'Is fatigue normal after cycle 3?',
+    expect(questionsSection?.rows).toEqual([
+      { label: 'How can I manage peripheral neuropathy?' },
+      { label: 'Is fatigue normal after cycle 3?' },
     ]);
 
     const html = summaryHtml(withQuestions);

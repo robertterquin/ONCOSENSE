@@ -128,65 +128,85 @@ export function buildSummary(input: SummaryInput): Summary {
 const moodWord = (value: number) => MOODS[Math.round(value) - 1]?.label.toLowerCase() ?? '';
 const sleepWord = (value: number) => SLEEP[Math.round(value) - 1]?.label.toLowerCase() ?? '';
 
-/** The summary as headed sections of plain lines: the preview, and the PDF's content. */
-export function summarySections(summary: Summary): { title: string; lines: string[] }[] {
+/** One row of the preview: a label, and a short value beside it or a longer detail under it. */
+export type SummaryRow = { label: string; value?: string; detail?: string; trend?: Trend };
+
+// "Hair Loss" reads as "Hair loss"; all-caps words like "UTI" stay as they are.
+const sentenceCase = (text: string) =>
+  text.replace(/ ([A-Z])(?=[a-z])/g, (_, c: string) => ` ${c.toLowerCase()}`);
+
+/** The summary as headed sections of rows: the on-screen preview of the PDF. */
+export function summarySections(summary: Summary): { title: string; rows: SummaryRow[] }[] {
   const range = isSameDay(summary.from, summary.to)
     ? formatLongDate(summary.to)
     : `${formatLongDate(summary.from)} to ${formatLongDate(summary.to)}`;
-  const sections = [
+  const sections: { title: string; rows: SummaryRow[] }[] = [
     {
       title: 'About',
-      lines: [summary.name, ...(summary.focusLabel ? [summary.focusLabel] : []), `Covers ${range}`],
+      rows: [
+        { label: 'Name', value: summary.name },
+        ...(summary.focusLabel ? [{ label: 'Focus', value: summary.focusLabel }] : []),
+        { label: 'Covers', detail: range },
+      ],
     },
     {
       title: 'Check-ins',
-      lines: summary.averages
+      rows: summary.averages
         ? [
-            `${summary.checkIns} check-in${summary.checkIns === 1 ? '' : 's'}`,
-            `Mood: ${summary.averages.mood} of 5 on average (${moodWord(summary.averages.mood)})`,
-            `Pain: ${summary.averages.pain} of 10 on average`,
-            `Energy: ${summary.averages.energy} of 10 on average`,
-            `Sleep: ${summary.averages.sleep} of 5 on average (${sleepWord(summary.averages.sleep)})`,
-            ...(summary.trend
-              ? [
-                  `Pain over the period: ${summary.trend.pain}`,
-                  `Energy over the period: ${summary.trend.energy}`,
-                ]
-              : []),
+            { label: 'Days logged', value: String(summary.checkIns) },
+            {
+              label: 'Mood',
+              value: `${summary.averages.mood} of 5, ${moodWord(summary.averages.mood)}`,
+            },
+            { label: 'Pain', value: `${summary.averages.pain} of 10`, trend: summary.trend?.pain },
+            {
+              label: 'Energy',
+              value: `${summary.averages.energy} of 10`,
+              trend: summary.trend?.energy,
+            },
+            {
+              label: 'Sleep',
+              value: `${summary.averages.sleep} of 5, ${sleepWord(summary.averages.sleep)}`,
+            },
           ]
-        : ['No check-ins in this period'],
+        : [{ label: 'No check-ins in this period' }],
     },
   ];
   if (summary.symptoms.length) {
     sections.push({
       title: 'Most common symptoms',
-      lines: summary.symptoms.map(
-        ([name, count]) => `${name}: ${count} day${count === 1 ? '' : 's'}`,
-      ),
+      rows: summary.symptoms.map(([name, count]) => ({
+        label: sentenceCase(name),
+        value: `${count} day${count === 1 ? '' : 's'}`,
+      })),
     });
   }
   if (summary.treatments.length) {
     sections.push({
       title: 'Treatments',
-      lines: summary.treatments.map((t) => `${t.name}: ${t.detail}`),
+      rows: summary.treatments.map((t) => ({ label: t.name, detail: t.detail })),
     });
   }
   if (summary.appointments.length) {
     sections.push({
       title: 'Upcoming appointments',
-      lines: summary.appointments.map(
-        (a) => `${a.title}: ${a.when}${a.where ? `, ${a.where}` : ''}`,
-      ),
+      rows: summary.appointments.map((a) => ({
+        label: a.title,
+        detail: `${a.when}${a.where ? `, ${a.where}` : ''}`,
+      })),
     });
   }
   if (summary.questions?.length) {
     sections.push({
       title: 'Questions for my doctor',
-      lines: summary.questions,
+      rows: summary.questions.map((question) => ({ label: question })),
     });
   }
   if (summary.notes.length) {
-    sections.push({ title: 'Notes', lines: summary.notes.map((n) => `${n.date}: ${n.text}`) });
+    sections.push({
+      title: 'Notes',
+      rows: summary.notes.map((n) => ({ label: n.date, detail: n.text })),
+    });
   }
   return sections;
 }
