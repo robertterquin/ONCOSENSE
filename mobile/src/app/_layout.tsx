@@ -85,7 +85,7 @@ export default function RootLayout() {
     colors: { ...baseTheme.colors, background: palette.ground, card: palette.surface },
   };
 
-  // Keep the native splash screen (logo on white) until fonts and the session are ready.
+  // Keep the native splash screen (the ribbon on violet) until fonts and the session are ready.
   if (!ready) return null;
 
   return (

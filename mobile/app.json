@@ -14,8 +14,8 @@
     "android": {
       "package": "com.oncosense.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/logo.png"
+        "backgroundColor": "#2E1F66",
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false
     },
