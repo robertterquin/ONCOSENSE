@@ -4,13 +4,11 @@ import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
 import {
-  DateField,
-  LoadingState,
-  BottomActionBar,
-  Button,
   Chip,
-  Icon,
+  DateRow,
   IconButton,
+  LoadingState,
+  PickerRow,
   ListRow,
   Screen,
   Section,
@@ -22,8 +20,7 @@ import { useDeleteTreatment, useSaveTreatment, useTreatments } from '@/hooks/use
 import { confirm } from '@/lib/confirm';
 import { formatLongDate } from '@/lib/dates';
 import { showToast } from '@/stores/toastStore';
-import { radii, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 import {
   TREATMENT_TYPES,
   treatmentTypeLabel,
@@ -60,7 +57,7 @@ export default function TreatmentScreen() {
   const existing = treatments.data?.find((treatment) => treatment.id === id);
   if (id && !existing) {
     return (
-      <Screen back={{ label: 'Journey', onPress: close }}>
+      <Screen sheet={{ title: 'Treatment', onCancel: close }}>
         <LoadingState message="Loading the treatment" />
       </Screen>
     );
@@ -69,7 +66,6 @@ export default function TreatmentScreen() {
 }
 
 function TreatmentForm({ existing }: { existing?: Treatment }) {
-  const { palette } = useDesign();
   const save = useSaveTreatment();
   const remove = useDeleteTreatment();
   const [type, setType] = useState<TreatmentType>(existing?.type ?? 'chemotherapy');
@@ -139,57 +135,43 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
 
   return (
     <Screen
-      back={{ label: 'Journey', onPress: close }}
-      title={existing ? 'Edit treatment' : 'New treatment'}
-      bottomBar={
-        <BottomActionBar>
-          <Button title="Save" loading={save.isPending} onPress={submit} />
-        </BottomActionBar>
-      }>
-      {/* Labelled like the text fields around it. */}
-      <View style={styles.field}>
-        <Text variant="row">Type</Text>
-        <View style={styles.chips} accessibilityRole="radiogroup">
-          {TREATMENT_TYPES.map((option) => (
-            <Chip
-              key={option}
-              kind="radio"
-              label={treatmentTypeLabel(option)}
-              selected={type === option}
-              onPress={() => setType(option)}
-            />
-          ))}
-        </View>
-      </View>
+      sheet={{
+        title: existing ? 'Edit treatment' : 'New treatment',
+        onCancel: close,
+        done: { label: 'Save', onPress: submit, loading: save.isPending },
+      }}>
+      <Section>
+        <PickerRow
+          label="Type"
+          value={type}
+          onChange={setType}
+          options={TREATMENT_TYPES.map((option) => ({
+            value: option,
+            label: treatmentTypeLabel(option),
+          }))}
+        />
+        <TextField
+          grouped
+          label="Name"
+          placeholder="Chemotherapy, AC regimen"
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            if (nameError) setNameError(null);
+          }}
+          error={nameError}
+        />
+      </Section>
 
-      <TextField
-        label="Name"
-        placeholder="Chemotherapy, AC regimen"
-        value={name}
-        onChangeText={(text) => {
-          setName(text);
-          if (nameError) setNameError(null);
-        }}
-        error={nameError}
-      />
-
-      <View style={styles.field}>
-        <Text variant="row">Start date</Text>
-        <DateField
+      <Section>
+        <DateRow
+          label="Started"
+          text={formatLongDate(startDate)}
           value={startDate}
           onChange={setStartDate}
           maximumDate={new Date()}
-          accessibilityLabel={`Start date, ${formatLongDate(startDate)}`}>
-          <View
-            style={[styles.box, { backgroundColor: palette.surface, borderColor: palette.border }]}>
-            <Icon name="calendar" size={20} tone="action" />
-            <Text variant="body">{formatLongDate(startDate)}</Text>
-          </View>
-        </DateField>
-      </View>
-
-      {sessions ? (
-        <Section look="card" divided={false}>
+        />
+        {sessions ? (
           <ListRow
             title="Sessions"
             subtitle={
@@ -220,11 +202,23 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
               </View>
             }
           />
-        </Section>
-      ) : null}
+        ) : null}
+        {existing ? (
+          <ListRow
+            title="Still ongoing"
+            subtitle={isActive ? 'Shown as in progress' : 'Shown as finished'}
+            accessory={
+              <Switch
+                accessibilityLabel="Still ongoing"
+                value={isActive}
+                onValueChange={setIsActive}
+              />
+            }
+          />
+        ) : null}
+      </Section>
 
-      <View style={styles.field}>
-        <Text variant="row">Side effects (optional)</Text>
+      <Section title="Side effects" subtitle="Optional. Choose all that apply." look="plain">
         <View style={styles.chips}>
           {SIDE_EFFECTS.map((effect) => (
             <Chip
@@ -235,38 +229,29 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
             />
           ))}
         </View>
-      </View>
+      </Section>
 
-      <TextField
-        label="Notes (optional)"
-        placeholder="Doctor, hospital, anything to remember"
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-      />
+      <Section>
+        <TextField
+          grouped
+          label="Notes (optional)"
+          placeholder="Doctor, hospital, anything to remember"
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+        />
+      </Section>
 
       {existing ? (
-        <>
-          <Section look="card" divided={false}>
-            <ListRow
-              title="Still ongoing"
-              subtitle={isActive ? 'Shown as in progress' : 'Shown as finished'}
-              accessory={
-                <Switch
-                  accessibilityLabel="Still ongoing"
-                  value={isActive}
-                  onValueChange={setIsActive}
-                />
-              }
-            />
-          </Section>
-          <Button
-            title="Delete treatment"
-            variant="destructive"
-            loading={remove.isPending}
-            onPress={onDelete}
+        <Section>
+          <ListRow
+            icon="trash"
+            iconTone="danger"
+            title={remove.isPending ? 'Deleting' : 'Delete treatment'}
+            titleTone="danger"
+            onPress={remove.isPending ? undefined : onDelete}
           />
-        </>
+        </Section>
       ) : null}
     </Screen>
   );
@@ -274,16 +259,6 @@ function TreatmentForm({ existing }: { existing?: Treatment }) {
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  field: { gap: space.sm },
-  box: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    minHeight: 54,
-    paddingHorizontal: space.lg,
-    borderRadius: radii.control,
-    borderWidth: 1.5,
-  },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   count: { minWidth: 28, textAlign: 'center' },
 });

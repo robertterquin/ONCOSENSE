@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import { useState, type ReactNode, type RefObject } from 'react';
 import {
+  ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -45,6 +47,18 @@ type ScreenProps = {
   bottomBar?: ReactNode;
   /** For scrolling to a section ("On this page"). */
   scrollRef?: RefObject<ScrollViewInstance | null>;
+  /**
+   * A form opened as an iOS sheet: Cancel on the left, the title in the middle and the
+   * save action on the right, in place of the back link and large title.
+   */
+  sheet?: {
+    title: string;
+    onCancel: () => void;
+    /** Left out while the form is loading. */
+    done?: { label: string; onPress: () => void; loading?: boolean };
+  };
+  /** Inner pages without a `title` (a custom header): named in the bar once scrolled. */
+  navTitle?: string;
 };
 
 /** Redesign screen layout: safe areas, top bar, large title and scrolling content. */
@@ -63,32 +77,39 @@ export function Screen({
   inTabs = false,
   bottomBar,
   scrollRef,
+  sheet,
+  navTitle,
 }: ScreenProps) {
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
-  const hasTopBar = Boolean(back || actions);
-  // Past the large title, a small bar names the tab and keeps content off the status bar.
+  const hasTopBar = Boolean(back || actions || sheet);
+  // Past the large title, a small bar names the screen and keeps content off the status bar.
   const [collapsed, setCollapsed] = useState(false);
   const fade = useTransition('fast', 'opacity');
   const compactBar = Boolean(tab && scroll && !hasTopBar);
-  const barTitle = title ?? (tab ? tab.charAt(0).toUpperCase() + tab.slice(1) : '');
+  const barTitle = title ?? navTitle ?? (tab ? tab.charAt(0).toUpperCase() + tab.slice(1) : '');
+  // Inner pages name themselves in the top bar, between back and actions, once scrolled.
+  const watchScroll = compactBar || Boolean(scroll && back && barTitle);
+  // An iOS page sheet starts below the status bar, so it needs no inset of its own.
+  const topInset = sheet && Platform.OS === 'ios' ? 0 : insets.top;
   const bottomSpace = inTabs || bottomBar ? space.xxl : insets.bottom + space.xxxl;
 
-  const header = title ? (
-    <View style={styles.titleRow}>
-      <View style={styles.titleText}>
-        <Text variant={titleSize} accessibilityRole="header">
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text variant="supporting" tone="muted">
-            {subtitle}
+  const header =
+    title && !sheet ? (
+      <View style={styles.titleRow}>
+        <View style={styles.titleText}>
+          <Text variant={titleSize} accessibilityRole="header">
+            {title}
           </Text>
-        ) : null}
+          {subtitle ? (
+            <Text variant="supporting" tone="muted">
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+        {titleAside}
       </View>
-      {titleAside}
-    </View>
-  ) : null;
+    ) : null;
 
   const content = (
     <>
@@ -104,8 +125,48 @@ export function Screen({
 
   return (
     <View style={[styles.root, { backgroundColor: palette.ground }]}>
-      {hasTopBar ? (
-        <View style={[styles.topBar, { paddingTop: insets.top + space.xs }]}>
+      {sheet ? (
+        <View style={[styles.topBar, { paddingTop: topInset + space.sm }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={sheet.onCancel}
+            style={({ pressed }) => [styles.back, styles.barSide, pressed && styles.pressed]}>
+            <Text variant="row" tone="action">
+              Cancel
+            </Text>
+          </Pressable>
+          <Text
+            variant="strong"
+            accessibilityRole="header"
+            numberOfLines={1}
+            style={styles.barTitle}>
+            {sheet.title}
+          </Text>
+          <View style={[styles.barSide, styles.barEnd]}>
+            {!sheet.done ? null : sheet.done.loading ? (
+              <ActivityIndicator color={palette.action} />
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={sheet.done.onPress}
+                style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
+                <Text variant="strong" tone="action">
+                  {sheet.done.label}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      ) : hasTopBar ? (
+        <View
+          style={[
+            styles.topBar,
+            { paddingTop: insets.top + space.xs },
+            watchScroll && {
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: collapsed ? palette.line : 'transparent',
+            },
+          ]}>
           {back ? (
             <Pressable
               accessibilityRole="button"
@@ -120,6 +181,17 @@ export function Screen({
           ) : (
             <View />
           )}
+          {watchScroll ? (
+            <Animated.View
+              pointerEvents="none"
+              importantForAccessibility="no-hide-descendants"
+              accessibilityElementsHidden
+              style={[styles.innerTitle, fade, { opacity: collapsed ? 1 : 0 }]}>
+              <Text variant="strong" numberOfLines={1}>
+                {barTitle}
+              </Text>
+            </Animated.View>
+          ) : null}
           <View style={styles.actions}>{actions}</View>
         </View>
       ) : null}
@@ -130,7 +202,7 @@ export function Screen({
           keyboardShouldPersistTaps="handled"
           scrollEventThrottle={16}
           onScroll={
-            compactBar
+            watchScroll
               ? (event) => setCollapsed(event.nativeEvent.contentOffset.y > COLLAPSE_AT)
               : undefined
           }
@@ -191,6 +263,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xs,
   },
   pressed: { opacity: 0.6 },
+  barSide: { flex: 1 },
+  barEnd: { flexDirection: 'row', justifyContent: 'flex-end' },
+  barTitle: { flexShrink: 1, textAlign: 'center' },
+  // Centred across the whole bar, under the back link and actions.
+  innerTitle: {
+    position: 'absolute',
+    left: 96,
+    right: 96,
+    bottom: 0,
+    top: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: space.md,
+  },
   actions: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   content: { paddingHorizontal: space.xl, paddingTop: space.sm, gap: space.lg },
   titleRow: {

@@ -2,7 +2,10 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import Svg, { Circle } from 'react-native-svg';
+
 import { Button, Chip, Icon, ListRow, PressableScale, Section, Sheet, Text } from '@/components/ui';
+import { decorative } from '@/components/ui/a11y';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate, formatShortMonthDay } from '@/lib/dates';
 import {
@@ -10,15 +13,12 @@ import {
   bodySystemForCancer,
   iconForCancer,
   iconForPreventionTip,
-  shortenSourceName,
   type BodySystem,
 } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
 import type { Palette } from '@/theme/palette';
-import { elevation, pressedCard } from '@/theme/elevation';
-import { useTransition } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
@@ -153,8 +153,6 @@ export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
   );
 }
 
-const CARD_WIDTH = 256;
-
 const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 function categoryTone(category: string): { background: keyof Palette; color: keyof Palette } {
@@ -178,101 +176,40 @@ function categoryTone(category: string): { background: keyof Palette; color: key
   }
 }
 
-export function PreventionTipCard({
-  tip,
-  onPress,
-  fill = false,
-}: {
-  tip: PreventionTip;
-  onPress: () => void;
-  /** Full width in a list, instead of a fixed-width card in a carousel. */
-  fill?: boolean;
-}) {
-  const { palette, isDark } = useDesign();
-  const tone = categoryTone(tip.category);
-  const icon = iconForPreventionTip(tip);
-  const source = shortenSourceName(tip.sourceName);
+/**
+ * One habit as a Reminders-style row: the circle marks it done today (tap again to undo),
+ * the rest of the row opens the details.
+ */
+export function HabitRow({ tip, onPress }: { tip: PreventionTip; onPress: () => void }) {
   const isDone = useHabitsStore((state) => state.isDone(tip.id));
   const toggleDone = useHabitsStore((state) => state.toggleDone);
-  const colorTransition = useTransition('base', ['backgroundColor', 'borderColor']);
-
   return (
-    <PressableScale
-      style={({ pressed }) => [
-        styles.card,
-        fill && styles.cardFill,
-        { backgroundColor: palette.surface },
-        elevation('resting', palette, isDark),
-        // Done today keeps a teal edge in both themes.
-        isDone && { borderWidth: 1.5, borderColor: palette.help, borderTopColor: palette.help },
-        pressed && pressedCard,
-      ]}
-      onPress={() => {
-        haptics.lightImpact();
-        onPress();
-      }}
-      accessibilityRole="button"
-      accessibilityLabel={`${tip.title}, ${tip.category}. ${isDone ? 'Completed today.' : ''} ${tip.description}. Source: ${tip.sourceName}`}>
-      <View style={styles.cardHeader}>
-        <View style={styles.badgeRow}>
-          <View style={[styles.badge, { backgroundColor: palette[tone.background] }]}>
-            <Text variant="caption" tone={tone.color}>
-              {sentenceCase(tip.category)}
-            </Text>
-          </View>
-          <PressableScale
-            hitSlop={8}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: isDone }}
-            accessibilityLabel={`Mark ${tip.title} as completed today`}
-            onPress={(e) => {
-              e.stopPropagation();
-              toggleDone(tip.id);
-            }}
-            style={[
-              styles.actionPill,
-              colorTransition,
-              isDone
-                ? { backgroundColor: palette.helpTint, borderColor: palette.help }
-                : { backgroundColor: palette.raised, borderColor: palette.line },
-            ]}>
-            <Icon
-              name={isDone ? 'check' : 'circle'}
-              size={16}
-              tone={isDone ? 'help' : 'muted'}
-              bold={isDone}
-            />
-            <Text variant="caption" tone={isDone ? 'help' : 'muted'}>
-              {isDone ? 'Done' : 'Today'}
-            </Text>
-          </PressableScale>
-        </View>
-        <View style={[styles.cardIconTile, { backgroundColor: palette.raised }]}>
-          <Icon name={icon} size={20} tone={tone.color} />
-        </View>
-      </View>
-
-      <View style={styles.cardBody}>
-        <Text variant="row" numberOfLines={2}>
-          {tip.title}
-        </Text>
-        <Text variant="supporting" tone="muted" numberOfLines={2}>
-          {tip.description}
-        </Text>
-      </View>
-
-      <View style={[styles.cardFooter, { borderTopColor: palette.line }]}>
-        <Text variant="caption" tone="muted" numberOfLines={1} style={styles.cardSource}>
-          {source}
-        </Text>
-        <View style={styles.cardActionRow}>
-          <Text variant="caption" tone="action">
-            View guide
-          </Text>
-          <Icon name="chevron-right" size={18} tone="action" />
-        </View>
-      </View>
-    </PressableScale>
+    <ListRow
+      title={tip.title}
+      titleTone={isDone ? 'muted' : 'ink'}
+      subtitle={isDone ? 'Done today' : tip.description}
+      subtitleTone={isDone ? 'help' : 'muted'}
+      onPress={onPress}
+      accessibilityHint="Opens the details"
+      leading={
+        <PressableScale
+          hitSlop={8}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isDone }}
+          accessibilityLabel={`${tip.title}, done today`}
+          onPress={() => {
+            haptics.selection();
+            toggleDone(tip.id);
+          }}
+          style={styles.check}>
+          <Icon
+            name={isDone ? 'circle-check' : 'circle'}
+            size={28}
+            tone={isDone ? 'help' : 'muted'}
+          />
+        </PressableScale>
+      }
+    />
   );
 }
 
@@ -334,65 +271,81 @@ export function PreventionDetailSheet({
   );
 }
 
-/** Prevention tips as a swipeable horizontal cards carousel; each opens a sheet with details and source. */
+/** Habits under a ring that fills as they're done today (Apple Fitness), then the rows. */
 export function LowerYourRisk({ tips }: { tips: PreventionTip[] }) {
   const [open, setOpen] = useState<PreventionTip | null>(null);
-
-  const completedToday = useHabitsStore((state) => state.completedCount());
-
-  const subtitle =
-    completedToday > 0
-      ? `Everyday habits backed by health agencies · ${completedToday} done today`
-      : 'Everyday habits backed by health agencies';
+  const done = useHabitsStore((state) => tips.filter((tip) => state.isDone(tip.id)).length);
 
   return (
-    <Section title="Lower your risk" subtitle={subtitle} look="plain">
-      <View style={styles.tipList}>
+    <View style={styles.sectionGap}>
+      <Section>
+        <View
+          accessible
+          accessibilityLabel={`${done} of ${tips.length} habits done today`}
+          style={styles.progress}>
+          <ProgressRing done={done} total={tips.length} />
+          <View style={styles.progressText}>
+            <Text variant="strong">Today&apos;s habits</Text>
+            <Text variant="supporting" tone="muted">
+              Small steps that lower your risk, backed by health agencies
+            </Text>
+          </View>
+        </View>
+      </Section>
+      <Section>
         {tips.map((tip) => (
-          <PreventionTipCard key={tip.id} tip={tip} onPress={() => setOpen(tip)} fill />
+          <HabitRow key={tip.id} tip={tip} onPress={() => setOpen(tip)} />
         ))}
-      </View>
+      </Section>
       <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
-    </Section>
+    </View>
+  );
+}
+
+const RING = 56;
+const RING_STROKE = 5;
+
+function ProgressRing({ done, total }: { done: number; total: number }) {
+  const { palette } = useDesign();
+  const radius = (RING - RING_STROKE) / 2;
+  const length = 2 * Math.PI * radius;
+  const share = total ? done / total : 0;
+  return (
+    <View style={styles.ring}>
+      <Svg width={RING} height={RING} style={StyleSheet.absoluteFill} {...decorative}>
+        <Circle
+          cx={RING / 2}
+          cy={RING / 2}
+          r={radius}
+          stroke={palette.border}
+          strokeWidth={RING_STROKE}
+          fill="none"
+        />
+        <Circle
+          cx={RING / 2}
+          cy={RING / 2}
+          r={radius}
+          stroke={palette.help}
+          strokeWidth={RING_STROKE}
+          strokeLinecap="round"
+          strokeDasharray={`${length * share} ${length}`}
+          // Starts at the top, like a clock.
+          transform={`rotate(-90 ${RING / 2} ${RING / 2})`}
+          fill="none"
+        />
+      </Svg>
+      <Text variant="strong">{`${done}/${total}`}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   sectionGap: { gap: space.md },
   systems: { gap: space.sm, paddingRight: space.xl },
-  tipList: { gap: space.md },
-  cardFill: { width: '100%', minHeight: 0 },
-  card: {
-    width: CARD_WIDTH,
-    minHeight: 188,
-    borderRadius: radii.section,
-    padding: space.lg,
-    justifyContent: 'space-between',
-    gap: space.md,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   badge: {
     paddingHorizontal: space.sm,
     paddingVertical: space.xs,
     borderRadius: radii.round,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.xs,
-  },
-  actionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.xs,
-    paddingHorizontal: space.sm,
-    paddingVertical: space.xs,
-    borderRadius: radii.round,
-    borderWidth: 1,
   },
   cardIconTile: {
     width: 36,
@@ -401,25 +354,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBody: {
-    gap: space.xs,
-  },
-  cardFooter: {
+  check: { minWidth: 32, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  progress: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: space.sm,
-    borderTopWidth: 1,
+    gap: space.lg,
+    paddingVertical: space.lg,
   },
-  cardSource: {
-    flex: 1,
-    marginRight: space.xs,
-  },
-  cardActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
+  progressText: { flex: 1, gap: 2 },
+  ring: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center' },
   sheetContent: {
     gap: space.md,
   },

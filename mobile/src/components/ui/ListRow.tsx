@@ -36,6 +36,8 @@ type ListRowProps = {
   status?: { kind: 'done' | 'due'; label: string };
   /** Replaces the chevron (a switch, a call button). Keep it outside `onPress`. */
   accessory?: ReactNode;
+  /** Before the title, outside `onPress` (a done circle with its own button). */
+  leading?: ReactNode;
   onPress?: () => void;
   /** Overrides the label read for the row; defaults to title and subtitle. */
   accessibilityLabel?: string;
@@ -58,6 +60,7 @@ export function ListRow({
   trailing,
   status,
   accessory,
+  leading,
   onPress,
   accessibilityLabel,
   accessibilityHint,
@@ -97,6 +100,7 @@ export function ListRow({
 
   return (
     <View style={styles.row}>
+      {leading}
       {onPress ? (
         <PressableScale
           feedback="fade"

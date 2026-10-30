@@ -3,18 +3,17 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { ActionSheetIOS, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { userProfilePictureUrl } from '@/api/auth';
 import { pickProfilePhoto } from '@/api/profilePicture';
 import { FormTextField } from '@/components/account/FormTextField';
 import {
-  BottomActionBar,
   Button,
-  Chip,
-  Icon,
   ListRow,
+  PickerRow,
   Screen,
+  Section,
   Sheet,
   Text,
   TextField,
@@ -31,7 +30,9 @@ import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-// Edit profile (redesign Phase 6): photo, name, age and gender. Behavior unchanged.
+// Edit profile (redesign Phase 6, a sheet since Phase 18): photo, name, age and gender.
+
+const NOT_SET = 'not-set';
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
 
@@ -67,6 +68,38 @@ export default function EditProfileScreen() {
     }
   };
 
+  const removePhoto = () => {
+    setNewPhotoUri(null);
+    setPhotoUrl(null);
+  };
+
+  // iOS gets its own action sheet; Android and the web get the app's sheet.
+  const openPhotoChoices = () => {
+    if (Platform.OS !== 'ios') {
+      setChoosingPhoto(true);
+      return;
+    }
+    const options = [
+      'Take photo',
+      'Choose photo',
+      ...(shownPhoto ? ['Remove photo'] : []),
+      'Cancel',
+    ];
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        title: 'Profile photo',
+        options,
+        cancelButtonIndex: options.length - 1,
+        destructiveButtonIndex: shownPhoto ? 2 : undefined,
+      },
+      (index) => {
+        if (index === 0) void choosePhoto('camera');
+        if (index === 1) void choosePhoto('library');
+        if (index === 2 && shownPhoto) removePhoto();
+      },
+    );
+  };
+
   const onSubmit = handleSubmit((form) =>
     update.mutate(
       {
@@ -91,18 +124,12 @@ export default function EditProfileScreen() {
       style={styles.fill}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen
-        back={{ label: 'Profile', onPress: back }}
-        title="Edit profile"
-        bottomBar={
-          <BottomActionBar>
-            <Button title="Save" loading={update.isPending} onPress={onSubmit} />
-          </BottomActionBar>
-        }>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={shownPhoto ? 'Change or remove photo' : 'Add a photo'}
-          onPress={() => setChoosingPhoto(true)}
-          style={styles.photoWrap}>
+        sheet={{
+          title: 'Edit profile',
+          onCancel: back,
+          done: { label: 'Done', onPress: onSubmit, loading: update.isPending },
+        }}>
+        <View style={styles.photoBlock}>
           <View style={[styles.photo, { backgroundColor: palette.raised }]}>
             {shownPhoto ? (
               <Image source={{ uri: shownPhoto }} style={styles.fill} contentFit="cover" />
@@ -112,40 +139,50 @@ export default function EditProfileScreen() {
               </Text>
             )}
           </View>
-          <View style={[styles.badge, { backgroundColor: palette.action }]}>
-            <Icon name="camera" size={18} tone="onAction" />
-          </View>
-        </Pressable>
+          <Button
+            title={shownPhoto ? 'Edit photo' : 'Add photo'}
+            variant="quiet"
+            small
+            fullWidth={false}
+            onPress={openPhotoChoices}
+          />
+        </View>
 
-        <FormTextField control={control} name="fullName" label="Your name" autoComplete="name" />
-        <TextField label="Email" value={user?.email ?? ''} editable={false} />
-        <FormTextField
-          control={control}
-          name="age"
-          label="Age (optional)"
-          keyboardType="number-pad"
-          maxLength={3}
-        />
-        <Controller
-          control={control}
-          name="gender"
-          render={({ field }) => (
-            <View style={styles.field}>
-              <Text variant="row">Gender (optional)</Text>
-              <View style={styles.chips} accessibilityRole="radiogroup">
-                {PROFILE_GENDER_OPTIONS.map((option) => (
-                  <Chip
-                    key={option}
-                    kind="radio"
-                    label={option}
-                    selected={field.value === option}
-                    onPress={() => field.onChange(field.value === option ? null : option)}
-                  />
-                ))}
-              </View>
-            </View>
-          )}
-        />
+        <Section>
+          <FormTextField
+            grouped
+            control={control}
+            name="fullName"
+            label="Your name"
+            autoComplete="name"
+          />
+          <TextField grouped label="Email" value={user?.email ?? ''} editable={false} />
+        </Section>
+        <Section>
+          <FormTextField
+            grouped
+            control={control}
+            name="age"
+            label="Age (optional)"
+            keyboardType="number-pad"
+            maxLength={3}
+          />
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field }) => (
+              <PickerRow
+                label="Gender"
+                value={field.value ?? NOT_SET}
+                onChange={(value) => field.onChange(value === NOT_SET ? null : value)}
+                options={[
+                  { value: NOT_SET, label: 'Not set' },
+                  ...PROFILE_GENDER_OPTIONS.map((option) => ({ value: option, label: option })),
+                ]}
+              />
+            )}
+          />
+        </Section>
       </Screen>
 
       <Sheet visible={choosingPhoto} onClose={() => setChoosingPhoto(false)} title="Profile photo">
@@ -163,8 +200,7 @@ export default function EditProfileScreen() {
             title="Remove photo"
             onPress={() => {
               setChoosingPhoto(false);
-              setNewPhotoUri(null);
-              setPhotoUrl(null);
+              removePhoto();
             }}
           />
         ) : null}
@@ -174,27 +210,14 @@ export default function EditProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Labelled like a text field.
-  field: { gap: space.sm },
   fill: { flex: 1, width: '100%', height: '100%' },
-  photoWrap: { alignSelf: 'center' },
+  photoBlock: { alignItems: 'center', gap: space.xs },
   photo: {
-    width: 112,
-    height: 112,
+    width: 104,
+    height: 104,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  badge: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 36,
-    height: 36,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 });

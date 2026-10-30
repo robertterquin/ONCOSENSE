@@ -1,18 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
 import {
-  DateField,
-  LoadingState,
-  BottomActionBar,
-  Button,
   Chip,
-  Icon,
+  DateRow,
+  ListRow,
+  LoadingState,
+  PickerRow,
   Screen,
   Section,
-  Text,
   TextField,
 } from '@/components/ui';
 import {
@@ -22,10 +20,9 @@ import {
   useTreatments,
 } from '@/hooks/useJourney';
 import { confirm } from '@/lib/confirm';
-import { formatLongDate, formatTime } from '@/lib/dates';
+import { formatLongDate, formatTime, isSameDay } from '@/lib/dates';
 import { showToast } from '@/stores/toastStore';
-import { radii, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
+import { space } from '@/theme/tokens';
 import type { Appointment } from '@/types/appointment';
 
 // Add or edit an appointment (redesign Phase 4). Opened with `?id=` to edit.
@@ -46,7 +43,7 @@ export default function AppointmentScreen() {
   const existing = appointments.data?.find((appointment) => appointment.id === id);
   if (id && !existing) {
     return (
-      <Screen back={{ label: 'Journey', onPress: close }}>
+      <Screen sheet={{ title: 'Appointment', onCancel: close }}>
         <LoadingState message="Loading the appointment" />
       </Screen>
     );
@@ -114,148 +111,124 @@ function AppointmentForm({ existing }: { existing?: Appointment }) {
     });
   };
 
+  const quickDays = [
+    { label: 'Today', date: addDays(0) },
+    { label: 'Tomorrow', date: addDays(1) },
+    { label: 'Next week', date: addDays(7) },
+  ];
+
   return (
     <Screen
-      back={{ label: 'Journey', onPress: close }}
-      title={existing ? 'Edit appointment' : 'New appointment'}
-      subtitle="We'll remind you the evening before."
-      bottomBar={
-        <BottomActionBar>
-          <Button title="Save" loading={save.isPending} onPress={submit} />
-        </BottomActionBar>
-      }>
-      <TextField
-        label="What is it for?"
-        placeholder="Check-up, blood test, chemo"
-        value={title}
-        onChangeText={(text) => {
-          setTitle(text);
-          if (titleError) setTitleError(null);
-        }}
-        error={titleError}
-      />
+      sheet={{
+        title: existing ? 'Edit appointment' : 'New appointment',
+        onCancel: close,
+        done: { label: 'Save', onPress: submit, loading: save.isPending },
+      }}>
+      <Section>
+        <TextField
+          grouped
+          label="What is it for?"
+          placeholder="Check-up, blood test, chemo"
+          value={title}
+          onChangeText={(text) => {
+            setTitle(text);
+            if (titleError) setTitleError(null);
+          }}
+          error={titleError}
+        />
+        <TextField
+          grouped
+          label="Place (optional)"
+          placeholder="Hospital, clinic or room"
+          value={location}
+          onChangeText={setLocation}
+        />
+      </Section>
 
-      <View style={styles.row}>
-        <PickerBox
+      <Section title="When" subtitle="We'll remind you the evening before.">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+          accessibilityRole="radiogroup">
+          {quickDays.map((day) => (
+            <Chip
+              key={day.label}
+              kind="radio"
+              label={day.label}
+              selected={isSameDay(startsAt, day.date)}
+              onPress={() => keepTime(day.date)}
+            />
+          ))}
+        </ScrollView>
+        <DateRow
           label="Date"
-          value={formatLongDate(startsAt)}
-          icon="calendar"
-          style={styles.flex1}>
-          {(children) => (
-            <DateField
-              value={startsAt}
-              onChange={keepTime}
-              minimumDate={existing ? undefined : new Date()}
-              accessibilityLabel={`Date, ${formatLongDate(startsAt)}`}>
-              {children}
-            </DateField>
-          )}
-        </PickerBox>
-        <PickerBox label="Time" value={formatTime(startsAt)} icon="clock" style={styles.flex1}>
-          {(children) => (
-            <DateField
-              mode="time"
-              value={startsAt}
-              onChange={setStartsAt}
-              accessibilityLabel={`Time, ${formatTime(startsAt)}`}>
-              {children}
-            </DateField>
-          )}
-        </PickerBox>
-      </View>
-
-      <TextField
-        label="Place (optional)"
-        placeholder="Hospital, clinic or room"
-        value={location}
-        onChangeText={setLocation}
-      />
+          text={formatLongDate(startsAt)}
+          value={startsAt}
+          onChange={keepTime}
+          minimumDate={existing ? undefined : new Date()}
+        />
+        <DateRow
+          label="Time"
+          mode="time"
+          text={formatTime(startsAt)}
+          value={startsAt}
+          onChange={setStartsAt}
+        />
+      </Section>
 
       {treatments.data?.length ? (
-        <Section title="Part of a treatment? (optional)" look="plain">
-          <View style={styles.chips}>
-            <Chip
-              kind="radio"
-              label="None"
-              selected={treatmentId === null}
-              onPress={() => setTreatmentId(null)}
-            />
-            {treatments.data.map((treatment) => (
-              <Chip
-                key={treatment.id}
-                kind="radio"
-                label={treatment.name}
-                selected={treatmentId === treatment.id}
-                onPress={() => setTreatmentId(treatment.id)}
-              />
-            ))}
-          </View>
+        <Section>
+          <PickerRow
+            label="Part of a treatment"
+            value={treatmentId ?? NONE}
+            onChange={(value) => setTreatmentId(value === NONE ? null : value)}
+            options={[
+              { value: NONE, label: 'None' },
+              ...treatments.data.map((treatment) => ({
+                value: treatment.id,
+                label: treatment.name,
+              })),
+            ]}
+          />
         </Section>
       ) : null}
 
-      <TextField
-        label="Notes (optional)"
-        placeholder="Questions to ask, what to bring"
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-      />
+      <Section>
+        <TextField
+          grouped
+          label="Notes (optional)"
+          placeholder="Questions to ask, what to bring"
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+        />
+      </Section>
 
       {existing ? (
-        <Button
-          title="Delete appointment"
-          variant="destructive"
-          loading={remove.isPending}
-          onPress={onDelete}
-        />
+        <Section>
+          <ListRow
+            icon="trash"
+            iconTone="danger"
+            title={remove.isPending ? 'Deleting' : 'Delete appointment'}
+            titleTone="danger"
+            onPress={remove.isPending ? undefined : onDelete}
+          />
+        </Section>
       ) : null}
     </Screen>
   );
 }
 
-/** A labelled box showing a date or time; `children` wraps it in the picker. */
-function PickerBox({
-  label,
-  value,
-  icon,
-  style,
-  children,
-}: {
-  label: string;
-  value: string;
-  icon: 'calendar' | 'clock';
-  style?: object;
-  children: (box: React.ReactNode) => React.ReactNode;
-}) {
-  const { palette } = useDesign();
-  return (
-    <View style={[styles.picker, style]}>
-      <Text variant="row">{label}</Text>
-      {children(
-        <View
-          style={[styles.box, { backgroundColor: palette.surface, borderColor: palette.border }]}>
-          <Icon name={icon} size={20} tone="action" />
-          <Text variant="body" numberOfLines={1} style={styles.flex1}>
-            {value}
-          </Text>
-        </View>,
-      )}
-    </View>
-  );
+const NONE = 'none';
+
+/** A day `days` from today (the time is kept by `keepTime`). */
+function addDays(days: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date;
 }
 
 const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  row: { gap: space.md },
-  picker: { gap: space.sm },
-  box: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    minHeight: 54,
-    paddingHorizontal: space.lg,
-    borderRadius: radii.control,
-    borderWidth: 1.5,
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  chips: { gap: space.sm, paddingTop: space.md, paddingBottom: space.xs },
 });

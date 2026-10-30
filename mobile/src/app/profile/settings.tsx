@@ -52,15 +52,15 @@ export default function SettingsScreen() {
       <Section title="Display">
         <View style={styles.display}>
           <View style={styles.group}>
-            <Text variant="row">Theme</Text>
+            <Text variant="row">Appearance</Text>
             <SegmentedControl<ThemeMode>
-              accessibilityLabel="Theme"
+              accessibilityLabel="Appearance"
               value={mode}
               onChange={setMode}
               options={[
                 { value: 'light', label: 'Light' },
                 { value: 'dark', label: 'Dark' },
-                { value: 'system', label: 'Phone' },
+                { value: 'system', label: 'Auto' },
               ]}
             />
           </View>
