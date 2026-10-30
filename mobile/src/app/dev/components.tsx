@@ -138,10 +138,10 @@ export default function ComponentGalleryScreen() {
         </View>
         <View style={styles.ribbons}>
           <RibbonMark height={80} color={palette.action} />
-          <RibbonMark height={48} color={palette.rose} weight={24} />
+          <RibbonMark height={48} color={palette.action} weight={24} />
           <RibbonMark height={80} color={palette.panel} highlight={palette.raised} weight={26} />
           {/* The "Mark as done" moment; draws each time this page opens. */}
-          <RibbonMark height={80} color={palette.rose} weight={18} draw />
+          <RibbonMark height={80} color={palette.action} weight={18} draw />
         </View>
       </Section>
 
@@ -153,14 +153,14 @@ export default function ComponentGalleryScreen() {
         </View>
         <View style={styles.inlineRow}>
           <StatTile label="Energy, 7 days" value="6.2" detail="of 10, up from 5" />
-          <StatTile label="Pain, 7 days" value="2.5" detail="of 10, steady" valueTone="rose" />
+          <StatTile label="Pain, 7 days" value="2.5" detail="of 10, steady" valueTone="sunInk" />
         </View>
         <View style={styles.inlineRow}>
           <TopicTile icon="ribbon" title="Breast" subtitle="Most common here" onPress={() => {}} />
           <TopicTile icon="lungs" title="Lung" subtitle="7 early signs" onPress={() => {}} />
         </View>
         <View style={styles.inlineRow}>
-          <TopicTile icon="stethoscope" iconTone="rose" title="Rose" onPress={() => {}} />
+          <TopicTile icon="stethoscope" iconTone="help" title="Teal" onPress={() => {}} />
           <TopicTile icon="pill" iconTone="sun" title="Sun" onPress={() => {}} />
         </View>
       </Section>
@@ -213,10 +213,10 @@ export default function ComponentGalleryScreen() {
       <Section title="Rows" subtitle="Icon tiles, subtitles and accessories">
         <ListRow
           icon="calendar-check"
-          iconTone="rose"
+          iconTone="action"
           title="Breast self-exam"
           subtitle="Due today"
-          subtitleTone="rose"
+          subtitleTone="action"
           onPress={() => {}}
         />
         <ListRow
@@ -324,7 +324,7 @@ export default function ComponentGalleryScreen() {
       <Section title="Progress" look="card" divided={false}>
         <View style={styles.stack}>
           <ProgressSegments total={6} done={2} accessibilityLabel="Treatment cycles" />
-          <ProgressSegments total={6} done={2} tone="rose" accessibilityLabel="Self-check steps" />
+          <ProgressSegments total={6} done={2} tone="action" accessibilityLabel="Self-check steps" />
           <StepList
             current={1}
             steps={[

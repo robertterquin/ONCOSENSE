@@ -86,7 +86,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
       <View style={styles.header}>
         {system !== 'All' ? (
           <View style={styles.system}>
-            <Icon name={iconForCancer(cancer.name)} size={24} tone="rose" />
+            <Icon name={iconForCancer(cancer.name)} size={24} tone="action" />
             <Text variant="caption" tone="muted">
               {system}
             </Text>
@@ -96,7 +96,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           {cancer.name}
         </Text>
         {statistic ? (
-          <Text variant="body" tone="rose">
+          <Text variant="body" tone="action">
             {statistic}
           </Text>
         ) : null}
@@ -129,7 +129,7 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           <ListRow
             title={guide.title}
             subtitle={`${guide.frequency} self-check, about 10 minutes`}
-            titleTone="rose"
+            titleTone="action"
             onPress={() => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } })}
           />
         ) : null}

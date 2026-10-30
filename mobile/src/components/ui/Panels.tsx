@@ -27,15 +27,15 @@ import { Text } from './Text';
 
 type Action = { label: string; onPress: () => void };
 
-/** The ribbon's violet-to-rose fade, and the quiet segments of the step bar. */
-const RIBBON_GRADIENT: [string, string] = ['#6A55D6', '#B2579A'];
+/** The ribbon's violet-to-lavender fade, and the quiet segments of the step bar. */
+const RIBBON_GRADIENT: [string, string] = ['#6A55D6', '#A08CF2'];
 const STEP_REST = 'rgba(255, 255, 255, 0.18)';
 
 type NextStepPanelProps = {
   /** Short status line above the title ("Due today"). */
   status: string;
   statusIcon?: IconName;
-  /** Shows the status as a rose "due" tag instead of an icon and text. */
+  /** Shows the status as a "due" tag instead of an icon and text. */
   due?: boolean;
   /** Number of steps, drawn as segments under the body (a guided self-check). */
   steps?: number;

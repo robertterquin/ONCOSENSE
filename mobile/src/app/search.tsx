@@ -296,7 +296,7 @@ export default function SearchScreen() {
             />
             <ListRow
               icon="check"
-              iconTone="rose"
+              iconTone="action"
               title="Self-check guides"
               subtitle="Step-by-step guides for breast, skin, oral and testicular checks"
               onPress={() => handleSelectSuggestion('Self-Exam')}

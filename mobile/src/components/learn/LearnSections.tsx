@@ -39,7 +39,7 @@ import type { PreventionTip } from '@/types/preventionTip';
 const openGuide = (id: string) => router.push({ pathname: '/learn/check/[id]', params: { id } });
 const openCancer = (id: string) => router.push({ pathname: '/learn/cancer/[id]', params: { id } });
 
-/** One self-check guide: a rose "Due" tag when it's due, else when it was last done. */
+/** One self-check guide: a "Due" tag when it's due, else when it was last done. */
 export function GuideRow({ status }: { status: GuideStatus }) {
   const { guide, isDue, label, lastDone } = status;
   const done = !isDue && lastDone ? `Done ${formatShortDate(lastDone)}` : null;
@@ -47,7 +47,7 @@ export function GuideRow({ status }: { status: GuideStatus }) {
   return (
     <ListRow
       icon={iconForCancer(guide.cancerType)}
-      iconTone="rose"
+      iconTone="action"
       title={guide.title}
       subtitle={subtitle}
       badge={
@@ -163,7 +163,7 @@ function categoryTone(category: string): { background: keyof Palette; color: key
     case 'hydration':
       return { background: 'helpTint', color: 'help' };
     case 'lifestyle':
-      return { background: 'roseTint', color: 'rose' };
+      return { background: 'raised', color: 'action' };
     case 'weight':
       return { background: 'sun', color: 'sunInk' };
     case 'screening':

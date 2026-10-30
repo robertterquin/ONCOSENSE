@@ -10,21 +10,20 @@ import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
 import { Text } from './Text';
 
-/** Icon tile colors by section: lavender, rose (self-checks), teal (help), sun (tips and reminders), danger. */
-export type TileTone = 'action' | 'rose' | 'help' | 'sun' | 'danger';
+/** Icon tile colors by section: lavender (most things), teal (help), sun (tips and reminders), danger. */
+export type TileTone = 'action' | 'help' | 'sun' | 'danger';
 
 export const TILES: Record<TileTone, { background: keyof Palette; color: keyof Palette }> = {
   action: { background: 'raised', color: 'action' },
-  rose: { background: 'roseTint', color: 'rose' },
   help: { background: 'helpTint', color: 'help' },
   sun: { background: 'sun', color: 'sunInk' },
-  danger: { background: 'roseTint', color: 'danger' },
+  danger: { background: 'dangerTint', color: 'danger' },
 };
 
 type ListRowProps = {
   title: string;
   subtitle?: string;
-  /** Color for the subtitle (`rose` for "Due today"). */
+  /** Color for the subtitle (`action` for "Due today"). */
   subtitleTone?: keyof Palette;
   icon?: IconName;
   iconTone?: TileTone;

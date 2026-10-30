@@ -53,7 +53,7 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
           label="Pain, 7 days"
           value={pain.value === null ? '–' : String(pain.value)}
           detail={pain.detail}
-          valueTone="rose"
+          valueTone="sunInk"
         />
       </View>
       <View

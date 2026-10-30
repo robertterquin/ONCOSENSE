@@ -14,7 +14,7 @@ import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 import { Icon } from './Icon';
-import { TAB_COLORS, TAB_ICONS } from './TabBar';
+import { TAB_ICONS } from './TabBar';
 import { Text } from './Text';
 
 type ScreenProps = {
@@ -71,8 +71,8 @@ export function Screen({
   const header = title ? (
     <View style={styles.titleRow}>
       {tab ? (
-        <View style={[styles.tile, { backgroundColor: palette[TAB_COLORS[tab][1]] }]}>
-          <Icon name={TAB_ICONS[tab]} size={24} tone={TAB_COLORS[tab][0]} />
+        <View style={[styles.tile, { backgroundColor: palette.raised }]}>
+          <Icon name={TAB_ICONS[tab]} size={24} tone="action" />
         </View>
       ) : null}
       <View style={styles.titleText}>

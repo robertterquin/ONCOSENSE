@@ -1,6 +1,6 @@
 // Redesign color tokens (docs/redesign/02-phase-2-foundations.md and the Foundations
-// artboard). Lavender is the awareness color for all cancers; rose marks self-checks,
-// teal marks help and calling. Every text pair passes WCAG AA (palette.test.ts).
+// artboard). Lavender is the awareness color for all cancers and leads everywhere;
+// teal marks help and calling, amber milestones and pain. Every text pair passes WCAG AA (palette.test.ts).
 
 export type Palette = {
   /** Screen background. */
@@ -27,14 +27,8 @@ export type Palette = {
   onPanelMuted: string;
   /** Lighter violet at the panel's top-left, where its gradient starts. */
   panelTop: string;
-  /** Soft rose for the panel's quiet action and active step. */
+  /** Soft lavender for the panel's quiet action and active step. */
   onPanelAccent: string;
-  /** Self-checks. */
-  rose: string;
-  roseTint: string;
-  /** The Community tab's colour: a bluer lavender, apart from Journey's violet. */
-  community: string;
-  communityTint: string;
   /** Help and calling. */
   help: string;
   helpTint: string;
@@ -47,6 +41,7 @@ export type Palette = {
   chartPain: string;
   /** Errors and destructive actions. */
   danger: string;
+  dangerTint: string;
 };
 
 export const lightPalette: Palette = {
@@ -63,18 +58,15 @@ export const lightPalette: Palette = {
   onPanel: '#FFFFFF',
   onPanelMuted: '#E6E0FA',
   panelTop: '#41309A',
-  onPanelAccent: '#F7B6CF',
-  rose: '#C2255C',
-  roseTint: '#FBE8EF',
-  community: '#4549B8',
-  communityTint: '#E8E9FA',
+  onPanelAccent: '#D9CCFF',
   help: '#0E6B63',
   helpTint: '#E1F2EF',
   onHelpTint: '#0B4F49',
   sun: '#FDF1D6',
   sunInk: '#8A5A00',
-  chartPain: '#DB5A88',
+  chartPain: '#8A5A00',
   danger: '#C2255C',
+  dangerTint: '#FBE8EF',
 };
 
 export const darkPalette: Palette = {
@@ -91,18 +83,15 @@ export const darkPalette: Palette = {
   onPanel: '#FFFFFF',
   onPanelMuted: '#E6E0FA',
   panelTop: '#41309A',
-  onPanelAccent: '#F7B6CF',
-  rose: '#F27BA6',
-  roseTint: '#3A1A2A',
-  community: '#AEB4FF',
-  communityTint: '#272A55',
+  onPanelAccent: '#D9CCFF',
   help: '#6FD3C5',
   helpTint: '#0F3D39',
   onHelpTint: '#CFEDE8',
   sun: '#3A2E12',
   sunInk: '#F5BE4A',
-  chartPain: '#F27BA6',
-  danger: '#F27BA6',
+  chartPain: '#F5BE4A',
+  danger: '#FF8A80',
+  dangerTint: '#3A1A2A',
 };
 
 /** High readability / chemo-brain light palette (WCAG AAA contrast, >= 7:1 for text). */
@@ -120,18 +109,15 @@ export const highContrastLightPalette: Palette = {
   onPanel: '#FFFFFF',
   onPanelMuted: '#FFFFFF',
   panelTop: '#2C1B6E',
-  onPanelAccent: '#FFD2E2',
-  rose: '#940038',
-  roseTint: '#FBE8F0',
-  community: '#24288A',
-  communityTint: '#E6E7FA',
+  onPanelAccent: '#E6DDFF',
   help: '#02534C',
   helpTint: '#E2F7F4',
   onHelpTint: '#04433D',
   sun: '#F5E6BF',
   sunInk: '#664100',
-  chartPain: '#940038',
+  chartPain: '#664100',
   danger: '#940038',
+  dangerTint: '#FBE8F0',
 };
 
 /** High readability / chemo-brain dark palette (pure pitch black, WCAG AAA contrast, >= 7:1 for text). */
@@ -149,18 +135,15 @@ export const highContrastDarkPalette: Palette = {
   onPanel: '#FFFFFF',
   onPanelMuted: '#FFFFFF',
   panelTop: '#372480',
-  onPanelAccent: '#FFC0D9',
-  rose: '#FFA1C2',
-  roseTint: '#3D1528',
-  community: '#C9CCFF',
-  communityTint: '#1D2050',
+  onPanelAccent: '#E6DDFF',
   help: '#7EFFF0',
   helpTint: '#0C3833',
   onHelpTint: '#E0FAF6',
   sun: '#3D2F0B',
   sunInk: '#FFD369',
-  chartPain: '#FFA1C2',
-  danger: '#FFA1C2',
+  chartPain: '#FFD369',
+  danger: '#FFB4AB',
+  dangerTint: '#3D1528',
 };
 
 /** Foreground/background pairs the design relies on, for the contrast test. */
@@ -181,17 +164,11 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['onPanelMuted', 'panelTop'],
   ['onPanelAccent', 'panel'],
   ['onPanelAccent', 'panelTop'],
-  ['rose', 'surface'],
-  ['rose', 'roseTint'],
   ['help', 'surface'],
   ['onHelpTint', 'helpTint'],
-  ['community', 'surface'],
-  ['community', 'ground'],
-  ['community', 'communityTint'],
   ['sunInk', 'sun'],
   ['danger', 'surface'],
   ['danger', 'ground'],
-  ['rose', 'ground'],
   ['help', 'ground'],
   ['muted', 'helpTint'],
   ['surface', 'help'],
@@ -204,11 +181,9 @@ export const MARK_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['chartPain', 'surface'],
   ['action', 'surface'],
   ['help', 'helpTint'],
-  ['onAction', 'rose'],
   ['danger', 'raised'],
   ['sunInk', 'surface'],
   ['sunInk', 'ground'],
-  ['rose', 'raised'],
   ['help', 'raised'],
-  ['danger', 'roseTint'],
+  ['danger', 'dangerTint'],
 ];

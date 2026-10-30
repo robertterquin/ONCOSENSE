@@ -20,7 +20,7 @@ export type ButtonVariant =
   | 'onPanel'
   /** Text-only button on the night-violet panel. */
   | 'onPanelQuiet'
-  /** Text-only button in soft rose on the night-violet panel (Today's "Remind me tomorrow"). */
+  /** Text-only button in soft lavender on the night-violet panel (Today's "Remind me tomorrow"). */
   | 'onPanelAccent'
   /** Outlined button on the night-violet panel (Welcome's "Sign in"). */
   | 'onPanelOutline'

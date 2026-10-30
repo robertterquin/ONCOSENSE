@@ -84,7 +84,7 @@ export function StepList({ steps, current, children }: StepListProps) {
                 style={[
                   styles.marker,
                   fill,
-                  done && { backgroundColor: palette.rose },
+                  done && { backgroundColor: palette.action },
                   active && { backgroundColor: palette.panel },
                   !done &&
                     !active && {
@@ -106,7 +106,7 @@ export function StepList({ steps, current, children }: StepListProps) {
                   style={[
                     styles.line,
                     fill,
-                    { backgroundColor: done ? palette.rose : palette.raised },
+                    { backgroundColor: done ? palette.action : palette.raised },
                   ]}
                 />
               )}

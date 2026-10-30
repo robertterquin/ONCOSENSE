@@ -89,7 +89,7 @@ export function Section({
 const ROW_LAYOUT = LinearTransition.duration(DURATION.base);
 const ROW_EXIT = FadeOut.duration(DURATION.fast);
 
-// On a tinted container (sun, rose, teal) a violet line looks off; a wash of ink suits any tint.
+// On a tinted container (sun, teal) a violet line looks off; a wash of ink suits any tint.
 const tintedLine = (isDark: boolean) =>
   isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(34, 26, 54, 0.14)';
 

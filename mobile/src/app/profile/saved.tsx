@@ -177,7 +177,7 @@ function tileToneForCategory(category: string): TileTone {
     case 'prevention':
       return 'help';
     case 'lifestyle':
-      return 'rose';
+      return 'action';
     case 'weight':
       return 'sun';
     case 'diet':

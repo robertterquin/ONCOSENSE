@@ -10,7 +10,7 @@ import { Text } from './Text';
 export type TagTone = 'due' | 'done' | 'next';
 
 const TAGS: Record<TagTone, { background: keyof Palette; color: keyof Palette }> = {
-  due: { background: 'roseTint', color: 'rose' },
+  due: { background: 'action', color: 'onAction' },
   done: { background: 'helpTint', color: 'onHelpTint' },
   next: { background: 'raised', color: 'action' },
 };

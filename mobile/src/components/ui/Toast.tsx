@@ -21,7 +21,8 @@ import { Text } from './Text';
 const LOOK: Record<ToastType, { iconColor: (palette: Palette) => string; icon: IconName }> = {
   // The light theme's teal is too dark on the panel, so success borrows the dark one.
   success: { iconColor: () => darkPalette.help, icon: 'circle-check' },
-  error: { iconColor: (palette) => palette.onPanelAccent, icon: 'circle-alert' },
+  // The panel is dark in both themes, so error borrows the dark theme's red too.
+  error: { iconColor: () => darkPalette.danger, icon: 'circle-alert' },
   info: { iconColor: (palette) => palette.onPanelMuted, icon: 'info' },
 };
 

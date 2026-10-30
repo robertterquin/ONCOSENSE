@@ -147,7 +147,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       bottomBar={bottomBar}>
       {nextCheck ? (
         <View style={styles.done} accessibilityLiveRegion="polite">
-          <RibbonMark height={96} weight={18} color={palette.rose} draw />
+          <RibbonMark height={96} weight={18} color={palette.action} draw />
           <Text variant="heading" accessibilityRole="header">
             Done
           </Text>
@@ -171,7 +171,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
               <ProgressSegments
                 total={steps.length}
                 done={current + 1}
-                tone="rose"
+                tone="action"
                 accessibilityLabel="Self-check steps"
               />
             ) : null}
@@ -191,7 +191,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
           divided={false}>
           {guide.warningSigns.map((sign) => (
             <View key={sign} style={styles.sign}>
-              <Text variant="body" tone="rose" accessibilityElementsHidden>
+              <Text variant="body" tone="action" accessibilityElementsHidden>
                 •
               </Text>
               <Text variant="body" style={styles.flex1}>

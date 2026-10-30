@@ -12,7 +12,7 @@ import { MAX_FONT_SCALE, Text } from './Text';
 type TextFieldProps = Omit<TextInputProps, 'style' | 'secureTextEntry'> & {
   /** Always visible above the field (placeholders vanish while typing). */
   label: string;
-  /** Shown under the field in rose, and announced. */
+  /** Shown under the field in the danger colour, and announced. */
   error?: string | null;
   /** Password field with a Show / Hide button. */
   secure?: boolean;
