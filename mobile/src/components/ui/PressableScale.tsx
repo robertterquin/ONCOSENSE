@@ -21,7 +21,10 @@ export function PressableScale({
 }: PressableScaleProps) {
   const [pressed, setPressed] = useState(false);
   const transition = useTransition('fast', feedback === 'scale' ? 'transform' : 'opacity');
-  const resolved = typeof style === 'function' ? style({ pressed, hovered: false }) : style;
+  // A variable, not a literal: Expo's generated types (local only, gitignored) require
+  // `hovered`, while CI's plain React Native types reject it as an unknown property.
+  const state = { pressed, hovered: false };
+  const resolved = typeof style === 'function' ? style(state) : style;
   return (
     <AnimatedPressable
       {...rest}
