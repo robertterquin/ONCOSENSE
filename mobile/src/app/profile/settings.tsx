@@ -49,7 +49,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen back={{ label: 'Profile', onPress: back }} title="Settings">
-      <Section title="Display" divided={false}>
+      <Section title="Display">
         <View style={styles.display}>
           <View style={styles.group}>
             <Text variant="row">Theme</Text>

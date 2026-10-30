@@ -7,7 +7,7 @@ import { FOCUS_OPTIONS, type JourneyFocus } from './focus';
 import { mostCommonSymptoms } from './journey';
 import { MOODS, SLEEP } from './journeyLabels';
 
-// "Share a summary with my doctor" (redesign Phase 4): the facts for a date range, as
+// "Share with my doctor" (redesign Phase 4): the facts for a date range, as
 // plain lines (the preview, and what tests check) and as HTML for expo-print.
 
 type SummaryInput = {

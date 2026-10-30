@@ -30,7 +30,7 @@ import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-// "Share a summary with my doctor" (redesign Phase 4). The preview shows exactly what
+// "Share with my doctor" (redesign Phase 4). The preview shows exactly what
 // goes into the PDF before the share sheet (or, on the web, the print dialog) opens.
 
 const close = () => (router.canGoBack() ? router.back() : router.replace('/journey'));

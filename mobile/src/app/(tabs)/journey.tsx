@@ -133,7 +133,7 @@ function Dashboard() {
               <Milestones milestones={milestones.data ?? []} />
               <RecentCheckIns entries={entryList} />
               <Button
-                title="Share a summary with my doctor"
+                title="Share with my doctor"
                 icon="share"
                 variant="secondary"
                 onPress={() => router.push('/journey/summary')}

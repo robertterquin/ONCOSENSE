@@ -106,7 +106,8 @@ const styles = StyleSheet.create({
   section: { gap: space.md },
   heading: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    // A + button is taller than the title; centred, it lines up instead of sticking up.
+    alignItems: 'center',
     gap: space.md,
     paddingHorizontal: space.xs,
   },
