@@ -13,9 +13,7 @@ import { useFocus } from '@/hooks/useFocus';
 import { initials } from '@/lib/community';
 import { confirm } from '@/lib/confirm';
 import { FOCUS_OPTIONS } from '@/lib/focus';
-import { REMINDERS_SUPPORTED } from '@/lib/notifications/service';
 import { useAuthStore } from '@/stores/authStore';
-import { NOTIFICATION_TYPES, useNotificationPrefs } from '@/stores/notificationStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -34,10 +32,6 @@ export default function ProfileScreen() {
     (useBookmarkedQuestions().data?.length ?? 0) +
     (useBookmarkedResources().data?.length ?? 0) +
     useSelfCheckStore((state) => state.savedGuides.length);
-  const prefs = useNotificationPrefs();
-  const remindersOn = prefs.enabled
-    ? NOTIFICATION_TYPES.filter((type) => prefs.types[type]).length
-    : 0;
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const [about, setAbout] = useState(false);
   const name = user ? userDisplayName(user) : 'Guest';
@@ -94,11 +88,6 @@ export default function ProfileScreen() {
           title="Saved"
           trailing={savedCount ? `${savedCount}` : undefined}
           onPress={() => router.push('/profile/saved')}
-        />
-        <ListRow
-          title="Reminders"
-          trailing={REMINDERS_SUPPORTED ? (remindersOn ? `${remindersOn} on` : 'Off') : undefined}
-          onPress={() => router.push('/profile/settings')}
         />
         <ListRow title="Settings" onPress={() => router.push('/profile/settings')} />
       </Section>

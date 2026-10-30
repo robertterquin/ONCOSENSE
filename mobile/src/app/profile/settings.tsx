@@ -19,14 +19,12 @@ import { useFocus } from '@/hooks/useFocus';
 import { usesJourney } from '@/lib/focus';
 import { REMINDERS_SUPPORTED, setNotificationsEnabled } from '@/lib/notifications/service';
 import { useIsSignedIn } from '@/stores/authStore';
-import { useCommunityStore } from '@/stores/communityStore';
 import { useNotificationPrefs, type NotificationType } from '@/stores/notificationStore';
 import { useThemeStore, type ThemeMode } from '@/stores/themeStore';
 import type { TextSize } from '@/theme/type';
 import { space } from '@/theme/tokens';
 
-// Settings (redesign Phase 6): display, reminders with their times, community and
-// account, in one place.
+// Settings (redesign Phase 6): display, reminders with their times and account, in one place.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
 
@@ -42,8 +40,6 @@ export default function SettingsScreen() {
   const { mode, setMode, textSize, setTextSize, highReadability, setHighReadability } =
     useThemeStore();
   const remindersOn = useNotificationPrefs((state) => state.enabled);
-  const anonymous = useCommunityStore((state) => state.anonymousByDefault);
-  const setAnonymous = useCommunityStore((state) => state.setAnonymousByDefault);
   const [deleting, setDeleting] = useState(false);
   const reminders: NotificationType[] = [
     'self_check',
@@ -82,17 +78,12 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
-      </Section>
-
-      <Section
-        title="Accessibility & comfort"
-        subtitle="Accommodations for active treatment and visual comfort">
         <ListRow
-          title="High readability mode"
-          subtitle="Enforces AAA contrast, relaxes line spacing, and enlarges touch targets for chemo-brain and low vision"
+          title="Easier reading"
+          subtitle="Stronger contrast, more spacing and bigger buttons"
           accessory={
             <Switch
-              accessibilityLabel="High readability mode"
+              accessibilityLabel="Easier reading"
               value={highReadability}
               onValueChange={setHighReadability}
             />
@@ -103,11 +94,11 @@ export default function SettingsScreen() {
       {REMINDERS_SUPPORTED ? (
         <Section title="Reminders" subtitle="Tap a reminder to change when it comes">
           <ListRow
-            title="Reminders"
+            title="All reminders"
             subtitle={remindersOn ? 'On' : 'Off for everything'}
             accessory={
               <Switch
-                accessibilityLabel="Reminders"
+                accessibilityLabel="All reminders"
                 value={remindersOn}
                 onValueChange={(value) => void setNotificationsEnabled(value)}
               />
@@ -122,20 +113,6 @@ export default function SettingsScreen() {
           Reminders work in the iPhone and Android apps.
         </Banner>
       )}
-
-      <Section title="Community">
-        <ListRow
-          title="Post anonymously by default"
-          subtitle="You can still choose each time"
-          accessory={
-            <Switch
-              accessibilityLabel="Post anonymously by default"
-              value={anonymous}
-              onValueChange={setAnonymous}
-            />
-          }
-        />
-      </Section>
 
       <Section title="Account">
         {signedIn ? (

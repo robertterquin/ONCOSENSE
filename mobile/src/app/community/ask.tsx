@@ -30,6 +30,7 @@ const close = () => (router.canGoBack() ? router.back() : router.replace('/commu
 export default function AskScreen() {
   const ask = useAskQuestion();
   const anonymousByDefault = useCommunityStore((state) => state.anonymousByDefault);
+  const rememberAnonymous = useCommunityStore((state) => state.setAnonymousByDefault);
   const { control, handleSubmit } = useForm<AskQuestionForm>({
     resolver: zodResolver(askQuestionSchema),
     defaultValues: {
@@ -50,6 +51,7 @@ export default function AskScreen() {
       },
       {
         onSuccess: () => {
+          rememberAnonymous(form.isAnonymous);
           showToast('Question posted', 'success');
           close();
         },

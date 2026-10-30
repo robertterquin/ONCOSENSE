@@ -340,6 +340,7 @@ function Composer({ questionId }: { questionId: string }) {
   const insets = useSafeAreaInsets();
   const anonymousByDefault = useCommunityStore((state) => state.anonymousByDefault);
   const [content, setContent] = useState('');
+  const rememberAnonymous = useCommunityStore((state) => state.setAnonymousByDefault);
   const [anonymous, setAnonymous] = useState(anonymousByDefault);
   const post = usePostAnswer(questionId);
 
@@ -351,6 +352,7 @@ function Composer({ questionId }: { questionId: string }) {
       {
         onSuccess: () => {
           setContent('');
+          rememberAnonymous(anonymous);
           showToast('Answer posted', 'success');
         },
         onError: (error) => showToast(`Couldn't post: ${error.message}`, 'error'),
