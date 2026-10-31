@@ -7,7 +7,7 @@ export type ResourceType = 'hotline' | 'screening_center' | 'financial_support' 
 export type Resource = {
   id: string;
   name: string;
- 
+
   type: string;
   description: string;
   phone: string | null;
@@ -15,10 +15,12 @@ export type Resource = {
   address: string | null;
   website: string | null;
   email: string | null;
- 
+
   isVerified: boolean;
   isActive: boolean;
   createdAt: Date;
+  /** When the number was last checked against an official source, if it has been. */
+  checkedOn: Date | null;
 };
 
 export function resourceFromRow(row: Row): Resource {
@@ -35,5 +37,6 @@ export function resourceFromRow(row: Row): Resource {
     isVerified: booleanOr(row, 'is_verified', false),
     isActive: booleanOr(row, 'is_active', true),
     createdAt: parseOptionalDbTimestamp(row.created_at) ?? new Date(),
+    checkedOn: parseOptionalDbTimestamp(row.checked_on),
   };
 }

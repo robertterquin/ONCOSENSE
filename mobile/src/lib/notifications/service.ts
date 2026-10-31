@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 
 import { userGender } from '@/api/auth';
 import { getTipOfTheDay } from '@/api/healthTips';
+import type { HealthTip } from '@/types/healthTip';
 import { queryKeys } from '@/hooks/queryKeys';
 import { parseDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, usesJourney } from '@/lib/focus';
@@ -90,10 +91,12 @@ async function scheduleType(type: ScheduledPrefType): Promise<void> {
     times: useNotificationPrefs.getState().times,
     selfCheckPlan: type === 'self_check' ? selfCheckPlan(now) : null,
     appointments: type === 'appointments' ? cachedAppointments() : undefined,
-    tip: type === 'weekly_tip' ? getTipOfTheDay(now).tip : undefined,
+    tip: type === 'weekly_tip' ? withSource(getTipOfTheDay(now)) : undefined,
   });
   for (const reminder of reminders) await device.scheduleReminder(reminder);
 }
+
+const withSource = ({ tip, source }: HealthTip) => `${tip} (Source: ${source})`;
 
 /** Changes when one reminder fires; only that type is rescheduled. */
 export async function setReminderTime(type: NotificationType, time: ReminderTime): Promise<void> {

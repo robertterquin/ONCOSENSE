@@ -9,6 +9,8 @@ Lint, typecheck and the 327 tests pass in CI on every push.
 - [ ] The five cancer pages added on 2026-10-31: testicular, oral, thyroid, lymphoma, uterine (`supabase/migrations/20261031000000_more_cancer_types.sql`).
 - [ ] The "For you" rules and age cut-offs in `mobile/src/lib/forYou.ts` (prostate 50+, testicular 15–35, cervical 25–65, colorectal screening from 45).
 - [ ] The treatment habits' wording in `mobile/src/constants/habits.ts` ("Gentle movement", "Eat something you enjoy").
+- [ ] The content corrections in `supabase/migrations/20261101000000_content_sources.sql` (cancer page figures and sources, the breast page, eight retired self-checks) and the weekly tips in `mobile/src/constants/healthTips.ts`. Run the migration first; until then the app shows the old text.
+- [ ] Help contacts: only DOH 1555, NCMH, Philippine Red Cross 143 and the Philippine Cancer Society were checked on 2026-11-01. Call or check the other 18 (screening centers, PhilHealth, PCSO, DSWD, Malasakit, support groups) and set `checked_on` for each.
 
 ## 2. Accounts to set up (needs your logins)
 

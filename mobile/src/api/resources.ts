@@ -48,6 +48,7 @@ function fallbackResources(): Resource[] {
     isVerified: true,
     isActive: true,
     createdAt,
+    checkedOn: null,
   };
   const items: [string, string, ResourceType, string, string, string][] = [
     [
@@ -63,7 +64,7 @@ function fallbackResources(): Resource[] {
       'Philippine Cancer Society',
       'hotline',
       'Cancer support, information, and counseling hotline',
-      '(02) 8508-7777',
+      '(02) 8734-2126',
       'Metro Manila',
     ],
     [

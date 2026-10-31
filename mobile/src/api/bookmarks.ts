@@ -96,6 +96,8 @@ function resourceFromBookmark(row: Row): Resource {
     isVerified: booleanOr(row, 'is_verified', false),
     isActive: booleanOr(row, 'is_active', true),
     createdAt: parseOptionalDbTimestamp(row.resource_created_at) ?? new Date(),
+    // A saved copy doesn't keep this; Help shows it from the live contact.
+    checkedOn: null,
   };
 }
 

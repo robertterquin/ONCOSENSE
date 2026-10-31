@@ -32,8 +32,9 @@ describe('validation (same rules and messages as Flutter)', () => {
 });
 
 describe('built-in data', () => {
-  it('has all tips from the Flutter app', () => {
-    expect(HEALTH_TIPS).toHaveLength(31);
+  it('names a source for every tip', () => {
+    expect(HEALTH_TIPS.length).toBeGreaterThan(3);
+    expect(HEALTH_TIPS.every((tip) => tip.source.length > 0)).toBe(true);
   });
 
   it('picks the same tip all day, changing daily', () => {

@@ -17,6 +17,7 @@ import { useCancerType } from '@/hooks/useCancerInfo';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
 import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
+import { openWebPage } from '@/lib/links';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
@@ -186,6 +187,17 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           <Text variant="reading">{guide?.whenToSeeDoctor || GENERAL_DOCTOR_ADVICE}</Text>
         </Topic>
       </View>
+
+      {cancer.sourceName && cancer.sourceUrl ? (
+        <Button
+          title={`Source: ${cancer.sourceName}`}
+          icon="external-link"
+          variant="quiet"
+          small
+          style={styles.link}
+          onPress={() => openWebPage(cancer.sourceUrl!)}
+        />
+      ) : null}
 
       <Text variant="supporting" tone="muted" style={styles.footer}>
         This is general information, not medical advice. Talk to a doctor about your own health.

@@ -1,130 +1,87 @@
-// Generated from the Flutter app's lib/services/health_tips_service.dart. Edit here from now on.
 import type { HealthTip } from '@/types/healthTip';
 
-/** Reliable cancer-related health tips (WHO, CDC, Mayo Clinic, NCI). */
+// The weekly tip notification. Each tip states only what its source says, and the source
+// is named in the notification. Reviewed 2026-10-31 against the sources named; a
+// clinician should review them before release.
 export const HEALTH_TIPS: HealthTip[] = [
   {
-    tip: 'Regular exercise reduces cancer risk by up to 30%',
+    tip: 'Tobacco is the biggest avoidable cause of cancer. Quitting at any age lowers your risk.',
+    category: 'Prevention',
+    source: 'WHO',
+  },
+  {
+    tip: 'Alcohol causes at least seven types of cancer, and for cancer no amount is safe.',
+    category: 'Prevention',
+    source: 'WHO',
+  },
+  {
+    tip: 'Being active lowers the risk of colon, breast and endometrial cancer. Aim for 150 minutes a week.',
     category: 'Exercise',
+    source: 'American Cancer Society',
   },
   {
-    tip: 'Eat at least 5 servings of fruits and vegetables daily to reduce cancer risk',
-    category: 'Nutrition',
-  },
-  {
-    tip: "Avoid tobacco in all forms - it's linked to at least 15 types of cancer",
-    category: 'Prevention',
-  },
-  {
-    tip: 'Limit alcohol consumption to reduce risk of several cancers',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Maintain a healthy weight - obesity is linked to 13 types of cancer',
+    tip: 'Excess body fat is linked to at least 13 types of cancer.',
     category: 'Weight',
+    source: 'American Cancer Society',
   },
   {
-    tip: 'Protect your skin from UV rays - use sunscreen SPF 30+ daily',
+    tip: 'Fill half your plate with vegetables, fruit, whole grains and beans.',
+    category: 'Nutrition',
+    source: 'World Cancer Research Fund',
+  },
+  {
+    tip: 'Processed meat causes colorectal cancer. Eat as little of it as you can.',
+    category: 'Nutrition',
+    source: 'WHO (IARC)',
+  },
+  {
+    tip: 'The HPV vaccine prevents most cervical cancers. It works best before age 15.',
     category: 'Prevention',
+    source: 'WHO',
   },
   {
-    tip: 'Get vaccinated against HPV and Hepatitis B to prevent cancer',
+    tip: 'The hepatitis B vaccine prevents hepatitis B, a leading cause of liver cancer.',
     category: 'Prevention',
+    source: 'WHO',
   },
   {
-    tip: 'Screen regularly: Mammograms, colonoscopies, and Pap tests save lives',
+    tip: 'Between 10 a.m. and 4 p.m., use shade, sleeves and sunscreen of SPF 30 or more.',
+    category: 'Prevention',
+    source: 'Skin Cancer Foundation',
+  },
+  {
+    tip: 'Using sunbeds before age 35 raises the risk of melanoma by about 75%.',
+    category: 'Prevention',
+    source: 'WHO (IARC)',
+  },
+  {
+    tip: 'From age 30, an HPV test every 5 to 10 years can find changes before they become cervical cancer.',
     category: 'Screening',
+    source: 'WHO',
   },
   {
-    tip: 'Limit processed and red meat consumption to reduce colorectal cancer risk',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Stay hydrated - drink 8 glasses of water daily for optimal health',
-    category: 'Hydration',
-  },
-  {
-    tip: 'Get 7-9 hours of quality sleep each night to support immune function',
-    category: 'Lifestyle',
-  },
-  {
-    tip: 'Breastfeeding reduces breast cancer risk for both mother and child',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Avoid exposure to environmental toxins and carcinogens at work and home',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Include fiber-rich whole grains in your diet to reduce cancer risk',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Women: Perform monthly breast self-exams to detect changes early',
+    tip: 'From age 45, ask a doctor about colorectal cancer screening.',
     category: 'Screening',
+    source: 'American Cancer Society',
   },
   {
-    tip: 'Limit exposure to radiation from medical imaging when possible',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Cook meat at lower temperatures to avoid carcinogenic compounds',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Stay physically active - even 30 minutes of moderate activity helps',
-    category: 'Exercise',
-  },
-  {
-    tip: 'Know your family history and discuss cancer risks with your doctor',
+    tip: 'Tell your doctor if close relatives had cancer. Some cancers run in families.',
     category: 'Awareness',
+    source: 'National Cancer Institute',
   },
   {
-    tip: 'Reduce sugar intake - high sugar diets are linked to increased cancer risk',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Practice safe sun habits: Seek shade between 10 AM - 4 PM',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Men over 50: Discuss prostate cancer screening with your doctor',
-    category: 'Screening',
-  },
-  {
-    tip: 'Avoid indoor tanning beds - they increase melanoma risk by 75%',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Eat foods rich in antioxidants like berries, nuts, and leafy greens',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Manage stress through meditation, yoga, or other relaxation techniques',
-    category: 'Mental Health',
-  },
-  {
-    tip: 'Adults 45+: Get a colonoscopy every 10 years or as recommended',
-    category: 'Screening',
-  },
-  {
-    tip: 'Limit use of hormone replacement therapy - discuss risks with your doctor',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Consume omega-3 fatty acids from fish, flaxseeds, and walnuts',
-    category: 'Nutrition',
-  },
-  {
-    tip: 'Quit smoking - cancer risk drops significantly within years of quitting',
-    category: 'Prevention',
-  },
-  {
-    tip: 'Watch for warning signs: unexplained weight loss, lumps, or persistent pain',
+    tip: "See a doctor about a lump, a sore that won't heal, unusual bleeding or weight loss you can't explain.",
     category: 'Awareness',
+    source: 'American Cancer Society',
   },
   {
-    tip: 'Use protective equipment when handling chemicals or carcinogens',
+    tip: "Breastfeeding lowers the mother's risk of breast cancer.",
+    category: 'Prevention',
+    source: 'World Cancer Research Fund',
+  },
+  {
+    tip: 'Radon and workplace chemicals such as asbestos cause lung cancer. Use protective equipment at work.',
     category: 'Safety',
+    source: 'WHO',
   },
 ];

@@ -16,6 +16,8 @@ const mockCancer: CancerType = {
   screeningMethods: ['Mammogram', 'Clinical exam'],
   earlyDetectionInfo: 'Early detection increases survival rate',
   statistics: '1 in 8 women',
+  sourceName: null,
+  sourceUrl: null,
 };
 
 const mockGuide: SelfCheckGuide = {
@@ -62,6 +64,7 @@ const mockResource: Resource = {
   isVerified: true,
   isActive: true,
   createdAt: new Date('2025-01-01'),
+  checkedOn: null,
 };
 
 const mockQuestion: Question = {

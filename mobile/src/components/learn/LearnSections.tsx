@@ -184,7 +184,9 @@ export function ForYou({
         </Section>
       ) : null}
       {picks.length ? (
-        <Section title="For you" subtitle="Common for people like you">
+        <Section
+          title="For you"
+          subtitle="From GLOBOCAN 2022 figures for the Philippines and American Cancer Society screening ages">
           {picks.map(({ cancer, reason }) => (
             <ListRow
               key={cancer.id}

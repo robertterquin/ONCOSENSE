@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { IconButton, ListRow, Sheet, Text } from '@/components/ui';
 import { useResourceBookmarks } from '@/hooks/useBookmarkToggle';
+import { formatShortDate } from '@/lib/dates';
 import { callLabel, regionFor } from '@/lib/help';
 import { callPhone, openWebPage } from '@/lib/links';
 import { showToast } from '@/stores/toastStore';
@@ -67,6 +68,11 @@ export function ResourceRow({ resource }: { resource: Resource }) {
         {resource.description ? (
           <Text variant="body" tone="muted">
             {resource.description}
+          </Text>
+        ) : null}
+        {resource.checkedOn ? (
+          <Text variant="supporting" tone="muted">
+            Number checked {formatShortDate(resource.checkedOn)}
           </Text>
         ) : null}
         <ListRow

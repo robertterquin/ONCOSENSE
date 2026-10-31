@@ -11,6 +11,9 @@ export type CancerType = {
   screeningMethods: string[];
   earlyDetectionInfo: string;
   statistics: string | null;
+  /** Where the page's facts come from (migration 20261101000000). */
+  sourceName: string | null;
+  sourceUrl: string | null;
 };
 
 export function cancerTypeFromRow(row: Row): CancerType {
@@ -25,5 +28,7 @@ export function cancerTypeFromRow(row: Row): CancerType {
     screeningMethods: stringArray(row, 'screening_methods'),
     earlyDetectionInfo: requireString(row, 'early_detection_info'),
     statistics: optionalString(row, 'statistics'),
+    sourceName: optionalString(row, 'source_name'),
+    sourceUrl: optionalString(row, 'source_url'),
   };
 }
