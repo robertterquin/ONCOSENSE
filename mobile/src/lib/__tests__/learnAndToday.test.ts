@@ -137,6 +137,9 @@ describe('cancer page header', () => {
   it('names the body system, or All when it is unknown', () => {
     expect(bodySystemForCancer('Breast cancer')).toBe('Reproductive');
     expect(bodySystemForCancer('Stomach cancer')).toBe('Digestive');
+    expect(bodySystemForCancer('Thyroid cancer')).toBe('Head and neck');
+    expect(bodySystemForCancer('Uterine cancer')).toBe('Reproductive');
+    expect(bodySystemForCancer('Lymphoma')).toBe('Blood');
     expect(bodySystemForCancer('Leukemia')).toBe('Blood');
     expect(bodySystemForCancer('Brain tumor')).toBe('All');
   });

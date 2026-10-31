@@ -7,6 +7,9 @@ type Profile = Parameters<typeof forYouCancers>[1];
 const NAMES = [
   'Breast Cancer',
   'Cervical Cancer',
+  'Oral cancer',
+  'Testicular cancer',
+  'Thyroid cancer',
   'Colorectal Cancer',
   'Liver Cancer',
   'Lung Cancer',
@@ -25,10 +28,19 @@ describe('forYouCancers', () => {
     const picks = forYouCancers(CANCERS, { ...base, gender: 'Male', age: 52, smoker: 'yes' });
     expect(picks.map((pick) => pick.reason)).toEqual([
       'You said you smoke',
+      'Smoking causes most mouth cancers',
       'Common for men over 50',
       'Screening starts at 45',
-      'Common in Filipino men',
     ]);
+  });
+
+  it('puts testicular first for a young man', () => {
+    expect(names({ gender: 'Male', age: 24 })[0]).toBe('Testicular cancer');
+    expect(names({ gender: 'Male', age: 60 })).not.toContain('Testicular cancer');
+  });
+
+  it('offers thyroid to a woman when her own cancer frees a place', () => {
+    expect(names({ gender: 'Female', myCancerId: 'Breast Cancer' })).toContain('Thyroid cancer');
   });
 
   it('leaves prostate out for a young man, and cervical out for a woman over 65', () => {
@@ -50,9 +62,7 @@ describe('forYouCancers', () => {
   });
 
   it('leaves out the cancer the person named, since it shows on its own', () => {
-    expect(names({ gender: 'Female', myCancerId: 'Breast Cancer' })).not.toContain(
-      'Breast Cancer',
-    );
+    expect(names({ gender: 'Female', myCancerId: 'Breast Cancer' })).not.toContain('Breast Cancer');
   });
 
   it('skips cancers missing from the list', () => {

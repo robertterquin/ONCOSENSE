@@ -24,6 +24,7 @@ const CANCER_ICONS: [prefix: string, icon: IconName][] = [
   ['color', 'colon'],
   ['colon', 'colon'],
   ['leukemia', 'blood-cells'],
+  ['lymphoma', 'blood-cells'],
   ['liver', 'liver'],
   ['lung', 'lungs'],
   ['ovari', 'ovaries'],
@@ -33,6 +34,9 @@ const CANCER_ICONS: [prefix: string, icon: IconName][] = [
   ['gastric', 'stomach'],
   ['oral', 'tooth'],
   ['testicular', 'testicular'],
+  ['thyroid', 'stethoscope'],
+  ['uterine', 'ovaries'],
+  ['endometri', 'ovaries'],
 ];
 
 /** The icon for a cancer type or a guide's `cancerType` ("Lung Cancer", "Oral"). */
@@ -114,6 +118,7 @@ export const BODY_SYSTEMS = [
   'Reproductive',
   'Digestive',
   'Respiratory',
+  'Head and neck',
   'Blood',
   'Skin',
 ] as const;
@@ -126,7 +131,9 @@ export function bodySystemForCancer(name: string): BodySystem {
     lower.includes('cervical') ||
     lower.includes('ovarian') ||
     lower.includes('prostate') ||
-    lower.includes('testicular')
+    lower.includes('testicular') ||
+    lower.includes('uterine') ||
+    lower.includes('endometri')
   ) {
     return 'Reproductive';
   }
@@ -143,6 +150,9 @@ export function bodySystemForCancer(name: string): BodySystem {
   }
   if (lower.includes('lung')) {
     return 'Respiratory';
+  }
+  if (lower.includes('oral') || lower.includes('mouth') || lower.includes('thyroid')) {
+    return 'Head and neck';
   }
   if (
     lower.includes('leukemia') ||

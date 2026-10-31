@@ -6,7 +6,8 @@ import type { Smoker } from './habits';
 // Learn › Cancers "For you": cancers ranked for this person, each with the reason it's
 // there. Nothing is hidden; the full list stays below. Incidence order is GLOBOCAN 2022
 // for the Philippines (men: lung, liver, colorectal, prostate; women: breast, cervical,
-// colorectal, lung). Screening ages follow the American Cancer Society.
+// colorectal, lung). Screening ages and the testicular, oral and thyroid reasons follow
+// the American Cancer Society.
 // shortcut: the age cut-offs haven't been reviewed by a clinician, before release.
 
 export type ForYouPick = { cancer: CancerType; reason: string };
@@ -28,8 +29,11 @@ function rules({ gender, age, smoker }: Profile): Rule[] {
   const sex = gender?.toLowerCase();
   const over = (years: number) => age !== null && age >= years;
   const lung: Rule =
+    smoker === 'yes' ? { match: 'lung', reason: 'You said you smoke', personal: true } : null;
+  // Tobacco also causes most mouth cancers.
+  const oral: Rule =
     smoker === 'yes'
-      ? { match: 'lung', reason: 'You said you smoke', personal: true }
+      ? { match: 'oral', reason: 'Smoking causes most mouth cancers', personal: true }
       : null;
   const colorectal: Rule = over(45)
     ? { match: 'colorectal', reason: 'Screening starts at 45', personal: true }
@@ -38,12 +42,15 @@ function rules({ gender, age, smoker }: Profile): Rule[] {
   if (sex === 'male') {
     return [
       lung ?? { match: 'lung', reason: 'Most common in Filipino men' },
-      over(50)
-        ? { match: 'prostate', reason: 'Common for men over 50', personal: true }
+      oral,
+      age !== null && age >= 15 && age <= 35
+        ? { match: 'testicular', reason: 'Most common in men 15 to 35', personal: true }
         : null,
+      over(50) ? { match: 'prostate', reason: 'Common for men over 50', personal: true } : null,
       colorectal,
       { match: 'liver', reason: 'Common in Filipino men' },
       age === null ? { match: 'prostate', reason: 'Common for men over 50' } : null,
+      age === null ? { match: 'testicular', reason: 'Most common in men 15 to 35' } : null,
     ];
   }
   if (sex === 'female') {
@@ -56,11 +63,14 @@ function rules({ gender, age, smoker }: Profile): Rule[] {
       cervical,
       colorectal,
       lung ?? { match: 'lung', reason: 'Common in the Philippines' },
+      oral,
+      { match: 'thyroid', reason: 'Three times more common in women' },
     ];
   }
   // No sex given (or non-binary): shared cancers only, since organs can't be assumed.
   return [
     lung ?? { match: 'lung', reason: 'Common in the Philippines' },
+    oral,
     { match: 'breast', reason: 'Most common in the Philippines' },
     colorectal,
     { match: 'liver', reason: 'Common in the Philippines' },
