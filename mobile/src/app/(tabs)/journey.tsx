@@ -125,6 +125,8 @@ function Dashboard() {
                     : forFocus(focus, 'Check in for today', 'Check in for them')
                 }
                 icon={checkedInToday ? 'check' : 'plus'}
+                // Done for today, so it steps back; bright only while it's still to do.
+                variant={checkedInToday ? 'tinted' : 'primary'}
                 onPress={() => router.push('/journey/check-in')}
               />
               <EnergyAndPain entries={entryList} now={now} />

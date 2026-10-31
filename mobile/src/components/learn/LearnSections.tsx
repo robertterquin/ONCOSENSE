@@ -134,9 +134,13 @@ export function ForYou({
   return (
     <>
       {myCancer ? (
-        <View style={[styles.mine, { backgroundColor: palette.action }]}>
+        <View
+          style={[
+            styles.mine,
+            { backgroundColor: palette.actionTint, borderColor: palette.tintEdge },
+          ]}>
           <View style={styles.mineTop}>
-            <Text variant="caption" tone="onAction" style={styles.flex1}>
+            <Text variant="caption" tone="onActionTint" style={styles.flex1}>
               {caring ? "You're caring for someone with" : 'Your cancer'}
             </Text>
             <PressableScale
@@ -145,7 +149,7 @@ export function ForYou({
               accessibilityLabel="Change cancer"
               onPress={changeCancer}
               hitSlop={12}>
-              <Text variant="caption" tone="onAction" style={styles.underline}>
+              <Text variant="caption" tone="onActionTint" style={styles.underline}>
                 Change
               </Text>
             </PressableScale>
@@ -156,16 +160,16 @@ export function ForYou({
             accessibilityLabel={`${myCancer.name}. Early signs, tests and risks`}
             onPress={() => openCancer(myCancer.id)}
             style={styles.mineBody}>
-            <Icon name={iconForCancer(myCancer.name)} size={28} tone="onAction" />
+            <Icon name={iconForCancer(myCancer.name)} size={28} tone="onActionTint" />
             <View style={styles.flex1}>
-              <Text variant="section" tone="onAction">
+              <Text variant="section" tone="onActionTint">
                 {myCancer.name}
               </Text>
-              <Text variant="supporting" tone="onAction">
+              <Text variant="supporting" tone="onActionTint">
                 Early signs, tests and risks
               </Text>
             </View>
-            <Icon name="chevron-right" size={22} tone="onAction" />
+            <Icon name="chevron-right" size={22} tone="onActionTint" />
           </PressableScale>
         </View>
       ) : askCancer ? (
@@ -214,10 +218,7 @@ export function CancerTypes({
 
   return (
     <View style={styles.sectionGap}>
-      <Section
-        title={title}
-        subtitle="Early signs, risks and how each is found"
-        look="plain">
+      <Section title={title} subtitle="Early signs, risks and how each is found" look="plain">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
   sectionGap: { gap: space.md },
   flex1: { flex: 1 },
   underline: { textDecorationLine: 'underline' },
-  mine: { borderRadius: radii.section, padding: space.lg, gap: space.sm },
+  mine: { borderRadius: radii.section, borderWidth: 1, padding: space.lg, gap: space.sm },
   mineTop: { flexDirection: 'row', alignItems: 'center' },
   mineBody: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   systems: { gap: space.sm, paddingRight: space.xl },

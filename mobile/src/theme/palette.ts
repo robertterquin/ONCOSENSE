@@ -34,6 +34,12 @@ export type Palette = {
   helpTint: string;
   /** Text on `helpTint`. */
   onHelpTint: string;
+  /** Violet at the tint depth: secondary buttons (a done check-in), like `helpTint` for help. */
+  actionTint: string;
+  /** Text on `actionTint`. */
+  onActionTint: string;
+  /** The faint edge around every tinted card and the panel. */
+  tintEdge: string;
   /** Milestones. */
   sun: string;
   sunInk: string;
@@ -62,6 +68,9 @@ export const lightPalette: Palette = {
   help: '#0E6B63',
   helpTint: '#E1F2EF',
   onHelpTint: '#0B4F49',
+  actionTint: '#E6DFFA',
+  onActionTint: '#3B2A8F',
+  tintEdge: 'rgba(34, 26, 54, 0.10)',
   sun: '#FDF1D6',
   sunInk: '#8A5A00',
   chartPain: '#8A5A00',
@@ -79,14 +88,17 @@ export const darkPalette: Palette = {
   border: '#463C62',
   action: '#B4A3F5',
   onAction: '#15111F',
-  panel: '#352578',
+  panel: '#2B2160',
   onPanel: '#FFFFFF',
-  onPanelMuted: '#E6E0FA',
-  panelTop: '#41309A',
+  onPanelMuted: '#DDD3FF',
+  panelTop: '#342980',
   onPanelAccent: '#D9CCFF',
   help: '#6FD3C5',
   helpTint: '#0F3D39',
   onHelpTint: '#CFEDE8',
+  actionTint: '#2B2160',
+  onActionTint: '#DDD3FF',
+  tintEdge: 'rgba(255, 255, 255, 0.10)',
   sun: '#3A2E12',
   sunInk: '#F5BE4A',
   chartPain: '#F5BE4A',
@@ -113,6 +125,9 @@ export const highContrastLightPalette: Palette = {
   help: '#02534C',
   helpTint: '#E2F7F4',
   onHelpTint: '#04433D',
+  actionTint: '#E2DCF0',
+  onActionTint: '#1E1050',
+  tintEdge: 'rgba(0, 0, 0, 0.25)',
   sun: '#F5E6BF',
   sunInk: '#664100',
   chartPain: '#664100',
@@ -139,6 +154,9 @@ export const highContrastDarkPalette: Palette = {
   help: '#7EFFF0',
   helpTint: '#0C3833',
   onHelpTint: '#E0FAF6',
+  actionTint: '#1E1450',
+  onActionTint: '#FFFFFF',
+  tintEdge: 'rgba(255, 255, 255, 0.30)',
   sun: '#3D2F0B',
   sunInk: '#FFD369',
   chartPain: '#FFD369',
@@ -166,6 +184,7 @@ export const TEXT_PAIRS: [fg: keyof Palette, bg: keyof Palette][] = [
   ['onPanelAccent', 'panelTop'],
   ['help', 'surface'],
   ['onHelpTint', 'helpTint'],
+  ['onActionTint', 'actionTint'],
   ['sunInk', 'sun'],
   ['danger', 'surface'],
   ['danger', 'ground'],

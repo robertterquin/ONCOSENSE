@@ -51,7 +51,7 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
     <View
       style={[
         styles.card,
-        { backgroundColor: palette.panel },
+        { backgroundColor: palette.panel, borderColor: palette.tintEdge },
         elevation('panel', palette, isDark),
       ]}>
       <View style={styles.ribbon}>
@@ -177,6 +177,7 @@ function Week({ checks }: { checks: GuideStatus[] }) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: radii.panel,
+    borderWidth: 1,
     padding: space.xxl,
     gap: space.md,
   },

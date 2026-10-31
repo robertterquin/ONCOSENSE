@@ -67,6 +67,7 @@ export function Section({
           look !== 'plain' && styles.container,
           look !== 'plain' && elevation('resting', palette, isDark, background),
           look === 'tinted' && styles.tinted,
+          look === 'tinted' && { borderColor: palette.tintEdge },
           !divided && styles.spaced,
           { backgroundColor: background },
         ]}>
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   },
   headingText: { flex: 1, gap: 2 },
   container: { borderRadius: radii.section, paddingHorizontal: space.lg + 2 },
-  tinted: { paddingVertical: space.xl },
+  tinted: { paddingVertical: space.xl, borderWidth: 1 },
   /** Children that aren't divided rows (buttons, fields) get room between them. */
   spaced: { gap: space.md },
   // A whole point: thinner lines fall between pixels and vanish on some rows.

@@ -134,7 +134,11 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
       </View>
 
       {guide ? (
-        <View style={[styles.selfCheck, { backgroundColor: palette.panel }]}>
+        <View
+          style={[
+            styles.selfCheck,
+            { backgroundColor: palette.panel, borderColor: palette.tintEdge },
+          ]}>
           <View style={styles.checkText}>
             <Text variant="strong" tone="onPanel">
               {guide.title}
@@ -227,6 +231,7 @@ const styles = StyleSheet.create({
   // Three across; the number leads and the label wraps under it.
   tile: { flex: 1, gap: 2, padding: space.md, borderRadius: radii.tile },
   selfCheck: {
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,

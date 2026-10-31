@@ -23,7 +23,9 @@ export type ButtonVariant =
   /** Text-only button in soft lavender on the night-violet panel (Today's "Remind me tomorrow"). */
   | 'onPanelAccent'
   /** Outlined button on the night-violet panel (Welcome's "Sign in"). */
-  | 'onPanelOutline';
+  | 'onPanelOutline'
+  /** Violet tint for a secondary action that isn't the screen's main one (a done check-in). */
+  | 'tinted';
 
 type ButtonProps = {
   title: string;
@@ -56,6 +58,7 @@ const LOOKS: Record<ButtonVariant, Look> = {
   onPanelQuiet: { background: 'transparent', text: 'onPanel' },
   onPanelAccent: { background: 'transparent', text: 'onPanelAccent' },
   onPanelOutline: { background: 'transparent', text: 'onPanel', border: 'onPanelMuted' },
+  tinted: { background: 'actionTint', text: 'onActionTint', border: 'tintEdge' },
 };
 
 /** Labeled button, 54 pt tall (a touch target that is easy to hit when tired). */

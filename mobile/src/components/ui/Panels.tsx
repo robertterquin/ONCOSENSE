@@ -107,7 +107,7 @@ function PanelSurface({ children }: { children: ReactNode }) {
   return (
     <View style={[styles.panelShadow, elevation('panel', palette, isDark)]}>
       <View
-        style={[styles.panel, { backgroundColor: palette.panel }]}
+        style={[styles.panel, { backgroundColor: palette.panel, borderColor: palette.tintEdge }]}
         onLayout={({ nativeEvent: { layout } }) =>
           setSize({ width: layout.width, height: layout.height })
         }>
@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
   },
   panel: {
     borderRadius: radii.panel,
+    borderWidth: 1,
     overflow: 'hidden',
     padding: space.xxl,
     paddingTop: space.xxl + 2,
