@@ -23,9 +23,7 @@ export type ButtonVariant =
   /** Text-only button in soft lavender on the night-violet panel (Today's "Remind me tomorrow"). */
   | 'onPanelAccent'
   /** Outlined button on the night-violet panel (Welcome's "Sign in"). */
-  | 'onPanelOutline'
-  /** Light button on a solid teal card (Help's crisis line). */
-  | 'onHelp';
+  | 'onPanelOutline';
 
 type ButtonProps = {
   title: string;
@@ -58,7 +56,6 @@ const LOOKS: Record<ButtonVariant, Look> = {
   onPanelQuiet: { background: 'transparent', text: 'onPanel' },
   onPanelAccent: { background: 'transparent', text: 'onPanelAccent' },
   onPanelOutline: { background: 'transparent', text: 'onPanel', border: 'onPanelMuted' },
-  onHelp: { background: 'surface', text: 'help' },
 };
 
 /** Labeled button, 54 pt tall (a touch target that is easy to hit when tired). */

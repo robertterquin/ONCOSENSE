@@ -55,7 +55,6 @@ export function MoodCard({ now }: { now: Date }) {
       <Section title="How are you feeling today?">
         <ListRow
           icon={saved.icon}
-          iconTone="chosen"
           title={`${saved.label}, saved for today`}
           subtitle={checkInDetails(today) ?? 'Add pain, energy and symptoms'}
           accessibilityHint="Opens today's check-in"
