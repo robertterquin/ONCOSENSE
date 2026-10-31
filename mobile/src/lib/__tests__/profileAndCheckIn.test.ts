@@ -1,6 +1,7 @@
 import { changePasswordSchema, editProfileSchema } from '@/constants/validation';
 import { formatLongDate } from '@/lib/dates';
-import { energyValueText, painValueText } from '@/lib/journeyLabels';
+import { checkInDetails, energyValueText, painValueText } from '@/lib/journeyLabels';
+import type { JourneyEntry } from '@/types/journeyEntry';
 
 describe('check-in slider values (read aloud and shown)', () => {
   it('describes pain levels', () => {
@@ -58,5 +59,38 @@ describe('changePasswordSchema', () => {
       'Password must be at least 8 characters',
     );
     expect(errors({ confirmPassword: 'Different1!' })).toContain('Passwords do not match');
+  });
+});
+
+describe('checkInDetails (Today, after the mood is saved)', () => {
+  const quickMood: JourneyEntry = {
+    id: '1',
+    date: new Date(2026, 9, 31),
+    moodLevel: 3,
+    painLevel: 0,
+    energyLevel: 5,
+    sleepQuality: 3,
+    symptoms: [],
+    notes: null,
+    appointmentNotes: null,
+    hasAppointment: false,
+  };
+
+  it('is empty for a mood-only check-in', () => {
+    expect(checkInDetails(quickMood)).toBeNull();
+  });
+
+  it('sums up what was added', () => {
+    expect(
+      checkInDetails({
+        ...quickMood,
+        painLevel: 3,
+        energyLevel: 4,
+        symptoms: ['Nausea', 'Fatigue'],
+      }),
+    ).toBe('Pain 3, energy 4, 2 symptoms');
+    expect(checkInDetails({ ...quickMood, symptoms: ['Nausea'], notes: 'Slept badly' })).toBe(
+      '1 symptom, a note',
+    );
   });
 });

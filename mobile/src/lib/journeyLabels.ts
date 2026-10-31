@@ -1,4 +1,5 @@
 import type { IconName } from '@/components/ui/Icon';
+import type { JourneyEntry } from '@/types/journeyEntry';
 
 // Words for check-in values (redesign Phase 4). Started from add_entry_screen.dart.
 
@@ -49,3 +50,21 @@ export const SLEEP = [
   { label: 'Good', value: 4 },
   { label: 'Very good', value: 5 },
 ];
+
+/**
+ * What a check-in holds beyond the mood ("Pain 3, energy 4, 2 symptoms"), or null when
+ * nothing was added. Values still at the quick mood's defaults count as not added.
+ */
+export function checkInDetails(entry: JourneyEntry): string | null {
+  const parts = [
+    entry.painLevel > 0 ? `pain ${entry.painLevel}` : null,
+    entry.energyLevel !== 5 ? `energy ${entry.energyLevel}` : null,
+    entry.symptoms.length
+      ? `${entry.symptoms.length} symptom${entry.symptoms.length === 1 ? '' : 's'}`
+      : null,
+    entry.notes?.trim() ? 'a note' : null,
+  ].filter((part) => part !== null);
+  if (!parts.length) return null;
+  const text = parts.join(', ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

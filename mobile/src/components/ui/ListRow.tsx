@@ -12,10 +12,12 @@ import { Tag } from './Tag';
 import { Text } from './Text';
 
 /** Icon tile colors by section: lavender (most things), teal (help), sun (tips and reminders), danger. */
-export type TileTone = 'action' | 'help' | 'sun' | 'danger';
+export type TileTone = 'action' | 'chosen' | 'help' | 'sun' | 'danger';
 
 export const TILES: Record<TileTone, { background: keyof Palette; color: keyof Palette }> = {
   action: { background: 'raised', color: 'action' },
+  /** Filled violet, like a picked mood face. */
+  chosen: { background: 'action', color: 'onAction' },
   help: { background: 'helpTint', color: 'help' },
   sun: { background: 'sun', color: 'sunInk' },
   danger: { background: 'dangerTint', color: 'danger' },

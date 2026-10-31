@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { newJourneyId } from '@/api/journey';
@@ -9,7 +8,7 @@ import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
-import { MOODS } from '@/lib/journeyLabels';
+import { checkInDetails, MOODS } from '@/lib/journeyLabels';
 import { toDayKey, useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
@@ -23,7 +22,6 @@ export function MoodCard({ now }: { now: Date }) {
   const entries = useJourneyEntries();
   const save = useSaveJourneyEntry();
   const today = entries.data?.find((entry) => isSameDay(entry.date, now));
-  const [editing, setEditing] = useState(false);
   const saved = today ? MOODS.find((mood) => mood.value === today.moodLevel) : undefined;
 
   const saveMood = (moodLevel: number) => {
@@ -42,7 +40,6 @@ export function MoodCard({ now }: { now: Date }) {
           hasAppointment: false,
         };
     save.mutate(entry, {
-      onSuccess: () => setEditing(false),
       onError: () => showToast("Couldn't save your check-in. Try again.", 'error'),
     });
   };
@@ -52,16 +49,18 @@ export function MoodCard({ now }: { now: Date }) {
       today ? { pathname: '/journey/check-in', params: { id: today.id } } : '/journey/check-in',
     );
 
-  if (saved && !editing) {
+  // Once saved, one row opens the full check-in, where the mood can be changed too.
+  if (today && saved) {
     return (
       <Section title="How are you feeling today?">
         <ListRow
           icon={saved.icon}
-          title={saved.label}
-          subtitle="Saved for today"
-          accessory={<Button title="Edit" variant="quiet" small onPress={() => setEditing(true)} />}
+          iconTone="chosen"
+          title={`${saved.label}, saved for today`}
+          subtitle={checkInDetails(today) ?? 'Add pain, energy and symptoms'}
+          accessibilityHint="Opens today's check-in"
+          onPress={openCheckIn}
         />
-        <ListRow title="Add pain, energy and symptoms" icon="activity" onPress={openCheckIn} />
       </Section>
     );
   }
