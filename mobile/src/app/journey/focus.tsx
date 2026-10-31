@@ -14,10 +14,11 @@ import {
   Text,
   type IconName,
 } from '@/components/ui';
-import { useFocus, useSaveFocus } from '@/hooks/useFocus';
+import { useFocus, useMyCancerId, useSaveFocus } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
 import { addDays, formatLongDate } from '@/lib/dates';
 import { FOCUS_OPTIONS, forFocus, type JourneyFocus } from '@/lib/focus';
+import { asksWhichCancer } from '@/lib/forYou';
 import { rescheduleCheckInReminder } from '@/lib/notifications/service';
 import { useIsSignedIn } from '@/stores/authStore';
 import { showToast } from '@/stores/toastStore';
@@ -43,6 +44,7 @@ export default function FocusScreen() {
   const setup = useJourneySetup();
   const saveFocus = useSaveFocus();
   const startJourney = useStartJourney();
+  const myCancerId = useMyCancerId();
   const [focus, setFocus] = useState<JourneyFocus | null>(current);
   const [step, setStep] = useState<'focus' | 'dates'>('focus');
   const [startDate, setStartDate] = useState(() => setup.diagnosisDate ?? new Date());
@@ -54,6 +56,7 @@ export default function FocusScreen() {
     // The daily check-in reminder is only for Journey focuses.
     void rescheduleCheckInReminder();
     router.replace(focus === 'learning' ? '/today' : '/journey');
+    if (asksWhichCancer(focus) && !myCancerId) router.push('/journey/cancer');
   };
 
   const next = () => {

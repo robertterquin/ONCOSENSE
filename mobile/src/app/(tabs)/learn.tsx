@@ -5,6 +5,7 @@ import { ProfileButton } from '@/components/account/ProfileButton';
 import {
   CancerTypes,
   CheckYourself,
+  ForYou,
   GuideResults,
   HabitResults,
   LowerYourRisk,
@@ -19,10 +20,15 @@ import {
   SearchField,
   SegmentedControl,
 } from '@/components/ui';
+import { userAge, userGender } from '@/api/auth';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { HABITS } from '@/constants/habits';
+import { useFocus, useMyCancerId } from '@/hooks/useFocus';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
+import { asksWhichCancer, forYouCancers } from '@/lib/forYou';
 import { searchLearn } from '@/lib/learn';
+import { useUser } from '@/stores/authStore';
+import { useHabitsStore } from '@/stores/habitsStore';
 
 // The Learn tab (redesign Phase 3, split into three in Phase 14): your self-checks by
 // whether they're due, cancer types A to Z, and habits that lower your risk, with one
@@ -37,6 +43,10 @@ export default function LearnTab() {
   const cancers = useCancerTypes();
   const checks = useSelfChecks();
   const [part, setPart] = useState<Part>('checks');
+  const user = useUser();
+  const focus = useFocus();
+  const myCancerId = useMyCancerId();
+  const smoker = useHabitsStore((state) => state.smoker);
 
   // On every visit with a `section` link (the tab stays mounted), show that part.
   useFocusEffect(
@@ -58,6 +68,13 @@ export default function LearnTab() {
     guides: checks.all.map((status) => status.guide),
     tips: HABITS,
   };
+  const myCancer = lists.cancers.find((cancer) => cancer.id === myCancerId) ?? null;
+  const picks = forYouCancers(lists.cancers, {
+    gender: userGender(user),
+    age: userAge(user),
+    smoker,
+    myCancerId,
+  });
   const query = search.trim();
   const results = searchLearn(lists, query);
   const noResults =
@@ -121,7 +138,17 @@ export default function LearnTab() {
           ) : (
             {
               checks: <CheckYourself mine={checks.mine} all={checks.all} />,
-              cancers: <CancerTypes cancers={lists.cancers} />,
+              cancers: (
+                <>
+                  <ForYou
+                    picks={picks}
+                    myCancer={myCancer}
+                    askCancer={asksWhichCancer(focus) && !myCancerId}
+                    caring={focus === 'caring'}
+                  />
+                  <CancerTypes cancers={lists.cancers} title="All cancers" />
+                </>
+              ),
               habits: <LowerYourRisk />,
             }[part]
           )}

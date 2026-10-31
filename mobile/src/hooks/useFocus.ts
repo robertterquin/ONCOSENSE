@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { updateProfile } from '@/api/auth';
+import { updateProfile, userCancerTypeId } from '@/api/auth';
 import { focusFromMetadata, type JourneyFocus } from '@/lib/focus';
 import { useUser } from '@/stores/authStore';
 import { useFocusStore } from '@/stores/focusStore';
@@ -21,6 +21,23 @@ export function useSaveFocus() {
     mutationFn: async (focus: JourneyFocus) => {
       if (user) await updateProfile({ journey_focus: focus });
       else useFocusStore.getState().setGuestFocus(focus);
+    },
+  });
+}
+
+/** "Which cancer?": an id, `'none'` for "I'd rather not say", or null when not answered. */
+export function useMyCancerId(): string | null {
+  const user = useUser();
+  const guestCancerId = useFocusStore((state) => state.guestCancerId);
+  return user ? userCancerTypeId(user) : guestCancerId;
+}
+
+export function useSaveMyCancer() {
+  const user = useUser();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (user) await updateProfile({ cancer_type_id: id });
+      else useFocusStore.getState().setGuestCancerId(id);
     },
   });
 }

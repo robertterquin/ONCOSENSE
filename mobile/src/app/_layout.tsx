@@ -28,6 +28,7 @@ const SHEETS = [
   'journey/check-in',
   'journey/appointment',
   'journey/treatment',
+  'journey/cancer',
   'community/ask',
   'profile/edit',
   'profile/password',

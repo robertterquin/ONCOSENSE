@@ -29,6 +29,7 @@ import {
   type BodySystem,
 } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
+import type { ForYouPick } from '@/lib/forYou';
 import { habitWeek, type Smoker } from '@/lib/habits';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
@@ -113,8 +114,97 @@ export function GuideResults({ statuses }: { statuses: GuideStatus[] }) {
   );
 }
 
+/**
+ * Learn › Cancers top: the cancer the person named (theirs, or the one they care for),
+ * or a row asking for it, then cancers ranked for them with the reason for each.
+ */
+export function ForYou({
+  picks,
+  myCancer,
+  askCancer,
+  caring,
+}: {
+  picks: ForYouPick[];
+  myCancer: CancerType | null;
+  askCancer: boolean;
+  caring: boolean;
+}) {
+  const { palette } = useDesign();
+  const changeCancer = () => router.push('/journey/cancer');
+  return (
+    <>
+      {myCancer ? (
+        <View style={[styles.mine, { backgroundColor: palette.action }]}>
+          <View style={styles.mineTop}>
+            <Text variant="caption" tone="onAction" style={styles.flex1}>
+              {caring ? "You're caring for someone with" : 'Your cancer'}
+            </Text>
+            <PressableScale
+              feedback="fade"
+              accessibilityRole="button"
+              accessibilityLabel="Change cancer"
+              onPress={changeCancer}
+              hitSlop={12}>
+              <Text variant="caption" tone="onAction" style={styles.underline}>
+                Change
+              </Text>
+            </PressableScale>
+          </View>
+          <PressableScale
+            feedback="fade"
+            accessibilityRole="button"
+            accessibilityLabel={`${myCancer.name}. Early signs, tests and risks`}
+            onPress={() => openCancer(myCancer.id)}
+            style={styles.mineBody}>
+            <Icon name={iconForCancer(myCancer.name)} size={28} tone="onAction" />
+            <View style={styles.flex1}>
+              <Text variant="section" tone="onAction">
+                {myCancer.name}
+              </Text>
+              <Text variant="supporting" tone="onAction">
+                Early signs, tests and risks
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={22} tone="onAction" />
+          </PressableScale>
+        </View>
+      ) : askCancer ? (
+        <Section>
+          <ListRow
+            icon="plus"
+            title={caring ? 'Add the cancer they have' : 'Add your cancer'}
+            subtitle="Its guide goes first here"
+            titleTone="action"
+            onPress={changeCancer}
+          />
+        </Section>
+      ) : null}
+      {picks.length ? (
+        <Section title="For you" subtitle="Common for people like you">
+          {picks.map(({ cancer, reason }) => (
+            <ListRow
+              key={cancer.id}
+              icon={iconForCancer(cancer.name)}
+              iconTone="action"
+              title={cancer.name}
+              subtitle={reason}
+              onPress={() => openCancer(cancer.id)}
+            />
+          ))}
+        </Section>
+      ) : null}
+    </>
+  );
+}
+
 /** Cancer types categorized by body systems (Option 2), with filter chips and clean grouped list. */
-export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
+export function CancerTypes({
+  cancers,
+  title = 'Cancer types',
+}: {
+  cancers: CancerType[];
+  title?: string;
+}) {
   const [selectedSystem, setSelectedSystem] = useState<BodySystem>('All');
   const sorted = [...cancers].sort((a, b) => a.name.localeCompare(b.name));
   const filtered =
@@ -125,7 +215,7 @@ export function CancerTypes({ cancers }: { cancers: CancerType[] }) {
   return (
     <View style={styles.sectionGap}>
       <Section
-        title="Cancer types"
+        title={title}
         subtitle="Early signs, risks and how each is found"
         look="plain">
         <ScrollView
@@ -562,6 +652,11 @@ export function ProgressRing({ done, total }: { done: number; total: number }) {
 
 const styles = StyleSheet.create({
   sectionGap: { gap: space.md },
+  flex1: { flex: 1 },
+  underline: { textDecorationLine: 'underline' },
+  mine: { borderRadius: radii.section, padding: space.lg, gap: space.sm },
+  mineTop: { flexDirection: 'row', alignItems: 'center' },
+  mineBody: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   systems: { gap: space.sm, paddingRight: space.xl },
   badge: {
     paddingHorizontal: space.sm,

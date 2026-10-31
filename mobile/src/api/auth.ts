@@ -107,6 +107,16 @@ export function userGender(user: User | null): string | null {
   return metadataString(user, 'gender');
 }
 
+export function userAge(user: User | null): number | null {
+  const value = user?.user_metadata?.age;
+  return typeof value === 'number' && value > 0 ? value : null;
+}
+
+/** "Which cancer?": a `cancer_types` id, `'none'` for "I'd rather not say", or null if not asked. */
+export function userCancerTypeId(user: User | null): string | null {
+  return metadataString(user, 'cancer_type_id');
+}
+
 export function userProfilePictureUrl(user: User | null): string | null {
   return metadataString(user, 'profile_picture_url');
 }
