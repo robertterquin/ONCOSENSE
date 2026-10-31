@@ -73,7 +73,7 @@ export function ListRow({
     <>
       {icon ? (
         <View style={[styles.tile, { backgroundColor: palette[tile.background] }]}>
-          <Icon name={icon} size={22} tone={tile.color} />
+          <Icon name={icon} size={26} tone={tile.color} />
         </View>
       ) : null}
       <View style={styles.text}>

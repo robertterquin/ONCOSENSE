@@ -12,7 +12,7 @@ The awareness ribbon is already the app's only illustration. In this direction i
 Three supporting changes:
 
 1. **Color tells you where you are.** Rose for self-checks, teal for help and calling, warm yellow (sun) for tips and appointments, violet for your next step. Every color is already in the palette; state is never shown by color alone.
-2. **One icon family that means something.** Material Symbols Rounded at weight 300: one style for controls, moods, treatments and cancer types (by medical specialty), with no emoji in the interface.
+2. **One icon family that means something.** Material Symbols Rounded at weight 500: one style for controls, treatments and cancer types (by medical specialty), with no emoji in the interface. The mood faces and the liver and stomach icons are drawn to match (`moodFaces.tsx`, `organIcons.tsx`).
 3. **Less sameness.** Content sits in grouped lists and a few distinct blocks (a stat tile, a grid tile, a full-color help card), not the same white card repeated down every screen.
 
 ## What stays
@@ -23,7 +23,7 @@ Three supporting changes:
 
 ## Design rules added by this plan
 
-1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 300; `bold` gives 600 for small ticks and pluses). To add one, name it in `mobile/scripts/material-icons.mjs` and rerun it. No other icon package in screens.
+1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 500; `bold` gives 600 for small ticks and pluses). To add one, name it in `mobile/scripts/material-icons.mjs` and rerun it. No other icon package in screens.
 2. **Section colors:** rose = self-checks, teal = help and calling, sun = tips and appointments, violet = the next step and the active tab. A color always comes with a word or icon that says the same thing.
 3. **Depth comes from `theme/elevation.ts` only:** resting cards, the floating tab bar and the violet panels. Every raised container keeps a visible edge; shadows add lift, never replace the edge. No glass or translucency on content: it lowers contrast for older eyes.
 4. **One thread per screen at most.** The ribbon thread appears on Today (panel) and Journey (week), and as the launch screen. Nowhere else.

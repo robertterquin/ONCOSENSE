@@ -6,10 +6,11 @@ import { useDesign } from '@/theme/useTheme';
 import { decorative } from './a11y';
 import { MATERIAL_ICONS, MATERIAL_ICONS_BOLD } from './materialIcons';
 import { isMoodFace, MoodFace } from './moodFaces';
+import { isOrganIcon, OrganIcon } from './organIcons';
 
 // Every icon in the app is Material Symbols Rounded, one family throughout, except the
-// five mood faces (moodFaces.tsx). To add one, name it in scripts/material-icons.mjs and
-// run the script (it explains how).
+// five mood faces (moodFaces.tsx) and the liver and stomach (organIcons.tsx). To add one,
+// name it in scripts/material-icons.mjs and run the script (it explains how).
 
 export type IconName = keyof typeof MATERIAL_ICONS;
 
@@ -29,6 +30,8 @@ type IconProps = {
 export function Icon({ name, size = 22, tone = 'ink', color, bold = false }: IconProps) {
   const { palette } = useDesign();
   if (isMoodFace(name)) return <MoodFace name={name} size={size} color={color ?? palette[tone]} />;
+  if (isOrganIcon(name))
+    return <OrganIcon name={name} size={size} color={color ?? palette[tone]} />;
   return (
     <Svg
       width={size}
