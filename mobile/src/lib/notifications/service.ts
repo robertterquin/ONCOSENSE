@@ -249,7 +249,7 @@ export async function sendTestNotification(): Promise<void> {
         title: 'Test notification',
         body: 'OncoSense notifications are working!',
         channelId: 'health_reminders',
-        color: '#D81B60',
+        color: '#5236B5',
         data: { type: NotificationKind.test, payload: NotificationKind.test },
       });
     }

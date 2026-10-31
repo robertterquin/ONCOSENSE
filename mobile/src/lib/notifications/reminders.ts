@@ -94,10 +94,10 @@ function monthlySelfExamReminder(
 ): ReminderRequest {
   return {
     identifier: 'self-check-monthly',
-    title: 'Monthly self-exam reminder',
-    body: "It's time for your monthly breast self-examination. Early detection saves lives!",
+    title: 'Time for your monthly self-check',
+    body: 'Open OncoSense to see which check is due. It takes about 10 minutes.',
     channelId: 'screening_reminders',
-    color: '#D81B60',
+    color: '#5236B5',
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
     trigger: { kind: 'monthly', day: dayOfMonth, hour: time.hour, minute: time.minute },
   };
@@ -110,7 +110,7 @@ function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
     title: 'Time for a self-check',
     body: `${guideTitle} is due today. It takes about 10 minutes.`,
     channelId: 'screening_reminders',
-    color: '#D81B60',
+    color: '#5236B5',
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
     trigger: { kind: 'date', date },
   };
@@ -165,7 +165,7 @@ export function screeningReminder(
     title,
     body: message,
     channelId: 'screening_reminders',
-    color: '#E91E63',
+    color: '#5236B5',
     data: { type: NotificationKind.screening, payload: `${NotificationKind.screening}:${id}` },
     trigger: { kind: 'date', date },
   };
