@@ -2,21 +2,20 @@ name: Mobile (React Native)
 
 on:
   pull_request:
-    paths:
-      - 'mobile/**'
-      - '.github/workflows/mobile.yml'
+    paths-ignore:
+      - 'docs/**'
+      - 'supabase/**'
+      - '**.md'
   push:
     branches: [main]
-    paths:
-      - 'mobile/**'
-      - '.github/workflows/mobile.yml'
+    paths-ignore:
+      - 'docs/**'
+      - 'supabase/**'
+      - '**.md'
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     env:
       # Placeholders so modules that read the config can load; tests don't call Supabase.
       EXPO_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
@@ -27,7 +26,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: mobile/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck

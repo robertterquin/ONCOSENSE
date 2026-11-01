@@ -13,7 +13,7 @@ describe('getSupabaseConfig', () => {
   it('throws a setup hint when a variable is missing', () => {
     expect(() =>
       getSupabaseConfig({ EXPO_PUBLIC_SUPABASE_URL: 'https://example.supabase.co' }),
-    ).toThrow(/mobile\/\.env/);
+    ).toThrow(/Copy \.env\.example to \.env/);
   });
 
   it('treats blank values as missing', () => {

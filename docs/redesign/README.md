@@ -87,7 +87,7 @@ Estimates assume one developer full time. Phases 3, 4 and 5 touch different scre
 Same as the migration:
 
 1. One short branch per phase from `main` (`redesign/phase-N`), merged into `main` with `--no-ff`, pushed, then deleted. Never force-push `main`.
-2. A phase is done when its **Done when** list is true and `npm run lint`, `npm run typecheck` and `npm test` pass in `mobile/`.
+2. A phase is done when its **Done when** list is true and `npm run lint`, `npm run typecheck` and `npm test` pass.
 3. Check each changed screen on web and in the iOS Simulator (`npm run ios`) against its artboard, in light and dark.
 4. Database changes are additive only (new tables or nullable columns), written as SQL files in `supabase/migrations/`, and applied by the project owner.
 5. Update the status table and decision log as you go.

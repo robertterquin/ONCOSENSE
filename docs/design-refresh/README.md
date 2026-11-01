@@ -23,7 +23,7 @@ Three supporting changes:
 
 ## Design rules added by this plan
 
-1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 500; `bold` gives 600 for small ticks and pluses). To add one, name it in `mobile/scripts/material-icons.mjs` and rerun it. No other icon package in screens.
+1. **Icons come from `Icon` only**, drawn from Material Symbols Rounded (weight 500; `bold` gives 600 for small ticks and pluses). To add one, name it in `scripts/material-icons.mjs` and rerun it. No other icon package in screens.
 2. **Section colors:** rose = self-checks, teal = help and calling, sun = tips and appointments, violet = the next step and the active tab. A color always comes with a word or icon that says the same thing.
 3. **Depth comes from `theme/elevation.ts` only:** resting cards, the floating tab bar and the violet panels. Every raised container keeps a visible edge; shadows add lift, never replace the edge. No glass or translucency on content: it lowers contrast for older eyes.
 4. **One thread per screen at most.** The ribbon thread appears on Today (panel) and Journey (week), and as the launch screen. Nowhere else.
@@ -59,7 +59,7 @@ Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5
 Same as the redesign:
 
 1. One short branch per phase from `main` (`design/phase-N`), merged into `main` with `--no-ff`, pushed, then deleted. Never force-push `main`.
-2. A phase is done when its **Done when** list is true and `npm run lint`, `npm run typecheck` and `npm test` pass in `mobile/`.
+2. A phase is done when its **Done when** list is true and `npm run lint`, `npm run typecheck` and `npm test` pass.
 3. Show each changed screen on web and in the iOS Simulator, light and dark, at Default and Larger text, before committing.
 4. New color pairs go into `palette.test.ts` before they're used.
 5. Update the status table and decision log as you go.

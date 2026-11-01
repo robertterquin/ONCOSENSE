@@ -35,7 +35,7 @@ Pick one and record it in the decision log:
 - **Keep `mobile/`** (simplest; leaves room for `supabase/` and a future `web/` side by side), or
 - **Move `mobile/` to the repo root** with `git mv` so history is preserved. Update CI paths and EAS config afterwards.
 
-**Chosen: keep `mobile/`.**
+**Chosen: keep `mobile/`.** *(Changed on 2026-11-01: the app moved to the repository root; see the decision log.)*
 
 - [x] Rewrite the root `README.md` for the React Native app: setup, env vars, running, building, releasing.
 

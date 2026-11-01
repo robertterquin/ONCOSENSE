@@ -18,7 +18,7 @@ export function getSupabaseConfig(
 
   if (!url || !anonKey) {
     throw new Error(
-      'Supabase is not configured. Copy mobile/.env.example to mobile/.env and fill in ' +
+      'Supabase is not configured. Copy .env.example to .env and fill in ' +
         'EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.',
     );
   }

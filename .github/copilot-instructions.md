@@ -1,12 +1,12 @@
 # OncoSense — Copilot Instructions
 
-OncoSense is a cancer awareness and support app built with **React Native (Expo SDK 58) + TypeScript** and a **Supabase** backend. The app lives in `mobile/`; Supabase Edge Functions live in `supabase/functions/`. The Flutter app it replaced is archived at the `flutter-final` tag — don't add Dart or Flutter code.
+OncoSense is a cancer awareness and support app built with **React Native (Expo SDK 58) + TypeScript** and a **Supabase** backend. The app is at the repository root (`src/`); Supabase Edge Functions live in `supabase/functions/`. The Flutter app it replaced is archived at the `flutter-final` tag — don't add Dart or Flutter code.
 
-Read `mobile/AGENTS.md` too: Expo changes every SDK release, so check the versioned Expo docs instead of relying on memory.
+Read `AGENTS.md` too: Expo changes every SDK release, so check the versioned Expo docs instead of relying on memory.
 
 ## Stack
 
-- **Navigation:** Expo Router. Every file in `mobile/src/app/` is a route; `(auth)` and `(tabs)` are route groups.
+- **Navigation:** Expo Router. Every file in `src/app/` is a route; `(auth)` and `(tabs)` are route groups.
 - **Server data:** TanStack Query hooks in `src/hooks/`, calling Supabase through `src/api/`.
 - **Local state:** Zustand stores in `src/stores/`, persisted with `persistStorage` (`expo-sqlite` localStorage).
 - **Forms:** react-hook-form + zod; every schema lives in `src/constants/validation.ts`.
@@ -19,11 +19,11 @@ Read `mobile/AGENTS.md` too: Expo changes every SDK release, so check the versio
 - **Database rows → models:** mappers in `src/types/` (`fooFromRow`, `fooToRow`); screens never touch raw rows.
 - **Web:** the app also runs in the browser. No buttons nested inside other buttons; use `confirm()` from `src/lib/confirm.ts` instead of `Alert.alert`; give platform-specific code a `.web.ts` twin.
 - **Accessibility:** every pressable gets `accessibilityRole`, icon-only buttons get `accessibilityLabel`, selectable items get `accessibilityState`. Keep text contrast at WCAG AA (4.5:1).
-- **Secrets:** only `EXPO_PUBLIC_SUPABASE_URL` and the anon key go in the app (`mobile/.env`, git-ignored). Anything secret belongs in an Edge Function.
-- **Native folders:** `mobile/ios` and `mobile/android` are generated; change native settings in `app.json` or config plugins.
+- **Secrets:** only `EXPO_PUBLIC_SUPABASE_URL` and the anon key go in the app (`.env`, git-ignored). Anything secret belongs in an Edge Function.
+- **Native folders:** `ios/` and `android/` are generated; change native settings in `app.json` or config plugins.
 - Add packages with `npx expo install <package>`.
 
-## Commands (run in `mobile/`)
+## Commands (run at the repository root)
 
 ```bash
 npm run web          # run in the browser

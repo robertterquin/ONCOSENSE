@@ -7,20 +7,20 @@ Lint, typecheck and the 325 tests pass in CI on every push.
 ## 1. Medical content review (a clinician)
 
 - [ ] The five cancer pages added on 2026-10-31: testicular, oral, thyroid, lymphoma, uterine (`supabase/migrations/20261031000000_more_cancer_types.sql`).
-- [ ] The "For you" rules and age cut-offs in `mobile/src/lib/forYou.ts` (prostate 50+, testicular 15–35, cervical 25–65, colorectal screening from 45).
-- [ ] The treatment habits' wording in `mobile/src/constants/habits.ts` ("Gentle movement", "Eat something you enjoy").
-- [ ] The content corrections in `supabase/migrations/20261101000000_content_sources.sql` (cancer page figures and sources, the breast page, eight retired self-checks) and the weekly tips in `mobile/src/constants/healthTips.ts`. Run the migration first; until then the app shows the old text.
+- [ ] The "For you" rules and age cut-offs in `src/lib/forYou.ts` (prostate 50+, testicular 15–35, cervical 25–65, colorectal screening from 45).
+- [ ] The treatment habits' wording in `src/constants/habits.ts` ("Gentle movement", "Eat something you enjoy").
+- [ ] The content corrections in `supabase/migrations/20261101000000_content_sources.sql` (cancer page figures and sources, the breast page, eight retired self-checks) and the weekly tips in `src/constants/healthTips.ts`. Run the migration first; until then the app shows the old text.
 - [ ] Help contacts: only DOH 1555, NCMH, Philippine Red Cross 143 and the Philippine Cancer Society were checked on 2026-11-01. Call or check the other 18 (screening centers, PhilHealth, PCSO, DSWD, Malasakit, support groups) and set `checked_on` for each.
 
 ## 2. Accounts to set up (needs your logins)
 
-- [ ] **EAS project:** in `mobile/`, run `npx eas-cli@latest init` to link the project (adds `extra.eas.projectId` to `app.json`), then set the `EXPO_PUBLIC_SUPABASE_*` variables (commands in `mobile/README.md`).
+- [ ] **EAS project:** at the repository root, run `npx eas-cli@latest init` to link the project (adds `extra.eas.projectId` to `app.json`), then set the `EXPO_PUBLIC_SUPABASE_*` variables (commands in `README.md`).
 - [ ] **Over-the-air updates:** after `init`, run `npx eas-cli@latest update:configure`. It installs `expo-updates` and sets `updates.url` and `runtimeVersion`, so fixes can ship without a store review.
-- [ ] **Crash reporting:** create a Sentry project, then run `npx @sentry/wizard@latest -i reactNative` in `mobile/`. Add `SENTRY_AUTH_TOKEN` to the EAS `production` environment (sensitive) so source maps upload with each build.
+- [ ] **Crash reporting:** create a Sentry project, then run `npx @sentry/wizard@latest -i reactNative` at the repository root. Add `SENTRY_AUTH_TOKEN` to the EAS `production` environment (sensitive) so source maps upload with each build.
 
 ## 3. Store paperwork
 
-- [ ] A privacy policy at a public URL (the in-app text is in `mobile/src/constants/legal.ts`).
+- [ ] A privacy policy at a public URL (the in-app text is in `src/constants/legal.ts`).
 - [ ] Apple privacy labels and Google Play data safety: account data (email, name, optional age and gender), health data (check-ins, treatments, appointments), photos and camera (profile picture), notifications.
 - [ ] Screenshots and descriptions; the app supports iPad (`supportsTablet: true`), so App Store review will open it on one.
 

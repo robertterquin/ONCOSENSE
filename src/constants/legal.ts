@@ -201,7 +201,7 @@ OPEN SOURCE PACKAGES
 • @react-native-community/datetimepicker, slider
 
 All packages are licensed under their respective licenses.
-See mobile/package.json for the complete list.
+See package.json for the complete list.
 
 ━━━━━━━━━━━━━━━━━━━━━━
 LICENSE
