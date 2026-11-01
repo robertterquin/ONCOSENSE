@@ -190,22 +190,13 @@ export function Banner({ tone = 'info', title, children, action }: BannerProps) 
  * Sticky actions at the bottom of a screen (Save, Next step), above the home bar.
  * Buttons share the width equally unless they set their own `flex`.
  */
-/** `stacked`: items one above the other at their own height (answer cards). */
-export function BottomActionBar({
-  children,
-  stacked = false,
-}: {
-  children: ReactNode;
-  stacked?: boolean;
-}) {
+export function BottomActionBar({ children }: { children: ReactNode }) {
   const items = Children.map(children, (child) =>
-    stacked
-      ? child
-      : isValidElement(child)
-        ? cloneElement(child as ReactElement<{ style?: unknown }>, {
-            style: [styles.barItem, (child as ReactElement<{ style?: unknown }>).props.style],
-          })
-        : child,
+    isValidElement(child)
+      ? cloneElement(child as ReactElement<{ style?: unknown }>, {
+          style: [styles.barItem, (child as ReactElement<{ style?: unknown }>).props.style],
+        })
+      : child,
   );
   const { palette } = useDesign();
   const insets = useSafeAreaInsets();
@@ -213,7 +204,6 @@ export function BottomActionBar({
     <View
       style={[
         styles.bottomBar,
-        stacked && styles.stacked,
         {
           // The page's own colour, so the buttons stand out; the line marks where scrolling stops.
           backgroundColor: palette.ground,
@@ -254,7 +244,6 @@ const styles = StyleSheet.create({
   },
   bannerText: { flex: 1, gap: space.xs },
   barItem: { flex: 1 },
-  stacked: { flexDirection: 'column' },
   bottomBar: {
     flexDirection: 'row',
     gap: space.md - 2,
