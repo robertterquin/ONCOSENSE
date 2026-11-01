@@ -87,11 +87,19 @@ export function checkStatusLabel(lastDone: Date | null, due: Date, now: Date = n
   return `Waiting since ${formatMonthDay(due)}`;
 }
 
-/** Guides shown first for a profile's gender (`cancer_type` values). Editable in Phase 6. */
-function defaultGuideTypes(gender: string | null): string[] {
-  if (gender === 'Female') return ['Breast', 'Skin', 'Oral'];
-  if (gender === 'Male') return ['Testicular', 'Skin', 'Oral'];
-  return ['Skin', 'Oral'];
+/**
+ * Guides shown first for a profile (`cancer_type` values), by sex and age (design refresh
+ * Phase 22): breast from 20, testicular from 15 to 40 (most cases are 15 to 35), skin and
+ * oral for adults. With no age, every adult check for that sex. Without a sex, only the
+ * checks that suit everyone; the person can turn on others in Your checks.
+ */
+function defaultGuideTypes(gender: string | null, age: number | null): string[] {
+  const between = (from: number, to = Infinity) => age === null || (age >= from && age <= to);
+  return [
+    ...(gender === 'Female' && between(20) ? ['Breast'] : []),
+    ...(gender === 'Male' && between(15, 40) ? ['Testicular'] : []),
+    ...(between(18) ? ['Skin', 'Oral'] : []),
+  ];
 }
 
 /** The person's guides: their own choice if they made one, else the defaults, in order. */
@@ -99,17 +107,26 @@ export function chosenGuides<T extends Pick<SelfCheckGuide, 'id' | 'cancerType'>
   guides: T[],
   chosenIds: string[] | null,
   gender: string | null,
+  age: number | null = null,
 ): T[] {
   if (chosenIds) return guides.filter((guide) => chosenIds.includes(guide.id));
-  const types = defaultGuideTypes(gender);
+  const types = defaultGuideTypes(gender, age);
   return guides
     .filter((guide) => types.includes(guide.cancerType))
     .sort((a, b) => types.indexOf(a.cancerType) - types.indexOf(b.cancerType));
 }
 
+/** One finished self-check: when (local time, `toDbTimestamp`) and whether a change was noted. */
+export type CheckEntry = { date: string; changed: boolean };
+
+/** How many entries each guide keeps (two years of monthly checks). */
+export const HISTORY_LIMIT = 24;
+
 export type SelfCheckState = {
   /** When each guide was last marked done (local time, `toDbTimestamp`), by guide ID. */
   lastDone: Record<string, string>;
+  /** Each guide's finished checks, newest first (design refresh Phase 22). */
+  history?: Record<string, CheckEntry[]>;
   /** Start of the day the next-step panel can show a self-check again (`toDbTimestamp`). */
   snoozedUntil: string | null;
 };
@@ -117,6 +134,27 @@ export type SelfCheckState = {
 export function lastDoneDate(state: SelfCheckState, guideId: string): Date | null {
   const value = state.lastDone[guideId];
   return value ? parseDbTimestamp(value) : null;
+}
+
+/** A guide's finished checks, newest first; a date from before the history counts as one. */
+export function historyFor(state: SelfCheckState, guideId: string): CheckEntry[] {
+  const entries = state.history?.[guideId];
+  if (entries?.length) return entries;
+  const last = state.lastDone[guideId];
+  return last ? [{ date: last, changed: false }] : [];
+}
+
+/** Two lists of entries as one: each date once, newest first, at most `HISTORY_LIMIT`. */
+export function mergeHistory(a: CheckEntry[], b: CheckEntry[]): CheckEntry[] {
+  const byDate = new Map<string, CheckEntry>();
+  for (const entry of [...a, ...b]) {
+    const time = String(parseDbTimestamp(entry.date).getTime());
+    const known = byDate.get(time);
+    byDate.set(time, known ? { ...known, changed: known.changed || entry.changed } : entry);
+  }
+  return [...byDate.values()]
+    .sort((x, y) => parseDbTimestamp(y.date).getTime() - parseDbTimestamp(x.date).getTime())
+    .slice(0, HISTORY_LIMIT);
 }
 
 export function isSnoozed(state: SelfCheckState, now: Date = new Date()): boolean {

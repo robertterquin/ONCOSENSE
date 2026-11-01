@@ -89,6 +89,11 @@ export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
           onPress={() => openGuide(guide.id)}
         />
       ))}
+      <ListRow
+        title="Choose your checks"
+        titleTone="action"
+        onPress={() => router.push('/checks')}
+      />
     </Section>
   );
 }

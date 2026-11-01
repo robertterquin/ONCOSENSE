@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
+import type { CheckEntry } from '@/lib/selfCheck';
+
 import { check, currentUserId } from './errors';
 import { isMissingTable } from './journey';
 
@@ -11,6 +13,8 @@ export type SelfCheckRow = {
   /** Local wall-clock time, `toDbTimestamp` (read back with an offset to ignore). */
   last_done: string | null;
   saved: boolean;
+  /** Finished checks, newest first (migration 20261102010000). */
+  history: CheckEntry[];
 };
 
 /** The account's rows; `null` when signed out or before the table exists. */
@@ -19,7 +23,7 @@ export async function fetchSelfCheckProgress(): Promise<SelfCheckRow[] | null> {
   if (!userId) return null;
   const { data, error } = await supabase
     .from('self_check_progress')
-    .select('guide_id,last_done,saved')
+    .select('guide_id,last_done,saved,history')
     .eq('user_id', userId);
   if (isMissingTable(error)) return null;
   check(error, 'Failed to load self-checks');

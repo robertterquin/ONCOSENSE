@@ -6,7 +6,7 @@ import { HabitWeekStrip } from '@/components/learn/LearnSections';
 import { ListRow, Screen, Section, Text } from '@/components/ui';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { useSelfChecks, type GuideStatus } from '@/hooks/useSelfChecks';
-import { formatShortDate, formatShortMonthDay } from '@/lib/dates';
+import { formatShortDate, formatShortMonthDay, parseDbTimestamp } from '@/lib/dates';
 import { habitStreak } from '@/lib/habits';
 import { iconForCancer } from '@/lib/learn';
 import { useHabitsStore } from '@/stores/habitsStore';
@@ -52,13 +52,14 @@ export function MyHealth() {
             icon={iconForCancer(status.guide.cancerType)}
             title={status.guide.title}
             subtitle={checkHistory(status)}
+            subtitleTone={status.changeNoted ? 'sunInk' : 'muted'}
             onPress={() => openGuide(status.guide.id)}
           />
         ))}
         <ListRow
           title={mine.length ? 'Choose your checks' : 'Choose the checks to follow'}
           titleTone="action"
-          onPress={() => router.push('/profile/settings')}
+          onPress={() => router.push('/checks')}
         />
       </Section>
 
@@ -77,10 +78,18 @@ export function MyHealth() {
   );
 }
 
-/** "Done Oct 28, next Nov 28", or "Not done yet, due today". */
-function checkHistory({ lastDone, due, label }: GuideStatus): string {
+/**
+ * "Change noted Nov 1, see a doctor", "6 times this year, next Nov 28", "Done Oct 28,
+ * next Nov 28", or "Not done yet, due today".
+ */
+function checkHistory({ lastDone, due, label, history, changeNoted }: GuideStatus): string {
+  if (changeNoted) return `Change noted ${formatShortMonthDay(changeNoted)}, see a doctor`;
   if (!lastDone) return `Not done yet, ${label.toLowerCase()}`;
-  return `Done ${formatShortDate(lastDone)}, next ${formatShortMonthDay(due)}`;
+  const year = new Date().getFullYear();
+  const thisYear = history.filter((entry) => parseDbTimestamp(entry.date).getFullYear() === year);
+  return thisYear.length > 1
+    ? `${thisYear.length} times this year, next ${formatShortMonthDay(due)}`
+    : `Done ${formatShortDate(lastDone)}, next ${formatShortMonthDay(due)}`;
 }
 
 const styles = StyleSheet.create({

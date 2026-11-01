@@ -54,6 +54,7 @@ Three supporting changes:
 | 19 | Learn for reading, Journey for tracking | [19-phase-19-learn-and-my-health.md](19-phase-19-learn-and-my-health.md) | 1 day | Merged into `main` |
 | 20 | Your cancer, everywhere | [20-phase-20-your-cancer-everywhere.md](20-phase-20-your-cancer-everywhere.md) | 1 day | Merged into `main` |
 | 21 | Questions about a cancer | [21-phase-21-questions-about-a-cancer.md](21-phase-21-questions-about-a-cancer.md) | 1 day | Merged into `main` |
+| 22 | Self-checks that react to what you find | [22-phase-22-self-check-fixes.md](22-phase-22-self-check-fixes.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -81,3 +82,4 @@ Same as the redesign:
 | 2026-11-01 | Learn is for reading; habit ticks move to a Habits screen, and Learning users get My health in Journey | Learn mixed reference with to-do lists, and one of five tabs was empty for the largest group | Robert |
 | 2026-11-01 | Community opens on the person's cancer, and cancer pages list support groups for it | "Which cancer?" only changed Learn; Community and support groups had no link to cancers | Robert |
 | 2026-11-01 | Questions can name a cancer; older ones still match by name | Cancer pages and the Community filter need a real link to questions, without guessing tags for old posts | Robert |
+| 2026-11-01 | A self-check ends by asking what you found; a change says to see a doctor soon, and defaults follow age as well as sex | Marking a check done after finding a lump only scheduled the next one; age was ignored and the chooser was hidden in reminder settings | Robert |
