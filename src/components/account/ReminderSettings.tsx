@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Chip, DateField, Icon, ListRow, Sheet, Switch, Text } from '@/components/ui';
+import { useFocus } from '@/hooks/useFocus';
 import { formatTime } from '@/lib/dates';
 import { setReminderTime, setNotificationTypeEnabled } from '@/lib/notifications/service';
 import {
@@ -32,13 +33,13 @@ const toDate = (time: ReminderTime) => {
 };
 
 /** "On the day a check is due, 9:00 AM" */
-function describeReminder(type: NotificationType, time: ReminderTime): string {
+function describeReminder(type: NotificationType, time: ReminderTime, weekly: boolean): string {
   const at = formatTime(toDate(time));
   switch (type) {
     case 'self_check':
       return `On the day a check is due, ${at}`;
     case 'daily_checkin':
-      return `Every day, ${at}`;
+      return weekly ? `${WEEKDAYS[(time.weekday ?? 7) - 1]}s, ${at}` : `Every day, ${at}`;
     case 'appointments':
       return `The evening before, ${at}`;
     case 'weekly_tip':
@@ -51,22 +52,26 @@ export function ReminderRow({ type }: { type: NotificationType }) {
   const masterOn = useNotificationPrefs((state) => state.enabled);
   const time = useNotificationPrefs((state) => state.times[type]);
   const [editing, setEditing] = useState(false);
+  // After treatment the check-in is weekly, on a day the person picks.
+  const focus = useFocus();
+  const weekly = type === 'weekly_tip' || (type === 'daily_checkin' && focus === 'finished');
+  const title = type === 'daily_checkin' && weekly ? 'Weekly check-in' : TITLES[type];
   return (
     <>
       <ListRow
-        title={TITLES[type]}
-        subtitle={describeReminder(type, time)}
+        title={title}
+        subtitle={describeReminder(type, time, weekly)}
         accessibilityHint="Changes when this reminder comes"
         onPress={() => setEditing(true)}
         accessory={
           <Switch
-            accessibilityLabel={TITLES[type]}
+            accessibilityLabel={title}
             value={on}
             onValueChange={(value) => void setNotificationTypeEnabled(type, value)}
           />
         }
       />
-      <Sheet visible={editing} onClose={() => setEditing(false)} title={TITLES[type]}>
+      <Sheet visible={editing} onClose={() => setEditing(false)} title={title}>
         {masterOn ? null : (
           <Text variant="supporting" tone="muted">
             Reminders are off. Turn them on above for this to take effect.
@@ -76,7 +81,7 @@ export function ReminderRow({ type }: { type: NotificationType }) {
           value={time}
           onChange={(next) => void setReminderTime(type, { ...time, ...next })}
         />
-        {type === 'weekly_tip' ? (
+        {weekly ? (
           <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Day">
             {WEEKDAYS.map((day, index) => (
               <Chip

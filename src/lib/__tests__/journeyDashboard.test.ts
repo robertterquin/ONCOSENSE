@@ -2,6 +2,7 @@ import { toDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, focusSubtitle, usesJourney, wasCaregiver } from '@/lib/focus';
 import {
   lastSevenDays,
+  lastWeeks,
   sevenDayTrend,
   weekStrip,
   weekSummaryText,
@@ -150,6 +151,25 @@ describe('week strip and the last 7 days', () => {
       'Last 7 days, 3 check-ins: energy averaged 6.3 of 10 and pain 2 of 10.',
     );
     expect(weekSummaryText(lastSevenDays([], now))).toBe('No check-ins in the last 7 days.');
+  });
+
+  it('averages each of the last 8 weeks for weekly check-ins, this week last', () => {
+    const daysAgo = (days: number) => new Date(2026, 9, 24 - days, 20);
+    const weekly = [
+      entry(daysAgo(1), { energyLevel: 8, painLevel: 1 }),
+      entry(daysAgo(3), { energyLevel: 6, painLevel: 3 }),
+      entry(daysAgo(8), { energyLevel: 5, painLevel: 4 }),
+      entry(daysAgo(60), { energyLevel: 1, painLevel: 9 }),
+    ];
+    const summary = lastWeeks(weekly, now);
+    expect(summary.days).toHaveLength(8);
+    expect(summary.days[7]).toMatchObject({ energy: 7, pain: 2, entry: weekly[0] });
+    expect(summary.days[6]).toMatchObject({ energy: 5, pain: 4 });
+    expect(summary.days.slice(0, 6).every((week) => week.energy === null)).toBe(true);
+    expect(summary.checkIns).toBe(3);
+    expect(weekSummaryText(lastWeeks([], now), 'Last 8 weeks')).toBe(
+      'No check-ins in the last 8 weeks.',
+    );
   });
 });
 

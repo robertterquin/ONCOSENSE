@@ -107,8 +107,8 @@ function monthlySelfExamReminder(
 function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
   return {
     identifier: 'self-check-next',
-    title: 'Time for a self-check',
-    body: `${guideTitle} is due today. It takes about 10 minutes.`,
+    title: 'Time for a check',
+    body: `Your ${guideTitle.replace(/^[A-Z](?![A-Z])/, (letter) => letter.toLowerCase())} is due today.`,
     channelId: 'screening_reminders',
     color: '#5236B5',
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
@@ -116,19 +116,28 @@ function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
   };
 }
 
-/** What the self-check reminder needs: the soonest chosen guide and when to remind. */
+/** What the checks reminder needs: the soonest check's title and when to remind. */
 export type SelfCheckPlan = { guideTitle: string; date: Date };
 
-/** Every evening for Journey users (redesign Phase 4; replaced the weekly check-in). */
-function dailyCheckInReminder(time: ReminderTime = DEFAULT_TIMES.daily_checkin): ReminderRequest {
+/**
+ * Every evening in treatment (redesign Phase 4); once a week, on the chosen day, after
+ * treatment. Same identifier either way, so a focus change replaces it.
+ */
+function checkInReminder(
+  time: ReminderTime = DEFAULT_TIMES.daily_checkin,
+  weekly = false,
+): ReminderRequest {
+  const kind = weekly ? NotificationKind.weeklyCheckIn : NotificationKind.dailyCheckIn;
   return {
     identifier: 'daily-checkin',
-    title: 'How was today?',
+    title: weekly ? 'How was this week?' : 'How was today?',
     body: 'A one-minute check-in helps you and your doctor see how things change.',
     channelId: 'wellness_check_in',
     color: '#5236B5',
-    data: { type: NotificationKind.dailyCheckIn, payload: NotificationKind.dailyCheckIn },
-    trigger: { kind: 'daily', hour: time.hour, minute: time.minute },
+    data: { type: kind, payload: kind },
+    trigger: weekly
+      ? { kind: 'weekly', weekday: time.weekday ?? 7, hour: time.hour, minute: time.minute }
+      : { kind: 'daily', hour: time.hour, minute: time.minute },
   };
 }
 
@@ -231,6 +240,8 @@ type ReminderContext = {
   appointments?: AppointmentLike[];
   /** The weekly tip's text. */
   tip?: string;
+  /** After treatment the check-in reminder comes weekly. */
+  weeklyCheckIn?: boolean;
   now?: Date;
 };
 
@@ -251,7 +262,7 @@ export function remindersForType(
           : monthlySelfExamReminder(1, time),
       ];
     case 'daily_checkin':
-      return [dailyCheckInReminder(time)];
+      return [checkInReminder(time, context.weeklyCheckIn)];
     case 'appointments':
       return (context.appointments ?? []).flatMap((appointment) => {
         const date = appointmentReminderDate(appointment.startsAt, context.now, time);

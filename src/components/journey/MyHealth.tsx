@@ -14,16 +14,12 @@ import { space } from '@/theme/tokens';
 
 // Journey for people who are learning and checking themselves (design refresh Phase 19):
 // their habits over the week and each self-check's history, where the dashboard is for
-// people in treatment. Ticking things off stays on Today.
+// people with cancer. People who finished treatment see the same sections in their
+// dashboard. Ticking things off stays on Today.
 
 const openGuide = (id: string) => router.push({ pathname: '/learn/check/[id]', params: { id } });
 
 export function MyHealth() {
-  const { tracked } = useHabitPlan();
-  const trackedIds = tracked.map((habit) => habit.id);
-  const streak = useHabitsStore((state) => habitStreak(state.completedByDate, trackedIds));
-  const { mine, screenings, signs } = useSelfChecks();
-
   return (
     <Screen
       inTabs
@@ -31,6 +27,34 @@ export function MyHealth() {
       title="My health"
       subtitle="Your checks and habits over time"
       titleAside={<ProfileButton />}>
+      <MyHealthSections />
+      <Section title="Have or had cancer?">
+        <ListRow
+          icon="calendar"
+          title="Set up Journey"
+          subtitle="Check-ins, treatments, follow-ups and a summary for your doctor"
+          onPress={() => router.push('/journey/focus')}
+        />
+      </Section>
+      <Text variant="supporting" tone="muted" style={styles.footnote}>
+        Due checks and today&apos;s habits are on Today.
+      </Text>
+    </Screen>
+  );
+}
+
+/**
+ * Habits this week and each followed check, test and warning sign with its history. Also
+ * in Journey for people who finished treatment.
+ */
+export function MyHealthSections() {
+  const { tracked } = useHabitPlan();
+  const trackedIds = tracked.map((habit) => habit.id);
+  const streak = useHabitsStore((state) => habitStreak(state.completedByDate, trackedIds));
+  const { mine, screenings, signs } = useSelfChecks();
+
+  return (
+    <>
       <Section>
         <ListRow
           icon="target"
@@ -46,7 +70,7 @@ export function MyHealth() {
       </Section>
 
       {mine.length ? (
-        <Section title="Self-checks">
+        <Section title="Monthly body check">
           {mine.map((status) => (
             <ListRow
               key={status.guide.id}
@@ -78,7 +102,7 @@ export function MyHealth() {
       ) : null}
 
       {signs.length ? (
-        <Section title="Warning signs">
+        <Section title="Signs check" subtitle="Every 3 months">
           {signs.map((item) => (
             <ListRow
               key={item.historyId}
@@ -90,9 +114,7 @@ export function MyHealth() {
                   : followHistory(item)
               }
               subtitleTone={item.changeNoted ? 'sunInk' : 'muted'}
-              onPress={() =>
-                router.push({ pathname: '/signs/[id]', params: { id: item.cancerKey } })
-              }
+              onPress={() => router.push('/signs')}
             />
           ))}
         </Section>
@@ -106,19 +128,7 @@ export function MyHealth() {
           onPress={() => router.push('/checks')}
         />
       </Section>
-
-      <Section title="Going through treatment?">
-        <ListRow
-          icon="calendar"
-          title="Set up Journey"
-          subtitle="Daily check-ins, treatments, appointments and a summary for your doctor"
-          onPress={() => router.push('/journey/focus')}
-        />
-      </Section>
-      <Text variant="supporting" tone="muted" style={styles.footnote}>
-        Due checks and today&apos;s habits are on Today.
-      </Text>
-    </Screen>
+    </>
   );
 }
 

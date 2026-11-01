@@ -134,6 +134,11 @@ export function ForYou({
 }) {
   const { palette } = useDesign();
   const changeCancer = () => router.push('/journey/cancer');
+  // After treatment, what matters is signs it may be back and follow-up, not early detection.
+  const cardLine =
+    useFocus() === 'finished'
+      ? 'Signs it may be back, and follow-up'
+      : 'Early signs, tests and risks';
   return (
     <>
       {myCancer ? (
@@ -160,7 +165,7 @@ export function ForYou({
           <PressableScale
             feedback="fade"
             accessibilityRole="button"
-            accessibilityLabel={`${myCancer.name}. Early signs, tests and risks`}
+            accessibilityLabel={`${myCancer.name}. ${cardLine}`}
             onPress={() => openCancer(myCancer.id)}
             style={styles.mineBody}>
             <Icon name={iconForCancer(myCancer.name)} size={28} tone="onActionTint" />
@@ -169,7 +174,7 @@ export function ForYou({
                 {myCancer.name}
               </Text>
               <Text variant="supporting" tone="onActionTint">
-                Early signs, tests and risks
+                {cardLine}
               </Text>
             </View>
             <Icon name="chevron-right" size={22} tone="onActionTint" />

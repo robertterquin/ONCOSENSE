@@ -7,7 +7,6 @@ import { ChecksCard } from '@/components/today/ChecksCard';
 import {
   CaregiverRetiredCard,
   ComingUpToday,
-  DueToday,
   HabitsRow,
   MoodCard,
   SupportCard,
@@ -26,15 +25,14 @@ import { useUser } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
 import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment';
 
-// The Today tab (redesign Phase 3, appointments from Phase 4): the self-checks card (or
-// an appointment within a day when no check is waiting), a quick mood check-in and
-// what's coming up for Journey users, and today's habits. After a Rough or Low mood,
-// a support card comes first.
+// The Today tab (redesign Phase 3, appointments from Phase 4): the checks card (design
+// refresh Phase 24), a quick mood check-in and what's coming up for Journey users, and
+// today's habits. After a Rough or Low mood, a support card comes first.
 
 export default function TodayTab() {
   const user = useUser();
   const now = useNow(60_000);
-  const { mine, nextStep, snoozed, screenings, signs } = useSelfChecks(now);
+  const { items, snoozed } = useSelfChecks(now);
   const focus = useFocus();
   const myCancer = useMyCancer();
   const appointments = useAppointments();
@@ -87,36 +85,40 @@ export default function TodayTab() {
               }}
             />
           ) : null}
-          <MoodCard now={now} />
-          <YourCancerTodayCard cancer={myCancer} />
-          <ComingUpToday appointments={upcoming.slice(0, 2)} />
           {focus === 'finished' ? (
+            // After treatment: the next follow-up, a weekly check-in and their checks.
+            // Their cancer's guide is in Learn and the doctor summary in Journey.
             <>
-              {mine.length ? (
-                <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
+              {soon ? null : (
+                <ComingUpToday appointments={upcoming.slice(0, 1)} title="Next follow-up" />
+              )}
+              <MoodCard now={now} weekly />
+              {items.length ? (
+                <ChecksCard items={items} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
               ) : null}
-              <DueToday screenings={screenings} signs={signs} />
             </>
-          ) : null}
+          ) : (
+            <>
+              <MoodCard now={now} />
+              <YourCancerTodayCard cancer={myCancer} />
+              <ComingUpToday appointments={upcoming.slice(0, 2)} />
+            </>
+          )}
         </>
       ) : (
         <>
-          {nextStep.kind === 'self-check' || mine.length ? (
-            <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
+          {items.length ? (
+            <ChecksCard items={items} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
           ) : (
+            // Following nothing yet (or nothing with a check at their age).
             <NextStepPanel
-              status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
-              statusIcon={snoozed ? 'bell' : 'circle-check'}
-              title="Learn the early signs"
-              body="Knowing what's normal for you makes changes easier to spot."
-              primary={{
-                label: 'Explore Learn',
-                onPress: () =>
-                  router.navigate({ pathname: '/learn', params: { section: 'cancers' } }),
-              }}
+              status="Nothing to check yet"
+              statusIcon="circle-check"
+              title="Pick cancers to keep an eye on"
+              body="Their checks, tests and warning signs will show here when they're due."
+              primary={{ label: 'Your cancers', onPress: () => router.push('/checks') }}
             />
           )}
-          <DueToday screenings={screenings} signs={signs} />
         </>
       )}
 

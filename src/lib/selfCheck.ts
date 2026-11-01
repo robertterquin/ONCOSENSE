@@ -73,21 +73,6 @@ export function dueLabel(due: Date, now: Date = new Date()): string {
 }
 
 /**
- * One check's line on Today's checks card: "Done November 3" when up to date, else how
- * long it has waited ("Not done yet", "Due today", "Waiting since Monday").
- */
-export function checkStatusLabel(lastDone: Date | null, due: Date, now: Date = new Date()): string {
-  const today = startOfDay(now);
-  if (lastDone && due.getTime() > today.getTime()) return `Done ${formatMonthDay(lastDone)}`;
-  if (!lastDone) return 'Not done yet';
-  const waited = differenceInWholeDays(today, startOfDay(due));
-  if (waited <= 0) return 'Due today';
-  if (waited === 1) return 'Waiting since yesterday';
-  if (waited < 7) return `Waiting since ${WEEKDAYS[due.getDay()]}`;
-  return `Waiting since ${formatMonthDay(due)}`;
-}
-
-/**
  * The guides for the cancers a person follows (Your cancers, design refresh Phase 23), in
  * the order they're followed. `followed` holds cancer keys ("breast"); see lib/screening.ts.
  */
@@ -146,38 +131,6 @@ export function isSnoozed(state: SelfCheckState, now: Date = new Date()): boolea
   return (
     state.snoozedUntil !== null && now.getTime() < parseDbTimestamp(state.snoozedUntil).getTime()
   );
-}
-
-/** The chosen guide that is due soonest (ties keep the chosen order). */
-export function soonestGuide<T extends SelfCheckGuide>(
-  guides: T[],
-  state: SelfCheckState,
-  now: Date = new Date(),
-): { guide: T; due: Date } | null {
-  let soonest: { guide: T; due: Date } | null = null;
-  for (const guide of guides) {
-    const due = nextDue(guide, lastDoneDate(state, guide.id), now);
-    if (!soonest || due.getTime() < soonest.due.getTime()) soonest = { guide, due };
-  }
-  return soonest;
-}
-
-type NextStep<T> = { kind: 'self-check'; guide: T; due: Date } | { kind: 'learn' };
-
-/**
- * Today's one next step: a due self-check that isn't snoozed, else learning the early
- * signs. (Phase 4 adds an appointment in the next 24 hours between the two.)
- */
-export function chooseNextStep<T extends SelfCheckGuide>(
-  guides: T[],
-  state: SelfCheckState,
-  now: Date = new Date(),
-): NextStep<T> {
-  const soonest = soonestGuide(guides, state, now);
-  if (soonest && isDue(soonest.guide, lastDoneDate(state, soonest.guide.id), now)) {
-    if (!isSnoozed(state, now)) return { kind: 'self-check', ...soonest };
-  }
-  return { kind: 'learn' };
 }
 
 /** When the self-check reminder should fire: the soonest due day (or the snooze), at the chosen time (9 AM by default), never in the past. */

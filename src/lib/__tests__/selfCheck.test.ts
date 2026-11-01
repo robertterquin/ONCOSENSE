@@ -1,9 +1,6 @@
 import { toDbTimestamp } from '@/lib/dates';
 import {
   addMonths,
-  checkStatusLabel,
-  formatWeekdayDate,
-  chooseNextStep,
   chosenGuides,
   dueLabel,
   isDue,
@@ -11,6 +8,7 @@ import {
   selfCheckReminderDate,
   type SelfCheckState,
 } from '@/lib/selfCheck';
+import { checkItems } from '@/lib/checks';
 import { remindersForType } from '@/lib/notifications/reminders';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
@@ -91,28 +89,6 @@ describe('chosenGuides', () => {
   });
 });
 
-describe('chooseNextStep', () => {
-  it('shows the soonest due self-check', () => {
-    const step = chooseNextStep([breast, skin], state({ breast: new Date(2026, 8, 1) }), now);
-    expect(step).toMatchObject({ kind: 'self-check', guide: { id: 'breast' } });
-  });
-
-  it('falls back to learning when nothing is due', () => {
-    const done = new Date(2026, 9, 20);
-    expect(chooseNextStep([breast, skin], state({ breast: done, skin: done }), now)).toEqual({
-      kind: 'learn',
-    });
-  });
-
-  it('hides a due check while it is snoozed, and shows it again the next day', () => {
-    const snoozed = state({}, new Date(2026, 9, 25));
-    expect(chooseNextStep([breast], snoozed, now)).toEqual({ kind: 'learn' });
-    expect(chooseNextStep([breast], snoozed, new Date(2026, 9, 25, 8))).toMatchObject({
-      kind: 'self-check',
-    });
-  });
-});
-
 describe('self-check reminder', () => {
   it('fires at 9 AM on the due day, or tomorrow when that has passed', () => {
     expect(selfCheckReminderDate(new Date(2026, 10, 10), null, now)).toEqual(
@@ -128,35 +104,70 @@ describe('self-check reminder', () => {
 
   it('names the guide on its due day, and keeps the monthly fallback before guides load', () => {
     const [next] = remindersForType('self_check', {
-      selfCheckPlan: { guideTitle: 'Breast Self-Exam', date: new Date(2026, 10, 10, 9) },
+      selfCheckPlan: { guideTitle: 'Monthly body check', date: new Date(2026, 10, 10, 9) },
     });
     expect(next.identifier).toBe('self-check-next');
-    expect(next.body).toBe('Breast Self-Exam is due today. It takes about 10 minutes.');
+    expect(next.body).toBe('Your monthly body check is due today.');
+    expect(
+      remindersForType('self_check', {
+        selfCheckPlan: { guideTitle: 'HPV test', date: new Date(2026, 10, 10, 9) },
+      })[0].body,
+    ).toBe('Your HPV test is due today.');
     expect(next.trigger).toEqual({ kind: 'date', date: new Date(2026, 10, 10, 9) });
     expect(remindersForType('self_check')[0].trigger).toMatchObject({ kind: 'monthly' });
   });
 });
 
-describe('checkStatusLabel', () => {
-  // `now` is Saturday, October 24.
-  it('names the day an up-to-date check was done', () => {
-    const done = new Date(2026, 9, 3, 9, 0);
-    expect(checkStatusLabel(done, nextDue(skin, done, now), now)).toBe('Done October 3');
+describe('checkItems', () => {
+  // The colorectal fixture above is a guide; real colorectal has a test, not a self-check.
+  const items = (followed: string[], lastDone: Record<string, Date> = {}, age = 50) =>
+    checkItems({
+      guides: chosenGuides(all, followed).filter((item) => item !== colorectal),
+      followed,
+      age,
+      answers: {},
+      state: state(lastDone),
+      now,
+    });
+
+  it('bundles the self-checks into one body check, due when any of them is', () => {
+    const [body] = items(['breast', 'skin'], { breast: new Date(2026, 9, 1) }, 30);
+    expect(body).toMatchObject({
+      kind: 'body',
+      title: 'Monthly body check',
+      detail: 'Breast, Skin',
+      isDue: true,
+    });
   });
 
-  it('says a never-done check is not done yet', () => {
-    expect(checkStatusLabel(null, nextDue(skin, null, now), now)).toBe('Not done yet');
+  it('keeps each test, puts signs in one check, and sorts soonest first', () => {
+    const list = items(['ovarian', 'colorectal', 'thyroid'], {
+      'screening:stool': new Date(2026, 4, 1),
+    });
+    expect(list.map((item) => [item.kind, item.title, item.detail])).toEqual([
+      ['signs', 'Signs check', 'Ovarian, Thyroid'],
+      ['test', 'Stool test', 'Every year (colonoscopy: every 10 years)'],
+    ]);
+    expect(list[0].isDue).toBe(true);
+    expect(list[1]).toMatchObject({ isDue: false, due: new Date(2027, 4, 1) });
   });
 
-  it('counts how long a done check has waited', () => {
-    const label = (done: Date) => checkStatusLabel(done, nextDue(skin, done, now), now);
-    expect(label(new Date(2026, 8, 24))).toBe('Due today');
-    expect(label(new Date(2026, 8, 23))).toBe('Waiting since yesterday');
-    expect(label(new Date(2026, 8, 19))).toBe('Waiting since Monday');
-    expect(label(new Date(2026, 8, 10))).toBe('Waiting since October 10');
+  it('keeps a noted change on the bundle', () => {
+    const [signs] = checkItems({
+      guides: [],
+      followed: ['ovarian'],
+      age: 30,
+      answers: {},
+      state: {
+        lastDone: { 'signs:ovarian': toDbTimestamp(new Date(2026, 9, 20)) },
+        history: {
+          'signs:ovarian': [{ date: toDbTimestamp(new Date(2026, 9, 20)), changed: true }],
+        },
+        snoozedUntil: null,
+      },
+      now,
+    });
+    expect(signs.changeNoted).toEqual(new Date(2026, 9, 20));
+    expect(signs.isDue).toBe(false);
   });
-});
-
-it('formats a weekday date', () => {
-  expect(formatWeekdayDate(new Date(2026, 10, 25))).toBe('Wednesday, November 25');
 });

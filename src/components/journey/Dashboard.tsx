@@ -16,7 +16,13 @@ import {
 import { haptics } from '@/lib/haptics';
 import { useCelebrateMilestone, useIncrementSession } from '@/hooks/useJourney';
 import { formatShortDate, formatTime } from '@/lib/dates';
-import { lastSevenDays, sevenDayTrend, weekSummaryText, type WeekSummary } from '@/lib/journey';
+import {
+  lastSevenDays,
+  lastWeeks,
+  sevenDayTrend,
+  weekSummaryText,
+  type WeekSummary,
+} from '@/lib/journey';
 import { MOODS } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
 import { elevation } from '@/theme/elevation';
@@ -75,6 +81,34 @@ export function EnergyAndPain({ entries, now }: { entries: JourneyEntry[]; now: 
   );
 }
 
+/**
+ * After treatment (weekly check-ins): energy and pain averaged per week over 8 weeks,
+ * this week last.
+ */
+export function HowYouveBeen({ entries, now }: { entries: JourneyEntry[]; now: Date }) {
+  const { palette, isDark } = useDesign();
+  const summary = lastWeeks(entries, now);
+  return (
+    <Section title="How you've been" subtitle="Last 8 weeks, 0 to 10" look="plain">
+      <View
+        style={[
+          styles.chartBlock,
+          { backgroundColor: palette.surface },
+          elevation('resting', palette, isDark),
+        ]}>
+        <Chart summary={summary} weekly />
+        <Text variant="supporting">{weekSummaryText(summary, 'Last 8 weeks')}</Text>
+        {summary.topSymptoms.length ? (
+          <Text variant="supporting" tone="muted">
+            Most common symptoms:{' '}
+            {summary.topSymptoms.map(([name, count]) => `${name} (${count})`).join(', ')}
+          </Text>
+        ) : null}
+      </View>
+    </Section>
+  );
+}
+
 const CHART_HEIGHT = 120;
 // A tapped day's details fade in above the chart, which slides down to make room.
 const DETAIL_IN = FadeIn.duration(DURATION.base);
@@ -87,7 +121,10 @@ const BAR_GROW = new Keyframe({
 }).duration(DURATION.slow);
 const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-function Chart({ summary }: { summary: WeekSummary }) {
+/** `weekly`: each column is a week (starting on `date`), the last one this week. */
+function Chart({ summary, weekly = false }: { summary: WeekSummary; weekly?: boolean }) {
+  const columnName = (date: Date) =>
+    weekly ? `Week of ${formatShortDate(date)}` : formatShortDate(date);
   const { palette } = useDesign();
   const grow = useTransition('slow', 'height');
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
@@ -128,7 +165,7 @@ function Chart({ summary }: { summary: WeekSummary }) {
             { backgroundColor: palette.raised, borderColor: palette.line },
           ]}>
           <View style={styles.inspectorTop}>
-            <Text variant="strong">{formatShortDate(selectedDay.date)}</Text>
+            <Text variant="strong">{columnName(selectedDay.date)}</Text>
             <View style={styles.inspectorScores}>
               <View style={styles.inspectorBadge}>
                 <View style={[styles.miniDot, { backgroundColor: palette.action }]} />
@@ -169,7 +206,7 @@ function Chart({ summary }: { summary: WeekSummary }) {
               key={day.date.toDateString()}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${formatShortDate(day.date)}: Energy ${day.energy ?? 'none'}, Pain ${day.pain ?? 'none'}`}
+              accessibilityLabel={`${columnName(day.date)}: Energy ${day.energy ?? 'none'}, Pain ${day.pain ?? 'none'}`}
               onPress={() => {
                 haptics.selection();
                 setSelectedDayIndex(isSelected ? null : index);
@@ -230,7 +267,14 @@ function Chart({ summary }: { summary: WeekSummary }) {
                 (isToday || isSelected) && styles.selectedDayLabel,
                 isToday && Platform.OS === 'web' && styles.todayLabel,
               ]}>
-              {isToday ? 'Today' : DAY_LETTERS[day.date.getDay()]}
+              {weekly
+                ? // The day of the month each week starts; tapping a week shows the full date.
+                  isToday
+                  ? 'Now'
+                  : String(day.date.getDate())
+                : isToday
+                  ? 'Today'
+                  : DAY_LETTERS[day.date.getDay()]}
             </Text>
           );
         })}
@@ -249,15 +293,22 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 }
 
 /** Next appointments, soonest first. */
-export function ComingUp({ appointments }: { appointments: Appointment[] }) {
+export function ComingUp({
+  appointments,
+  title = 'Coming up',
+}: {
+  appointments: Appointment[];
+  /** "Follow-ups" after treatment. */
+  title?: string;
+}) {
   return (
     <Section
-      title="Coming up"
+      title={title}
       action={
         <IconButton
           icon="plus"
           look="tinted"
-          accessibilityLabel="Add an appointment"
+          accessibilityLabel={title === 'Coming up' ? 'Add an appointment' : 'Add a follow-up'}
           onPress={() => router.push('/journey/appointment')}
         />
       }>
@@ -289,7 +340,44 @@ export function ComingUp({ appointments }: { appointments: Appointment[] }) {
   );
 }
 
-export function Treatments({ treatments }: { treatments: Treatment[] }) {
+/**
+ * Treatments with session counters, or after treatment (`past`) a read-only history that
+ * hides when empty.
+ */
+export function Treatments({
+  treatments,
+  past = false,
+}: {
+  treatments: Treatment[];
+  past?: boolean;
+}) {
+  if (past) {
+    if (!treatments.length) return null;
+    return (
+      <Section title="Past treatments">
+        {treatments.map((treatment) => (
+          <ListRow
+            key={treatment.id}
+            icon={iconForTreatment(treatment.type)}
+            iconTone="sun"
+            title={treatment.name}
+            subtitle={[
+              treatmentTypeLabel(treatment.type),
+              `from ${formatShortDate(treatment.startDate)}`,
+              treatment.completedSessions
+                ? `${treatment.completedSessions} session${treatment.completedSessions === 1 ? '' : 's'}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            onPress={() =>
+              router.push({ pathname: '/journey/treatment', params: { id: treatment.id } })
+            }
+          />
+        ))}
+      </Section>
+    );
+  }
   return (
     <Section
       title="Treatments"

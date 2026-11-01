@@ -19,8 +19,8 @@ import { cancerKeyword } from '@/lib/help';
 import { iconForCancer } from '@/lib/learn';
 import { rescheduleSelfCheckReminder } from '@/lib/notifications/service';
 import {
-  actionsFor,
   cancerAppliesToSex,
+  followSummary,
   QUESTION_FOR,
   type CancerKey,
   type ScreeningAnswers,
@@ -117,7 +117,7 @@ export default function YourCancersScreen() {
                 key={cancer.id}
                 icon={iconForCancer(cancer.name)}
                 title={cancer.name}
-                subtitle={whatYouGet(key, age, answers)}
+                subtitle={followSummary(key, age, answers)}
                 accessory={
                   <Switch
                     accessibilityLabel={`Follow ${cancer.name.toLowerCase()}`}
@@ -131,8 +131,8 @@ export default function YourCancersScreen() {
         </Section>
       )}
       <Text variant="supporting" tone="muted">
-        Self-checks and tests show on Today when they&apos;re due. For cancers with no check or
-        test, you&apos;ll be asked about their warning signs every 3 months.
+        Most people follow 3 or fewer. Self-checks come together as one monthly body check,
+        and cancers with no check or test as one signs check every 3 months.
       </Text>
 
       <Sheet visible={asking !== null} onClose={() => setAsking(null)} title={asking?.name ?? ''}>
@@ -168,23 +168,3 @@ export default function YourCancersScreen() {
     </Screen>
   );
 }
-
-/** "Self-check monthly, mammogram every year", "HPV test every 5 years", "Warning signs every 3 months". */
-function whatYouGet(key: CancerKey, age: number | null, answers: ScreeningAnswers): string {
-  const parts = actionsFor(key, age, answers).map((action) =>
-    action.kind === 'self-check'
-      ? 'Self-check monthly'
-      : action.kind === 'screening'
-        ? action.test.months(age) === null
-          ? action.test.title
-          : `${action.test.title} ${lowerFirst(action.test.howOften(age))}`
-        : 'Warning signs every 3 months',
-  );
-  const text = parts.map((part, index) => (index ? lowerFirst(part) : part)).join(', ');
-  const question = QUESTION_FOR[key];
-  return question && !answers[question] ? `${text} (a test if you're at high risk)` : text;
-}
-
-/** "Every year" → "every year", but "HPV test" stays as it is. */
-const lowerFirst = (text: string) =>
-  /^[A-Z][A-Z]/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1);

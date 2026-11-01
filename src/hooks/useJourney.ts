@@ -37,6 +37,7 @@ import type { JourneyEntry } from '@/types/journeyEntry';
 import type { Milestone } from '@/types/milestone';
 import type { Treatment } from '@/types/treatment';
 
+import { useFocus } from './useFocus';
 import { queryKeys } from './queryKeys';
 
 // Replaces lib/providers/journey_provider.dart (and the parts of journey_service.dart
@@ -136,6 +137,7 @@ export function useStartJourney() {
 /** Adds or updates an entry, then records a streak milestone if one was reached. */
 export function useSaveJourneyEntry() {
   const { queryClient, keys, addMilestoneIfNew } = useJourneyCache();
+  const focus = useFocus();
   return useMutation({
     mutationFn: async (entry: JourneyEntry) => {
       await saveJourneyEntry(entry);
@@ -147,7 +149,8 @@ export function useSaveJourneyEntry() {
       ].sort((a, b) => b.date.getTime() - a.date.getTime());
       queryClient.setQueryData(keys.entries, entries);
 
-      const milestone = streakMilestone(entries);
+      // Day streaks don't fit weekly check-ins after treatment.
+      const milestone = focus === 'finished' ? null : streakMilestone(entries);
       if (milestone) await addMilestoneIfNew(milestone);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.entries }),

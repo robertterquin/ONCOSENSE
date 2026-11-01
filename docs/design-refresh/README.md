@@ -56,6 +56,7 @@ Three supporting changes:
 | 21 | Questions about a cancer | [21-phase-21-questions-about-a-cancer.md](21-phase-21-questions-about-a-cancer.md) | 1 day | Merged into `main` |
 | 22 | Self-checks that react to what you find | [22-phase-22-self-check-fixes.md](22-phase-22-self-check-fixes.md) | 1 day | Merged into `main` |
 | 23 | Your cancers | [23-phase-23-your-cancers.md](23-phase-23-your-cancers.md) | 1 day | Merged into `main` |
+| 24 | Your checks, bundled | [24-phase-24-checks.md](24-phase-24-checks.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -86,3 +87,4 @@ Same as the redesign:
 | 2026-11-01 | A self-check ends by asking what you found; a change says to see a doctor soon, and defaults follow age as well as sex | Marking a check done after finding a lump only scheduled the next one; age was ignored and the chooser was hidden in reminder settings | Robert |
 | 2026-11-01 | People follow any cancer; each gets a self-check, a screening test, a talk with a doctor, or its warning signs | Only four cancers have a self-check; a monthly "check" for the others would have looked like protection without being one | Robert |
 | 2026-11-01 | Two user types: "I have or had cancer" (then in treatment or finished) and "I don't have cancer"; caregiver mode retired | A narrower first release; caring mostly changed wording, while treatment and finished drive different checks and habits. Caregiver accounts read as Learning, keep their data, and see a one-time note | Robert |
+| 2026-11-02 | Checks bundle into a monthly body check, each test, and a signs check every 3 months, on one calendar card; cancers are chosen at sign-up with a soft "3 or fewer" | The calendar only showed self-checks, and a hard limit of 3 would crowd out family history; guidelines favour body awareness over set self-exams | Robert |

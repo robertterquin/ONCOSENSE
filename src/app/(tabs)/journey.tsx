@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { MyHealth } from '@/components/journey/MyHealth';
+import { MyHealth, MyHealthSections } from '@/components/journey/MyHealth';
 import { useMyCancer } from '@/hooks/useCancerInfo';
 import { StyleSheet, View } from 'react-native';
 
@@ -8,6 +8,7 @@ import { ProfileButton } from '@/components/account/ProfileButton';
 import {
   ComingUp,
   EnergyAndPain,
+  HowYouveBeen,
   Milestones,
   RecentCheckIns,
   Treatments,
@@ -33,7 +34,9 @@ import {
   useTreatments,
 } from '@/hooks/useJourney';
 import { useNow } from '@/hooks/useNow';
+import { addDays } from '@/lib/dates';
 import { entryForDate } from '@/lib/journey';
+import { startOfDay } from '@/lib/selfCheck';
 import { focusSubtitle, usesJourney } from '@/lib/focus';
 import { useIsSignedIn } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
@@ -41,7 +44,7 @@ import { useDesign } from '@/theme/useTheme';
 import { upcomingAppointments } from '@/types/appointment';
 
 // The Journey tab (redesign Phase 4): by focus. Learning (or no focus yet) shows My health
-// (design refresh Phase 19); Treatment, Finished and Caring show the dashboard.
+// (design refresh Phase 19); Treatment shows the daily dashboard, Finished a weekly one.
 
 export default function JourneyTab() {
   const focus = useFocus();
@@ -89,6 +92,11 @@ function Dashboard() {
   const refresh = () => queries.forEach((query) => void query.refetch());
   const entryList = entries.data ?? [];
   const checkedInToday = entryForDate(entryList, now) !== undefined;
+  // After treatment, Journey is weekly: follow-ups, how the weeks have gone, their checks
+  // and habits, and past treatments (no daily dots, streaks or session counters).
+  const survivor = focus === 'finished';
+  const weekStart = addDays(startOfDay(now), -6);
+  const thisWeek = entryList.find((entry) => entry.date >= weekStart);
 
   const arrived = useArrival(loading);
   return (
@@ -113,19 +121,48 @@ function Dashboard() {
             />
           ) : (
             <>
-              <ThreadWeek entries={entryList} now={now} />
-              <Button
-                title={checkedInToday ? 'Edit today’s check-in' : 'Check in for today'}
-                icon={checkedInToday ? 'check' : 'plus'}
-                // Done for today, so it steps back; bright only while it's still to do.
-                variant={checkedInToday ? 'tinted' : 'primary'}
-                onPress={() => router.push('/journey/check-in')}
-              />
-              <EnergyAndPain entries={entryList} now={now} />
-              <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
-              <Treatments treatments={treatments.data ?? []} />
-              <Milestones milestones={milestones.data ?? []} />
-              <RecentCheckIns entries={entryList} />
+              {survivor ? (
+                <>
+                  <Button
+                    title={thisWeek ? 'Edit this week’s check-in' : 'Check in for this week'}
+                    icon={thisWeek ? 'check' : 'plus'}
+                    variant={thisWeek ? 'tinted' : 'primary'}
+                    onPress={() =>
+                      router.push(
+                        thisWeek
+                          ? { pathname: '/journey/check-in', params: { id: thisWeek.id } }
+                          : '/journey/check-in',
+                      )
+                    }
+                  />
+                  <ComingUp
+                    appointments={upcomingAppointments(appointments.data ?? [], now)}
+                    title="Follow-ups"
+                  />
+                  <HowYouveBeen entries={entryList} now={now} />
+                  <Text variant="section" accessibilityRole="header">
+                    My health
+                  </Text>
+                  <MyHealthSections />
+                  <Treatments treatments={treatments.data ?? []} past />
+                </>
+              ) : (
+                <>
+                  <ThreadWeek entries={entryList} now={now} />
+                  <Button
+                    title={checkedInToday ? 'Edit today’s check-in' : 'Check in for today'}
+                    icon={checkedInToday ? 'check' : 'plus'}
+                    // Done for today, so it steps back; bright only while it's still to do.
+                    variant={checkedInToday ? 'tinted' : 'primary'}
+                    onPress={() => router.push('/journey/check-in')}
+                  />
+                  <EnergyAndPain entries={entryList} now={now} />
+                  <ComingUp appointments={upcomingAppointments(appointments.data ?? [], now)} />
+                  <Treatments treatments={treatments.data ?? []} />
+                  <Milestones milestones={milestones.data ?? []} />
+                  <RecentCheckIns entries={entryList} />
+                </>
+              )}
               <Button
                 title="Share with my doctor"
                 icon="share"
