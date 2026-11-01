@@ -4,7 +4,13 @@ import { StyleSheet, View } from 'react-native';
 import { hasCompletedJourneySetup, userDisplayName } from '@/api/auth';
 import { ProfileButton } from '@/components/account/ProfileButton';
 import { ChecksCard } from '@/components/today/ChecksCard';
-import { ComingUpToday, HabitsRow, MoodCard, SupportCard } from '@/components/today/TodayParts';
+import {
+  ComingUpToday,
+  DueToday,
+  HabitsRow,
+  MoodCard,
+  SupportCard,
+} from '@/components/today/TodayParts';
 import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
 import { useFocus } from '@/hooks/useFocus';
 import { useAppointments, useJourneyEntries } from '@/hooks/useJourney';
@@ -25,7 +31,7 @@ import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment'
 export default function TodayTab() {
   const user = useUser();
   const now = useNow(60_000);
-  const { mine, nextStep, snoozed } = useSelfChecks(now);
+  const { mine, nextStep, snoozed, screenings, signs } = useSelfChecks(now);
   const focus = useFocus();
   const appointments = useAppointments();
   const name = user ? userDisplayName(user) : '';
@@ -90,6 +96,7 @@ export default function TodayTab() {
         />
       )}
 
+      <DueToday screenings={screenings} signs={signs} />
       {journeyUser ? <MoodCard now={now} /> : null}
       {journeyUser ? <ComingUpToday appointments={upcoming.slice(0, 2)} /> : null}
       <HabitsRow />

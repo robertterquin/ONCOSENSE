@@ -14,7 +14,7 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 // One reminder in Settings (redesign Phase 6): a switch, and a sheet to change when it
-// fires (and, for self-checks, a link to Your checks).
+// fires (and, for self-checks, a link to Your cancers).
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -91,7 +91,7 @@ export function ReminderRow({ type }: { type: NotificationType }) {
         ) : null}
         {type === 'self_check' ? (
           <ListRow
-            title="Choose your checks"
+            title="Your cancers"
             titleTone="action"
             onPress={() => {
               setEditing(false);

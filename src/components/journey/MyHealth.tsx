@@ -5,7 +5,7 @@ import { ProfileButton } from '@/components/account/ProfileButton';
 import { HabitWeekStrip } from '@/components/learn/LearnSections';
 import { ListRow, Screen, Section, Text } from '@/components/ui';
 import { useHabitPlan } from '@/hooks/useHabits';
-import { useSelfChecks, type GuideStatus } from '@/hooks/useSelfChecks';
+import { useSelfChecks, type FollowStatus, type GuideStatus } from '@/hooks/useSelfChecks';
 import { formatShortDate, formatShortMonthDay, parseDbTimestamp } from '@/lib/dates';
 import { habitStreak } from '@/lib/habits';
 import { iconForCancer } from '@/lib/learn';
@@ -22,7 +22,7 @@ export function MyHealth() {
   const { tracked } = useHabitPlan();
   const trackedIds = tracked.map((habit) => habit.id);
   const streak = useHabitsStore((state) => habitStreak(state.completedByDate, trackedIds));
-  const { mine } = useSelfChecks();
+  const { mine, screenings, signs } = useSelfChecks();
 
   return (
     <Screen
@@ -45,20 +45,64 @@ export function MyHealth() {
         </View>
       </Section>
 
-      <Section title="Self-checks">
-        {mine.map((status) => (
-          <ListRow
-            key={status.guide.id}
-            icon={iconForCancer(status.guide.cancerType)}
-            title={status.guide.title}
-            subtitle={checkHistory(status)}
-            subtitleTone={status.changeNoted ? 'sunInk' : 'muted'}
-            onPress={() => openGuide(status.guide.id)}
-          />
-        ))}
+      {mine.length ? (
+        <Section title="Self-checks">
+          {mine.map((status) => (
+            <ListRow
+              key={status.guide.id}
+              icon={iconForCancer(status.guide.cancerType)}
+              title={status.guide.title}
+              subtitle={checkHistory(status)}
+              subtitleTone={status.changeNoted ? 'sunInk' : 'muted'}
+              onPress={() => openGuide(status.guide.id)}
+            />
+          ))}
+        </Section>
+      ) : null}
+
+      {screenings.length ? (
+        <Section title="Screening tests">
+          {screenings.map((item) => (
+            <ListRow
+              key={item.historyId}
+              icon="hospital"
+              iconTone="help"
+              title={item.test!.title}
+              subtitle={followHistory(item)}
+              onPress={() =>
+                router.push({ pathname: '/screening/[id]', params: { id: item.test!.id } })
+              }
+            />
+          ))}
+        </Section>
+      ) : null}
+
+      {signs.length ? (
+        <Section title="Warning signs">
+          {signs.map((item) => (
+            <ListRow
+              key={item.historyId}
+              icon="info"
+              title={item.cancer?.name ?? item.cancerKey}
+              subtitle={
+                item.changeNoted
+                  ? `Sign noted ${formatShortMonthDay(item.changeNoted)}, see a doctor`
+                  : followHistory(item)
+              }
+              subtitleTone={item.changeNoted ? 'sunInk' : 'muted'}
+              onPress={() =>
+                router.push({ pathname: '/signs/[id]', params: { id: item.cancerKey } })
+              }
+            />
+          ))}
+        </Section>
+      ) : null}
+
+      <Section>
         <ListRow
-          title={mine.length ? 'Choose your checks' : 'Choose the checks to follow'}
-          titleTone="action"
+          icon="target"
+          title="Your cancers"
+          subtitle="Choose which cancers you follow"
           onPress={() => router.push('/checks')}
         />
       </Section>
@@ -76,6 +120,15 @@ export function MyHealth() {
       </Text>
     </Screen>
   );
+}
+
+/** "Done Mar 15, 2026, next Mar 15, 2027", "Due now", or "Done" for a one-off talk. */
+function followHistory({ lastDone, due, isDue }: FollowStatus): string {
+  if (!lastDone) return 'Due now';
+  if (due === null) return `Done ${formatShortDate(lastDone)}`;
+  return isDue
+    ? `Done ${formatShortDate(lastDone)}, due now`
+    : `Done ${formatShortDate(lastDone)}, next ${formatShortDate(due)}`;
 }
 
 /**

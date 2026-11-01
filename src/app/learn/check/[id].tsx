@@ -20,12 +20,12 @@ import {
   StepList,
   Text,
 } from '@/components/ui';
+import { SeeADoctor } from '@/components/learn/SeeADoctor';
 import { useSelfCheckGuide } from '@/hooks/usePrevention';
 import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
 import { formatShortDate, parseDbTimestamp } from '@/lib/dates';
-import { callPhone, openWebPage } from '@/lib/links';
+import { openWebPage } from '@/lib/links';
 import { formatMonthDay } from '@/lib/selfCheck';
-import { useIsSignedIn } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
@@ -38,8 +38,6 @@ import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 // Illustrations are not part of v1.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
-const findCenter = () => router.navigate({ pathname: '/help', params: { section: 'screening' } });
-const DOH_HOTLINE = '1555';
 
 export default function SelfCheckScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,7 +63,6 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
   const [nextCheck, setNextCheck] = useState<Date | null>(null);
   const [asking, setAsking] = useState(false);
   const [changed, setChanged] = useState<boolean | null>(null);
-  const signedIn = useIsSignedIn();
   const status = useSelfChecks().status(guide);
   const saved = useSelfCheckStore((state) => state.savedGuides.includes(guide.id));
   const toggleSaved = useSelfCheckStore((state) => state.toggleSavedGuide);
@@ -168,41 +165,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       subtitle={[guide.frequency, guide.ageRecommendation].filter(Boolean).join(' · ')}
       bottomBar={bottomBar}>
       {nextCheck && changed ? (
-        <View style={styles.change} accessibilityLiveRegion="polite">
-          <Text variant="heading" accessibilityRole="header">
-            See a doctor soon
-          </Text>
-          <Text variant="body" tone="muted">
-            You noted a change today. Most changes turn out to be harmless, but only a doctor can
-            tell. Book a check-up this week, and bring a note of what you noticed and when.
-          </Text>
-          <Button
-            title="Find a screening center"
-            icon="hospital"
-            variant="help"
-            onPress={findCenter}
-          />
-          <Button
-            title={`Call the DOH hotline, ${DOH_HOTLINE}`}
-            icon="phone"
-            variant="secondary"
-            onPress={() => callPhone(DOH_HOTLINE)}
-          />
-          {signedIn ? (
-            <Section>
-              <ListRow
-                icon="calendar"
-                title="Add an appointment"
-                subtitle="We'll remind you the evening before"
-                onPress={() => router.push('/journey/appointment')}
-              />
-            </Section>
-          ) : null}
-          <Text variant="supporting" tone="muted">
-            OncoSense doesn&apos;t send this to anyone. If you&apos;re worried right now, call your
-            doctor.
-          </Text>
-        </View>
+        <SeeADoctor />
       ) : nextCheck ? (
         <View style={styles.done} accessibilityLiveRegion="polite">
           <RibbonMark height={96} weight={18} color={palette.action} draw />

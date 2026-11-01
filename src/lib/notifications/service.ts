@@ -8,6 +8,7 @@ import { queryKeys } from '@/hooks/queryKeys';
 import { parseDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, usesJourney } from '@/lib/focus';
 import { queryClient } from '@/lib/queryClient';
+import { defaultFollowed } from '@/lib/screening';
 import { chosenGuides, isSnoozed, selfCheckReminderDate, soonestGuide } from '@/lib/selfCheck';
 import { useAuthStore } from '@/stores/authStore';
 import {
@@ -55,7 +56,10 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   if (!guides?.length) return null;
   const state = useSelfCheckStore.getState();
   const user = useAuthStore.getState().user;
-  const mine = chosenGuides(guides, state.chosen, userGender(user), userAge(user));
+  const mine = chosenGuides(
+    guides,
+    state.followed ?? defaultFollowed(userGender(user), userAge(user)),
+  );
   const soonest = soonestGuide(mine, state, now);
   if (!soonest) return null;
   const snoozed = isSnoozed(state, now) ? parseDbTimestamp(state.snoozedUntil!) : null;

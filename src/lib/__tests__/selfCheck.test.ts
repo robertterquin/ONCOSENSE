@@ -78,28 +78,16 @@ describe('dueLabel', () => {
 });
 
 describe('chosenGuides', () => {
-  it('defaults by gender, in order', () => {
-    expect(chosenGuides(all, null, 'Female').map((g) => g.id)).toEqual(['breast', 'skin', 'oral']);
-    expect(chosenGuides(all, null, 'Male').map((g) => g.id)).toEqual([
-      'testicular',
+  it('picks the guides for followed cancers, in their order', () => {
+    expect(chosenGuides(all, ['breast', 'skin', 'oral']).map((g) => g.id)).toEqual([
+      'breast',
       'skin',
       'oral',
     ]);
-    expect(chosenGuides(all, null, null).map((g) => g.id)).toEqual(['skin', 'oral']);
-  });
-
-  it('uses age: testicular from 15 to 40, breast from 20, skin and oral for adults', () => {
-    const ids = (gender: string | null, age: number) =>
-      chosenGuides(all, null, gender, age).map((g) => g.id);
-    expect(ids('Male', 60)).toEqual(['skin', 'oral']);
-    expect(ids('Male', 17)).toEqual(['testicular']);
-    expect(ids('Female', 19)).toEqual(['skin', 'oral']);
-    expect(ids('Female', 16)).toEqual([]);
-    expect(ids('Non-binary', 30)).toEqual(['skin', 'oral']);
-  });
-
-  it("uses the person's own choice when they made one", () => {
-    expect(chosenGuides(all, ['colorectal'], 'Female').map((g) => g.id)).toEqual(['colorectal']);
+    expect(chosenGuides(all, ['oral', 'colorectal']).map((g) => g.id)).toEqual([
+      'oral',
+      'colorectal',
+    ]);
   });
 });
 
