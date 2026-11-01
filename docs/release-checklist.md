@@ -2,7 +2,7 @@
 
 What stands between `main` and a public App Store / Google Play release, as of 2026-10-31. The staged release itself (internal testing, beta, rollout) is in [Phase 7](react-native-migration/08-phase-7-qa-release.md#74-staged-release).
 
-Lint, typecheck and the 327 tests pass in CI on every push.
+Lint, typecheck and the 325 tests pass in CI on every push.
 
 ## 1. Medical content review (a clinician)
 

@@ -9,7 +9,6 @@ export const queryKeys = {
   cancerTypes: ['cancerTypes'] as const,
   cancerType: (id: string) => ['cancerTypes', id] as const,
 
-  preventionTips: ['prevention', 'tips'] as const,
   selfCheckGuides: ['prevention', 'guides'] as const,
   selfCheckGuide: (id: string) => ['prevention', 'guide', id] as const,
 

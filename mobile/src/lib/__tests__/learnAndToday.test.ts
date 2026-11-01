@@ -1,7 +1,5 @@
-import { awarenessForMonth } from '@/constants/awareness';
 import {
   bodySystemForCancer,
-  cancerForAwareness,
   firstSentence,
   guideForCancer,
   iconForCancer,
@@ -44,12 +42,6 @@ describe('Learn links', () => {
     expect(guideForCancer(guides, cancers[0])?.cancerType).toBe('Breast');
     expect(guideForCancer(guides, cancers[1])?.cancerType).toBe('Leukemia');
     expect(guideForCancer(guides, cancers[2])).toBeNull();
-  });
-
-  it("links October's awareness month to breast cancer", () => {
-    const october = awarenessForMonth(new Date(2026, 9, 24));
-    expect(cancerForAwareness(cancers, october.title)?.name).toBe('Breast Cancer');
-    expect(cancerForAwareness(cancers, awarenessForMonth(new Date(2026, 1, 1)).title)).toBeNull();
   });
 
   it('selects appropriate visual icons for lifestyle prevention tips', () => {

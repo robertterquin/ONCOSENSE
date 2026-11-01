@@ -1,14 +1,6 @@
-import { awarenessForMonth } from '@/constants/awareness';
 import { askQuestionSchema } from '@/constants/validation';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
-
-describe('home helpers', () => {
-  it('picks the awareness month', () => {
-    expect(awarenessForMonth(new Date(2026, 9, 1)).title).toBe('Breast Cancer');
-    expect(awarenessForMonth(new Date(2026, 0, 31)).month).toBe('January');
-  });
-});
 
 describe('askQuestionSchema', () => {
   const base = { category: 'Symptoms', isAnonymous: false };

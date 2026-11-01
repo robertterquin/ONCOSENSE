@@ -80,14 +80,6 @@ export function shortenSourceName(source: string): string {
   return source;
 }
 
-/** The cancer type an awareness month is about ("Breast Cancer"), if Learn has it. */
-export function cancerForAwareness<T extends Pick<CancerType, 'name'>>(
-  cancers: T[],
-  awarenessTitle: string,
-): T | null {
-  return cancers.find((cancer) => lower(cancer.name) === lower(awarenessTitle)) ?? null;
-}
-
 type LearnLists = {
   cancers: CancerType[];
   guides: SelfCheckGuide[];

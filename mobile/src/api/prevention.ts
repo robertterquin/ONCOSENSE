@@ -1,18 +1,10 @@
 import { supabase } from '@/lib/supabase';
-import { preventionTipFromRow, type PreventionTip } from '@/types/preventionTip';
 import { selfCheckGuideFromRow, type SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import { check } from './errors';
 
-// Port of lib/services/prevention_service.dart. Content comes from WHO, CDC, NCI and similar sources.
-
-export async function fetchPreventionTips(category?: string): Promise<PreventionTip[]> {
-  let query = supabase.from('prevention_tips').select().eq('is_active', true);
-  if (category) query = query.eq('category', category);
-  const { data, error } = await query.order('display_order');
-  check(error, 'Failed to fetch prevention tips');
-  return (data ?? []).map(preventionTipFromRow);
-}
+// Self-check guides (Learn › Checks). The old prevention tips table is no longer read;
+// habits live in constants/habits.ts.
 
 export async function fetchSelfCheckGuides(cancerType?: string): Promise<SelfCheckGuide[]> {
   let query = supabase.from('self_check_guides').select().eq('is_active', true);

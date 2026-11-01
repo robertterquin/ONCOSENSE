@@ -1,20 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  fetchPreventionTips,
-  fetchSelfCheckGuideById,
-  fetchSelfCheckGuides,
-} from '@/api/prevention';
+import { fetchSelfCheckGuideById, fetchSelfCheckGuides } from '@/api/prevention';
 import { queryClient } from '@/lib/queryClient';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import { queryKeys } from './queryKeys';
 
 // Replaces lib/providers/prevention_provider.dart.
-
-export function usePreventionTips() {
-  return useQuery({ queryKey: queryKeys.preventionTips, queryFn: () => fetchPreventionTips() });
-}
 
 export function useSelfCheckGuides() {
   return useQuery({ queryKey: queryKeys.selfCheckGuides, queryFn: () => fetchSelfCheckGuides() });

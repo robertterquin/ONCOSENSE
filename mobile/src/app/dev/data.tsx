@@ -5,9 +5,8 @@ import { View } from 'react-native';
 import { Screen, Section, Text } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useAnswers, useQuestions } from '@/hooks/useCommunity';
-import { useDailyHealthTip } from '@/hooks/useHome';
 import { useJourneyEntries } from '@/hooks/useJourney';
-import { usePreventionTips, useSelfCheckGuides } from '@/hooks/usePrevention';
+import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { useAllResources } from '@/hooks/useResources';
 import { useIsSignedIn } from '@/stores/authStore';
 
@@ -23,18 +22,12 @@ export default function DataCheckScreen() {
   const questions = useQuestions();
   const firstQuestionId = questions.data?.[0]?.id ?? '';
   const answers = useAnswers(firstQuestionId);
-  const tip = useDailyHealthTip();
 
   const checks: Check[] = [
     {
       label: 'Cancer types',
       query: useCancerTypes(),
       describe: (d: { name: string }[]) => `${d.length} — ${d[0]?.name ?? ''}`,
-    },
-    {
-      label: 'Prevention tips',
-      query: usePreventionTips(),
-      describe: (d: { title: string }[]) => `${d.length} — ${d[0]?.title ?? ''}`,
     },
     {
       label: 'Self-check guides',
@@ -71,10 +64,6 @@ export default function DataCheckScreen() {
 
   return (
     <Screen back={{ label: 'Back' }} title="Data check" subtitle="Read-only hooks">
-      <Section look="tinted" tint="raised">
-        <Text variant="row">Tip of the day</Text>
-        <Text>{tip.tip}</Text>
-      </Section>
       {checks.map(({ label, query, describe }) => (
         <Section key={label} look="tinted" tint="raised">
           <Text variant="row">{label}</Text>
