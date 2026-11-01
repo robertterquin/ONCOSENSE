@@ -6,6 +6,7 @@ import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
+import type { FollowStatus } from '@/hooks/useSelfChecks';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { checkInDetails, MOODS } from '@/lib/journeyLabels';
@@ -146,3 +147,42 @@ const styles = StyleSheet.create({
   moodPicker: { paddingTop: space.lg },
   support: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });
+
+/**
+ * Screening tests and warning-sign questions that are due (design refresh Phase 23), under
+ * the self-checks. Hidden when nothing is due.
+ */
+export function DueToday({
+  screenings,
+  signs,
+}: {
+  screenings: FollowStatus[];
+  signs: FollowStatus[];
+}) {
+  const tests = screenings.filter((item) => item.isDue && item.test);
+  const prompts = signs.filter((item) => item.isDue && item.cancer);
+  if (!tests.length && !prompts.length) return null;
+  return (
+    <Section title="Also due">
+      {tests.map(({ test, lastDone }) => (
+        <ListRow
+          key={test!.id}
+          icon="hospital"
+          iconTone="help"
+          title={test!.title}
+          subtitle={lastDone ? 'Due now' : 'Due now: not recorded yet'}
+          onPress={() => router.push({ pathname: '/screening/[id]', params: { id: test!.id } })}
+        />
+      ))}
+      {prompts.map(({ cancer, cancerKey }) => (
+        <ListRow
+          key={cancerKey}
+          icon="info"
+          title={`${cancer!.name}: warning signs`}
+          subtitle="A quick question, every 3 months"
+          onPress={() => router.push({ pathname: '/signs/[id]', params: { id: cancerKey } })}
+        />
+      ))}
+    </Section>
+  );
+}

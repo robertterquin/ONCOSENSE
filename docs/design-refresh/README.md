@@ -55,6 +55,7 @@ Three supporting changes:
 | 20 | Your cancer, everywhere | [20-phase-20-your-cancer-everywhere.md](20-phase-20-your-cancer-everywhere.md) | 1 day | Merged into `main` |
 | 21 | Questions about a cancer | [21-phase-21-questions-about-a-cancer.md](21-phase-21-questions-about-a-cancer.md) | 1 day | Merged into `main` |
 | 22 | Self-checks that react to what you find | [22-phase-22-self-check-fixes.md](22-phase-22-self-check-fixes.md) | 1 day | Merged into `main` |
+| 23 | Your cancers | [23-phase-23-your-cancers.md](23-phase-23-your-cancers.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -83,3 +84,4 @@ Same as the redesign:
 | 2026-11-01 | Community opens on the person's cancer, and cancer pages list support groups for it | "Which cancer?" only changed Learn; Community and support groups had no link to cancers | Robert |
 | 2026-11-01 | Questions can name a cancer; older ones still match by name | Cancer pages and the Community filter need a real link to questions, without guessing tags for old posts | Robert |
 | 2026-11-01 | A self-check ends by asking what you found; a change says to see a doctor soon, and defaults follow age as well as sex | Marking a check done after finding a lump only scheduled the next one; age was ignored and the chooser was hidden in reminder settings | Robert |
+| 2026-11-01 | People follow any cancer; each gets a self-check, a screening test, a talk with a doctor, or its warning signs | Only four cancers have a self-check; a monthly "check" for the others would have looked like protection without being one | Robert |

@@ -3,6 +3,17 @@ import { useEffect } from 'react';
 import { userAge, userGender } from '@/api/auth';
 import { rescheduleSelfCheckReminder } from '@/lib/notifications/service';
 import { parseDbTimestamp } from '@/lib/dates';
+import { cancerKeyword } from '@/lib/help';
+import {
+  actionsFor,
+  defaultFollowed,
+  nextDueAfter,
+  screeningId,
+  SIGNS_EVERY_MONTHS,
+  signsId,
+  type CancerKey,
+  type ScreeningTest,
+} from '@/lib/screening';
 import {
   chooseNextStep,
   chosenGuides,
@@ -17,8 +28,10 @@ import {
 import { useUser } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
+import type { CancerType } from '@/types/cancerType';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
+import { useCancerTypes } from './useCancerInfo';
 import { useSelfCheckGuides } from './usePrevention';
 
 export type GuideStatus = {
@@ -30,6 +43,22 @@ export type GuideStatus = {
   /** Finished checks, newest first. */
   history: CheckEntry[];
   /** When the latest check noted a change; null when it was normal or never done. */
+  changeNoted: Date | null;
+};
+
+/** A followed cancer's screening test or warning signs, and when it's next due. */
+export type FollowStatus = {
+  /** The `self_check_progress` row it's kept in ("screening:hpv", "signs:ovarian"). */
+  historyId: string;
+  cancer: CancerType | null;
+  cancerKey: CancerKey;
+  /** The test, or null for a warning-signs prompt. */
+  test: ScreeningTest | null;
+  lastDone: Date | null;
+  /** Null when done for good (the one-off talk with a doctor). */
+  due: Date | null;
+  isDue: boolean;
+  history: CheckEntry[];
   changeNoted: Date | null;
 };
 
@@ -68,12 +97,52 @@ export function useSelfChecks(now: Date = new Date()) {
       changeNoted,
     };
   };
-  const mine = chosenGuides(all, state.chosen, gender, age);
+  const followed = state.followed ?? defaultFollowed(gender, age);
+  const mine = chosenGuides(all, followed);
+
+  // Screening tests and warning signs for the followed cancers (design refresh Phase 23).
+  const cancers = useCancerTypes().data ?? [];
+  const followStatus = (
+    historyId: string,
+    cancerKey: CancerKey,
+    test: ScreeningTest | null,
+    months: number | null,
+  ): FollowStatus => {
+    const lastDone = lastDoneDate(state, historyId);
+    const due = nextDueAfter(lastDone, months, now);
+    const history = historyFor(state, historyId);
+    return {
+      historyId,
+      cancer: cancers.find((cancer) => cancerKeyword(cancer.name) === cancerKey) ?? null,
+      cancerKey,
+      test,
+      lastDone,
+      due,
+      isDue: due !== null && due.getTime() <= now.getTime(),
+      history,
+      changeNoted: history[0]?.changed ? parseDbTimestamp(history[0].date) : null,
+    };
+  };
+  const follows = followed.flatMap((cancerKey) =>
+    actionsFor(cancerKey, age, state.answers).flatMap((action) =>
+      action.kind === 'screening'
+        ? [followStatus(screeningId(action.test), cancerKey, action.test, action.test.months(age))]
+        : action.kind === 'signs'
+          ? [followStatus(signsId(cancerKey), cancerKey, null, SIGNS_EVERY_MONTHS)]
+          : [],
+    ),
+  );
 
   return {
     query: guides,
     all: all.map(status),
     mine: mine.map(status),
+    /** The cancers the person follows (their own list, or the defaults). */
+    followed,
+    /** Screening tests for the followed cancers. */
+    screenings: follows.filter((item) => item.test),
+    /** Warning-signs prompts for followed cancers with no check or test. */
+    signs: follows.filter((item) => !item.test),
     nextStep: chooseNextStep(mine, state, now),
     /** A due check was put off with "Remind me tomorrow". */
     snoozed: isSnoozed(state, now),

@@ -90,7 +90,8 @@ export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
         />
       ))}
       <ListRow
-        title="Choose your checks"
+        title="Your cancers"
+        subtitle="Follow any cancer for its check, test or warning signs"
         titleTone="action"
         onPress={() => router.push('/checks')}
       />
