@@ -288,15 +288,13 @@ export async function initializeNotifications(): Promise<void> {
 }
 
 /** The screen a notification opens. */
-export function routeForNotification(type: string | null): '/journey' | '/learn' | '/today' {
+export function routeForNotification(type: string | null): '/journey' | '/today' {
   switch (type) {
     case NotificationKind.weeklyCheckIn:
     case NotificationKind.dailyCheckIn:
     case NotificationKind.appointment:
       return '/journey';
-    case NotificationKind.selfCheck:
-    case NotificationKind.screening:
-      return '/learn';
+    // Due self-checks and screenings show on Today, with a Start button.
     default:
       return '/today';
   }

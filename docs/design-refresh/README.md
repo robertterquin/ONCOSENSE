@@ -51,6 +51,7 @@ Three supporting changes:
 | 16 | Search, iOS layout | [16-phase-16-search.md](16-phase-16-search.md) | ½ day | Merged into `main` |
 | 17 | The remaining screens and QA | [17-phase-17-screen-qa.md](17-phase-17-screen-qa.md) | ½ day | Merged into `main` |
 | 18 | iOS forms, controls and inner pages | [18-phase-18-ios-forms-and-controls.md](18-phase-18-ios-forms-and-controls.md) | 2 days | Merged into `main` |
+| 19 | Learn for reading, Journey for tracking | [19-phase-19-learn-and-my-health.md](19-phase-19-learn-and-my-health.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -75,3 +76,4 @@ Same as the redesign:
 | 2026-10-31 | Forms open as sheets with grouped fields, but labels stay above each field | iOS look, while the field's name stays visible after typing, which suits older or tired users | Robert |
 | 2026-10-31 | Check-in asks only the mood; the rest folds open in place | A hard day is one tap; tabs or one question per screen hid questions or added screens | Robert |
 | 2026-10-31 | Habits: a progress ring over Reminders-style rows | The rows stay readable, and the ring gives a small daily win | Robert |
+| 2026-11-01 | Learn is for reading; habit ticks move to a Habits screen, and Learning users get My health in Journey | Learn mixed reference with to-do lists, and one of five tabs was empty for the largest group | Robert |

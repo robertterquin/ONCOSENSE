@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react';
 
 import { ProfileButton } from '@/components/account/ProfileButton';
 import {
+  AboutHabits,
   CancerTypes,
-  CheckYourself,
   ForYou,
   GuideResults,
   HabitResults,
-  LowerYourRisk,
+  HowToCheck,
 } from '@/components/learn/LearnSections';
 import {
   EmptyState,
@@ -30,19 +30,24 @@ import { searchLearn } from '@/lib/learn';
 import { useUser } from '@/stores/authStore';
 import { useHabitsStore } from '@/stores/habitsStore';
 
-// The Learn tab (redesign Phase 3, split into three in Phase 14): your self-checks by
-// whether they're due, cancer types A to Z, and habits that lower your risk, with one
-// search over all three. `?section=cancers` or `?section=risk` opens a part directly.
+// The Learn tab (redesign Phase 3; reading only since design refresh Phase 19): cancer
+// types, how to do each self-check, and why each habit helps, with one search over all
+// three. Due checks and habit ticks live on Today; their history is in Journey.
+// `?section=cancers`, `?section=checks` or `?section=risk` opens a part directly.
 
-type Part = 'checks' | 'cancers' | 'habits';
-const PART_FOR_SECTION: Record<string, Part> = { cancers: 'cancers', risk: 'habits' };
+type Part = 'cancers' | 'checks' | 'habits';
+const PART_FOR_SECTION: Record<string, Part> = {
+  cancers: 'cancers',
+  checks: 'checks',
+  risk: 'habits',
+};
 
 export default function LearnTab() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const [search, setSearch] = useState('');
   const cancers = useCancerTypes();
   const checks = useSelfChecks();
-  const [part, setPart] = useState<Part>('checks');
+  const [part, setPart] = useState<Part>('cancers');
   const user = useUser();
   const focus = useFocus();
   const myCancerId = useMyCancerId();
@@ -101,8 +106,8 @@ export default function LearnTab() {
           value={part}
           onChange={setPart}
           options={[
-            { value: 'checks', label: 'Checks' },
             { value: 'cancers', label: 'Cancers' },
+            { value: 'checks', label: 'Checks' },
             { value: 'habits', label: 'Habits' },
           ]}
         />
@@ -137,7 +142,7 @@ export default function LearnTab() {
             </>
           ) : (
             {
-              checks: <CheckYourself mine={checks.mine} all={checks.all} />,
+              checks: <HowToCheck guides={lists.guides} />,
               cancers: (
                 <>
                   <ForYou
@@ -149,7 +154,7 @@ export default function LearnTab() {
                   <CancerTypes cancers={lists.cancers} title="All cancers" />
                 </>
               ),
-              habits: <LowerYourRisk />,
+              habits: <AboutHabits />,
             }[part]
           )}
         </Arrive>
