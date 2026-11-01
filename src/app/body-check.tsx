@@ -128,7 +128,7 @@ export default function BodyCheckScreen() {
     <BottomActionBar>
       <Button
         title="Back"
-        variant="secondary"
+        variant="tinted"
         onPress={() => setAsking(false)}
         style={styles.flex1}
       />
@@ -139,7 +139,7 @@ export default function BodyCheckScreen() {
       {step > 0 ? (
         <Button
           title="Back"
-          variant="secondary"
+          variant="tinted"
           onPress={() => setStep(step - 1)}
           style={styles.flex1}
         />

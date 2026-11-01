@@ -65,7 +65,7 @@ export default function ComponentGalleryScreen() {
       back={{ label: 'Back' }}
       bottomBar={
         <BottomActionBar>
-          <Button title="Back" variant="secondary" onPress={() => {}} style={styles.flex1} />
+          <Button title="Back" variant="tinted" onPress={() => {}} style={styles.flex1} />
           <Button title="Next step" onPress={() => showToast('Next step')} style={styles.flex2} />
         </BottomActionBar>
       }>

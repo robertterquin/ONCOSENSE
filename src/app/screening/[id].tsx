@@ -112,7 +112,7 @@ export default function ScreeningScreen() {
           {current > 0 ? (
             <Button
               title="Back"
-              variant="secondary"
+              variant="tinted"
               onPress={() => setCurrent(current - 1)}
               style={styles.flex1}
             />

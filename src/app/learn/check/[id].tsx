@@ -111,7 +111,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     <BottomActionBar>
       <Button
         title="Back"
-        variant="secondary"
+        variant="tinted"
         onPress={() => setAsking(false)}
         style={styles.flex1}
       />
@@ -122,7 +122,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       {current > 0 ? (
         <Button
           title="Back"
-          variant="secondary"
+          variant="tinted"
           onPress={() => goTo(current - 1)}
           style={styles.flex1}
         />

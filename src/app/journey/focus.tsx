@@ -336,7 +336,7 @@ export default function FocusScreen() {
           {current ? null : (
             <Button
               title="Skip"
-              variant="secondary"
+              variant="tinted"
               onPress={() => {
                 setKind('learning');
                 saveFocus.mutate('learning', { onSuccess: () => router.replace('/today') });
