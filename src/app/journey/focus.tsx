@@ -8,17 +8,20 @@ import {
   Button,
   Chip,
   Icon,
+  ListRow,
   ProgressSegments,
   Screen,
   Section,
+  Sheet,
   Text,
   type IconName,
 } from '@/components/ui';
+import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useFocus, useMyCancerId, useSaveFocus } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
 import { addDays, formatLongDate } from '@/lib/dates';
 import { FOCUS_OPTIONS, forFocus, type JourneyFocus } from '@/lib/focus';
-import { asksWhichCancer } from '@/lib/forYou';
+import { iconForCancer } from '@/lib/learn';
 import { rescheduleCheckInReminder } from '@/lib/notifications/service';
 import { useIsSignedIn } from '@/stores/authStore';
 import { showToast } from '@/stores/toastStore';
@@ -45,8 +48,11 @@ export default function FocusScreen() {
   const saveFocus = useSaveFocus();
   const startJourney = useStartJourney();
   const myCancerId = useMyCancerId();
+  const cancers = useCancerTypes();
   const [focus, setFocus] = useState<JourneyFocus | null>(current);
   const [step, setStep] = useState<'focus' | 'dates'>('focus');
+  const [cancerId, setCancerId] = useState<string | null>(myCancerId);
+  const [pickingCancer, setPickingCancer] = useState(false);
   const [startDate, setStartDate] = useState(() => setup.diagnosisDate ?? new Date());
   const [finishedDate, setFinishedDate] = useState(() => setup.cancerFreeDate ?? new Date());
   const saving = saveFocus.isPending || startJourney.isPending;
@@ -55,8 +61,7 @@ export default function FocusScreen() {
     showToast(message, 'success');
     // The daily check-in reminder is only for Journey focuses.
     void rescheduleCheckInReminder();
-    router.replace(focus === 'learning' ? '/today' : '/journey');
-    if (asksWhichCancer(focus) && !myCancerId) router.push('/journey/cancer');
+    router.replace('/today');
   };
 
   const next = () => {
@@ -79,6 +84,7 @@ export default function FocusScreen() {
         focus,
         diagnosisDate: startDate,
         cancerFreeDate: focus === 'finished' ? finishedDate : null,
+        cancerTypeId: cancerId,
       },
       {
         onSuccess: () => done('Your journey is set up.'),
@@ -88,17 +94,37 @@ export default function FocusScreen() {
   };
 
   if (step === 'dates' && focus) {
+    const sortedCancers = [...(cancers.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+    const selectedCancer = sortedCancers.find((c) => c.id === cancerId) ?? null;
+    const cancerTitle = selectedCancer
+      ? selectedCancer.name
+      : cancerId === 'none'
+        ? "Not listed, or I'd rather not say"
+        : forFocus(focus, 'Select your cancer', 'Select the cancer they have');
     return (
       <Screen
         back={{ label: 'Back', onPress: () => setStep('focus') }}
-        title={forFocus(focus, 'A few dates', 'A few dates about them')}
-        subtitle="They help Journey show how things change over time. You can change them later."
+        title={forFocus(focus, 'About your treatment', 'About their treatment')}
+        subtitle="This tailors Today, Journey and Learn to your cancer. You can change it later."
         bottomBar={
           <BottomActionBar>
             <Button title="Finish" loading={saving} onPress={finish} />
           </BottomActionBar>
         }>
         <ProgressSegments total={2} done={2} accessibilityLabel="Setup steps" />
+        <Section title={forFocus(focus, 'Which cancer?', 'Which cancer do they have?')}>
+          <ListRow
+            icon={selectedCancer ? iconForCancer(selectedCancer.name) : 'ribbon'}
+            iconTone="action"
+            title={cancerTitle}
+            subtitle={
+              selectedCancer
+                ? 'Tap to change'
+                : "We'll show its guide on Today and Learn"
+            }
+            onPress={() => setPickingCancer(true)}
+          />
+        </Section>
         <DateQuestion
           title={forFocus(focus, 'When did treatment start?', 'When did their treatment start?')}
           value={startDate}
@@ -112,6 +138,38 @@ export default function FocusScreen() {
             minimumDate={startDate}
           />
         ) : null}
+        <Sheet
+          visible={pickingCancer}
+          onClose={() => setPickingCancer(false)}
+          title="Which cancer?">
+          <Section>
+            {sortedCancers.map((cancer) => (
+              <ListRow
+                key={cancer.id}
+                icon={iconForCancer(cancer.name)}
+                iconTone="action"
+                title={cancer.name}
+                accessory={
+                  cancerId === cancer.id ? <Icon name="check" size={22} tone="action" bold /> : <></>
+                }
+                onPress={() => {
+                  setCancerId(cancer.id);
+                  setPickingCancer(false);
+                }}
+              />
+            ))}
+            <ListRow
+              title="Not listed, or I'd rather not say"
+              accessory={
+                cancerId === 'none' ? <Icon name="check" size={22} tone="action" bold /> : <></>
+              }
+              onPress={() => {
+                setCancerId('none');
+                setPickingCancer(false);
+              }}
+            />
+          </Section>
+        </Sheet>
       </Screen>
     );
   }

@@ -10,8 +10,10 @@ import {
   HabitsRow,
   MoodCard,
   SupportCard,
+  YourCancerTodayCard,
 } from '@/components/today/TodayParts';
 import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
+import { useMyCancer } from '@/hooks/useCancerInfo';
 import { useFocus } from '@/hooks/useFocus';
 import { useAppointments, useJourneyEntries } from '@/hooks/useJourney';
 import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
@@ -33,6 +35,7 @@ export default function TodayTab() {
   const now = useNow(60_000);
   const { mine, nextStep, snoozed, screenings, signs } = useSelfChecks(now);
   const focus = useFocus();
+  const myCancer = useMyCancer();
   const appointments = useAppointments();
   const name = user ? userDisplayName(user) : '';
   const journeyUser = user !== null && usesJourney(focus) && hasCompletedJourneySetup(user);
@@ -67,38 +70,46 @@ export default function TodayTab() {
 
       {hardDay ? <SupportCard /> : null}
 
-      {nextStep.kind === 'self-check' ? (
-        <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
-      ) : soon ? (
-        <NextStepPanel
-          status={`${isSameDay(soon.startsAt, now) ? 'Today' : 'Tomorrow'} at ${formatTime(soon.startsAt)}`}
-          statusIcon="calendar-check"
-          title={soon.title}
-          body={soon.location ?? 'Bring your questions and any notes for your doctor.'}
-          primary={{
-            label: 'See details',
-            onPress: () =>
-              router.push({ pathname: '/journey/appointment', params: { id: soon.id } }),
-          }}
-        />
-      ) : mine.length ? (
-        <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
+      {journeyUser ? (
+        <>
+          {soon ? (
+            <NextStepPanel
+              status={`${isSameDay(soon.startsAt, now) ? 'Today' : 'Tomorrow'} at ${formatTime(soon.startsAt)}`}
+              statusIcon="calendar-check"
+              title={soon.title}
+              body={soon.location ?? 'Bring your questions and any notes for your doctor.'}
+              primary={{
+                label: 'See details',
+                onPress: () =>
+                  router.push({ pathname: '/journey/appointment', params: { id: soon.id } }),
+              }}
+            />
+          ) : null}
+          <MoodCard now={now} />
+          <YourCancerTodayCard cancer={myCancer} caring={focus === 'caring'} />
+          <ComingUpToday appointments={upcoming.slice(0, 2)} />
+        </>
       ) : (
-        <NextStepPanel
-          status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
-          statusIcon={snoozed ? 'bell' : 'circle-check'}
-          title="Learn the early signs"
-          body="Knowing what's normal for you makes changes easier to spot."
-          primary={{
-            label: 'Explore Learn',
-            onPress: () => router.navigate({ pathname: '/learn', params: { section: 'cancers' } }),
-          }}
-        />
+        <>
+          {nextStep.kind === 'self-check' || mine.length ? (
+            <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
+          ) : (
+            <NextStepPanel
+              status={snoozed ? "We'll remind you tomorrow" : "You're up to date"}
+              statusIcon={snoozed ? 'bell' : 'circle-check'}
+              title="Learn the early signs"
+              body="Knowing what's normal for you makes changes easier to spot."
+              primary={{
+                label: 'Explore Learn',
+                onPress: () =>
+                  router.navigate({ pathname: '/learn', params: { section: 'cancers' } }),
+              }}
+            />
+          )}
+          <DueToday screenings={screenings} signs={signs} />
+        </>
       )}
 
-      <DueToday screenings={screenings} signs={signs} />
-      {journeyUser ? <MoodCard now={now} /> : null}
-      {journeyUser ? <ComingUpToday appointments={upcoming.slice(0, 2)} /> : null}
       <HabitsRow />
     </Screen>
   );

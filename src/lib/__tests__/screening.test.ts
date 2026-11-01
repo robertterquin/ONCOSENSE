@@ -1,4 +1,4 @@
-import { actionsFor, defaultFollowed, nextDueAfter } from '../screening';
+import { actionsFor, cancerAppliesToSex, defaultFollowed, nextDueAfter } from '../screening';
 
 const kinds = (cancer: string, age: number | null, answers = {}) =>
   actionsFor(cancer, age, answers).map((action) =>
@@ -7,26 +7,26 @@ const kinds = (cancer: string, age: number | null, answers = {}) =>
 
 describe('defaultFollowed', () => {
   it('follows self-checks by sex and age', () => {
-    expect(defaultFollowed('Male', 60)).toEqual(['skin', 'oral', 'colorectal', 'prostate']);
+    expect(defaultFollowed('Male', 60)).toEqual(['skin', 'thyroid', 'colorectal', 'prostate']);
     expect(defaultFollowed('Male', 17)).toEqual(['testicular']);
-    expect(defaultFollowed('Female', 19)).toEqual(['skin', 'oral']);
+    expect(defaultFollowed('Female', 19)).toEqual(['skin', 'thyroid']);
     expect(defaultFollowed('Female', 16)).toEqual([]);
-    expect(defaultFollowed('Non-binary', 30)).toEqual(['skin', 'oral']);
+    expect(defaultFollowed('Non-binary', 30)).toEqual(['skin', 'thyroid']);
   });
 
   it('adds the screening every woman or man of that age should have', () => {
     expect(defaultFollowed('Female', 47)).toEqual([
       'breast',
       'skin',
-      'oral',
+      'thyroid',
       'cervical',
       'colorectal',
     ]);
-    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'skin', 'oral', 'colorectal']);
+    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'skin', 'thyroid', 'colorectal']);
   });
 
   it('leaves out age-based screening when no age is given', () => {
-    expect(defaultFollowed('Male', null)).toEqual(['testicular', 'skin', 'oral']);
+    expect(defaultFollowed('Male', null)).toEqual(['testicular', 'skin', 'thyroid']);
   });
 });
 
@@ -57,5 +57,27 @@ describe('nextDueAfter', () => {
     expect(nextDueAfter(null, 60, now)).toEqual(new Date(2026, 10, 1));
     expect(nextDueAfter(new Date(2026, 2, 15), 12, now)).toEqual(new Date(2027, 2, 15));
     expect(nextDueAfter(new Date(2026, 2, 15), null, now)).toBeNull();
+  });
+});
+
+describe('cancerAppliesToSex', () => {
+  it('filters out opposite-sex reproductive cancers when sex is Male or Female', () => {
+    expect(cancerAppliesToSex('breast', 'Male')).toBe(false);
+    expect(cancerAppliesToSex('cervical', 'Male')).toBe(false);
+    expect(cancerAppliesToSex('ovarian', 'Male')).toBe(false);
+    expect(cancerAppliesToSex('uterine', 'Male')).toBe(false);
+    expect(cancerAppliesToSex('prostate', 'Male')).toBe(true);
+    expect(cancerAppliesToSex('testicular', 'Male')).toBe(true);
+
+    expect(cancerAppliesToSex('prostate', 'Female')).toBe(false);
+    expect(cancerAppliesToSex('testicular', 'Female')).toBe(false);
+    expect(cancerAppliesToSex('breast', 'Female')).toBe(true);
+    expect(cancerAppliesToSex('cervical', 'Female')).toBe(true);
+    expect(cancerAppliesToSex('ovarian', 'Female')).toBe(true);
+    expect(cancerAppliesToSex('uterine', 'Female')).toBe(true);
+
+    expect(cancerAppliesToSex('breast', null)).toBe(true);
+    expect(cancerAppliesToSex('cervical', null)).toBe(true);
+    expect(cancerAppliesToSex('prostate', null)).toBe(true);
   });
 });

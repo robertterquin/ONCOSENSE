@@ -72,7 +72,16 @@ export function mergeSelfChecks(
 }
 
 let applying = false;
-const apply = (state: Partial<Progress & { snoozedUntil: null }>) => {
+const apply = (
+  state: Partial<
+    Progress & {
+      snoozedUntil: null;
+      ownerId: string | null;
+      followed: string[] | null;
+      answers: Record<string, never>;
+    }
+  >,
+) => {
   applying = true;
   useSelfCheckStore.setState(state);
   applying = false;
@@ -80,6 +89,14 @@ const apply = (state: Partial<Progress & { snoozedUntil: null }>) => {
 
 /** At sign-in (and launch while signed in): load the account's self-checks. */
 export async function syncSelfChecks(): Promise<void> {
+  const userId = useAuthStore.getState().user?.id ?? null;
+  const current = useSelfCheckStore.getState();
+  // Switching accounts on the same phone resets followed cancers and answers to the new user's defaults.
+  if (current.ownerId && current.ownerId !== userId) {
+    apply({ followed: null, answers: {}, ownerId: userId });
+  } else if (current.ownerId !== userId) {
+    apply({ ownerId: userId });
+  }
   try {
     const cloud = await fetchSelfCheckProgress();
     if (!cloud) return;
@@ -92,9 +109,17 @@ export async function syncSelfChecks(): Promise<void> {
   }
 }
 
-/** At sign-out: the account's history leaves the phone. */
+/** At sign-out: the account's history and followed choices leave the phone. */
 export function clearSelfChecks(): void {
-  apply({ lastDone: {}, history: {}, savedGuides: [], snoozedUntil: null });
+  apply({
+    lastDone: {},
+    history: {},
+    savedGuides: [],
+    snoozedUntil: null,
+    ownerId: null,
+    followed: null,
+    answers: {},
+  });
   void rescheduleSelfCheckReminder();
 }
 

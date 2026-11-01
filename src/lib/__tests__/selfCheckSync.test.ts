@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { useAuthStore } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 
-import { mergeSelfChecks } from '../selfCheckSync';
+import { clearSelfChecks, mergeSelfChecks } from '../selfCheckSync';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('@/lib/notifications/service', () => ({ rescheduleSelfCheckReminder: jest.fn() }));
@@ -73,5 +73,16 @@ describe('self-check storage on the phone', () => {
     useAuthStore.setState({ user: null });
     useSelfCheckStore.getState().toggleSavedGuide('oral');
     expect(written()).toMatchObject({ savedGuides: ['oral'] });
+  });
+
+  it('clears followed cancers and risk answers on sign-out', () => {
+    useSelfCheckStore.getState().setFollowed(['liver', 'thyroid']);
+    useSelfCheckStore.getState().setAnswer('hepatitis', 'yes');
+    clearSelfChecks();
+    expect(useSelfCheckStore.getState()).toMatchObject({
+      followed: null,
+      answers: {},
+      ownerId: null,
+    });
   });
 });

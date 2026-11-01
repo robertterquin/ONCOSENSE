@@ -66,12 +66,14 @@ export async function saveJourneySetupStatus(setup: {
   focus?: string;
   diagnosisDate?: Date | null;
   cancerFreeDate?: Date | null;
+  cancerTypeId?: string | null;
 }): Promise<void> {
   await updateProfile({
     journey_started: setup.journeyStarted,
     ...(setup.focus && { journey_focus: setup.focus }),
     ...(setup.diagnosisDate && { diagnosis_date: toDbTimestamp(setup.diagnosisDate) }),
     ...(setup.cancerFreeDate && { cancer_free_date: toDbTimestamp(setup.cancerFreeDate) }),
+    ...(setup.cancerTypeId && { cancer_type_id: setup.cancerTypeId }),
   });
 }
 

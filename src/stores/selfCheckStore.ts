@@ -12,6 +12,8 @@ import { historyFor, mergeHistory, startOfDay, type SelfCheckState } from '@/lib
 // aren't written to the phone; guests keep them on the phone until they sign in.
 
 type SelfCheckStore = SelfCheckState & {
+  /** Account ID that `followed` and `answers` belong to (null for a guest). */
+  ownerId: string | null;
   /** Cancers the person follows (Your cancers); null means the defaults for their profile. */
   followed: CancerKey[] | null;
   setFollowed: (cancers: CancerKey[]) => void;
@@ -33,10 +35,16 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
       lastDone: {},
       history: {},
       snoozedUntil: null,
+      ownerId: null,
       followed: null,
-      setFollowed: (followed) => set({ followed }),
+      setFollowed: (followed) =>
+        set({ followed, ownerId: useAuthStore.getState().user?.id ?? null }),
       answers: {},
-      setAnswer: (key, value) => set((state) => ({ answers: { ...state.answers, [key]: value } })),
+      setAnswer: (key, value) =>
+        set((state) => ({
+          answers: { ...state.answers, [key]: value },
+          ownerId: useAuthStore.getState().user?.id ?? null,
+        })),
       markDone: (guideId, when = new Date(), changed = false) =>
         set((state) => {
           const date = toDbTimestamp(when);
@@ -62,12 +70,26 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
     {
       name: 'self-checks',
       storage: persistStorage,
-      version: 1,
+      version: 3,
+      migrate: () => ({
+        lastDone: {},
+        history: {},
+        snoozedUntil: null,
+        ownerId: null,
+        followed: null,
+        answers: {},
+        savedGuides: [],
+      }),
       partialize: (state) =>
         useAuthStore.getState().user
           ? // shortcut: followed cancers and answers stay on this phone; move them to the
             // account if people ask for them on a second phone.
-            { followed: state.followed, answers: state.answers, snoozedUntil: state.snoozedUntil }
+            {
+              ownerId: state.ownerId,
+              followed: state.followed,
+              answers: state.answers,
+              snoozedUntil: state.snoozedUntil,
+            }
           : state,
     },
   ),

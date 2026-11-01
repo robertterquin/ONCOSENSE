@@ -122,6 +122,7 @@ export function useStartJourney() {
       focus: JourneyFocus;
       diagnosisDate: Date;
       cancerFreeDate?: Date | null;
+      cancerTypeId?: string | null;
     }) => {
       // Updating metadata also refreshes the signed-in user in the auth store.
       await saveJourneySetupStatus({ journeyStarted: true, ...setup });

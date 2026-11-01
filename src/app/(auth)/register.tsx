@@ -61,7 +61,7 @@ export default function CreateAccountScreen() {
       style={styles.fill}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen
-        back={{ label: 'Welcome', onPress: back }}
+        back={{ label: 'Back', onPress: back }}
         title="Create an account"
         subtitle="Your check-ins and saved items stay with you on any phone.">
         <FormTextField

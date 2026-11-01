@@ -6,6 +6,7 @@ import { parseDbTimestamp } from '@/lib/dates';
 import { cancerKeyword } from '@/lib/help';
 import {
   actionsFor,
+  cancerAppliesToSex,
   defaultFollowed,
   nextDueAfter,
   screeningId,
@@ -81,7 +82,9 @@ export function useSelfChecks(now: Date = new Date()) {
     }
   }, [guides.data]);
 
-  const all = guides.data ?? [];
+  const all = (guides.data ?? []).filter((guide) =>
+    cancerAppliesToSex(cancerKeyword(guide.cancerType), gender),
+  );
   const status = (guide: SelfCheckGuide): GuideStatus => {
     const lastDone = lastDoneDate(state, guide.id);
     const due = nextDue(guide, lastDone, now);
@@ -97,7 +100,9 @@ export function useSelfChecks(now: Date = new Date()) {
       changeNoted,
     };
   };
-  const followed = state.followed ?? defaultFollowed(gender, age);
+  const followed = (state.followed ?? defaultFollowed(gender, age)).filter((key) =>
+    cancerAppliesToSex(key, gender),
+  );
   const mine = chosenGuides(all, followed);
 
   // Screening tests and warning signs for the followed cancers (design refresh Phase 23).

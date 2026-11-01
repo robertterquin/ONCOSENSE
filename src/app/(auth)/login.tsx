@@ -27,7 +27,7 @@ export default function SignInScreen() {
     <KeyboardAvoidingView
       style={styles.fill}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen back={{ label: 'Welcome', onPress: back }} title="Sign in" subtitle="Welcome back.">
+      <Screen back={{ label: 'Back', onPress: back }} title="Sign in" subtitle="Welcome back.">
         <FormTextField
           control={control}
           name="email"

@@ -113,7 +113,18 @@ export const SCREENING_TESTS: ScreeningTest[] = [
 ];
 
 /** Cancers with a guided self-check at home (matching `self_check_guides.cancer_type`). */
-export const SELF_CHECK_CANCERS: CancerKey[] = ['breast', 'skin', 'oral', 'testicular'];
+export const SELF_CHECK_CANCERS: CancerKey[] = ['breast', 'skin', 'thyroid', 'testicular'];
+
+const MALE_ONLY_CANCERS: CancerKey[] = ['prostate', 'testicular'];
+const FEMALE_ONLY_CANCERS: CancerKey[] = ['breast', 'cervical', 'ovarian', 'uterine'];
+
+/** Whether a cancer applies to a person of this sex (everyone when sex is unset or non-binary). */
+export function cancerAppliesToSex(cancer: CancerKey, sex: string | null): boolean {
+  const normalized = sex?.toLowerCase();
+  if (normalized === 'male') return !FEMALE_ONLY_CANCERS.includes(cancer);
+  if (normalized === 'female') return !MALE_ONLY_CANCERS.includes(cancer);
+  return true;
+}
 
 /** Lung and liver ask a question before offering their test. */
 export const QUESTION_FOR: Partial<Record<CancerKey, keyof ScreeningAnswers>> = {
@@ -151,7 +162,7 @@ export function defaultFollowed(sex: string | null, age: number | null): CancerK
   return [
     ...(sex === 'Female' && within(age, 20) ? ['breast'] : []),
     ...(sex === 'Male' && within(age, 15, 40) ? ['testicular'] : []),
-    ...(within(age, 18) ? ['skin', 'oral'] : []),
+    ...(within(age, 18) ? ['skin', 'thyroid'] : []),
     ...(sex === 'Female' && within(age, 25, 65) ? ['cervical'] : []),
     ...(age !== null && age >= 45 && age <= 75 ? ['colorectal'] : []),
     ...(sex === 'Male' && age !== null && age >= 50 ? ['prostate'] : []),

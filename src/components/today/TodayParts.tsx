@@ -10,10 +10,12 @@ import type { FollowStatus } from '@/hooks/useSelfChecks';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { checkInDetails, MOODS } from '@/lib/journeyLabels';
+import { iconForCancer } from '@/lib/learn';
 import { toDayKey, useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
 import type { Appointment } from '@/types/appointment';
+import type { CancerType } from '@/types/cancerType';
 import type { JourneyEntry } from '@/types/journeyEntry';
 
 // Pieces of the redesigned Today tab (docs/redesign/03-phase-3-today-and-learn.md).
@@ -160,10 +162,10 @@ export function DueToday({
   signs: FollowStatus[];
 }) {
   const tests = screenings.filter((item) => item.isDue && item.test);
-  const prompts = signs.filter((item) => item.isDue && item.cancer);
+  const prompts = signs.filter((item) => item.isDue && item.cancer).slice(0, 2);
   if (!tests.length && !prompts.length) return null;
   return (
-    <Section title="Also due">
+    <Section title="Also due" subtitle="From the cancers you follow">
       {tests.map(({ test, lastDone }) => (
         <ListRow
           key={test!.id}
@@ -183,6 +185,53 @@ export function DueToday({
           onPress={() => router.push({ pathname: '/signs/[id]', params: { id: cancerKey } })}
         />
       ))}
+      <ListRow
+        title="Your cancers"
+        subtitle="Choose which cancers you follow"
+        titleTone="action"
+        onPress={() => router.push('/checks')}
+      />
+    </Section>
+  );
+}
+
+/**
+ * Patient Mode on Today: quick access to the person's cancer guide (or adding it) and
+ * the printable doctor summary, replacing the general prevention checks list.
+ */
+export function YourCancerTodayCard({
+  cancer,
+  caring,
+}: {
+  cancer: CancerType | null;
+  caring: boolean;
+}) {
+  return (
+    <Section title={caring ? 'Their cancer' : 'Your cancer'}>
+      {cancer ? (
+        <ListRow
+          icon={iconForCancer(cancer.name)}
+          iconTone="action"
+          title={`${cancer.name} guide`}
+          subtitle="Treatments, early signs and questions to ask"
+          onPress={() => router.push({ pathname: '/learn/cancer/[id]', params: { id: cancer.id } })}
+        />
+      ) : (
+        <ListRow
+          icon="plus"
+          title={caring ? 'Add the cancer they have' : 'Add your cancer'}
+          subtitle="Shows its guide and treatment tips here"
+          titleTone="action"
+          onPress={() => router.push('/journey/cancer')}
+        />
+      )}
+      <ListRow
+        icon="share"
+        iconTone="help"
+        title="Share summary with my doctor"
+        subtitle="Your recent check-ins, pain and treatments"
+        onPress={() => router.push('/journey/summary')}
+      />
     </Section>
   );
 }

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, RibbonMark, Text } from '@/components/ui';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
-import { addDays } from '@/lib/dates';
+import { addDays, formatShortMonthDay } from '@/lib/dates';
 import {
   checkStatusLabel,
   formatMonth,
@@ -107,7 +107,15 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
         </View>
       )}
 
-      {allDone ? (
+      {changed ? (
+        <Button
+          title="Find a screening center"
+          variant="onPanelAccent"
+          small
+          style={styles.link}
+          onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
+        />
+      ) : allDone ? (
         <Button
           title="Learn the early signs"
           variant="onPanelAccent"
@@ -143,6 +151,12 @@ function Week({ checks }: { checks: GuideStatus[] }) {
   });
   const isCheckDay = (day: Date) =>
     thisWeek.some((check) => startOfDay(check.due).getTime() === day.getTime());
+  const sameDay = thisWeek.every((check) => startOfDay(check.due).getTime() === next.getTime());
+  const summary = sameDay
+    ? `Due ${formatShortMonthDay(next)}: ${thisWeek.map((check) => check.guide.cancerType).join(', ')}`
+    : thisWeek
+        .map((check) => `${check.guide.cancerType} (${formatShortMonthDay(check.due)})`)
+        .join(', ');
   return (
     <View
       accessible
@@ -150,6 +164,9 @@ function Week({ checks }: { checks: GuideStatus[] }) {
         .map((check) => `${check.guide.cancerType}, ${formatMonthDay(check.due)}`)
         .join('; ')}`}
       style={styles.week}>
+      <Text variant="caption" tone="onPanelMuted">
+        {`Next check · ${formatMonth(next)}`}
+      </Text>
       <View style={styles.days}>
         {days.map((day) => {
           const isNext = day.getTime() === next.getTime();
@@ -174,7 +191,7 @@ function Week({ checks }: { checks: GuideStatus[] }) {
         })}
       </View>
       <Text variant="supporting" tone="onPanelAccent">
-        {thisWeek.map((check) => `${check.guide.cancerType} ${check.due.getDate()}`).join(', ')}
+        {summary}
       </Text>
     </View>
   );

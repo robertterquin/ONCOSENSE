@@ -18,7 +18,13 @@ import { useSelfChecks } from '@/hooks/useSelfChecks';
 import { cancerKeyword } from '@/lib/help';
 import { iconForCancer } from '@/lib/learn';
 import { rescheduleSelfCheckReminder } from '@/lib/notifications/service';
-import { actionsFor, QUESTION_FOR, type CancerKey, type ScreeningAnswers } from '@/lib/screening';
+import {
+  actionsFor,
+  cancerAppliesToSex,
+  QUESTION_FOR,
+  type CancerKey,
+  type ScreeningAnswers,
+} from '@/lib/screening';
 import { useUser } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import type { CancerType } from '@/types/cancerType';
@@ -69,13 +75,15 @@ export default function YourCancersScreen() {
     else follow(key, !followed.includes(key));
   };
 
-  const list = [...(cancers.data ?? [])].sort((a, b) => {
-    const rank = (cancer: CancerType) => {
-      const index = followed.indexOf(cancerKeyword(cancer.name));
-      return index === -1 ? Infinity : index;
-    };
-    return rank(a) - rank(b) || a.name.localeCompare(b.name);
-  });
+  const list = (cancers.data ?? [])
+    .filter((cancer) => cancerAppliesToSex(cancerKeyword(cancer.name), sex))
+    .sort((a, b) => {
+      const rank = (cancer: CancerType) => {
+        const index = followed.indexOf(cancerKeyword(cancer.name));
+        return index === -1 ? Infinity : index;
+      };
+      return rank(a) - rank(b) || a.name.localeCompare(b.name);
+    });
   const question = asking ? QUESTION_FOR[cancerKeyword(asking.name)] : undefined;
 
   return (
@@ -151,7 +159,7 @@ export default function YourCancersScreen() {
   );
 }
 
-/** "Self-check monthly, mammogram every year", "HPV test every 5 years", "Warning signs". */
+/** "Self-check monthly, mammogram every year", "HPV test every 5 years", "Warning signs every 3 months". */
 function whatYouGet(key: CancerKey, age: number | null, answers: ScreeningAnswers): string {
   const parts = actionsFor(key, age, answers).map((action) =>
     action.kind === 'self-check'
@@ -160,7 +168,7 @@ function whatYouGet(key: CancerKey, age: number | null, answers: ScreeningAnswer
         ? action.test.months(age) === null
           ? action.test.title
           : `${action.test.title} ${lowerFirst(action.test.howOften(age))}`
-        : 'Warning signs',
+        : 'Warning signs every 3 months',
   );
   const text = parts.map((part, index) => (index ? lowerFirst(part) : part)).join(', ');
   const question = QUESTION_FOR[key];
