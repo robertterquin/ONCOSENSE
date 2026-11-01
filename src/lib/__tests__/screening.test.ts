@@ -7,30 +7,29 @@ const kinds = (cancer: string, age: number | null, answers = {}) =>
 
 describe('defaultFollowed', () => {
   it('follows self-checks by sex and age', () => {
-    expect(defaultFollowed('Male', 60)).toEqual(['skin', 'thyroid', 'colorectal', 'prostate']);
+    expect(defaultFollowed('Male', 60)).toEqual(['skin', 'colorectal', 'prostate']);
     expect(defaultFollowed('Male', 17)).toEqual(['testicular']);
-    expect(defaultFollowed('Female', 19)).toEqual(['skin', 'thyroid']);
+    expect(defaultFollowed('Female', 19)).toEqual(['skin']);
     expect(defaultFollowed('Female', 16)).toEqual([]);
-    expect(defaultFollowed('Non-binary', 30)).toEqual(['skin', 'thyroid']);
+    expect(defaultFollowed('Non-binary', 30)).toEqual(['skin']);
   });
 
   it('adds the screening every woman or man of that age should have', () => {
-    expect(defaultFollowed('Female', 47)).toEqual([
-      'breast',
-      'skin',
-      'thyroid',
-      'cervical',
-      'colorectal',
-    ]);
-    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'skin', 'thyroid', 'colorectal']);
+    expect(defaultFollowed('Female', 47)).toEqual(['breast', 'skin', 'cervical', 'colorectal']);
+    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'skin', 'colorectal']);
   });
 
   it('leaves out age-based screening when no age is given', () => {
-    expect(defaultFollowed('Male', null)).toEqual(['testicular', 'skin', 'thyroid']);
+    expect(defaultFollowed('Male', null)).toEqual(['testicular', 'skin']);
   });
 });
 
 describe('actionsFor', () => {
+  it('gives oral and thyroid warning signs, not a self-check', () => {
+    expect(kinds('oral', 30)).toEqual(['signs']);
+    expect(kinds('thyroid', 30)).toEqual(['signs']);
+  });
+
   it('gives breast both a self-check and, from 40, a mammogram', () => {
     expect(kinds('breast', 30)).toEqual(['self-check']);
     expect(kinds('breast', 47)).toEqual(['self-check', 'mammogram']);

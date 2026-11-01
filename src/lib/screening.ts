@@ -113,7 +113,7 @@ export const SCREENING_TESTS: ScreeningTest[] = [
 ];
 
 /** Cancers with a guided self-check at home (matching `self_check_guides.cancer_type`). */
-export const SELF_CHECK_CANCERS: CancerKey[] = ['breast', 'skin', 'thyroid', 'testicular'];
+export const SELF_CHECK_CANCERS: CancerKey[] = ['breast', 'skin', 'testicular'];
 
 const MALE_ONLY_CANCERS: CancerKey[] = ['prostate', 'testicular'];
 const FEMALE_ONLY_CANCERS: CancerKey[] = ['breast', 'cervical', 'ovarian', 'uterine'];
@@ -162,7 +162,7 @@ export function defaultFollowed(sex: string | null, age: number | null): CancerK
   return [
     ...(sex === 'Female' && within(age, 20) ? ['breast'] : []),
     ...(sex === 'Male' && within(age, 15, 40) ? ['testicular'] : []),
-    ...(within(age, 18) ? ['skin', 'thyroid'] : []),
+    ...(within(age, 18) ? ['skin'] : []),
     ...(sex === 'Female' && within(age, 25, 65) ? ['cervical'] : []),
     ...(age !== null && age >= 45 && age <= 75 ? ['colorectal'] : []),
     ...(sex === 'Male' && age !== null && age >= 50 ? ['prostate'] : []),

@@ -134,10 +134,10 @@ function SavedHabits() {
       <EmptyState
         icon="bookmark"
         title="No saved habits"
-        message="Tap Save on an everyday habit in Learn to keep it here."
+        message="Tap Save on any habit in Habits to keep it here."
         action={{
-          label: 'Go to Learn',
-          onPress: () => router.navigate({ pathname: '/learn', params: { section: 'risk' } }),
+          label: 'Open Habits',
+          onPress: () => router.push('/habits'),
         }}
       />
     );

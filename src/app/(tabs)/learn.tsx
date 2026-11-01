@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 
 import { ProfileButton } from '@/components/account/ProfileButton';
 import {
-  AboutHabits,
   CancerTypes,
   ForYou,
   GuideResults,
@@ -35,11 +34,10 @@ import { useHabitsStore } from '@/stores/habitsStore';
 // three. Due checks and habit ticks live on Today; their history is in Journey.
 // `?section=cancers`, `?section=checks` or `?section=risk` opens a part directly.
 
-type Part = 'cancers' | 'checks' | 'habits';
+type Part = 'cancers' | 'checks';
 const PART_FOR_SECTION: Record<string, Part> = {
   cancers: 'cancers',
   checks: 'checks',
-  risk: 'habits',
 };
 
 export default function LearnTab() {
@@ -50,17 +48,25 @@ export default function LearnTab() {
   const [part, setPart] = useState<Part>('cancers');
   const user = useUser();
   const focus = useFocus();
+  const showChecks = focus !== 'treatment' && focus !== 'caring';
+  const activePart: Part = !showChecks && part === 'checks' ? 'cancers' : part;
   const myCancerId = useMyCancerId();
   const smoker = useHabitsStore((state) => state.smoker);
 
   // On every visit with a `section` link (the tab stays mounted), show that part.
   useFocusEffect(
     useCallback(() => {
+      if (section === 'risk') {
+        router.setParams({ section: undefined });
+        router.push('/habits');
+        return;
+      }
       if (!section || !PART_FOR_SECTION[section]) return;
-      setPart(PART_FOR_SECTION[section]);
+      const nextPart = PART_FOR_SECTION[section];
+      setPart(!showChecks && nextPart === 'checks' ? 'cancers' : nextPart);
       // Used once, so coming back through the tab bar keeps the part the person picked.
       router.setParams({ section: undefined });
-    }, [section]),
+    }, [section, showChecks]),
   );
 
   const queries = [cancers, checks.query];
@@ -70,7 +76,7 @@ export default function LearnTab() {
 
   const lists = {
     cancers: cancers.data ?? [],
-    guides: checks.all.map((status) => status.guide),
+    guides: showChecks ? checks.all.map((status) => status.guide) : [],
     tips: HABITS,
   };
   const myCancer = lists.cancers.find((cancer) => cancer.id === myCancerId) ?? null;
@@ -100,15 +106,14 @@ export default function LearnTab() {
         value={search}
         onChangeText={setSearch}
       />
-      {query ? null : (
+      {query || !showChecks ? null : (
         <SegmentedControl<Part>
           accessibilityLabel="Learn section"
-          value={part}
+          value={activePart}
           onChange={setPart}
           options={[
             { value: 'cancers', label: 'Cancers' },
             { value: 'checks', label: 'Checks' },
-            { value: 'habits', label: 'Habits' },
           ]}
         />
       )}
@@ -154,8 +159,7 @@ export default function LearnTab() {
                   <CancerTypes cancers={lists.cancers} title="All cancers" />
                 </>
               ),
-              habits: <AboutHabits />,
-            }[part]
+            }[activePart]
           )}
         </Arrive>
       )}

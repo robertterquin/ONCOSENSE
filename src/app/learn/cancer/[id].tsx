@@ -19,6 +19,7 @@ import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { useCancerType, useCancerTypes } from '@/hooks/useCancerInfo';
 import { useQuestions } from '@/hooks/useCommunity';
+import { useFocus } from '@/hooks/useFocus';
 import { useAllResources } from '@/hooks/useResources';
 import { cancerKeyword, supportGroupsFor } from '@/lib/help';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
@@ -81,8 +82,10 @@ const TILES: { key: SectionKey; one: string; many: string; list: (c: CancerType)
 
 function CancerDetails({ cancer }: { cancer: CancerType }) {
   const { palette } = useDesign();
+  const focus = useFocus();
+  const showChecks = focus !== 'treatment' && focus !== 'caring';
   const guides = useSelfCheckGuides();
-  const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
+  const guide = showChecks && guides.data ? guideForCancer(guides.data, cancer) : null;
   const resources = useAllResources();
   const cancerNames = (useCancerTypes().data ?? []).map((type) => type.name);
   const groups = supportGroupsFor(cancer.name, resources.data?.supportGroups ?? [], cancerNames);

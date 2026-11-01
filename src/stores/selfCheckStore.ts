@@ -71,14 +71,13 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
       name: 'self-checks',
       storage: persistStorage,
       version: 3,
-      migrate: () => ({
-        lastDone: {},
-        history: {},
-        snoozedUntil: null,
+      // Followed cancers and answers start again from the defaults; history and saved
+      // guides are kept (a guest's exist only on this phone).
+      migrate: (persisted) => ({
+        ...(persisted as Partial<SelfCheckStore>),
         ownerId: null,
         followed: null,
         answers: {},
-        savedGuides: [],
       }),
       partialize: (state) =>
         useAuthStore.getState().user

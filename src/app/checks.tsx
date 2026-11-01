@@ -55,7 +55,7 @@ const ANSWERS = [
 
 export default function YourCancersScreen() {
   const cancers = useCancerTypes();
-  const { followed } = useSelfChecks();
+  const { followed, careTeamCancer } = useSelfChecks();
   const user = useUser();
   const sex = userGender(user);
   const age = userAge(user);
@@ -102,6 +102,16 @@ export default function YourCancersScreen() {
           {list.map((cancer) => {
             const key = cancerKeyword(cancer.name);
             const on = followed.includes(key);
+            if (key === careTeamCancer) {
+              return (
+                <ListRow
+                  key={cancer.id}
+                  icon={iconForCancer(cancer.name)}
+                  title={cancer.name}
+                  subtitle="Your care team sets your follow-up"
+                />
+              );
+            }
             return (
               <ListRow
                 key={cancer.id}

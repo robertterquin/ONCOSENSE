@@ -19,13 +19,15 @@
 | Cancer | What following it gives |
 |---|---|
 | Breast | Self-check monthly; mammogram from 40 (yearly to 54, every 2 years from 55) |
-| Skin, oral, testicular | Self-check monthly |
+| Skin, testicular | Self-check monthly |
 | Cervical | HPV test every 5 years, ages 25 to 65 (Pap smear every 3); else warning signs |
 | Colorectal | Stool test yearly, ages 45 to 75 (or colonoscopy every 10 years); else warning signs |
 | Lung | Low-dose CT yearly, ages 50 to 80 who smoked heavily; else warning signs |
 | Liver | Ultrasound every 6 months with hepatitis B or C, or cirrhosis; else warning signs |
 | Prostate | Talk to a doctor about PSA testing, from 50; else warning signs |
-| Stomach, ovarian, thyroid, lymphoma, leukemia, uterine | Warning signs every 3 months |
+| Oral, stomach, ovarian, thyroid, lymphoma, leukemia, uterine | Warning signs every 3 months (no self-check: oral has too little evidence, and thyroid screening without symptoms is recommended against by the USPSTF) |
+
+People who finished treatment don't get the average-risk schedule for their own cancer: Your cancers shows "Your care team sets your follow-up" for it.
 
 Defaults: the Phase 22 self-checks, plus cervical (women 25 to 65), colorectal (45 to 75) and prostate (men 50 and over).
 

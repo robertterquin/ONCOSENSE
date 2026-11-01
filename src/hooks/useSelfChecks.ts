@@ -33,6 +33,7 @@ import type { CancerType } from '@/types/cancerType';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 import { useCancerTypes } from './useCancerInfo';
+import { useFocus, useMyCancerId } from './useFocus';
 import { useSelfCheckGuides } from './usePrevention';
 
 export type GuideStatus = {
@@ -85,6 +86,12 @@ export function useSelfChecks(now: Date = new Date()) {
   const all = (guides.data ?? []).filter((guide) =>
     cancerAppliesToSex(cancerKeyword(guide.cancerType), gender),
   );
+  const cancers = useCancerTypes().data ?? [];
+  const focus = useFocus();
+  const myCancerId = useMyCancerId();
+  const myCancer = cancers.find((c) => c.id === myCancerId) ?? null;
+  const myCancerKey = myCancer ? cancerKeyword(myCancer.name) : null;
+
   const status = (guide: SelfCheckGuide): GuideStatus => {
     const lastDone = lastDoneDate(state, guide.id);
     const due = nextDue(guide, lastDone, now);
@@ -100,13 +107,15 @@ export function useSelfChecks(now: Date = new Date()) {
       changeNoted,
     };
   };
-  const followed = (state.followed ?? defaultFollowed(gender, age)).filter((key) =>
-    cancerAppliesToSex(key, gender),
+  // Survivors' follow-up for their own cancer is set by their care team, not the
+  // average-risk schedule, so it's left out of their checks and tests.
+  const careTeamCancer = focus === 'finished' ? myCancerKey : null;
+  const followed = (state.followed ?? defaultFollowed(gender, age)).filter(
+    (key) => cancerAppliesToSex(key, gender) && key !== careTeamCancer,
   );
   const mine = chosenGuides(all, followed);
 
   // Screening tests and warning signs for the followed cancers (design refresh Phase 23).
-  const cancers = useCancerTypes().data ?? [];
   const followStatus = (
     historyId: string,
     cancerKey: CancerKey,
@@ -144,6 +153,8 @@ export function useSelfChecks(now: Date = new Date()) {
     mine: mine.map(status),
     /** The cancers the person follows (their own list, or the defaults). */
     followed,
+    /** A survivor's own cancer, whose follow-up comes from their care team. */
+    careTeamCancer,
     /** Screening tests for the followed cancers. */
     screenings: follows.filter((item) => item.test),
     /** Warning-signs prompts for followed cancers with no check or test. */

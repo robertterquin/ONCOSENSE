@@ -88,6 +88,14 @@ export default function TodayTab() {
           <MoodCard now={now} />
           <YourCancerTodayCard cancer={myCancer} caring={focus === 'caring'} />
           <ComingUpToday appointments={upcoming.slice(0, 2)} />
+          {focus === 'finished' ? (
+            <>
+              {mine.length ? (
+                <ChecksCard checks={mine} snoozed={snoozed} onSnooze={snoozeSelfCheck} now={now} />
+              ) : null}
+              <DueToday screenings={screenings} signs={signs} />
+            </>
+          ) : null}
         </>
       ) : (
         <>

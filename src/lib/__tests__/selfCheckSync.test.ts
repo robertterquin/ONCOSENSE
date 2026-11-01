@@ -85,4 +85,22 @@ describe('self-check storage on the phone', () => {
       ownerId: null,
     });
   });
+
+  it('keeps history and saved guides when the stored version changes', () => {
+    const migrate = useSelfCheckStore.persist.getOptions().migrate!;
+    const old = {
+      lastDone: { skin: '2026-10-01T09:00:00' },
+      history: { skin: [{ date: '2026-10-01T09:00:00', changed: false }] },
+      savedGuides: ['skin'],
+      followed: ['thyroid'],
+      answers: { hepatitis: 'yes' },
+    };
+    expect(migrate(old, 2)).toMatchObject({
+      lastDone: old.lastDone,
+      history: old.history,
+      savedGuides: ['skin'],
+      followed: null,
+      answers: {},
+    });
+  });
 });

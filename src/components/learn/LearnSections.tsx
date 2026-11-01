@@ -75,10 +75,16 @@ export function GuideRow({ status }: { status: GuideStatus }) {
  * shows on Today, and its history is in Journey.
  */
 export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
+  const focus = useFocus();
+  const inTreatment = focus === 'treatment';
   return (
     <Section
       title="How to check"
-      subtitle="Step-by-step guides. Due checks show on Today, and your history is in Journey.">
+      subtitle={
+        inTreatment
+          ? 'During treatment, your care team examines you at follow-ups. Ask your doctor before checking a treated area.'
+          : 'Step-by-step guides. Due checks show on Today, and your history is in Journey.'
+      }>
       {guides.map((guide) => (
         <ListRow
           key={guide.id}
@@ -89,12 +95,14 @@ export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
           onPress={() => openGuide(guide.id)}
         />
       ))}
-      <ListRow
-        title="Your cancers"
-        subtitle="Follow any cancer for its check, test or warning signs"
-        titleTone="action"
-        onPress={() => router.push('/checks')}
-      />
+      {inTreatment ? null : (
+        <ListRow
+          title="Your cancers"
+          subtitle="Follow any cancer for its check, test or warning signs"
+          titleTone="action"
+          onPress={() => router.push('/checks')}
+        />
+      )}
     </Section>
   );
 }
