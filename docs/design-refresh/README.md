@@ -53,6 +53,7 @@ Three supporting changes:
 | 18 | iOS forms, controls and inner pages | [18-phase-18-ios-forms-and-controls.md](18-phase-18-ios-forms-and-controls.md) | 2 days | Merged into `main` |
 | 19 | Learn for reading, Journey for tracking | [19-phase-19-learn-and-my-health.md](19-phase-19-learn-and-my-health.md) | 1 day | Merged into `main` |
 | 20 | Your cancer, everywhere | [20-phase-20-your-cancer-everywhere.md](20-phase-20-your-cancer-everywhere.md) | 1 day | Merged into `main` |
+| 21 | Questions about a cancer | [21-phase-21-questions-about-a-cancer.md](21-phase-21-questions-about-a-cancer.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -79,3 +80,4 @@ Same as the redesign:
 | 2026-10-31 | Habits: a progress ring over Reminders-style rows | The rows stay readable, and the ring gives a small daily win | Robert |
 | 2026-11-01 | Learn is for reading; habit ticks move to a Habits screen, and Learning users get My health in Journey | Learn mixed reference with to-do lists, and one of five tabs was empty for the largest group | Robert |
 | 2026-11-01 | Community opens on the person's cancer, and cancer pages list support groups for it | "Which cancer?" only changed Learn; Community and support groups had no link to cancers | Robert |
+| 2026-11-01 | Questions can name a cancer; older ones still match by name | Cancer pages and the Community filter need a real link to questions, without guessing tags for old posts | Robert |

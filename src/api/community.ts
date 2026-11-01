@@ -19,6 +19,8 @@ type QuestionSort = 'recent' | 'trending' | 'unanswered';
 
 export type QuestionFilters = {
   category?: string | null;
+  /** Questions tagged with this cancer, or older untagged ones that mention its name. */
+  cancer?: { id: string; keyword: string } | null;
   searchQuery?: string | null;
   sortBy?: QuestionSort;
   limit?: number;
@@ -30,12 +32,13 @@ export type QuestionFilters = {
 // Reads go through views that hide the author of anonymous posts (migration
 // 20261025000000); the tables no longer return `user_id`, so writes ask only for these.
 const QUESTION_COLUMNS =
-  'id,title,content,category,user_name,profile_picture_url,is_anonymous,upvotes,answer_count,created_at,updated_at,is_resolved,tags';
+  'id,title,content,category,user_name,profile_picture_url,is_anonymous,upvotes,answer_count,created_at,updated_at,is_resolved,tags,cancer_type_id';
 const ANSWER_COLUMNS =
   'id,question_id,content,user_name,is_anonymous,upvotes,created_at,updated_at,is_accepted,parent_answer_id';
 
 export async function fetchQuestions({
   category,
+  cancer,
   searchQuery,
   sortBy = 'recent',
   limit = 20,
@@ -43,6 +46,10 @@ export async function fetchQuestions({
 }: QuestionFilters = {}): Promise<Question[]> {
   let query = supabase.from('questions_public').select('*');
   if (category) query = query.eq('category', category);
+  if (cancer) {
+    const value = ilikeValue(cancer.keyword);
+    query = query.or(`cancer_type_id.eq.${cancer.id},title.ilike.${value},content.ilike.${value}`);
+  }
   if (searchQuery) {
     const value = ilikeValue(searchQuery);
     query = query.or(`title.ilike.${value},content.ilike.${value}`);
@@ -96,6 +103,7 @@ export async function createQuestion(input: {
   category: string;
   isAnonymous: boolean;
   tags?: string[];
+  cancerTypeId?: string | null;
 }): Promise<Question> {
   const user = await requireUser('post questions');
 
@@ -116,6 +124,7 @@ export async function createQuestion(input: {
       updated_at: now,
       is_resolved: false,
       tags: input.tags ?? [],
+      cancer_type_id: input.cancerTypeId ?? null,
       ...(profilePictureUrl && { profile_picture_url: profilePictureUrl }),
     })
     .select(QUESTION_COLUMNS)

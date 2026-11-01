@@ -82,6 +82,7 @@ const mockQuestion: Question = {
   updatedAt: new Date('2025-02-02'),
   isResolved: false,
   tags: ['chemotherapy', 'fatigue', 'wellness'],
+  cancerTypeId: null,
 };
 
 const mockData: SearchableData = {

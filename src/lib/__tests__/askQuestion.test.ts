@@ -3,7 +3,7 @@ import { askQuestionSchema } from '@/constants/validation';
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
 describe('askQuestionSchema', () => {
-  const base = { category: 'Symptoms', isAnonymous: false };
+  const base = { category: 'Symptoms', cancerTypeId: 'none', isAnonymous: false };
   const firstError = (form: object) => {
     const result = askQuestionSchema.safeParse({ ...base, ...form });
     return result.success ? null : result.error.issues.map((issue) => issue.message);

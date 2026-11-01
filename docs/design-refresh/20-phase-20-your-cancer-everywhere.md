@@ -16,7 +16,7 @@
 
 ## Not done
 
-- Community matches the cancer's name in a question's words (`shortcut:` in the code). Phase 21 adds a cancer tag to questions and switches the filter to it.
+- Community matched the cancer's name in a question's words; Phase 21 switched it to a cancer tag.
 - Kythe Foundation (children with cancer) shows on every page, since its description names no cancer.
 
 ## Done when

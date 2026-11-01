@@ -20,6 +20,8 @@ export type Question = {
   updatedAt: Date;
   isResolved: boolean;
   tags: string[];
+  /** The cancer it's about, if the asker chose one (migration 20261102000000). */
+  cancerTypeId: string | null;
 };
 
 export function questionFromRow(row: Row): Question {
@@ -38,6 +40,7 @@ export function questionFromRow(row: Row): Question {
     updatedAt: parseDbTimestamp(requireString(row, 'updated_at')),
     isResolved: booleanOr(row, 'is_resolved', false),
     tags: stringArray(row, 'tags'),
+    cancerTypeId: optionalString(row, 'cancer_type_id'),
   };
 }
 

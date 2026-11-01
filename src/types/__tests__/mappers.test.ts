@@ -35,6 +35,8 @@ describe('questionFromRow', () => {
     const question = questionFromRow(questionRow);
     expect(question).toMatchObject({ id: 'q1', upvotes: 3, answerCount: 0, tags: [] });
     expect(question.createdAt.getHours()).toBe(9);
+    expect(question.cancerTypeId).toBeNull();
+    expect(questionFromRow({ ...questionRow, cancer_type_id: 'c1' }).cancerTypeId).toBe('c1');
   });
 
   it('builds display names', () => {
