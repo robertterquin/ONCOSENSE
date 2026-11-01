@@ -205,7 +205,8 @@ export function BottomActionBar({ children }: { children: ReactNode }) {
       style={[
         styles.bottomBar,
         {
-          backgroundColor: palette.surface,
+          // The page's own colour, so the buttons stand out; the line marks where scrolling stops.
+          backgroundColor: palette.ground,
           borderTopColor: palette.line,
           paddingBottom: Math.max(insets.bottom, space.lg) + space.sm,
         },

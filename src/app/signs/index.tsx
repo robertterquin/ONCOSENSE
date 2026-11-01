@@ -85,17 +85,20 @@ export default function SignsCheckScreen() {
           </BottomActionBar>
         ) : item ? (
           <BottomActionBar>
+            {/* Equal weight, so the app doesn't nudge the answer. */}
             <Button
               title="No"
-              variant="secondary"
+              variant="tinted"
+              accessibilityHint="None of these signs"
               onPress={() => answer(false)}
               style={styles.flex1}
             />
             <Button
-              title="Yes, I've noticed one"
-              variant="secondary"
+              title="Yes"
+              variant="tinted"
+              accessibilityHint="I've noticed one of these signs"
               onPress={() => answer(true)}
-              style={styles.flex2}
+              style={styles.flex1}
             />
           </BottomActionBar>
         ) : undefined
@@ -149,6 +152,5 @@ export default function SignsCheckScreen() {
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
-  flex2: { flex: 2 },
   sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
 });
