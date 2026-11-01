@@ -9,17 +9,15 @@ import {
   Banner,
   BottomActionBar,
   Button,
-  Icon,
   IconButton,
   ListRow,
-  ProgressSegments,
   RibbonMark,
-  Tag,
   Screen,
   Section,
   StepList,
   Text,
 } from '@/components/ui';
+import { HowDidItGo, StepProgress } from '@/components/learn/CheckSteps';
 import { SeeADoctor } from '@/components/learn/SeeADoctor';
 import { useSelfCheckGuide } from '@/hooks/usePrevention';
 import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
@@ -177,55 +175,17 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
           </Text>
         </View>
       ) : asking ? (
-        <View style={styles.change}>
-          <Text variant="heading" accessibilityRole="header">
-            How did it go?
-          </Text>
-          <Section>
-            <ListRow
-              icon="check"
-              title="Everything looked normal"
-              subtitle="The same as last time"
-              accessory={
-                changed === false ? <Icon name="check" size={22} tone="action" bold /> : <></>
-              }
-              accessibilityLabel={`Everything looked normal${changed === false ? ', selected' : ''}`}
-              onPress={() => setChanged(false)}
-            />
-            <ListRow
-              icon="circle-alert"
-              title="I noticed a change"
-              subtitle="A lump, a new spot, pain or anything different"
-              accessory={changed ? <Icon name="check" size={22} tone="action" bold /> : <></>}
-              accessibilityLabel={`I noticed a change${changed ? ', selected' : ''}`}
-              onPress={() => setChanged(true)}
-            />
-          </Section>
-          <Text variant="supporting" tone="muted">
-            Most changes aren&apos;t cancer, but a doctor should look.
-          </Text>
-        </View>
+        <HowDidItGo changed={changed} onChange={setChanged} />
       ) : (
         <>
           <Text variant="reading">{guide.description}</Text>
-          <View style={styles.progress}>
-            <View style={styles.progressLine}>
-              {steps.length ? (
-                <Text variant="caption" tone="muted">
-                  {`Step ${current + 1} of ${steps.length}`}
-                </Text>
-              ) : null}
-              <Tag tone={status.isDue ? 'due' : 'next'} label={status.label} />
-            </View>
-            {steps.length ? (
-              <ProgressSegments
-                total={steps.length}
-                done={current + 1}
-                tone="action"
-                accessibilityLabel="Self-check steps"
-              />
-            ) : null}
-          </View>
+          {steps.length ? (
+            <StepProgress
+              current={current}
+              total={steps.length}
+              tag={{ tone: status.isDue ? 'due' : 'next', label: status.label }}
+            />
+          ) : null}
           {step ? (
             <StepList steps={steps.map((s) => ({ title: s.instruction }))} current={current}>
               <Text variant="reading">{step.detail}</Text>
@@ -295,11 +255,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
   done: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
-  change: { gap: space.md, paddingTop: space.md },
   centered: { textAlign: 'center', maxWidth: 320 },
   flex2: { flex: 2 },
-  progress: { gap: space.sm },
-  progressLine: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
   // Links line up with the text above them; the pill's padding sits outside the text.
   link: { alignSelf: 'flex-start', marginLeft: -space.lg },

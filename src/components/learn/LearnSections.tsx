@@ -41,7 +41,6 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
-import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 // Learn's three lists in the redesign (docs/redesign/03-phase-3-today-and-learn.md).
 
@@ -69,43 +68,6 @@ export function GuideRow({ status }: { status: GuideStatus }) {
       accessibilityLabel={[guide.title, isDue ? label : done, subtitle].filter(Boolean).join(', ')}
       onPress={() => openGuide(guide.id)}
     />
-  );
-}
-
-/**
- * Learn › How to check: each guide as reading, without due dates. When a check is due it
- * shows on Today, and its history is in Journey.
- */
-export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
-  const focus = useFocus();
-  const inTreatment = focus === 'treatment';
-  return (
-    <Section
-      title="How to check"
-      subtitle={
-        inTreatment
-          ? 'During treatment, your care team examines you at follow-ups. Ask your doctor before checking a treated area.'
-          : 'Step-by-step guides. Due checks show on Today, and your history is in Journey.'
-      }>
-      {guides.map((guide) => (
-        <ListRow
-          key={guide.id}
-          icon={iconForCancer(guide.cancerType)}
-          iconTone="action"
-          title={guide.title}
-          subtitle={`${guide.frequency}, ${guide.steps.length} steps`}
-          onPress={() => openGuide(guide.id)}
-        />
-      ))}
-      {inTreatment ? null : (
-        <ListRow
-          title="Your cancers"
-          subtitle="Follow any cancer for its check, test or warning signs"
-          titleTone="action"
-          onPress={() => router.push('/checks')}
-        />
-      )}
-    </Section>
   );
 }
 
