@@ -8,8 +8,10 @@ import {
   BottomActionBar,
   Button,
   EmptyState,
+  ListRow,
   LoadingState,
   Screen,
+  Section,
   StepList,
   Text,
 } from '@/components/ui';
@@ -84,22 +86,29 @@ export default function SignsCheckScreen() {
             <Button title="Done" onPress={back} />
           </BottomActionBar>
         ) : item ? (
-          <BottomActionBar>
-            {/* Equal weight, so the app doesn't nudge the answer. */}
-            <Button
-              title="No"
-              variant="tinted"
-              accessibilityHint="None of these signs"
-              onPress={() => answer(false)}
-              style={styles.flex1}
-            />
-            <Button
-              title="Yes"
-              variant="tinted"
-              accessibilityHint="I've noticed one of these signs"
-              onPress={() => answer(true)}
-              style={styles.flex1}
-            />
+          // Two equal answer cards that say what happens next, so the app doesn't nudge
+          // the answer and "Yes" doesn't need the question read again.
+          <BottomActionBar stacked>
+            <Section>
+              <ListRow
+                icon="circle-check"
+                title="No, none of these"
+                subtitle={
+                  current < list.length - 1
+                    ? `Next: ${short(list[current + 1])}`
+                    : `We'll ask again in ${SIGNS_EVERY_MONTHS} months`
+                }
+                onPress={() => answer(false)}
+              />
+            </Section>
+            <Section>
+              <ListRow
+                icon="circle-alert"
+                title="Yes, I've noticed one"
+                subtitle="We'll show what to do next"
+                onPress={() => answer(true)}
+              />
+            </Section>
           </BottomActionBar>
         ) : undefined
       }>

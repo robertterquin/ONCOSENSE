@@ -104,23 +104,19 @@ export default function ScreeningScreen() {
 
   return (
     <Screen
-      back={{ label: 'Back', onPress: back }}
+      // The top-left back steps back, and leaves from the first step.
+      back={
+        current > 0
+          ? { label: `Step ${current}`, onPress: () => setCurrent(current - 1) }
+          : { label: 'Back', onPress: back }
+      }
       title={test.title}
       subtitle={`${test.howOften(age)} · ${test.who}`}
       bottomBar={
         <BottomActionBar>
-          {current > 0 ? (
-            <Button
-              title="Back"
-              variant="tinted"
-              onPress={() => setCurrent(current - 1)}
-              style={styles.flex1}
-            />
-          ) : null}
           <Button
             title={last ? doneLabel : 'Next step'}
             onPress={last ? () => setRecording(true) : () => setCurrent(current + 1)}
-            style={styles.flex2}
           />
         </BottomActionBar>
       }>
@@ -167,7 +163,5 @@ export default function ScreeningScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  flex2: { flex: 2 },
   source: { paddingTop: space.sm },
 });

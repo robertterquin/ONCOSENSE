@@ -126,35 +126,28 @@ export default function BodyCheckScreen() {
     </BottomActionBar>
   ) : asking ? (
     <BottomActionBar>
-      <Button
-        title="Back"
-        variant="tinted"
-        onPress={() => setAsking(false)}
-        style={styles.flex1}
-      />
-      <Button title="Continue" disabled={changed === null} onPress={record} style={styles.flex2} />
+      <Button title="Continue" disabled={changed === null} onPress={record} />
     </BottomActionBar>
   ) : (
     <BottomActionBar>
-      {step > 0 ? (
-        <Button
-          title="Back"
-          variant="tinted"
-          onPress={() => setStep(step - 1)}
-          style={styles.flex1}
-        />
-      ) : null}
       <Button
         title={lastStep ? `Finish ${guide.cancerType.toLowerCase()} check` : 'Next step'}
         onPress={lastStep ? () => setAsking(true) : () => setStep(step + 1)}
-        style={styles.flex2}
       />
     </BottomActionBar>
   );
+  // The top-left back steps back within a guide; a finished guide is already recorded.
+  const stepBack = finished
+    ? null
+    : asking
+      ? { label: `Step ${before + guide.steps.length}`, onPress: () => setAsking(false) }
+      : step > 0
+        ? { label: `Step ${before + step}`, onPress: () => setStep(step - 1) }
+        : null;
 
   return (
     <Screen
-      back={{ label: 'Back', onPress: back }}
+      back={stepBack ?? { label: 'Back', onPress: back }}
       title="Monthly body check"
       subtitle={subtitle}
       bottomBar={bottomBar}>
@@ -215,7 +208,6 @@ export default function BodyCheckScreen() {
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
-  flex2: { flex: 2 },
   folded: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   done: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
   centered: { textAlign: 'center', maxWidth: 320 },

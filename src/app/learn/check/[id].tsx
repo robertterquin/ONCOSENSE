@@ -109,35 +109,29 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     </BottomActionBar>
   ) : asking ? (
     <BottomActionBar>
-      <Button
-        title="Back"
-        variant="tinted"
-        onPress={() => setAsking(false)}
-        style={styles.flex1}
-      />
-      <Button title="Continue" disabled={changed === null} onPress={finish} style={styles.flex2} />
+      <Button title="Continue" disabled={changed === null} onPress={finish} />
     </BottomActionBar>
   ) : steps.length ? (
     <BottomActionBar>
-      {current > 0 ? (
-        <Button
-          title="Back"
-          variant="tinted"
-          onPress={() => goTo(current - 1)}
-          style={styles.flex1}
-        />
-      ) : null}
       <Button
         title={last ? 'Finish' : 'Next step'}
         onPress={last ? ask : () => goTo(current + 1)}
-        style={styles.flex2}
       />
     </BottomActionBar>
   ) : null;
+  // One action at the bottom; the top-left back steps back, and leaves from the first step
+  // (design refresh Phase 25).
+  const stepBack = nextCheck
+    ? null
+    : asking
+      ? { label: `Step ${steps.length}`, onPress: () => setAsking(false) }
+      : current > 0
+        ? { label: `Step ${current}`, onPress: () => goTo(current - 1) }
+        : null;
 
   return (
     <Screen
-      back={{ label: 'Back', onPress: back }}
+      back={stepBack ?? { label: 'Back', onPress: back }}
       actions={
         <>
           <IconButton
@@ -256,7 +250,6 @@ const styles = StyleSheet.create({
   flex1: { flex: 1 },
   done: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
   centered: { textAlign: 'center', maxWidth: 320 },
-  flex2: { flex: 2 },
   sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
   // Links line up with the text above them; the pill's padding sits outside the text.
   link: { alignSelf: 'flex-start', marginLeft: -space.lg },
