@@ -1,6 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { StyleSheet } from 'react-native';
 
+import { userAge } from '@/api/auth';
+import { StepProgress } from '@/components/learn/CheckSteps';
 import {
   BottomActionBar,
   Button,
@@ -10,18 +13,25 @@ import {
   Screen,
   Section,
   Sheet,
+  StepList,
   Text,
 } from '@/components/ui';
 import { useSelfChecks } from '@/hooks/useSelfChecks';
-import { formatLongDate, formatShortDate, parseDbTimestamp } from '@/lib/dates';
+import {
+  formatLongDate,
+  formatShortDate,
+  formatShortMonthDay,
+  parseDbTimestamp,
+} from '@/lib/dates';
 import { SCREENING_TESTS, screeningId } from '@/lib/screening';
+import { useUser } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
-import { userAge } from '@/api/auth';
-import { useUser } from '@/stores/authStore';
+import { space } from '@/theme/tokens';
 
-// A screening test (design refresh Phase 23): what it finds, who it's for, when it's next
-// due, where to get it, and "I've had it" with the date, which sets the next one.
+// A screening test (design refresh Phase 23; steps since Phase 25, like a self-check
+// guide): what it finds, whether it's for you, how to book it, and "I've had it" with
+// the date, which sets the next one.
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
 const findCenter = () => router.navigate({ pathname: '/help', params: { section: 'screening' } });
@@ -32,6 +42,7 @@ export default function ScreeningScreen() {
   const age = userAge(useUser());
   const status = useSelfChecks().screenings.find((item) => item.test?.id === id);
   const markDone = useSelfCheckStore((state) => state.markDone);
+  const [current, setCurrent] = useState(0);
   const [recording, setRecording] = useState(false);
   const [date, setDate] = useState(() => new Date());
 
@@ -51,35 +62,83 @@ export default function ScreeningScreen() {
     showToast(talk ? 'Noted' : `${test.title} recorded`, 'success');
   };
 
+  const next = !status
+    ? 'Follow this cancer in Your cancers to keep track.'
+    : status.due === null
+      ? `Done ${formatShortDate(status.lastDone!)}.`
+      : status.isDue
+        ? status.lastDone
+          ? `Last done ${formatShortDate(status.lastDone)}. Due now.`
+          : 'Not recorded yet. Record it once you’ve had it.'
+        : `Next on ${formatLongDate(status.due)}.`;
+  const steps = [
+    { title: 'What it finds', body: <Text variant="reading">{test.about}</Text> },
+    {
+      title: 'Is it for you',
+      body: <Text variant="reading">{`${test.who}. ${test.howOften(age)}.`}</Text>,
+    },
+    {
+      title: talk ? 'Talk to a doctor' : 'Book it',
+      body: (
+        <>
+          <Text variant="reading">{test.howToGet}</Text>
+          {talk ? null : (
+            <Button
+              title="Find a screening center"
+              icon="hospital"
+              variant="help"
+              small
+              fullWidth={false}
+              onPress={findCenter}
+            />
+          )}
+        </>
+      ),
+    },
+    {
+      title: talk ? 'Record the talk' : 'Record it when you’ve had it',
+      body: <Text variant="reading">{next}</Text>,
+    },
+  ];
+  const last = current === steps.length - 1;
+
   return (
     <Screen
       back={{ label: 'Back', onPress: back }}
       title={test.title}
-      subtitle={test.who}
+      subtitle={`${test.howOften(age)} · ${test.who}`}
       bottomBar={
         <BottomActionBar>
-          <Button title={doneLabel} variant="secondary" onPress={() => setRecording(true)} />
+          {current > 0 ? (
+            <Button
+              title="Back"
+              variant="secondary"
+              onPress={() => setCurrent(current - 1)}
+              style={styles.flex1}
+            />
+          ) : null}
+          <Button
+            title={last ? doneLabel : 'Next step'}
+            onPress={last ? () => setRecording(true) : () => setCurrent(current + 1)}
+            style={styles.flex2}
+          />
         </BottomActionBar>
       }>
-      <Text variant="reading">{test.about}</Text>
-      <Section>
-        <ListRow
-          title="Next"
-          subtitle={
-            !status
-              ? 'Follow this cancer in Your cancers to keep track'
-              : status.due === null
-                ? 'Done'
-                : status.isDue
-                  ? status.lastDone
-                    ? 'Due now'
-                    : 'Due now: not recorded yet'
-                  : formatLongDate(status.due)
-          }
-        />
-        <ListRow title="How often" subtitle={test.howOften(age)} />
-      </Section>
-      <Button title="Find a screening center" icon="hospital" variant="help" onPress={findCenter} />
+      <StepProgress
+        current={current}
+        total={steps.length}
+        tag={
+          status?.due
+            ? status.isDue
+              ? { tone: 'due', label: 'Due now' }
+              : { tone: 'next', label: `Next ${formatShortMonthDay(status.due)}` }
+            : undefined
+        }
+      />
+      <StepList steps={steps.map((step) => ({ title: step.title }))} current={current}>
+        {steps[current].body}
+      </StepList>
+
       {status?.history.length ? (
         <Section title="Your tests">
           {status.history.slice(0, 6).map((entry) => (
@@ -87,7 +146,7 @@ export default function ScreeningScreen() {
           ))}
         </Section>
       ) : null}
-      <Text variant="supporting" tone="muted">
+      <Text variant="supporting" tone="muted" style={styles.source}>
         Source: {test.source}. Ask a doctor what suits you; this is general information.
       </Text>
 
@@ -106,3 +165,9 @@ export default function ScreeningScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  flex1: { flex: 1 },
+  flex2: { flex: 2 },
+  source: { paddingTop: space.sm },
+});

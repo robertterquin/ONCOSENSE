@@ -2,13 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { ProfileButton } from '@/components/account/ProfileButton';
-import {
-  CancerTypes,
-  ForYou,
-  GuideResults,
-  HabitResults,
-  HowToCheck,
-} from '@/components/learn/LearnSections';
+import { CancerTypes, ForYou, GuideResults, HabitResults } from '@/components/learn/LearnSections';
 import {
   EmptyState,
   ErrorState,
@@ -17,7 +11,6 @@ import {
   useArrival,
   Screen,
   SearchField,
-  SegmentedControl,
 } from '@/components/ui';
 import { userAge, userGender } from '@/api/auth';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
@@ -30,26 +23,19 @@ import { useUser } from '@/stores/authStore';
 import { useHabitsStore } from '@/stores/habitsStore';
 
 // The Learn tab (redesign Phase 3; reading only since design refresh Phase 19): cancer
-// types, how to do each self-check, and why each habit helps, with one search over all
-// three. Due checks and habit ticks live on Today; their history is in Journey.
-// `?section=cancers`, `?section=checks` or `?section=risk` opens a part directly.
-
-type Part = 'cancers' | 'checks';
-const PART_FOR_SECTION: Record<string, Part> = {
-  cancers: 'cancers',
-  checks: 'checks',
-};
+// types, with one search over cancers, self-check guides and habits. Each cancer's page
+// has a "Check for it" row (design refresh Phase 25), so there's no separate list of
+// checks; due checks and habit ticks live on Today, their history in Journey.
+// `?section=risk` opens Habits.
 
 export default function LearnTab() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const [search, setSearch] = useState('');
   const cancers = useCancerTypes();
   const checks = useSelfChecks();
-  const [part, setPart] = useState<Part>('cancers');
   const user = useUser();
   const focus = useFocus();
   const showChecks = focus !== 'treatment';
-  const activePart: Part = !showChecks && part === 'checks' ? 'cancers' : part;
   const myCancerId = useMyCancerId();
   const smoker = useHabitsStore((state) => state.smoker);
 
@@ -61,12 +47,9 @@ export default function LearnTab() {
         router.push('/habits');
         return;
       }
-      if (!section || !PART_FOR_SECTION[section]) return;
-      const nextPart = PART_FOR_SECTION[section];
-      setPart(!showChecks && nextPart === 'checks' ? 'cancers' : nextPart);
-      // Used once, so coming back through the tab bar keeps the part the person picked.
-      router.setParams({ section: undefined });
-    }, [section, showChecks]),
+      // Older links (`?section=cancers` or `checks`) just land on Learn.
+      if (section) router.setParams({ section: undefined });
+    }, [section]),
   );
 
   const queries = [cancers, checks.query];
@@ -106,17 +89,6 @@ export default function LearnTab() {
         value={search}
         onChangeText={setSearch}
       />
-      {query || !showChecks ? null : (
-        <SegmentedControl<Part>
-          accessibilityLabel="Learn section"
-          value={activePart}
-          onChange={setPart}
-          options={[
-            { value: 'cancers', label: 'Cancers' },
-            { value: 'checks', label: 'Checks' },
-          ]}
-        />
-      )}
 
       {queries.some((q) => q.isPending) ? (
         <LoadingState variant="learn" message="Loading Learn" />
@@ -146,19 +118,14 @@ export default function LearnTab() {
               ) : null}
             </>
           ) : (
-            {
-              checks: <HowToCheck guides={lists.guides} />,
-              cancers: (
-                <>
-                  <ForYou
-                    picks={picks}
-                    myCancer={myCancer}
-                    askCancer={asksWhichCancer(focus) && !myCancerId}
-                  />
-                  <CancerTypes cancers={lists.cancers} title="All cancers" />
-                </>
-              ),
-            }[activePart]
+            <>
+              <ForYou
+                picks={picks}
+                myCancer={myCancer}
+                askCancer={asksWhichCancer(focus) && !myCancerId}
+              />
+              <CancerTypes cancers={lists.cancers} title="All cancers" />
+            </>
           )}
         </Arrive>
       )}

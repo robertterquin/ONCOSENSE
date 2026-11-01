@@ -26,6 +26,8 @@ export type ScreeningTest = {
   title: string;
   /** What the test finds, in a sentence or two. */
   about: string;
+  /** Where and how to get it (the "Book it" step). */
+  howToGet: string;
   who: string;
   /** Months between tests by age; null for a one-off talk with a doctor. */
   months: (age: number | null) => number | null;
@@ -46,6 +48,8 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     about:
       "Finds the virus that causes most cervical cancers, before any cell changes. If HPV testing isn't available, a VIA or Pap smear works too.",
     who: 'Women 25 to 65',
+    howToGet:
+      'Ask a health center or a gynecologist. It takes a few minutes, and some places let you take the sample yourself.',
     months: () => 60,
     howOften: () => 'Every 5 years (Pap smear: every 3)',
     eligible: (age) => within(age, 25, 65),
@@ -58,6 +62,7 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     about:
       'An X-ray of the breast that can find cancer before a lump can be felt. From 40 you can choose to start; from 45 it is recommended.',
     who: 'Women 45 and over (from 40 if you choose)',
+    howToGet: 'Book it at a hospital or imaging center. It takes about 20 minutes.',
     months: (age) => (age !== null && age >= 55 ? 24 : 12),
     howOften: (age) => (age !== null && age >= 55 ? 'Every 2 years' : 'Every year'),
     eligible: (age) => within(age, 40),
@@ -70,6 +75,7 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     about:
       'A test you do at home and send to a lab, which finds hidden blood from polyps or cancer. A colonoscopy every 10 years is the other choice.',
     who: 'Adults 45 to 75',
+    howToGet: 'Ask a health center for a test kit. You do it at home and send it to a lab.',
     months: () => 12,
     howOften: () => 'Every year (colonoscopy: every 10 years)',
     eligible: (age) => within(age, 45, 75),
@@ -81,6 +87,8 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     title: 'Low-dose CT scan',
     about: 'A quick scan of the lungs that finds cancer early in people who have smoked heavily.',
     who: 'Ages 50 to 80 who smoked heavily, now or in the last 15 years',
+    howToGet:
+      'Ask a doctor to refer you to a hospital that does low-dose CT. The scan takes a few minutes.',
     months: () => 12,
     howOften: () => 'Every year',
     eligible: (age, answers) => answers.heavySmoker === 'yes' && within(age, 50, 80),
@@ -93,6 +101,8 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     about:
       'An ultrasound, often with an AFP blood test, that finds liver cancer early in people with hepatitis B or C, or cirrhosis.',
     who: 'People with hepatitis B or C, or cirrhosis',
+    howToGet:
+      'Ask the doctor who looks after your liver. It is often booked with an AFP blood test.',
     months: () => 6,
     howOften: () => 'Every 6 months',
     eligible: (_age, answers) => answers.hepatitis === 'yes',
@@ -105,6 +115,7 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     about:
       "A PSA blood test can find prostate cancer early, but it can also lead to treatment you don't need. Whether to have it is a choice to make with your doctor.",
     who: 'Men 50 and over (45 if a father or brother had it)',
+    howToGet: 'Bring it up at your next check-up and ask about the benefits and harms for you.',
     months: () => null,
     howOften: () => 'Once, then as your doctor advises',
     eligible: (age) => within(age, 50),
@@ -152,6 +163,19 @@ export function actionsFor(
     }
   }
   return actions.length ? actions : [{ kind: 'signs' }];
+}
+
+/**
+ * The one check to open for a cancer ("Check for it" on its page, design refresh Phase 25):
+ * its screening test when this person is offered one, else its self-check, else its signs.
+ */
+export function primaryAction(
+  cancer: CancerKey,
+  age: number | null,
+  answers: ScreeningAnswers,
+): CancerAction {
+  const actions = actionsFor(cancer, age, answers);
+  return actions.find((action) => action.kind === 'screening') ?? actions[0];
 }
 
 /**

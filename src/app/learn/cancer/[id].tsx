@@ -15,21 +15,26 @@ import {
   Section,
   Text,
 } from '@/components/ui';
+import { userAge } from '@/api/auth';
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { useCancerType, useCancerTypes } from '@/hooks/useCancerInfo';
 import { useQuestions } from '@/hooks/useCommunity';
 import { useFocus } from '@/hooks/useFocus';
 import { useAllResources } from '@/hooks/useResources';
+import { useFollowedCancers } from '@/hooks/useSelfChecks';
 import { cancerKeyword, supportGroupsFor } from '@/lib/help';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
 import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
-import { useIsSignedIn } from '@/stores/authStore';
+import { primaryAction } from '@/lib/screening';
+import { useIsSignedIn, useUser } from '@/stores/authStore';
+import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
+import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 // A cancer type in Learn (redesign Phase 3, header from design refresh Phase 8): the
 // header names the cancer and its body system; number tiles count what's on the page and
@@ -85,7 +90,8 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   const focus = useFocus();
   const showChecks = focus !== 'treatment';
   const guides = useSelfCheckGuides();
-  const guide = showChecks && guides.data ? guideForCancer(guides.data, cancer) : null;
+  const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
+  const check = useCheckFor(cancer, guide);
   const resources = useAllResources();
   const cancerNames = (useCancerTypes().data ?? []).map((type) => type.name);
   const groups = supportGroupsFor(cancer.name, resources.data?.supportGroups ?? [], cancerNames);
@@ -153,28 +159,33 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
         })}
       </View>
 
-      {guide ? (
+      {showChecks && check ? (
         <View
           style={[
             styles.selfCheck,
             { backgroundColor: palette.panel, borderColor: palette.tintEdge },
           ]}>
           <View style={styles.checkText}>
+            <Text variant="caption" tone="onPanelMuted">
+              Check for it
+            </Text>
             <Text variant="strong" tone="onPanel">
-              {guide.title}
+              {check.title}
             </Text>
             <Text variant="caption" tone="onPanelMuted">
-              {guide.frequency}, about 10 minutes
+              {check.detail}
             </Text>
           </View>
-          <Button
-            title="Start"
-            variant="onPanel"
-            small
-            fullWidth={false}
-            accessibilityHint={`Opens the ${guide.title} guide`}
-            onPress={() => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } })}
-          />
+          {check.open ? (
+            <Button
+              title="Start"
+              variant="onPanel"
+              small
+              fullWidth={false}
+              accessibilityHint={`Opens ${check.title}`}
+              onPress={check.open}
+            />
+          ) : null}
         </View>
       ) : null}
 
@@ -304,3 +315,41 @@ const styles = StyleSheet.create({
   afterList: { marginTop: space.sm },
   footer: { paddingTop: space.lg },
 });
+
+/**
+ * The one check for a cancer (design refresh Phase 25), in the same steps as a self-check
+ * guide: its screening test when this person is offered one, else its self-check, else
+ * its signs. After treatment, their own cancer's follow-up is the care team's.
+ */
+function useCheckFor(
+  cancer: CancerType,
+  guide: SelfCheckGuide | null,
+): { title: string; detail: string; open?: () => void } | null {
+  const age = userAge(useUser());
+  const answers = useSelfCheckStore((state) => state.answers);
+  const { careTeamCancer } = useFollowedCancers();
+  const key = cancerKeyword(cancer.name);
+  if (key === careTeamCancer) {
+    return { title: 'Your follow-up', detail: 'Set by your care team' };
+  }
+  const action = primaryAction(key, age, answers);
+  if (action.kind === 'screening') {
+    return {
+      title: action.test.title,
+      detail: action.test.howOften(age),
+      open: () => router.push({ pathname: '/screening/[id]', params: { id: action.test.id } }),
+    };
+  }
+  if (action.kind === 'self-check' && guide) {
+    return {
+      title: guide.title,
+      detail: `${guide.frequency}, ${guide.steps.length} steps`,
+      open: () => router.push({ pathname: '/learn/check/[id]', params: { id: guide.id } }),
+    };
+  }
+  return {
+    title: 'Signs check',
+    detail: 'Any of its signs lasting 2 weeks or more?',
+    open: () => router.push({ pathname: '/signs', params: { cancer: key } }),
+  };
+}

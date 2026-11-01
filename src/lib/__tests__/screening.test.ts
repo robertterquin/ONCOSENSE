@@ -4,6 +4,7 @@ import {
   defaultFollowed,
   followSummary,
   nextDueAfter,
+  primaryAction,
 } from '../screening';
 
 const kinds = (cancer: string, age: number | null, answers = {}) =>
@@ -94,5 +95,19 @@ describe('cancerAppliesToSex', () => {
     expect(cancerAppliesToSex('breast', null)).toBe(true);
     expect(cancerAppliesToSex('cervical', null)).toBe(true);
     expect(cancerAppliesToSex('prostate', null)).toBe(true);
+  });
+});
+
+describe('primaryAction', () => {
+  const kind = (cancer: string, age: number | null, answers = {}) => {
+    const action = primaryAction(cancer, age, answers);
+    return action.kind === 'screening' ? action.test.id : action.kind;
+  };
+
+  it('opens the test when one is offered, else the self-check, else the signs', () => {
+    expect(kind('breast', 47)).toBe('mammogram');
+    expect(kind('breast', 30)).toBe('self-check');
+    expect(kind('ovarian', 30)).toBe('signs');
+    expect(kind('lung', 60, { heavySmoker: 'yes' })).toBe('lung-ct');
   });
 });

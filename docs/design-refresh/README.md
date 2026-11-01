@@ -57,6 +57,7 @@ Three supporting changes:
 | 22 | Self-checks that react to what you find | [22-phase-22-self-check-fixes.md](22-phase-22-self-check-fixes.md) | 1 day | Merged into `main` |
 | 23 | Your cancers | [23-phase-23-your-cancers.md](23-phase-23-your-cancers.md) | 1 day | Merged into `main` |
 | 24 | Your checks, bundled | [24-phase-24-checks.md](24-phase-24-checks.md) | 1 day | Merged into `main` |
+| 25 | Every check, step by step | [25-phase-25-step-by-step-checks.md](25-phase-25-step-by-step-checks.md) | 1 day | Merged into `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -88,3 +89,4 @@ Same as the redesign:
 | 2026-11-01 | People follow any cancer; each gets a self-check, a screening test, a talk with a doctor, or its warning signs | Only four cancers have a self-check; a monthly "check" for the others would have looked like protection without being one | Robert |
 | 2026-11-01 | Two user types: "I have or had cancer" (then in treatment or finished) and "I don't have cancer"; caregiver mode retired | A narrower first release; caring mostly changed wording, while treatment and finished drive different checks and habits. Caregiver accounts read as Learning, keep their data, and see a one-time note | Robert |
 | 2026-11-02 | Checks bundle into a monthly body check, each test, and a signs check every 3 months, on one calendar card; cancers are chosen at sign-up with a soft "3 or fewer" | The calendar only showed self-checks, and a hard limit of 3 would crowd out family history; guidelines favour body awareness over set self-exams | Robert |
+| 2026-11-02 | Every check uses the self-check guide's step layout; Learn drops its Checks list for one "Check for it" card per cancer | The body check, tests and signs check each looked different, and Learn listed guides already reached from Today and each cancer page | Robert |
