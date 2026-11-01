@@ -120,6 +120,8 @@ export type ForgotPasswordForm = z.input<typeof forgotPasswordSchema>;
 
 export const askQuestionSchema = z.object({
   category: z.string(),
+  /** A cancer's ID, or 'none'. */
+  cancerTypeId: z.string(),
   title: z
     .string()
     .trim()

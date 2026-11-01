@@ -56,11 +56,10 @@ export default function CommunityTab() {
   const cancerFilter = myCancer && onMyCancer && !searchQuery && !category ? myCancer : null;
   // Keep "2 minutes ago" fresh.
   const now = useNow(10_000);
-  // shortcut: matches the cancer's name in the question's words; use a cancer tag once
-  // questions have one (Phase 21).
   const questions = useQuestions({
     category,
-    searchQuery: searchQuery ?? (cancerFilter ? cancerKeyword(cancerFilter.name) : null),
+    searchQuery,
+    cancer: cancerFilter && { id: cancerFilter.id, keyword: cancerKeyword(cancerFilter.name) },
     sortBy: 'recent',
   });
 

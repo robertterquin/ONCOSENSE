@@ -9,19 +9,23 @@ import {
   ErrorState,
   Icon,
   LoadingState,
+  ListRow,
   PressableScale,
   Screen,
   Section,
   Text,
 } from '@/components/ui';
+import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { useCancerType, useCancerTypes } from '@/hooks/useCancerInfo';
+import { useQuestions } from '@/hooks/useCommunity';
 import { useAllResources } from '@/hooks/useResources';
-import { supportGroupsFor } from '@/lib/help';
+import { cancerKeyword, supportGroupsFor } from '@/lib/help';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
 import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
 import { openWebPage } from '@/lib/links';
+import { useIsSignedIn } from '@/stores/authStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
@@ -82,6 +86,11 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   const resources = useAllResources();
   const cancerNames = (useCancerTypes().data ?? []).map((type) => type.name);
   const groups = supportGroupsFor(cancer.name, resources.data?.supportGroups ?? [], cancerNames);
+  const signedIn = useIsSignedIn();
+  const questions = useQuestions({
+    cancer: { id: cancer.id, keyword: cancerKeyword(cancer.name) },
+    limit: 3,
+  });
   const system = bodySystemForCancer(cancer.name);
   const statistic = firstSentence(cancer.statistics);
   const scrollRef = useRef<ScrollViewInstance | null>(null);
@@ -194,6 +203,22 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           <Text variant="reading">{guide?.whenToSeeDoctor || GENERAL_DOCTOR_ADVICE}</Text>
         </Topic>
       </View>
+
+      <Section title={`Questions about ${cancer.name.toLowerCase()}`}>
+        {(questions.data ?? []).map((question) => (
+          <QuestionRow key={question.id} question={question} now={new Date()} />
+        ))}
+        <ListRow
+          icon="message"
+          title={signedIn ? `Ask about ${cancer.name.toLowerCase()}` : 'Sign in to ask a question'}
+          titleTone="action"
+          onPress={() =>
+            signedIn
+              ? router.push({ pathname: '/community/ask', params: { cancer: cancer.id } })
+              : router.push('/login')
+          }
+        />
+      </Section>
 
       {groups.length ? (
         <Section

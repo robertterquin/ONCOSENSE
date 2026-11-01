@@ -29,6 +29,8 @@ function questionFromBookmark(row: Row): Question {
     updatedAt: parseDbTimestamp(row.question_updated_at as string),
     isResolved: booleanOr(row, 'is_resolved', false),
     tags: stringArray(row, 'tags'),
+    // A saved copy doesn't keep this; the question itself has it.
+    cancerTypeId: null,
   };
 }
 

@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 
 import { ListRow, PickerRow, Screen, Section, Switch, Text, TextField } from '@/components/ui';
 import { askQuestionSchema, type AskQuestionForm } from '@/constants/validation';
+import { useCancerTypes, useMyCancer } from '@/hooks/useCancerInfo';
 import { useAskQuestion } from '@/hooks/useCommunity';
 import { useCommunityStore } from '@/stores/communityStore';
 import { showToast } from '@/stores/toastStore';
@@ -12,11 +13,17 @@ import { space } from '@/theme/tokens';
 import { FORUM_CATEGORIES } from '@/types/question';
 
 // Ask the community (redesign Phase 5, a sheet since Phase 18). Anonymous by default;
-// the guard reminder is the footnote under the form.
+// the guard reminder is the footnote under the form. "Which cancer?" (Phase 21) starts on
+// the cancer page it was opened from, else the person's own cancer.
+
+const NO_CANCER = 'none';
 
 const close = () => (router.canGoBack() ? router.back() : router.replace('/community'));
 
 export default function AskScreen() {
+  const { cancer: fromPage } = useLocalSearchParams<{ cancer?: string }>();
+  const myCancer = useMyCancer();
+  const cancers = [...(useCancerTypes().data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
   const ask = useAskQuestion();
   const anonymousByDefault = useCommunityStore((state) => state.anonymousByDefault);
   const rememberAnonymous = useCommunityStore((state) => state.setAnonymousByDefault);
@@ -24,6 +31,7 @@ export default function AskScreen() {
     resolver: zodResolver(askQuestionSchema),
     defaultValues: {
       category: 'Symptoms',
+      cancerTypeId: fromPage ?? myCancer?.id ?? NO_CANCER,
       title: '',
       content: '',
       isAnonymous: anonymousByDefault,
@@ -37,6 +45,7 @@ export default function AskScreen() {
         content: form.content.trim(),
         category: form.category,
         isAnonymous: form.isAnonymous,
+        cancerTypeId: form.cancerTypeId === NO_CANCER ? null : form.cancerTypeId,
       },
       {
         onSuccess: () => {
@@ -69,6 +78,21 @@ export default function AskScreen() {
                 value={field.value}
                 onChange={field.onChange}
                 options={FORUM_CATEGORIES.map((topic) => ({ value: topic, label: topic }))}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="cancerTypeId"
+            render={({ field }) => (
+              <PickerRow
+                label="Which cancer?"
+                value={field.value}
+                onChange={field.onChange}
+                options={[
+                  { value: NO_CANCER, label: 'Not about one cancer' },
+                  ...cancers.map((cancer) => ({ value: cancer.id, label: cancer.name })),
+                ]}
               />
             )}
           />
