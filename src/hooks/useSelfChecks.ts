@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { userAge, userGender } from '@/api/auth';
+import { checkItems } from '@/lib/checks';
 import { rescheduleSelfCheckReminder } from '@/lib/notifications/service';
 import { parseDbTimestamp } from '@/lib/dates';
 import { cancerKeyword } from '@/lib/help';
@@ -16,7 +17,6 @@ import {
   type ScreeningTest,
 } from '@/lib/screening';
 import {
-  chooseNextStep,
   chosenGuides,
   dueLabel,
   historyFor,
@@ -170,7 +170,8 @@ export function useSelfChecks(now: Date = new Date()) {
     screenings: follows.filter((item) => item.test),
     /** Warning-signs prompts for followed cancers with no check or test. */
     signs: follows.filter((item) => !item.test),
-    nextStep: chooseNextStep(mine, state, now),
+    /** Everything above bundled for Today: one body check, each test, one signs check. */
+    items: checkItems({ guides: mine, followed, age, answers: state.answers, state, now }),
     /** A due check was put off with "Remind me tomorrow". */
     snoozed: isSnoozed(state, now),
     status,

@@ -2,54 +2,94 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, RibbonMark, Text } from '@/components/ui';
-import type { GuideStatus } from '@/hooks/useSelfChecks';
+import type { CheckItem, CheckKind } from '@/lib/checks';
 import { addDays, formatShortMonthDay } from '@/lib/dates';
-import {
-  checkStatusLabel,
-  formatMonth,
-  formatMonthDay,
-  formatWeekdayDate,
-  startOfDay,
-} from '@/lib/selfCheck';
+import { formatMonth, formatWeekdayDate, startOfDay } from '@/lib/selfCheck';
 import { elevation } from '@/theme/elevation';
+import type { Palette } from '@/theme/palette';
 import { radii, sizes, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
-// Today's checks card: flat night violet, a small outline ribbon, and words doing the
-// work. While a check is waiting it lists every check with Start on the one that has
-// waited longest; when all are done it shows the week the next check falls in.
+// Today's checks card (design refresh Phase 24): flat night violet with a week strip.
+// It covers everything the person follows, bundled (lib/checks.ts): a dot on each day
+// something is due, colored by kind, and up to three items underneath. With something
+// due this week it shows this week; otherwise the week of the next check.
 
 const LINE = 'rgba(255, 255, 255, 0.14)';
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const MAX_LISTED = 3;
+
+const KIND_LABEL: Record<CheckKind, string> = {
+  test: 'Test',
+  body: 'Body check',
+  signs: 'Signs check',
+};
+const kindColor = (kind: CheckKind, palette: Palette) =>
+  kind === 'test' ? palette.sun : kind === 'body' ? palette.onPanelAccent : palette.help;
+
+export const openCheck = (item: CheckItem) => {
+  if (item.kind === 'body') router.push('/body-check');
+  else if (item.kind === 'signs') router.push('/signs');
+  else router.push({ pathname: '/screening/[id]', params: { id: item.testId! } });
+};
+
+/** "stool test", "monthly body check", but "HPV test". */
+const lowerFirst = (text: string) =>
+  /^[A-Z][A-Z]/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1);
 
 type ChecksCardProps = {
-  checks: GuideStatus[];
+  items: CheckItem[];
   snoozed: boolean;
   onSnooze: () => void;
   now: Date;
 };
 
-export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) {
+export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
   const { palette, isDark } = useDesign();
-  const byDue = [...checks].sort((a, b) => a.due.getTime() - b.due.getTime());
-  const waiting = byDue.filter((check) => check.isDue);
-  const allDone = waiting.length === 0;
-  const startId = waiting[0]?.guide.id;
-  const open = (id: string) => router.push({ pathname: '/learn/check/[id]', params: { id } });
-  const next = byDue[0];
+  const today = startOfDay(now);
+  const sunday = addDays(today, -today.getDay());
+  const saturday = addDays(sunday, 6);
+  const scheduled = items.filter((item): item is CheckItem & { due: Date } => item.due !== null);
+  const thisWeek = scheduled.filter((item) => item.due.getTime() <= saturday.getTime());
+  const anyDue = thisWeek.some((item) => item.isDue);
+  // A noted change (design refresh Phase 22) matters more than any date.
+  const changed = items.find((item) => item.changeNoted);
 
-  const title = allDone ? `Done for ${formatMonth(now)}` : 'Your checks';
-  const done =
-    checks.length === 1 ? 'Your check is done.' : `All ${checks.length} checks are done.`;
-  // A noted change (design refresh Phase 22) matters more than the next date.
-  const changed = checks.find((check) => check.changeNoted);
+  // The week shown: this one, or the one the next check falls in.
+  const next = scheduled[0] ? startOfDay(scheduled[0].due) : null;
+  const weekStart = thisWeek.length || !next ? sunday : addDays(next, -next.getDay());
+  const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+  // Overdue checks sit on today.
+  const dayOf = (item: CheckItem & { due: Date }) =>
+    Math.max(startOfDay(item.due).getTime(), today.getTime());
+  const listed = thisWeek.length
+    ? thisWeek
+    : scheduled.filter((item) => next && startOfDay(item.due).getTime() === next.getTime());
+  const highlight = thisWeek.length ? today.getTime() : next?.getTime();
+
+  const title = changed
+    ? 'You noted a change'
+    : thisWeek.length
+      ? `${thisWeek.length} check${thisWeek.length === 1 ? '' : 's'} this week`
+      : "You're up to date";
   const body = changed
-    ? `You noted a change in your ${changed.guide.cancerType.toLowerCase()} check. See a doctor soon.`
-    : allDone
-      ? `${done} The next one is your ${next.guide.cancerType.toLowerCase()} check on ${formatWeekdayDate(next.due)}.`
-      : snoozed
+    ? `In your ${lowerFirst(changed.title)}. See a doctor soon.`
+    : thisWeek.length
+      ? snoozed && anyDue
         ? "We'll remind you tomorrow."
-        : `${checks.length - waiting.length} of ${checks.length} done. About 10 minutes each.`;
+        : thisWeek
+            .slice(0, 2)
+            .map(
+              (item) =>
+                `Your ${lowerFirst(item.title)} ${
+                  item.isDue ? 'is due now' : `is on ${formatWeekdayDate(item.due).split(',')[0]}`
+                }.`,
+            )
+            .join(' ')
+      : next
+        ? `Next: ${listed.map((item) => lowerFirst(item.title)).join(' and ')} on ${formatWeekdayDate(next)}.`
+        : 'Nothing is due.';
+  const kinds = [...new Set(listed.map((item) => item.kind))];
 
   return (
     <View
@@ -70,42 +110,93 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
         </Text>
       </View>
 
-      {allDone ? (
-        <Week checks={byDue} />
-      ) : (
-        <View>
-          {checks.map((check) => {
-            const label = check.changeNoted
-              ? 'Change noted, see a doctor'
-              : checkStatusLabel(check.lastDone, check.due, now);
-            return (
-              <View key={check.guide.id} style={styles.row}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`${check.guide.title}, ${label}`}
-                  onPress={() => open(check.guide.id)}
-                  style={({ pressed }) => [styles.rowMain, pressed && styles.pressed]}>
-                  <Text variant="row" tone="onPanel">
-                    {check.guide.cancerType}
+      {next || thisWeek.length ? (
+        <View style={styles.week}>
+          {thisWeek.length ? null : (
+            <Text variant="caption" tone="onPanelMuted">
+              {`Next check · ${formatMonth(next!)}`}
+            </Text>
+          )}
+          <View
+            style={styles.days}
+            accessible
+            accessibilityLabel={listed
+              .map((item) => `${item.title}, ${formatShortMonthDay(new Date(dayOf(item)))}`)
+              .join('; ')}>
+            {days.map((day) => {
+              const onDay = listed.filter((item) => dayOf(item) === day.getTime());
+              const marked = day.getTime() === highlight;
+              return (
+                <View key={day.getTime()} style={styles.day}>
+                  <Text variant="caption" tone="onPanelMuted">
+                    {DAY_NAMES[day.getDay()]}
                   </Text>
-                  <Text variant="caption" tone={check.isDue ? 'onPanelAccent' : 'onPanelMuted'}>
-                    {label}
+                  <View style={[styles.date, marked && { backgroundColor: palette.onPanelAccent }]}>
+                    <Text variant="row" color={marked ? palette.panel : palette.onPanel}>
+                      {day.getDate()}
+                    </Text>
+                  </View>
+                  <View style={styles.dots}>
+                    {[...new Set(onDay.map((item) => item.kind))].map((kind) => (
+                      <View
+                        key={kind}
+                        style={[styles.dot, { backgroundColor: kindColor(kind, palette) }]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+          {kinds.length > 1 ? (
+            <View style={styles.legend} {...{ accessibilityElementsHidden: true }}>
+              {kinds.map((kind) => (
+                <View key={kind} style={styles.legendItem}>
+                  <View style={[styles.dot, { backgroundColor: kindColor(kind, palette) }]} />
+                  <Text variant="caption" tone="onPanelMuted">
+                    {KIND_LABEL[kind]}
                   </Text>
-                </Pressable>
-                {check.guide.id === startId ? (
-                  <Button
-                    title="Start"
-                    variant="onPanel"
-                    small
-                    accessibilityHint={`Starts the ${check.guide.title}`}
-                    onPress={() => open(check.guide.id)}
-                  />
-                ) : null}
-              </View>
-            );
-          })}
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
-      )}
+      ) : null}
+
+      <View>
+        {listed.slice(0, MAX_LISTED).map((item) => (
+          <Pressable
+            key={item.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.title}, ${item.isDue ? 'due now' : formatShortMonthDay(item.due)}`}
+            onPress={() => openCheck(item)}
+            style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
+            <View style={[styles.dot, { backgroundColor: kindColor(item.kind, palette) }]} />
+            <View style={styles.rowMain}>
+              <Text variant="row" tone="onPanel">
+                {item.title}
+              </Text>
+              <Text variant="caption" tone={item.isDue ? 'onPanelAccent' : 'onPanelMuted'}>
+                {item.isDue
+                  ? `Due now · ${item.detail}`
+                  : `${formatShortMonthDay(item.due)} · ${item.detail}`}
+              </Text>
+            </View>
+            <Text variant="supporting" tone="onPanelAccent">
+              Open
+            </Text>
+          </Pressable>
+        ))}
+        {listed.length > MAX_LISTED ? (
+          <Button
+            title={`${listed.length - MAX_LISTED} more`}
+            variant="onPanelAccent"
+            small
+            style={styles.link}
+            onPress={() => router.navigate('/journey')}
+          />
+        ) : null}
+      </View>
 
       {changed ? (
         <Button
@@ -115,84 +206,25 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
           style={styles.link}
           onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
         />
-      ) : allDone ? (
+      ) : anyDue ? (
+        snoozed ? null : (
+          <Button
+            title="Remind me tomorrow"
+            variant="onPanelAccent"
+            small
+            style={styles.link}
+            onPress={onSnooze}
+          />
+        )
+      ) : (
         <Button
-          title="Learn the early signs"
+          title="Your cancers"
           variant="onPanelAccent"
           small
           style={styles.link}
-          onPress={() => router.navigate({ pathname: '/learn', params: { section: 'cancers' } })}
-        />
-      ) : snoozed ? null : (
-        <Button
-          title="Remind me tomorrow"
-          variant="onPanelAccent"
-          small
-          style={styles.link}
-          onPress={onSnooze}
+          onPress={() => router.push('/checks')}
         />
       )}
-    </View>
-  );
-}
-
-/**
- * The week (Sunday to Saturday) the next check falls in: its day filled, other checks
- * that week outlined, and the checks named underneath.
- */
-function Week({ checks }: { checks: GuideStatus[] }) {
-  const { palette } = useDesign();
-  const next = startOfDay(checks[0].due);
-  const sunday = addDays(next, -next.getDay());
-  const days = Array.from({ length: 7 }, (_, index) => addDays(sunday, index));
-  const thisWeek = checks.filter((check) => {
-    const due = startOfDay(check.due).getTime();
-    return due >= sunday.getTime() && due <= days[6].getTime();
-  });
-  const isCheckDay = (day: Date) =>
-    thisWeek.some((check) => startOfDay(check.due).getTime() === day.getTime());
-  const sameDay = thisWeek.every((check) => startOfDay(check.due).getTime() === next.getTime());
-  const summary = sameDay
-    ? `Due ${formatShortMonthDay(next)}: ${thisWeek.map((check) => check.guide.cancerType).join(', ')}`
-    : thisWeek
-        .map((check) => `${check.guide.cancerType} (${formatShortMonthDay(check.due)})`)
-        .join(', ');
-  return (
-    <View
-      accessible
-      accessibilityLabel={`Coming up: ${thisWeek
-        .map((check) => `${check.guide.cancerType}, ${formatMonthDay(check.due)}`)
-        .join('; ')}`}
-      style={styles.week}>
-      <Text variant="caption" tone="onPanelMuted">
-        {`Next check · ${formatMonth(next)}`}
-      </Text>
-      <View style={styles.days}>
-        {days.map((day) => {
-          const isNext = day.getTime() === next.getTime();
-          return (
-            <View key={day.getTime()} style={styles.day}>
-              <Text variant="caption" tone="onPanelMuted">
-                {DAY_NAMES[day.getDay()]}
-              </Text>
-              <View
-                style={[
-                  styles.date,
-                  isNext && { backgroundColor: palette.onPanelAccent },
-                  !isNext && isCheckDay(day) && styles.outlined,
-                  !isNext && isCheckDay(day) && { borderColor: palette.onPanelAccent },
-                ]}>
-                <Text variant="row" color={isNext ? palette.panel : palette.onPanel}>
-                  {day.getDate()}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
-      </View>
-      <Text variant="supporting" tone="onPanelAccent">
-        {summary}
-      </Text>
     </View>
   );
 }
@@ -207,17 +239,8 @@ const styles = StyleSheet.create({
   ribbon: { position: 'absolute', right: space.xl, top: space.xl },
   // Clear of the ribbon.
   header: { gap: space.xs, paddingRight: space.xxl + space.sm },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    borderTopWidth: 1,
-    borderTopColor: LINE,
-  },
-  rowMain: { flex: 1, gap: 2, minHeight: sizes.touch, paddingVertical: space.md },
-  pressed: { opacity: 0.6 },
   week: {
-    gap: space.md,
+    gap: space.sm,
     borderTopWidth: 1,
     borderTopColor: LINE,
     paddingTop: space.md,
@@ -231,7 +254,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  outlined: { borderWidth: 1.5 },
+  dots: { flexDirection: 'row', gap: 3, height: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    borderTopWidth: 1,
+    borderTopColor: LINE,
+    minHeight: sizes.touch,
+  },
+  rowMain: { flex: 1, gap: 2, paddingVertical: space.md },
+  pressed: { opacity: 0.6 },
   // A text link under the content, lined up with it (the pill's padding sits outside).
   link: { alignSelf: 'flex-start', marginLeft: -space.lg },
 });

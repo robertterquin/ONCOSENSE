@@ -108,6 +108,40 @@ export function lastSevenDays(entries: JourneyEntry[], now: Date = new Date()): 
   };
 }
 
+/**
+ * The last `count` weeks (this week last), for people who finished treatment and check in
+ * weekly. Each point averages that week's check-ins; `date` is the week's first day and
+ * `entry` its latest check-in.
+ */
+export function lastWeeks(entries: JourneyEntry[], now: Date = new Date(), count = 8): WeekSummary {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const average = (values: number[]) =>
+    values.length
+      ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+      : null;
+  const weeks = Array.from({ length: count }, (_, index) => {
+    const date = addDays(today, -7 * (count - index) + 1);
+    const end = addDays(date, 7);
+    // Entries come newest first, so the first match is the week's latest.
+    const inWeek = entries.filter((entry) => entry.date >= date && entry.date < end);
+    return {
+      date,
+      energy: average(inWeek.map((entry) => entry.energyLevel)),
+      pain: average(inWeek.map((entry) => entry.painLevel)),
+      entry: inWeek[0],
+      inWeek,
+    };
+  });
+  const logged = weeks.flatMap((week) => week.inWeek);
+  return {
+    days: weeks.map(({ date, energy, pain, entry }) => ({ date, energy, pain, entry })),
+    checkIns: logged.length,
+    averageEnergy: average(logged.map((entry) => entry.energyLevel)),
+    averagePain: average(logged.map((entry) => entry.painLevel)),
+    topSymptoms: mostCommonSymptoms(logged).slice(0, 3),
+  };
+}
+
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const joinWords = (words: string[]) =>
@@ -136,11 +170,11 @@ export function sevenDayTrend(
 }
 
 /** The chart in words, for screen readers and anyone who prefers text. */
-export function weekSummaryText(summary: WeekSummary): string {
-  if (summary.checkIns === 0) return 'No check-ins in the last 7 days.';
+export function weekSummaryText(summary: WeekSummary, period = 'Last 7 days'): string {
+  if (summary.checkIns === 0) return `No check-ins in the ${period.toLowerCase()}.`;
   const checkIns = `${summary.checkIns} check-in${summary.checkIns === 1 ? '' : 's'}`;
   return (
-    `Last 7 days, ${checkIns}: energy averaged ${summary.averageEnergy} of 10 ` +
+    `${period}, ${checkIns}: energy averaged ${summary.averageEnergy} of 10 ` +
     `and pain ${summary.averagePain} of 10.`
   );
 }

@@ -8,8 +8,9 @@ import { queryKeys } from '@/hooks/queryKeys';
 import { parseDbTimestamp } from '@/lib/dates';
 import { focusFromMetadata, usesJourney } from '@/lib/focus';
 import { queryClient } from '@/lib/queryClient';
-import { defaultFollowed } from '@/lib/screening';
-import { chosenGuides, isSnoozed, selfCheckReminderDate, soonestGuide } from '@/lib/selfCheck';
+import { checkItems } from '@/lib/checks';
+import { cancerAppliesToSex, defaultFollowed } from '@/lib/screening';
+import { chosenGuides, isSnoozed, selfCheckReminderDate } from '@/lib/selfCheck';
 import { useAuthStore } from '@/stores/authStore';
 import {
   useNotificationPrefs,
@@ -50,21 +51,34 @@ async function cancelType(type: ScheduledPrefType): Promise<void> {
   await device.cancelReminders(identifiers);
 }
 
-/** The soonest of the person's chosen self-checks, once the guides have loaded. */
+/**
+ * The soonest of the person's checks (design refresh Phase 24: the body check, a test or
+ * the signs check), once the guides have loaded.
+ */
 function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   const guides = queryClient.getQueryData<SelfCheckGuide[]>(queryKeys.selfCheckGuides);
   if (!guides?.length) return null;
   const state = useSelfCheckStore.getState();
   const user = useAuthStore.getState().user;
-  const mine = chosenGuides(
-    guides,
-    state.followed ?? defaultFollowed(userGender(user), userAge(user)),
+  const sex = userGender(user);
+  const age = userAge(user);
+  // shortcut: a survivor's own cancer isn't left out here (the cancer list may not be
+  // loaded); it only affects which check the reminder names, if they follow it.
+  const followed = (state.followed ?? defaultFollowed(sex, age)).filter((key) =>
+    cancerAppliesToSex(key, sex),
   );
-  const soonest = soonestGuide(mine, state, now);
-  if (!soonest) return null;
+  const soonest = checkItems({
+    guides: chosenGuides(guides, followed),
+    followed,
+    age,
+    answers: state.answers,
+    state,
+    now,
+  }).find((item) => item.due !== null);
+  if (!soonest?.due) return null;
   const snoozed = isSnoozed(state, now) ? parseDbTimestamp(state.snoozedUntil!) : null;
   return {
-    guideTitle: soonest.guide.title,
+    guideTitle: soonest.title,
     date: selfCheckReminderDate(
       soonest.due,
       snoozed,
@@ -74,7 +88,7 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   };
 }
 
-/** The daily check-in is for Journey users only (Treatment, Finished, Caring). */
+/** The check-in reminder is for Journey users only (Treatment daily, Finished weekly). */
 function wantsCheckInReminder(): boolean {
   const { user } = useAuthStore.getState();
   return user !== null && usesJourney(focusFromMetadata(user));
@@ -97,6 +111,7 @@ async function scheduleType(type: ScheduledPrefType): Promise<void> {
     selfCheckPlan: type === 'self_check' ? selfCheckPlan(now) : null,
     appointments: type === 'appointments' ? cachedAppointments() : undefined,
     tip: type === 'weekly_tip' ? withSource(getTipOfTheDay(now)) : undefined,
+    weeklyCheckIn: focusFromMetadata(useAuthStore.getState().user) === 'finished',
   });
   for (const reminder of reminders) await device.scheduleReminder(reminder);
 }

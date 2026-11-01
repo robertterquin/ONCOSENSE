@@ -17,14 +17,24 @@ import {
   Text,
   type IconName,
 } from '@/components/ui';
+import { userAge, userGender } from '@/api/auth';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useFocus, useMyCancerId, useSaveFocus, useSaveMyCancer } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
+import { useFollowedCancers } from '@/hooks/useSelfChecks';
 import { addDays, formatLongDate } from '@/lib/dates';
 import { type JourneyFocus } from '@/lib/focus';
+import { cancerKeyword } from '@/lib/help';
 import { iconForCancer } from '@/lib/learn';
 import { rescheduleCheckInReminder } from '@/lib/notifications/service';
-import { useIsSignedIn } from '@/stores/authStore';
+import {
+  cancerAppliesToSex,
+  defaultFollowed,
+  followSummary,
+  type CancerKey,
+} from '@/lib/screening';
+import { useIsSignedIn, useUser } from '@/stores/authStore';
+import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -32,6 +42,8 @@ import { useDesign } from '@/theme/useTheme';
 // "What brings you here?" (redesign Phase 4): after sign-up, and from Journey or
 // Profile to change it. Two choices: with cancer, which goes on to "About your cancer"
 // (in treatment or finished, which cancer, and dates when signed in), or without.
+// Without cancer, and after treatment, it ends by choosing which cancers to keep an eye
+// on (design refresh Phase 24), with the recommended ones ticked.
 
 type Kind = 'cancer' | 'learning';
 type Stage = Exclude<JourneyFocus, 'learning'>;
@@ -74,12 +86,28 @@ export default function FocusScreen() {
     current === null ? null : current === 'learning' ? 'learning' : 'cancer',
   );
   const [stage, setStage] = useState<Stage>(current === 'finished' ? 'finished' : 'treatment');
-  const [step, setStep] = useState<'focus' | 'about'>('focus');
+  const [step, setStep] = useState<'focus' | 'about' | 'cancers'>('focus');
+  const user = useUser();
+  const sex = userGender(user);
+  const age = userAge(user);
+  const { followed } = useFollowedCancers();
+  const answers = useSelfCheckStore((state) => state.answers);
+  const setFollowed = useSelfCheckStore((state) => state.setFollowed);
+  const [picks, setPicks] = useState<CancerKey[]>([]);
   const [cancerId, setCancerId] = useState<string | null>(myCancerId);
   const [pickingCancer, setPickingCancer] = useState(false);
   const [startDate, setStartDate] = useState(() => setup.diagnosisDate ?? new Date());
   const [finishedDate, setFinishedDate] = useState(() => setup.cancerFreeDate ?? new Date());
   const saving = saveFocus.isPending || saveMyCancer.isPending || startJourney.isPending;
+  const steps = kind === 'cancer' && stage === 'finished' ? 3 : 2;
+  // After treatment, their own cancer's follow-up is the care team's, so it isn't offered.
+  const ownCancer = cancers.data?.find((cancer) => cancer.id === cancerId);
+  const ownKey = kind === 'cancer' && ownCancer ? cancerKeyword(ownCancer.name) : null;
+
+  const chooseCancers = () => {
+    setPicks(followed);
+    setStep('cancers');
+  };
 
   const done = (message: string) => {
     showToast(message, 'success');
@@ -91,13 +119,18 @@ export default function FocusScreen() {
   const next = () => {
     if (!kind) return;
     if (kind === 'cancer') return setStep('about');
-    saveFocus.mutate('learning', {
-      onSuccess: () => done('Saved. You can change this any time in Profile.'),
-      onError: (error) => showToast(error.message, 'error'),
-    });
+    chooseCancers();
   };
 
   const finish = () => {
+    if (step === 'cancers') setFollowed(picks.filter((key) => key !== ownKey));
+    if (kind === 'learning') {
+      saveFocus.mutate('learning', {
+        onSuccess: () => done('Saved. You can change this any time in Profile.'),
+        onError: (error) => showToast(error.message, 'error'),
+      });
+      return;
+    }
     // Guests have no account to keep a journey in: just the stage and the cancer.
     if (!signedIn) {
       saveFocus.mutate(stage, {
@@ -123,6 +156,74 @@ export default function FocusScreen() {
     );
   };
 
+  if (step === 'cancers') {
+    const recommended = defaultFollowed(sex, age);
+    const list = [...(cancers.data ?? [])]
+      .filter((cancer) => {
+        const key = cancerKeyword(cancer.name);
+        return cancerAppliesToSex(key, sex) && key !== ownKey;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const isRecommended = (name: string) => recommended.includes(cancerKeyword(name));
+    const row = (cancer: (typeof list)[number]) => {
+      const key = cancerKeyword(cancer.name);
+      const on = picks.includes(key);
+      return (
+        <ListRow
+          key={cancer.id}
+          icon={iconForCancer(cancer.name)}
+          title={cancer.name}
+          subtitle={followSummary(key, age, answers)}
+          accessibilityLabel={`${cancer.name}, ${on ? 'selected' : 'not selected'}`}
+          accessory={
+            <Icon name={on ? 'circle-check' : 'circle'} size={26} tone={on ? 'action' : 'muted'} />
+          }
+          onPress={() =>
+            setPicks((current) => (on ? current.filter((item) => item !== key) : [...current, key]))
+          }
+        />
+      );
+    };
+    const who =
+      sex === 'Male' || sex === 'Female'
+        ? `a ${sex === 'Male' ? 'man' : 'woman'}${age ? ` of ${age}` : ''}`
+        : null;
+    return (
+      <Screen
+        back={{
+          label: 'Back',
+          onPress: () => setStep(kind === 'cancer' ? 'about' : 'focus'),
+        }}
+        title="Which cancers do you want to keep an eye on?"
+        subtitle={
+          recommended.length
+            ? `We've ticked the ones recommended${who ? ` for ${who}` : ' for you'}.`
+            : who && age
+              ? 'No screening test is recommended at your age. Pick any that matter to you, or none.'
+              : 'Pick the cancers that matter to you, or that run in your family.'
+        }
+        bottomBar={
+          <BottomActionBar>
+            <Button title="Finish" loading={saving} onPress={finish} />
+          </BottomActionBar>
+        }>
+        <ProgressSegments total={steps} done={steps} accessibilityLabel="Setup steps" />
+        {recommended.length ? (
+          <Section title="Recommended for you">
+            {list.filter((cancer) => isRecommended(cancer.name)).map(row)}
+          </Section>
+        ) : null}
+        <Section title={recommended.length ? 'Others' : 'Cancers'}>
+          {list.filter((cancer) => !isRecommended(cancer.name)).map(row)}
+        </Section>
+        <Text variant="supporting" tone="muted">
+          Most people follow 3 or fewer. Add more if a cancer runs in your family. You can change
+          these any time in Your cancers.
+        </Text>
+      </Screen>
+    );
+  }
+
   if (step === 'about') {
     const sortedCancers = [...(cancers.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     const selectedCancer = sortedCancers.find((c) => c.id === cancerId) ?? null;
@@ -138,10 +239,14 @@ export default function FocusScreen() {
         subtitle="This tailors your habits and checks. You can change it later."
         bottomBar={
           <BottomActionBar>
-            <Button title="Finish" loading={saving} onPress={finish} />
+            {stage === 'finished' ? (
+              <Button title="Continue" onPress={chooseCancers} />
+            ) : (
+              <Button title="Finish" loading={saving} onPress={finish} />
+            )}
           </BottomActionBar>
         }>
-        <ProgressSegments total={2} done={2} accessibilityLabel="Setup steps" />
+        <ProgressSegments total={steps} done={2} accessibilityLabel="Setup steps" />
         <Section title="Are you in treatment now?" look="plain">
           <SegmentedControl<Stage>
             accessibilityLabel="Are you in treatment now?"
@@ -240,7 +345,7 @@ export default function FocusScreen() {
             />
           )}
           <Button
-            title={kind === 'learning' ? 'Save' : 'Continue'}
+            title="Continue"
             disabled={!kind}
             loading={saving}
             onPress={next}
@@ -248,9 +353,7 @@ export default function FocusScreen() {
           />
         </BottomActionBar>
       }>
-      {kind !== 'learning' ? (
-        <ProgressSegments total={2} done={1} accessibilityLabel="Setup steps" />
-      ) : null}
+      <ProgressSegments total={steps} done={1} accessibilityLabel="Setup steps" />
       <View accessibilityRole="radiogroup" style={styles.options}>
         {KINDS.map((option) => (
           <FocusOption

@@ -3,6 +3,7 @@ import { Redirect } from 'expo-router';
 import {
   ComingUp,
   EnergyAndPain,
+  HowYouveBeen,
   Milestones,
   RecentCheckIns,
   Treatments,
@@ -120,6 +121,11 @@ export default function JourneySampleScreen() {
       </Section>
       <Section title="Full week" look="plain">
         <ThreadWeek entries={FULL_WEEK} now={sunday} />
+      </Section>
+      <Section title="After treatment (weekly)" look="plain">
+        <ComingUp appointments={APPOINTMENTS} title="Follow-ups" />
+        <HowYouveBeen entries={ENTRIES} now={now} />
+        <Treatments treatments={TREATMENTS} past />
       </Section>
     </Screen>
   );

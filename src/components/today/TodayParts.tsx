@@ -6,10 +6,10 @@ import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import type { FollowStatus } from '@/hooks/useSelfChecks';
 import { useSaveFocus } from '@/hooks/useFocus';
 import { useHabitPlan } from '@/hooks/useHabits';
-import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
+import { addDays, formatShortDate, formatTime, isSameDay } from '@/lib/dates';
+import { startOfDay } from '@/lib/selfCheck';
 import { checkInDetails, MOODS } from '@/lib/journeyLabels';
 import { iconForCancer } from '@/lib/learn';
 import { toDayKey, useHabitsStore } from '@/stores/habitsStore';
@@ -22,10 +22,14 @@ import type { JourneyEntry } from '@/types/journeyEntry';
 // Pieces of the redesigned Today tab (docs/redesign/03-phase-3-today-and-learn.md).
 
 /** Quick mood for today's check-in; the full check-in adds pain, energy and symptoms. */
-export function MoodCard({ now }: { now: Date }) {
+export function MoodCard({ now, weekly = false }: { now: Date; weekly?: boolean }) {
   const entries = useJourneyEntries();
   const save = useSaveJourneyEntry();
   const today = entries.data?.find((entry) => isSameDay(entry.date, now));
+  // After treatment, once a week is enough: the card steps aside after any check-in in
+  // the last 7 days (Journey shows it).
+  const weekStart = addDays(startOfDay(now), -6);
+  const thisWeek = weekly && entries.data?.some((entry) => entry.date >= weekStart);
   const saved = today ? MOODS.find((mood) => mood.value === today.moodLevel) : undefined;
 
   const saveMood = (moodLevel: number) => {
@@ -53,6 +57,8 @@ export function MoodCard({ now }: { now: Date }) {
       today ? { pathname: '/journey/check-in', params: { id: today.id } } : '/journey/check-in',
     );
 
+  if (thisWeek || (weekly && entries.isPending)) return null;
+
   // Once saved, one row opens the full check-in, where the mood can be changed too.
   if (today && saved) {
     return (
@@ -69,7 +75,7 @@ export function MoodCard({ now }: { now: Date }) {
   }
 
   return (
-    <Section title="How are you feeling today?" divided={false}>
+    <Section title={weekly ? "How's this week?" : 'How are you feeling today?'} divided={false}>
       <View style={styles.moodPicker}>
         <MoodPicker
           value={today?.moodLevel ?? null}
@@ -83,10 +89,16 @@ export function MoodCard({ now }: { now: Date }) {
 }
 
 /** The next two appointments; hidden when there are none. */
-export function ComingUpToday({ appointments }: { appointments: Appointment[] }) {
+export function ComingUpToday({
+  appointments,
+  title = 'Coming up',
+}: {
+  appointments: Appointment[];
+  title?: string;
+}) {
   if (!appointments.length) return null;
   return (
-    <Section title="Coming up">
+    <Section title={title}>
       {appointments.map((appointment) => (
         <ListRow
           key={appointment.id}
@@ -178,51 +190,6 @@ const styles = StyleSheet.create({
   moodPicker: { paddingTop: space.lg },
   support: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });
-
-/**
- * Screening tests and warning-sign questions that are due (design refresh Phase 23), under
- * the self-checks. Hidden when nothing is due.
- */
-export function DueToday({
-  screenings,
-  signs,
-}: {
-  screenings: FollowStatus[];
-  signs: FollowStatus[];
-}) {
-  const tests = screenings.filter((item) => item.isDue && item.test);
-  const prompts = signs.filter((item) => item.isDue && item.cancer).slice(0, 2);
-  if (!tests.length && !prompts.length) return null;
-  return (
-    <Section title="Also due" subtitle="From the cancers you follow">
-      {tests.map(({ test, lastDone }) => (
-        <ListRow
-          key={test!.id}
-          icon="hospital"
-          iconTone="help"
-          title={test!.title}
-          subtitle={lastDone ? 'Due now' : 'Due now: not recorded yet'}
-          onPress={() => router.push({ pathname: '/screening/[id]', params: { id: test!.id } })}
-        />
-      ))}
-      {prompts.map(({ cancer, cancerKey }) => (
-        <ListRow
-          key={cancerKey}
-          icon="info"
-          title={`${cancer!.name}: warning signs`}
-          subtitle="A quick question, every 3 months"
-          onPress={() => router.push({ pathname: '/signs/[id]', params: { id: cancerKey } })}
-        />
-      ))}
-      <ListRow
-        title="Your cancers"
-        subtitle="Choose which cancers you follow"
-        titleTone="action"
-        onPress={() => router.push('/checks')}
-      />
-    </Section>
-  );
-}
 
 /**
  * Patient Mode on Today: quick access to the person's cancer guide (or adding it) and

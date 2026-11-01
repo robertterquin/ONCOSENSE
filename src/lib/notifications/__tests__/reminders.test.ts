@@ -52,6 +52,16 @@ describe('reminder schedule', () => {
     expect(checkIn.data.type).toBe('daily_check_in');
   });
 
+  it('asks once a week, on the chosen day, after treatment', () => {
+    const [checkIn] = remindersForType('daily_checkin', {
+      weeklyCheckIn: true,
+      times: { daily_checkin: { hour: 19, minute: 0, weekday: 3 } },
+    });
+    expect(checkIn.trigger).toEqual({ kind: 'weekly', weekday: 3, hour: 19, minute: 0 });
+    expect(checkIn.title).toBe('How was this week?');
+    expect(checkIn.identifier).toBe('daily-checkin');
+  });
+
   it('uses unique identifiers, each matching only its own type', () => {
     expect(new Set(all.map((r) => r.identifier)).size).toBe(all.length);
     for (const type of SCHEDULED_PREF_TYPES) {

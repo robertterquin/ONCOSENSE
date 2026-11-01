@@ -155,19 +155,43 @@ export function actionsFor(
 }
 
 /**
- * The cancers followed by default, by sex and age: the self-checks from Phase 22, plus
- * the screening tests recommended for everyone of that age and sex.
+ * The cancers recommended (and ticked) by sex and age (design refresh Phase 24): those
+ * with a screening test, or a talk about one, recommended for everyone of that age and
+ * sex. Self-checks aren't recommended on their own (guidelines favour knowing your body
+ * over set exams), so skin, testicular and the rest are the person's choice.
  */
 export function defaultFollowed(sex: string | null, age: number | null): CancerKey[] {
   return [
-    ...(sex === 'Female' && within(age, 20) ? ['breast'] : []),
-    ...(sex === 'Male' && within(age, 15, 40) ? ['testicular'] : []),
-    ...(within(age, 18) ? ['skin'] : []),
     ...(sex === 'Female' && within(age, 25, 65) ? ['cervical'] : []),
+    ...(sex === 'Female' && within(age, 40) ? ['breast'] : []),
     ...(age !== null && age >= 45 && age <= 75 ? ['colorectal'] : []),
     ...(sex === 'Male' && age !== null && age >= 50 ? ['prostate'] : []),
   ];
 }
+
+/** "Monthly body check, mammogram every year", "HPV test every 5 years", "Signs check every 3 months". */
+export function followSummary(
+  key: CancerKey,
+  age: number | null,
+  answers: ScreeningAnswers,
+): string {
+  const parts = actionsFor(key, age, answers).map((action) =>
+    action.kind === 'self-check'
+      ? 'Monthly body check'
+      : action.kind === 'screening'
+        ? action.test.months(age) === null
+          ? action.test.title
+          : `${action.test.title} ${lowerFirst(action.test.howOften(age))}`
+        : `Signs check every ${SIGNS_EVERY_MONTHS} months`,
+  );
+  const text = parts.map((part, index) => (index ? lowerFirst(part) : part)).join(', ');
+  const question = QUESTION_FOR[key];
+  return question && !answers[question] ? `${text} (a test if you're at high risk)` : text;
+}
+
+/** "Every year" → "every year", but "HPV test" stays as it is. */
+const lowerFirst = (text: string) =>
+  /^[A-Z][A-Z]/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1);
 
 /** How often the warning-signs prompt comes back. */
 export const SIGNS_EVERY_MONTHS = 3;

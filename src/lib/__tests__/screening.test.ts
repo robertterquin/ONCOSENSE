@@ -1,4 +1,10 @@
-import { actionsFor, cancerAppliesToSex, defaultFollowed, nextDueAfter } from '../screening';
+import {
+  actionsFor,
+  cancerAppliesToSex,
+  defaultFollowed,
+  followSummary,
+  nextDueAfter,
+} from '../screening';
 
 const kinds = (cancer: string, age: number | null, answers = {}) =>
   actionsFor(cancer, age, answers).map((action) =>
@@ -6,21 +12,31 @@ const kinds = (cancer: string, age: number | null, answers = {}) =>
   );
 
 describe('defaultFollowed', () => {
-  it('follows self-checks by sex and age', () => {
-    expect(defaultFollowed('Male', 60)).toEqual(['skin', 'colorectal', 'prostate']);
-    expect(defaultFollowed('Male', 17)).toEqual(['testicular']);
-    expect(defaultFollowed('Female', 19)).toEqual(['skin']);
-    expect(defaultFollowed('Female', 16)).toEqual([]);
-    expect(defaultFollowed('Non-binary', 30)).toEqual(['skin']);
+  it('ticks only the screening recommended for that sex and age', () => {
+    expect(defaultFollowed('Female', 47)).toEqual(['cervical', 'breast', 'colorectal']);
+    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'colorectal']);
+    expect(defaultFollowed('Male', 60)).toEqual(['colorectal', 'prostate']);
+    expect(defaultFollowed('Female', 30)).toEqual(['cervical']);
   });
 
-  it('adds the screening every woman or man of that age should have', () => {
-    expect(defaultFollowed('Female', 47)).toEqual(['breast', 'skin', 'cervical', 'colorectal']);
-    expect(defaultFollowed('Female', 70)).toEqual(['breast', 'skin', 'colorectal']);
+  it('ticks no self-check on its own', () => {
+    expect(defaultFollowed('Male', 25)).toEqual([]);
+    expect(defaultFollowed('Non-binary', 30)).toEqual([]);
   });
 
   it('leaves out age-based screening when no age is given', () => {
-    expect(defaultFollowed('Male', null)).toEqual(['testicular', 'skin']);
+    expect(defaultFollowed('Male', null)).toEqual([]);
+    expect(defaultFollowed('Female', null)).toEqual(['cervical', 'breast']);
+  });
+});
+
+describe('followSummary', () => {
+  it('says what following a cancer gives, in the bundled names', () => {
+    expect(followSummary('breast', 47, {})).toBe('Monthly body check, mammogram every year');
+    expect(followSummary('ovarian', 47, {})).toBe('Signs check every 3 months');
+    expect(followSummary('lung', 60, {})).toBe(
+      "Signs check every 3 months (a test if you're at high risk)",
+    );
   });
 });
 
