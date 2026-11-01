@@ -2,8 +2,7 @@ import { router } from 'expo-router';
 
 import { ErrorState, Icon, ListRow, LoadingState, Screen, Section, Text } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { useFocus, useMyCancerId, useSaveMyCancer } from '@/hooks/useFocus';
-import { forFocus } from '@/lib/focus';
+import { useMyCancerId, useSaveMyCancer } from '@/hooks/useFocus';
 import { haptics } from '@/lib/haptics';
 import { showToast } from '@/stores/toastStore';
 
@@ -13,7 +12,6 @@ import { showToast } from '@/stores/toastStore';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
 
 export default function WhichCancerScreen() {
-  const focus = useFocus();
   const current = useMyCancerId();
   const cancers = useCancerTypes();
   const save = useSaveMyCancer();
@@ -32,11 +30,7 @@ export default function WhichCancerScreen() {
   return (
     <Screen sheet={{ title: 'Which cancer?', onCancel: back }}>
       <Text variant="supporting" tone="muted">
-        {forFocus(
-          focus,
-          "We'll put its guide first in Learn. You can change this any time.",
-          "Which cancer does the person you care for have? We'll put its guide first in Learn.",
-        )}
+        We&apos;ll put its guide first in Learn. You can change this any time.
       </Text>
       {cancers.isPending ? (
         <LoadingState variant="list" message="Loading cancers" />
@@ -50,7 +44,9 @@ export default function WhichCancerScreen() {
                 key={cancer.id}
                 title={cancer.name}
                 accessory={check(cancer.id)}
-                accessibilityLabel={current === cancer.id ? `${cancer.name}, selected` : cancer.name}
+                accessibilityLabel={
+                  current === cancer.id ? `${cancer.name}, selected` : cancer.name
+                }
                 onPress={() => pick(cancer.id)}
               />
             ))}

@@ -5,6 +5,7 @@ import { hasCompletedJourneySetup, userDisplayName } from '@/api/auth';
 import { ProfileButton } from '@/components/account/ProfileButton';
 import { ChecksCard } from '@/components/today/ChecksCard';
 import {
+  CaregiverRetiredCard,
   ComingUpToday,
   DueToday,
   HabitsRow,
@@ -19,7 +20,7 @@ import { useAppointments, useJourneyEntries } from '@/hooks/useJourney';
 import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
 import { useNow } from '@/hooks/useNow';
 import { formatTime, isSameDay } from '@/lib/dates';
-import { usesJourney } from '@/lib/focus';
+import { usesJourney, wasCaregiver } from '@/lib/focus';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import { useUser } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
@@ -68,6 +69,7 @@ export default function TodayTab() {
         </View>
       </View>
 
+      {wasCaregiver(user) ? <CaregiverRetiredCard /> : null}
       {hardDay ? <SupportCard /> : null}
 
       {journeyUser ? (
@@ -86,7 +88,7 @@ export default function TodayTab() {
             />
           ) : null}
           <MoodCard now={now} />
-          <YourCancerTodayCard cancer={myCancer} caring={focus === 'caring'} />
+          <YourCancerTodayCard cancer={myCancer} />
           <ComingUpToday appointments={upcoming.slice(0, 2)} />
           {focus === 'finished' ? (
             <>

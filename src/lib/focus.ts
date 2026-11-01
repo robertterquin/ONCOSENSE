@@ -1,18 +1,20 @@
 import type { User } from '@supabase/supabase-js';
 
-// "What brings you here?" (redesign Phase 4). The focus decides whether Journey and
-// the daily check-in reminder appear. Saved in user metadata `journey_focus`; guests
-// keep it on the device (stores/focusStore.ts).
+// "What brings you here?" (redesign Phase 4): people with or without cancer, and for
+// cancer, in treatment or finished. The focus decides whether Journey and the daily
+// check-in reminder appear. Saved in user metadata `journey_focus`; guests keep it on
+// the device (stores/focusStore.ts). Caregiver accounts ("caring") were retired in
+// November 2026 and read as "learning".
 
-const JOURNEY_FOCUSES = ['learning', 'treatment', 'finished', 'caring'] as const;
+const JOURNEY_FOCUSES = ['learning', 'treatment', 'finished'] as const;
 
 export type JourneyFocus = (typeof JOURNEY_FOCUSES)[number];
 
 export const FOCUS_OPTIONS: { value: JourneyFocus; title: string; description: string }[] = [
   {
     value: 'learning',
-    title: 'Learning and checking myself',
-    description: 'Early signs, self-checks and ways to lower my risk',
+    title: "I don't have cancer",
+    description: 'Early signs, checks and lowering my risk',
   },
   {
     value: 'treatment',
@@ -24,18 +26,13 @@ export const FOCUS_OPTIONS: { value: JourneyFocus; title: string; description: s
     title: 'Finished treatment',
     description: 'Keep an eye on how I feel and my follow-ups',
   },
-  {
-    value: 'caring',
-    title: 'Caring for someone',
-    description: "Track how they're doing and their appointments",
-  },
 ];
 
 function isJourneyFocusValue(value: unknown): value is JourneyFocus {
   return typeof value === 'string' && (JOURNEY_FOCUSES as readonly string[]).includes(value);
 }
 
-/** Treatment, Finished and Caring use Journey; Learning doesn't. */
+/** Treatment and Finished use Journey; Learning doesn't. */
 export function usesJourney(focus: JourneyFocus | null): boolean {
   return focus !== null && focus !== 'learning';
 }
@@ -48,6 +45,7 @@ export function usesJourney(focus: JourneyFocus | null): boolean {
 export function focusFromMetadata(user: User | null): JourneyFocus | null {
   const metadata = user?.user_metadata;
   if (!metadata) return null;
+  if (metadata.journey_focus === 'caring') return 'learning';
   if (isJourneyFocusValue(metadata.journey_focus)) return metadata.journey_focus;
   if (metadata.journey_started === true) {
     return typeof metadata.cancer_free_date === 'string' && metadata.cancer_free_date
@@ -86,14 +84,12 @@ export function focusSubtitle(
       return cancerFreeDate
         ? `Treatment finished ${monthYear(cancerFreeDate)}`
         : 'Finished treatment';
-    case 'caring':
-      return startDate ? `Caring for someone since ${monthYear(startDate)}` : 'Caring for someone';
     default:
       return 'How you feel, treatments and appointments';
   }
 }
 
-/** Copy that speaks to a caregiver about the person they care for. */
-export function forFocus(focus: JourneyFocus | null, self: string, caregiver: string): string {
-  return focus === 'caring' ? caregiver : self;
+/** A caregiver account from before November 2026, not yet shown the retirement note. */
+export function wasCaregiver(user: User | null): boolean {
+  return user?.user_metadata?.journey_focus === 'caring';
 }

@@ -34,7 +34,7 @@ import {
 } from '@/hooks/useJourney';
 import { useNow } from '@/hooks/useNow';
 import { entryForDate } from '@/lib/journey';
-import { focusSubtitle, forFocus, usesJourney } from '@/lib/focus';
+import { focusSubtitle, usesJourney } from '@/lib/focus';
 import { useIsSignedIn } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
@@ -115,11 +115,7 @@ function Dashboard() {
             <>
               <ThreadWeek entries={entryList} now={now} />
               <Button
-                title={
-                  checkedInToday
-                    ? 'Edit today’s check-in'
-                    : forFocus(focus, 'Check in for today', 'Check in for them')
-                }
+                title={checkedInToday ? 'Edit today’s check-in' : 'Check in for today'}
                 icon={checkedInToday ? 'check' : 'plus'}
                 // Done for today, so it steps back; bright only while it's still to do.
                 variant={checkedInToday ? 'tinted' : 'primary'}

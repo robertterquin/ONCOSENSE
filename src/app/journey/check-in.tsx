@@ -19,11 +19,9 @@ import {
   TextField,
   type IconName,
 } from '@/components/ui';
-import { useFocus } from '@/hooks/useFocus';
 import { useDeleteJourneyEntry, useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
 import { confirm } from '@/lib/confirm';
 import { formatLongDate, isSameDay } from '@/lib/dates';
-import { forFocus } from '@/lib/focus';
 import { haptics } from '@/lib/haptics';
 import { energyValueText, painValueText, SLEEP } from '@/lib/journeyLabels';
 import { showToast } from '@/stores/toastStore';
@@ -59,7 +57,6 @@ export default function CheckInScreen() {
 }
 
 function CheckInForm({ existing }: { existing?: JourneyEntry }) {
-  const focus = useFocus();
   const save = useSaveJourneyEntry();
   const remove = useDeleteJourneyEntry();
   const [mood, setMood] = useState<number | null>(existing?.moodLevel ?? null);
@@ -82,7 +79,6 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
     note: Boolean(existing?.notes),
   });
   const isToday = !existing || isSameDay(existing.date, new Date());
-  const they = (self: string, caregiver: string) => forFocus(focus, self, caregiver);
 
   const toggleSymptom = (name: string) =>
     setSymptoms((list) =>
@@ -91,7 +87,7 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
 
   const submit = () => {
     if (mood === null) {
-      showToast(they('Choose how you feel first', 'Choose how they feel first'), 'error');
+      showToast('Choose how you feel first', 'error');
       return;
     }
     save.mutate(
@@ -154,7 +150,7 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
         </BottomActionBar>
       }>
       <Section
-        title={they('How are you feeling?', 'How are they feeling?')}
+        title="How are you feeling?"
         subtitle={formatLongDate(existing?.date ?? new Date())}
         divided={false}>
         <View style={styles.padded}>
@@ -193,7 +189,7 @@ function CheckInForm({ existing }: { existing?: JourneyEntry }) {
         </Fold>
         <Fold
           icon="moon"
-          title={they('Sleep', 'Their sleep')}
+          title="Sleep"
           summary={sleepLabel}
           open={open.sleep}
           onToggle={() => toggle('sleep')}>

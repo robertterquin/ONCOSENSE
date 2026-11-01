@@ -12,15 +12,16 @@ import {
   ProgressSegments,
   Screen,
   Section,
+  SegmentedControl,
   Sheet,
   Text,
   type IconName,
 } from '@/components/ui';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { useFocus, useMyCancerId, useSaveFocus } from '@/hooks/useFocus';
+import { useFocus, useMyCancerId, useSaveFocus, useSaveMyCancer } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
 import { addDays, formatLongDate } from '@/lib/dates';
-import { FOCUS_OPTIONS, forFocus, type JourneyFocus } from '@/lib/focus';
+import { type JourneyFocus } from '@/lib/focus';
 import { iconForCancer } from '@/lib/learn';
 import { rescheduleCheckInReminder } from '@/lib/notifications/service';
 import { useIsSignedIn } from '@/stores/authStore';
@@ -29,7 +30,26 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 // "What brings you here?" (redesign Phase 4): after sign-up, and from Journey or
-// Profile to change it. Treatment, Finished and Caring go on to a few dates.
+// Profile to change it. Two choices: with cancer, which goes on to "About your cancer"
+// (in treatment or finished, which cancer, and dates when signed in), or without.
+
+type Kind = 'cancer' | 'learning';
+type Stage = Exclude<JourneyFocus, 'learning'>;
+
+const KINDS: { value: Kind; icon: IconName; title: string; description: string }[] = [
+  {
+    value: 'cancer',
+    icon: 'ribbon',
+    title: 'I have or had cancer',
+    description: 'Track how you feel, treatments and follow-ups',
+  },
+  {
+    value: 'learning',
+    icon: 'book',
+    title: "I don't have cancer",
+    description: 'Early signs, checks and lowering my risk',
+  },
+];
 
 const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
 
@@ -46,16 +66,20 @@ export default function FocusScreen() {
   const signedIn = useIsSignedIn();
   const setup = useJourneySetup();
   const saveFocus = useSaveFocus();
+  const saveMyCancer = useSaveMyCancer();
   const startJourney = useStartJourney();
   const myCancerId = useMyCancerId();
   const cancers = useCancerTypes();
-  const [focus, setFocus] = useState<JourneyFocus | null>(current);
-  const [step, setStep] = useState<'focus' | 'dates'>('focus');
+  const [kind, setKind] = useState<Kind | null>(
+    current === null ? null : current === 'learning' ? 'learning' : 'cancer',
+  );
+  const [stage, setStage] = useState<Stage>(current === 'finished' ? 'finished' : 'treatment');
+  const [step, setStep] = useState<'focus' | 'about'>('focus');
   const [cancerId, setCancerId] = useState<string | null>(myCancerId);
   const [pickingCancer, setPickingCancer] = useState(false);
   const [startDate, setStartDate] = useState(() => setup.diagnosisDate ?? new Date());
   const [finishedDate, setFinishedDate] = useState(() => setup.cancerFreeDate ?? new Date());
-  const saving = saveFocus.isPending || startJourney.isPending;
+  const saving = saveFocus.isPending || saveMyCancer.isPending || startJourney.isPending;
 
   const done = (message: string) => {
     showToast(message, 'success');
@@ -65,25 +89,31 @@ export default function FocusScreen() {
   };
 
   const next = () => {
-    if (!focus) return;
-    // Learning needs no dates; guests have no account to keep a journey in.
-    if (focus === 'learning' || !signedIn) {
-      saveFocus.mutate(focus, {
-        onSuccess: () => done('Saved. You can change this any time in Profile.'),
+    if (!kind) return;
+    if (kind === 'cancer') return setStep('about');
+    saveFocus.mutate('learning', {
+      onSuccess: () => done('Saved. You can change this any time in Profile.'),
+      onError: (error) => showToast(error.message, 'error'),
+    });
+  };
+
+  const finish = () => {
+    // Guests have no account to keep a journey in: just the stage and the cancer.
+    if (!signedIn) {
+      saveFocus.mutate(stage, {
+        onSuccess: () => {
+          if (cancerId) saveMyCancer.mutate(cancerId);
+          done('Saved. You can change this any time in Profile.');
+        },
         onError: (error) => showToast(error.message, 'error'),
       });
       return;
     }
-    setStep('dates');
-  };
-
-  const finish = () => {
-    if (!focus) return;
     startJourney.mutate(
       {
-        focus,
+        focus: stage,
         diagnosisDate: startDate,
-        cancerFreeDate: focus === 'finished' ? finishedDate : null,
+        cancerFreeDate: stage === 'finished' ? finishedDate : null,
         cancerTypeId: cancerId,
       },
       {
@@ -93,44 +123,57 @@ export default function FocusScreen() {
     );
   };
 
-  if (step === 'dates' && focus) {
+  if (step === 'about') {
     const sortedCancers = [...(cancers.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     const selectedCancer = sortedCancers.find((c) => c.id === cancerId) ?? null;
     const cancerTitle = selectedCancer
       ? selectedCancer.name
       : cancerId === 'none'
         ? "Not listed, or I'd rather not say"
-        : forFocus(focus, 'Select your cancer', 'Select the cancer they have');
+        : 'Select your cancer';
     return (
       <Screen
         back={{ label: 'Back', onPress: () => setStep('focus') }}
-        title={forFocus(focus, 'About your treatment', 'About their treatment')}
-        subtitle="This tailors Today, Journey and Learn to your cancer. You can change it later."
+        title="About your cancer"
+        subtitle="This tailors your habits and checks. You can change it later."
         bottomBar={
           <BottomActionBar>
             <Button title="Finish" loading={saving} onPress={finish} />
           </BottomActionBar>
         }>
         <ProgressSegments total={2} done={2} accessibilityLabel="Setup steps" />
-        <Section title={forFocus(focus, 'Which cancer?', 'Which cancer do they have?')}>
+        <Section title="Are you in treatment now?" look="plain">
+          <SegmentedControl<Stage>
+            accessibilityLabel="Are you in treatment now?"
+            value={stage}
+            onChange={setStage}
+            options={[
+              { value: 'treatment', label: 'Yes' },
+              { value: 'finished', label: "No, I've finished" },
+            ]}
+          />
+        </Section>
+        <Section title="Which cancer?">
           <ListRow
             icon={selectedCancer ? iconForCancer(selectedCancer.name) : 'ribbon'}
             iconTone="action"
             title={cancerTitle}
-            subtitle={
-              selectedCancer
-                ? 'Tap to change'
-                : "We'll show its guide on Today and Learn"
-            }
+            subtitle={selectedCancer ? 'Tap to change' : "We'll show its guide on Today and Learn"}
             onPress={() => setPickingCancer(true)}
           />
         </Section>
-        <DateQuestion
-          title={forFocus(focus, 'When did treatment start?', 'When did their treatment start?')}
-          value={startDate}
-          onChange={setStartDate}
-        />
-        {focus === 'finished' ? (
+        {signedIn ? (
+          <DateQuestion
+            title="When did treatment start?"
+            value={startDate}
+            onChange={setStartDate}
+          />
+        ) : (
+          <Text variant="supporting" tone="muted">
+            Journey keeps your check-ins in your account, so you&apos;ll need to sign in to use it.
+          </Text>
+        )}
+        {signedIn && stage === 'finished' ? (
           <DateQuestion
             title="When did treatment finish?"
             value={finishedDate}
@@ -150,7 +193,11 @@ export default function FocusScreen() {
                 iconTone="action"
                 title={cancer.name}
                 accessory={
-                  cancerId === cancer.id ? <Icon name="check" size={22} tone="action" bold /> : <></>
+                  cancerId === cancer.id ? (
+                    <Icon name="check" size={22} tone="action" bold />
+                  ) : (
+                    <></>
+                  )
                 }
                 onPress={() => {
                   setCancerId(cancer.id);
@@ -186,49 +233,39 @@ export default function FocusScreen() {
               title="Skip"
               variant="secondary"
               onPress={() => {
-                setFocus('learning');
+                setKind('learning');
                 saveFocus.mutate('learning', { onSuccess: () => router.replace('/today') });
               }}
               style={styles.flex1}
             />
           )}
           <Button
-            title={focus === 'learning' || !signedIn ? 'Save' : 'Continue'}
-            disabled={!focus}
+            title={kind === 'learning' ? 'Save' : 'Continue'}
+            disabled={!kind}
             loading={saving}
             onPress={next}
             style={styles.flex2}
           />
         </BottomActionBar>
       }>
-      {signedIn ? <ProgressSegments total={2} done={1} accessibilityLabel="Setup steps" /> : null}
+      {kind !== 'learning' ? (
+        <ProgressSegments total={2} done={1} accessibilityLabel="Setup steps" />
+      ) : null}
       <View accessibilityRole="radiogroup" style={styles.options}>
-        {FOCUS_OPTIONS.map((option) => (
+        {KINDS.map((option) => (
           <FocusOption
             key={option.value}
-            icon={FOCUS_ICONS[option.value]}
+            icon={option.icon}
             title={option.title}
             description={option.description}
-            selected={focus === option.value}
-            onPress={() => setFocus(option.value)}
+            selected={kind === option.value}
+            onPress={() => setKind(option.value)}
           />
         ))}
       </View>
-      {!signedIn && focus && focus !== 'learning' ? (
-        <Text variant="supporting" tone="muted">
-          Journey keeps your check-ins in your account, so you&apos;ll need to sign in to use it.
-        </Text>
-      ) : null}
     </Screen>
   );
 }
-
-const FOCUS_ICONS: Record<JourneyFocus, IconName> = {
-  learning: 'book',
-  treatment: 'pill',
-  finished: 'flag',
-  caring: 'heart',
-};
 
 /** An onboarding card (Headspace-style): icon tile, title and line; picked fills in. */
 function FocusOption({

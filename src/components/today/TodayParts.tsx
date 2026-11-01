@@ -7,6 +7,7 @@ import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
 import type { FollowStatus } from '@/hooks/useSelfChecks';
+import { useSaveFocus } from '@/hooks/useFocus';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { checkInDetails, MOODS } from '@/lib/journeyLabels';
@@ -126,6 +127,34 @@ export function HabitsRow() {
   );
 }
 
+/**
+ * Once, for accounts that chose "Caring for someone" before it was retired (November
+ * 2026). "Got it" saves the new focus, which also stops this showing. Their check-ins
+ * and appointments stay in the account; Journey just doesn't show them.
+ */
+export function CaregiverRetiredCard() {
+  const saveFocus = useSaveFocus();
+  return (
+    <Section look="tinted">
+      <Text variant="strong" tone="onActionTint" accessibilityRole="header">
+        Caregiver mode has been retired
+      </Text>
+      <Text variant="body" tone="onActionTint">
+        OncoSense now focuses on your own health. The check-ins you kept for someone else are saved,
+        not deleted.
+      </Text>
+      <Button
+        title="Got it"
+        variant="tinted"
+        loading={saveFocus.isPending}
+        onPress={() =>
+          saveFocus.mutate('learning', { onError: (error) => showToast(error.message, 'error') })
+        }
+      />
+    </Section>
+  );
+}
+
 /** Shown at the top only after a Rough or Low check-in, so it stands out when it matters. */
 export function SupportCard() {
   return (
@@ -199,15 +228,9 @@ export function DueToday({
  * Patient Mode on Today: quick access to the person's cancer guide (or adding it) and
  * the printable doctor summary, replacing the general prevention checks list.
  */
-export function YourCancerTodayCard({
-  cancer,
-  caring,
-}: {
-  cancer: CancerType | null;
-  caring: boolean;
-}) {
+export function YourCancerTodayCard({ cancer }: { cancer: CancerType | null }) {
   return (
-    <Section title={caring ? 'Their cancer' : 'Your cancer'}>
+    <Section title="Your cancer">
       {cancer ? (
         <ListRow
           icon={iconForCancer(cancer.name)}
@@ -219,7 +242,7 @@ export function YourCancerTodayCard({
       ) : (
         <ListRow
           icon="plus"
-          title={caring ? 'Add the cancer they have' : 'Add your cancer'}
+          title="Add your cancer"
           subtitle="Shows its guide and treatment tips here"
           titleTone="action"
           onPress={() => router.push('/journey/cancer')}

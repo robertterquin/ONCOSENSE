@@ -94,7 +94,7 @@ export function forYouCancers(cancers: CancerType[], profile: Profile): ForYouPi
   return picks.slice(0, MAX_PICKS);
 }
 
-/** Treatment, Finished and Caring are asked "Which cancer?"; Learning isn't. */
+/** Treatment and Finished are asked "Which cancer?"; Learning isn't. */
 export function asksWhichCancer(focus: JourneyFocus | null): boolean {
-  return focus === 'treatment' || focus === 'finished' || focus === 'caring';
+  return focus === 'treatment' || focus === 'finished';
 }

@@ -83,7 +83,7 @@ const TILES: { key: SectionKey; one: string; many: string; list: (c: CancerType)
 function CancerDetails({ cancer }: { cancer: CancerType }) {
   const { palette } = useDesign();
   const focus = useFocus();
-  const showChecks = focus !== 'treatment' && focus !== 'caring';
+  const showChecks = focus !== 'treatment';
   const guides = useSelfCheckGuides();
   const guide = showChecks && guides.data ? guideForCancer(guides.data, cancer) : null;
   const resources = useAllResources();

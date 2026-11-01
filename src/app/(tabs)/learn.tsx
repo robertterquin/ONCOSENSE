@@ -48,7 +48,7 @@ export default function LearnTab() {
   const [part, setPart] = useState<Part>('cancers');
   const user = useUser();
   const focus = useFocus();
-  const showChecks = focus !== 'treatment' && focus !== 'caring';
+  const showChecks = focus !== 'treatment';
   const activePart: Part = !showChecks && part === 'checks' ? 'cancers' : part;
   const myCancerId = useMyCancerId();
   const smoker = useHabitsStore((state) => state.smoker);
@@ -154,7 +154,6 @@ export default function LearnTab() {
                     picks={picks}
                     myCancer={myCancer}
                     askCancer={asksWhichCancer(focus) && !myCancerId}
-                    caring={focus === 'caring'}
                   />
                   <CancerTypes cancers={lists.cancers} title="All cancers" />
                 </>

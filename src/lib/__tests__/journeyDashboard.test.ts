@@ -1,5 +1,5 @@
 import { toDbTimestamp } from '@/lib/dates';
-import { focusFromMetadata, focusSubtitle, usesJourney } from '@/lib/focus';
+import { focusFromMetadata, focusSubtitle, usesJourney, wasCaregiver } from '@/lib/focus';
 import {
   lastSevenDays,
   sevenDayTrend,
@@ -71,7 +71,15 @@ describe('week thread and trends', () => {
 
 describe('focus', () => {
   it('reads the saved focus', () => {
-    expect(focusFromMetadata(user({ journey_focus: 'caring' }))).toBe('caring');
+    expect(focusFromMetadata(user({ journey_focus: 'finished' }))).toBe('finished');
+  });
+
+  it('reads a retired caregiver account as Learning, until it has seen the note', () => {
+    const caregiver = user({ journey_focus: 'caring', journey_started: true });
+    expect(focusFromMetadata(caregiver)).toBe('learning');
+    expect(usesJourney(focusFromMetadata(caregiver))).toBe(false);
+    expect(wasCaregiver(caregiver)).toBe(true);
+    expect(wasCaregiver(user({ journey_focus: 'learning' }))).toBe(false);
   });
 
   it('works one out for accounts from before the redesign', () => {

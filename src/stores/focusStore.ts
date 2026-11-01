@@ -22,6 +22,18 @@ export const useFocusStore = create<FocusStore>()(
       guestCancerId: null,
       setGuestCancerId: (guestCancerId) => set({ guestCancerId }),
     }),
-    { name: 'journey-focus', storage: persistStorage, version: 1 },
+    {
+      name: 'journey-focus',
+      storage: persistStorage,
+      version: 2,
+      // Version 2 retired "Caring for someone"; a guest who'd picked it starts on Learning.
+      migrate: (persisted) => {
+        const state = persisted as Omit<FocusStore, 'guestFocus'> & { guestFocus: string | null };
+        const guestFocus = (
+          state.guestFocus === 'caring' ? 'learning' : state.guestFocus
+        ) as JourneyFocus | null;
+        return { ...state, guestFocus };
+      },
+    },
   ),
 );

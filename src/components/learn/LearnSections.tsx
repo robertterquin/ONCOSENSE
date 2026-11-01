@@ -127,12 +127,10 @@ export function ForYou({
   picks,
   myCancer,
   askCancer,
-  caring,
 }: {
   picks: ForYouPick[];
   myCancer: CancerType | null;
   askCancer: boolean;
-  caring: boolean;
 }) {
   const { palette } = useDesign();
   const changeCancer = () => router.push('/journey/cancer');
@@ -146,7 +144,7 @@ export function ForYou({
           ]}>
           <View style={styles.mineTop}>
             <Text variant="caption" tone="onActionTint" style={styles.flex1}>
-              {caring ? "You're caring for someone with" : 'Your cancer'}
+              Your cancer
             </Text>
             <PressableScale
               feedback="fade"
@@ -181,7 +179,7 @@ export function ForYou({
         <Section>
           <ListRow
             icon="plus"
-            title={caring ? 'Add the cancer they have' : 'Add your cancer'}
+            title="Add your cancer"
             subtitle="Its guide goes first here"
             titleTone="action"
             onPress={changeCancer}
