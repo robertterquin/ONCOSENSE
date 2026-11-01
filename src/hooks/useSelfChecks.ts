@@ -66,6 +66,26 @@ export type FollowStatus = {
 
 let reminderSynced = false;
 
+/**
+ * The cancers someone follows (their own list, or the defaults for their sex and age). A
+ * survivor's own cancer is left out: its follow-up is set by their care team, not the
+ * average-risk schedule.
+ */
+export function useFollowedCancers(): { followed: CancerKey[]; careTeamCancer: CancerKey | null } {
+  const user = useUser();
+  const gender = userGender(user);
+  const age = userAge(user);
+  const chosen = useSelfCheckStore((state) => state.followed);
+  const focus = useFocus();
+  const myCancerId = useMyCancerId();
+  const myCancer = (useCancerTypes().data ?? []).find((cancer) => cancer.id === myCancerId);
+  const careTeamCancer = focus === 'finished' && myCancer ? cancerKeyword(myCancer.name) : null;
+  const followed = (chosen ?? defaultFollowed(gender, age)).filter(
+    (key) => cancerAppliesToSex(key, gender) && key !== careTeamCancer,
+  );
+  return { followed, careTeamCancer };
+}
+
 /** The person's self-checks with their due status, and Today's next step. */
 export function useSelfChecks(now: Date = new Date()) {
   const guides = useSelfCheckGuides();
@@ -87,10 +107,7 @@ export function useSelfChecks(now: Date = new Date()) {
     cancerAppliesToSex(cancerKeyword(guide.cancerType), gender),
   );
   const cancers = useCancerTypes().data ?? [];
-  const focus = useFocus();
-  const myCancerId = useMyCancerId();
-  const myCancer = cancers.find((c) => c.id === myCancerId) ?? null;
-  const myCancerKey = myCancer ? cancerKeyword(myCancer.name) : null;
+  const { followed, careTeamCancer } = useFollowedCancers();
 
   const status = (guide: SelfCheckGuide): GuideStatus => {
     const lastDone = lastDoneDate(state, guide.id);
@@ -107,12 +124,6 @@ export function useSelfChecks(now: Date = new Date()) {
       changeNoted,
     };
   };
-  // Survivors' follow-up for their own cancer is set by their care team, not the
-  // average-risk schedule, so it's left out of their checks and tests.
-  const careTeamCancer = focus === 'finished' ? myCancerKey : null;
-  const followed = (state.followed ?? defaultFollowed(gender, age)).filter(
-    (key) => cancerAppliesToSex(key, gender) && key !== careTeamCancer,
-  );
   const mine = chosenGuides(all, followed);
 
   // Screening tests and warning signs for the followed cancers (design refresh Phase 23).

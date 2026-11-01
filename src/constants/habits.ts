@@ -1,3 +1,4 @@
+import type { CancerKey } from '@/lib/screening';
 import type { PreventionTip } from '@/types/preventionTip';
 
 // The habits in Learn › Habits, reviewed against WHO, WCRF/AICR, the American Cancer
@@ -15,6 +16,13 @@ export type Habit = PreventionTip & {
   audience: HabitAudience;
   /** Only offered to people who said they smoke. */
   smokersOnly?: boolean;
+  /** Cancers whose risk it lowers (WCRF/AICR, IARC, WHO); ranks it for people who follow them. */
+  lowers?: CancerKey[];
+  /**
+   * After treatment for this cancer, why it may help (American Cancer Society guideline for
+   * cancer survivors, 2022). Only where there's evidence for that cancer.
+   */
+  afterCancer?: Partial<Record<CancerKey, string>>;
 };
 
 type HabitInput = Omit<Habit, 'iconName' | 'dateVerified' | 'displayOrder' | 'isActive'>;
@@ -38,6 +46,8 @@ export const HABITS: Habit[] = (
       category: 'Diet',
       title: 'Eat plants',
       description: 'Vegetables, fruit, whole grains and beans',
+      lowers: ['colorectal'],
+      afterCancer: { colorectal: 'Linked to longer survival after colorectal cancer' },
       detailedInfo:
         'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
       sourceName: 'World Cancer Research Fund',
@@ -50,6 +60,11 @@ export const HABITS: Habit[] = (
       category: 'Exercise',
       title: 'Move 30 minutes',
       description: 'A brisk walk counts',
+      lowers: ['colorectal', 'breast', 'uterine'],
+      afterCancer: {
+        colorectal: 'Linked to a lower chance of colon cancer coming back',
+        breast: 'Linked to a lower chance of breast cancer coming back',
+      },
       detailedInfo:
         'Being active lowers the risk of colon, breast and endometrial cancer. Aim for 150 minutes a week, about 30 minutes on five days, and sit less: get up and move every hour.',
       sourceName: 'American Cancer Society',
@@ -62,6 +77,11 @@ export const HABITS: Habit[] = (
       category: 'Lifestyle',
       title: 'Alcohol-free day',
       description: 'For cancer, the safest amount is none',
+      lowers: ['breast', 'colorectal', 'liver', 'oral', 'stomach'],
+      afterCancer: {
+        breast: 'Less alcohol may lower the chance of a new breast cancer',
+        liver: 'Advised after liver cancer, to protect your liver',
+      },
       detailedInfo:
         'Alcohol causes at least seven types of cancer, including breast, liver and colorectal cancer. There is no safe amount, so every day without it lowers your risk.',
       sourceName: 'World Health Organization (WHO)',
@@ -74,6 +94,8 @@ export const HABITS: Habit[] = (
       category: 'Lifestyle',
       title: 'Sun-safe outside',
       description: 'Shade, sleeves and sunscreen',
+      lowers: ['skin'],
+      afterCancer: { skin: 'Lowers the chance of a new skin cancer' },
       detailedInfo:
         "The sun's UV rays cause most skin cancers. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use sunscreen of SPF 30 or higher.",
       sourceName: 'Skin Cancer Foundation',
@@ -82,11 +104,13 @@ export const HABITS: Habit[] = (
     {
       id: '9a1536e0-968d-4d38-a9f9-c3f4e872bfa9',
       kind: 'daily',
-      audience: 'prevention',
+      // Also during treatment: quitting helps treatment work.
+      audience: 'all',
       smokersOnly: true,
       category: 'Lifestyle',
       title: 'Smoke-free day',
       description: 'No cigarettes or vapes today',
+      lowers: ['lung', 'oral', 'cervical', 'stomach', 'liver', 'colorectal', 'leukemia'],
       detailedInfo:
         'Tobacco is the biggest single cause of cancer. Stopping at any age lowers your risk, and every smoke-free day counts. A doctor or health center can help you quit.',
       sourceName: 'National Cancer Institute (NCI)',
@@ -123,6 +147,7 @@ export const HABITS: Habit[] = (
       category: 'Prevention',
       title: 'HPV vaccine',
       description: 'Protects against cervical and other cancers',
+      lowers: ['cervical', 'oral'],
       detailedInfo:
         "The HPV vaccine prevents most cervical cancers and some throat and genital cancers. It works best before age 15; adults can ask a doctor whether it's right for them.",
       sourceName: 'World Health Organization (WHO)',
@@ -135,6 +160,7 @@ export const HABITS: Habit[] = (
       category: 'Prevention',
       title: 'Hepatitis B vaccine',
       description: 'Protects against liver cancer',
+      lowers: ['liver'],
       detailedInfo:
         "Hepatitis B infection can lead to liver cancer, and the vaccine prevents it. Ask a doctor or health center if you're not sure you've had it.",
       sourceName: 'World Health Organization (WHO)',
@@ -159,6 +185,7 @@ export const HABITS: Habit[] = (
       category: 'Weight',
       title: 'Know your healthy weight',
       description: 'Excess body fat is linked to 13 cancers',
+      lowers: ['breast', 'colorectal', 'uterine', 'liver', 'ovarian', 'thyroid', 'stomach'],
       detailedInfo:
         'Excess body fat raises the risk of at least 13 cancers. Ask a health worker to check your weight and waist, and let the daily habits do the rest.',
       sourceName: 'American Cancer Society',

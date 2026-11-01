@@ -17,6 +17,7 @@ import {
 } from '@/components/ui';
 import { decorative } from '@/components/ui/a11y';
 import { HABITS, MAX_TRACKED, type Habit } from '@/constants/habits';
+import { useMyCancer } from '@/hooks/useCancerInfo';
 import { useFocus } from '@/hooks/useFocus';
 import { useHabitPlan } from '@/hooks/useHabits';
 import type { GuideStatus } from '@/hooks/useSelfChecks';
@@ -28,9 +29,10 @@ import {
   iconForPreventionTip,
   type BodySystem,
 } from '@/lib/learn';
+import { cancerKeyword } from '@/lib/help';
 import { openWebPage } from '@/lib/links';
 import type { ForYouPick } from '@/lib/forYou';
-import { habitWeek, type Smoker } from '@/lib/habits';
+import { habitWeek, type HabitReason, type Smoker } from '@/lib/habits';
 import { haptics } from '@/lib/haptics';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
@@ -295,10 +297,13 @@ export function HabitRow({
   tip,
   onPress,
   once = false,
+  reason,
 }: {
   tip: PreventionTip;
   onPress: () => void;
   once?: boolean;
+  /** Why it's shown to this person, in place of its description. */
+  reason?: HabitReason | null;
 }) {
   const isDone = useHabitsStore((state) =>
     once ? state.isDoneEver(tip.id) : state.isDone(tip.id),
@@ -309,8 +314,8 @@ export function HabitRow({
     <ListRow
       title={tip.title}
       titleTone={isDone ? 'muted' : 'ink'}
-      subtitle={isDone ? (once ? 'Done' : 'Done today') : tip.description}
-      subtitleTone={isDone ? 'help' : 'muted'}
+      subtitle={isDone ? (once ? 'Done' : 'Done today') : (reason?.text ?? tip.description)}
+      subtitleTone={isDone ? 'help' : reason?.linked ? 'action' : 'muted'}
       onPress={onPress}
       accessibilityHint="Opens the details"
       leading={
@@ -434,50 +439,18 @@ export function HabitResults({ habits }: { habits: Habit[] }) {
 }
 
 /**
- * Learn › Habits: why each habit helps, with its source, and no ticks. Tracking is on the
- * Habits screen, opened from here, Today and Journey.
- */
-export function AboutHabits() {
-  const [open, setOpen] = useState<Habit | null>(null);
-  const group = (kind: Habit['kind'], audience?: Habit['audience']) =>
-    HABITS.filter((habit) => habit.kind === kind && (!audience || habit.audience === audience));
-  const row = (habit: Habit) => (
-    <HabitInfoRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
-  );
-  return (
-    <View style={styles.sectionGap}>
-      <Section>
-        <ListRow
-          icon="target"
-          title="Track your habits"
-          subtitle="Today's ticks and your week"
-          onPress={() => router.push('/habits')}
-        />
-      </Section>
-      <Section title="Every day" subtitle="Lower your risk">
-        {group('daily', 'prevention').map(row)}
-      </Section>
-      <Section title="During treatment" subtitle="Small things that help">
-        {group('daily', 'treatment').map(row)}
-      </Section>
-      <Section title="Protect yourself" subtitle="Once, not every day">
-        {group('once').map(row)}
-      </Section>
-      <Section title="Feel well" subtitle="Good for you, not proven to lower cancer risk">
-        {group('wellbeing').map(row)}
-      </Section>
-      <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
-    </View>
-  );
-}
-
-/**
  * The Habits screen: the daily habits someone tracks under a ring and their week, then the
  * once-only list and the wellbeing ones. Treatment shows gentle "feel better" habits.
  */
 export function LowerYourRisk() {
   const plan = useHabitPlan();
-  const inTreatment = useFocus() === 'treatment';
+  const focus = useFocus();
+  const inTreatment = focus === 'treatment';
+  const myCancer = useMyCancer();
+  const survivor = focus === 'finished' && myCancer ? myCancer : null;
+  const helpsAfter =
+    survivor && plan.tracked.some((habit) => habit.afterCancer?.[cancerKeyword(survivor.name)]);
+  const picked = plan.tracked.some((habit) => plan.reason(habit)?.linked);
   const [open, setOpen] = useState<Habit | null>(null);
   const [choosing, setChoosing] = useState(false);
   const trackedIds = plan.tracked.map((habit) => habit.id);
@@ -503,7 +476,11 @@ export function LowerYourRisk() {
                   ? 'One more to finish today'
                   : inTreatment
                     ? 'Small things that help during treatment'
-                    : 'Small steps that lower your risk'}
+                    : helpsAfter
+                      ? `Habits that may help after ${survivor.name.toLowerCase()}`
+                      : picked
+                        ? 'Picked for the cancers you follow'
+                        : 'Small steps that lower your risk'}
             </Text>
           </View>
         </View>
@@ -512,23 +489,41 @@ export function LowerYourRisk() {
 
       <Section>
         {plan.tracked.map((habit) => (
-          <HabitRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
+          <HabitRow
+            key={habit.id}
+            tip={habit}
+            reason={plan.reason(habit)}
+            onPress={() => setOpen(habit)}
+          />
         ))}
-        {inTreatment ? null : (
-          <ListRow title="Change habits" titleTone="action" onPress={() => setChoosing(true)} />
-        )}
+        <ListRow
+          title={inTreatment ? 'Do you smoke or vape?' : 'Change habits'}
+          titleTone="action"
+          onPress={() => setChoosing(true)}
+        />
       </Section>
       {inTreatment ? (
         <Text variant="supporting" tone="muted" style={styles.footnote}>
           Even short walks can ease treatment tiredness. Ask your care team what&apos;s right for
-          you.
+          you, and for help to quit if you smoke.
+        </Text>
+      ) : survivor ? (
+        <Text variant="supporting" tone="muted" style={styles.footnote}>
+          Ask your care team which activity is right for you. From the American Cancer Society
+          guideline for cancer survivors.
         </Text>
       ) : null}
 
       {plan.once.length ? (
         <Section title="Protect yourself" subtitle="Once, not every day">
           {plan.once.map((habit) => (
-            <HabitRow key={habit.id} tip={habit} once onPress={() => setOpen(habit)} />
+            <HabitRow
+              key={habit.id}
+              tip={habit}
+              once
+              reason={plan.reason(habit)}
+              onPress={() => setOpen(habit)}
+            />
           ))}
         </Section>
       ) : null}
@@ -545,7 +540,8 @@ export function LowerYourRisk() {
       <ChooseHabits
         visible={choosing}
         onClose={() => setChoosing(false)}
-        options={plan.options}
+        options={inTreatment ? null : plan.options}
+        reason={plan.reason}
         tracked={trackedIds}
       />
     </View>
@@ -586,16 +582,21 @@ function WeekDot({ done, today }: { done: boolean; today: boolean }) {
   );
 }
 
-/** Pick up to three daily habits, and say once whether you smoke. */
+/**
+ * Pick up to three daily habits, and say once whether you smoke. In treatment (no
+ * `options`), only the smoking question.
+ */
 function ChooseHabits({
   visible,
   onClose,
   options,
+  reason,
   tracked,
 }: {
   visible: boolean;
   onClose: () => void;
-  options: Habit[];
+  options: Habit[] | null;
+  reason: (habit: Habit) => HabitReason | null;
   tracked: string[];
 }) {
   const smoker = useHabitsStore((state) => state.smoker);
@@ -612,31 +613,37 @@ function ChooseHabits({
     }
   };
   return (
-    <Sheet visible={visible} onClose={onClose} title="Your habits">
-      <Text variant="body" tone="muted">
-        Pick up to {MAX_TRACKED}. A few habits you keep beat many you don&apos;t.
-      </Text>
-      <Section>
-        {options.map((habit) => {
-          const on = tracked.includes(habit.id);
-          return (
-            <ListRow
-              key={habit.id}
-              title={habit.title}
-              subtitle={habit.description}
-              accessibilityLabel={`${habit.title}, ${on ? 'tracked' : 'not tracked'}`}
-              onPress={() => toggle(habit.id)}
-              accessory={
-                <Icon
-                  name={on ? 'circle-check' : 'circle'}
-                  size={26}
-                  tone={on ? 'action' : 'muted'}
+    <Sheet visible={visible} onClose={onClose} title={options ? 'Your habits' : 'Smoking'}>
+      {options ? (
+        <>
+          <Text variant="body" tone="muted">
+            Pick up to {MAX_TRACKED}. A few habits you keep beat many you don&apos;t.
+          </Text>
+          <Section>
+            {options.map((habit) => {
+              const on = tracked.includes(habit.id);
+              const why = reason(habit);
+              return (
+                <ListRow
+                  key={habit.id}
+                  title={habit.title}
+                  subtitle={why?.text ?? habit.description}
+                  subtitleTone={why?.linked ? 'action' : 'muted'}
+                  accessibilityLabel={`${habit.title}, ${on ? 'tracked' : 'not tracked'}`}
+                  onPress={() => toggle(habit.id)}
+                  accessory={
+                    <Icon
+                      name={on ? 'circle-check' : 'circle'}
+                      size={26}
+                      tone={on ? 'action' : 'muted'}
+                    />
+                  }
                 />
-              }
-            />
-          );
-        })}
-      </Section>
+              );
+            })}
+          </Section>
+        </>
+      ) : null}
       <Text variant="section" accessibilityRole="header">
         Do you smoke or vape?
       </Text>
@@ -647,7 +654,8 @@ function ChooseHabits({
           setSmoker(value);
           // Smoke-free goes first for smokers; their other picks fill the rest.
           const smokeFree = HABITS.find((habit) => habit.smokersOnly)?.id;
-          if (smokeFree && value === 'yes' && !tracked.includes(smokeFree)) {
+          // In treatment every habit is tracked, so there's no pick to change.
+          if (options && smokeFree && value === 'yes' && !tracked.includes(smokeFree)) {
             setChosen([smokeFree, ...tracked].slice(0, MAX_TRACKED));
           }
         }}
