@@ -2,12 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { FormTextField } from '@/components/account/FormTextField';
 import { LegalSheet, type LegalTitle } from '@/components/account/LegalSheet';
 import { PasswordRules } from '@/components/account/PasswordRules';
-import { Button, Chip, Screen, Text } from '@/components/ui';
+import { Button, Chip, Icon, Screen, Text } from '@/components/ui';
+import { useDesign } from '@/theme/useTheme';
 import { GENDER_OPTIONS } from '@/constants/app';
 import { MESSAGES, registerSchema, type RegisterForm } from '@/constants/validation';
 import { useSignUp } from '@/hooks/useAuth';
@@ -20,6 +21,7 @@ import { space } from '@/theme/tokens';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/welcome'));
 
 export default function CreateAccountScreen() {
+  const { palette } = useDesign();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const signUp = useSignUp();
@@ -126,26 +128,45 @@ export default function CreateAccountScreen() {
             </View>
           )}
         />
+        {/* A round checkbox like the habit ticks; the two names open their pages. */}
         <View style={styles.terms}>
-          <Chip
-            label="I agree to the Terms of service and Privacy policy"
-            selected={termsAccepted}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: termsAccepted }}
+            accessibilityLabel="I agree to the Terms of service and Privacy policy"
+            hitSlop={8}
             onPress={() => setTermsAccepted(!termsAccepted)}
-          />
-          <View style={styles.links}>
-            <Button
-              title="Read the terms"
-              variant="quiet"
-              small
-              onPress={() => setLegal('Terms of service')}
-            />
-            <Button
-              title="Read the privacy policy"
-              variant="quiet"
-              small
-              onPress={() => setLegal('Privacy policy')}
-            />
-          </View>
+            style={[
+              styles.circle,
+              termsAccepted
+                ? { backgroundColor: palette.action, borderColor: palette.action }
+                : { borderColor: palette.muted },
+            ]}>
+            {termsAccepted ? <Icon name="check" size={16} tone="onAction" bold /> : null}
+          </Pressable>
+          <Text
+            variant="supporting"
+            style={styles.flex1}
+            onPress={() => setTermsAccepted(!termsAccepted)}>
+            I agree to the{' '}
+            <Text
+              variant="supporting"
+              tone="action"
+              accessibilityRole="link"
+              style={styles.link}
+              onPress={() => setLegal('Terms of service')}>
+              Terms of service
+            </Text>{' '}
+            and{' '}
+            <Text
+              variant="supporting"
+              tone="action"
+              accessibilityRole="link"
+              style={styles.link}
+              onPress={() => setLegal('Privacy policy')}>
+              Privacy policy
+            </Text>
+          </Text>
         </View>
         <Button title="Create account" loading={signUp.isPending} onPress={onSubmit} />
         <View style={styles.footer}>
@@ -165,7 +186,16 @@ const styles = StyleSheet.create({
   // Matches a text field: label, then the control.
   field: { gap: space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
-  terms: { gap: space.xs },
-  links: { flexDirection: 'row', flexWrap: 'wrap' },
+  terms: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  circle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flex1: { flex: 1 },
+  link: { textDecorationLine: 'underline' },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },
 });
