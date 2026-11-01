@@ -83,6 +83,29 @@ export function isNear(resource: Pick<Resource, 'location'>, region: Region | nu
   return own === region || own === 'Nationwide' || own === 'Online';
 }
 
+/** "breast" for "Breast cancer", "lymphoma" for "Lymphoma": the word questions and groups use. */
+export function cancerKeyword(cancerName: string): string {
+  return cancerName.trim().split(/\s+/)[0].toLowerCase();
+}
+
+/**
+ * Support groups for a cancer page: groups about that cancer, and groups about no one
+ * cancer. A breast cancer group isn't shown on the prostate page.
+ */
+export function supportGroupsFor<T extends Pick<Resource, 'name' | 'description'>>(
+  cancerName: string,
+  groups: T[],
+  allCancerNames: string[],
+): T[] {
+  const keywords = allCancerNames.map(cancerKeyword);
+  const own = cancerKeyword(cancerName);
+  return groups.filter((group) => {
+    const text = `${group.name} ${group.description}`.toLowerCase();
+    const about = keywords.filter((word) => text.includes(word));
+    return about.length === 0 || about.includes(own);
+  });
+}
+
 /** Whether a resource matches Help's search: its name, place, number or description. */
 export function matchesResource(
   resource: Pick<Resource, 'name' | 'location' | 'phone' | 'description'>,

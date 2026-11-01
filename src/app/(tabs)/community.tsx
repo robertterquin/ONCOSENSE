@@ -23,6 +23,8 @@ import { confirm } from '@/lib/confirm';
 import { useIsSignedIn } from '@/stores/authStore';
 import { space } from '@/theme/tokens';
 import { FORUM_CATEGORIES } from '@/types/question';
+import { useMyCancer } from '@/hooks/useCancerInfo';
+import { cancerKeyword } from '@/lib/help';
 
 // The Community tab (redesign Phase 5, iOS layout in Phase 15): questions by topic, an
 // "Ask a question" button in the title row and the members-not-doctors line under the
@@ -48,9 +50,19 @@ export default function CommunityTab() {
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
+  // Opens on the person's own cancer ("Which cancer?"); All and the topics are a tap away.
+  const myCancer = useMyCancer();
+  const [onMyCancer, setOnMyCancer] = useState(true);
+  const cancerFilter = myCancer && onMyCancer && !searchQuery && !category ? myCancer : null;
   // Keep "2 minutes ago" fresh.
   const now = useNow(10_000);
-  const questions = useQuestions({ category, searchQuery, sortBy: 'recent' });
+  // shortcut: matches the cancer's name in the question's words; use a cancer tag once
+  // questions have one (Phase 21).
+  const questions = useQuestions({
+    category,
+    searchQuery: searchQuery ?? (cancerFilter ? cancerKeyword(cancerFilter.name) : null),
+    sortBy: 'recent',
+  });
 
   // Search runs on submit, and clearing the box resets it.
   const onChangeSearch = (text: string) => {
@@ -90,13 +102,27 @@ export default function CommunityTab() {
         contentContainerStyle={styles.topics}
         accessibilityRole="radiogroup"
         accessibilityLabel="Topic">
+        {myCancer ? (
+          <Chip
+            kind="radio"
+            label={myCancer.name}
+            selected={cancerFilter !== null}
+            onPress={() => {
+              setCategory(null);
+              setOnMyCancer(true);
+            }}
+          />
+        ) : null}
         {[null, ...FORUM_CATEGORIES].map((topic) => (
           <Chip
             key={topic ?? 'all'}
             kind="radio"
             label={topic ?? 'All'}
-            selected={category === topic}
-            onPress={() => setCategory(topic)}
+            selected={category === topic && cancerFilter === null}
+            onPress={() => {
+              setCategory(topic);
+              setOnMyCancer(false);
+            }}
           />
         ))}
       </ScrollView>
@@ -112,9 +138,19 @@ export default function CommunityTab() {
           ) : questions.data.length === 0 ? (
             <EmptyState
               icon="message"
-              title={searchQuery ? `No questions about "${searchQuery}"` : 'No questions yet'}
+              title={
+                searchQuery
+                  ? `No questions about "${searchQuery}"`
+                  : cancerFilter
+                    ? `No questions about ${cancerFilter.name.toLowerCase()} yet`
+                    : 'No questions yet'
+              }
               message={
-                searchQuery ? 'Try other words, or ask it yourself.' : 'Be the first to ask.'
+                searchQuery
+                  ? 'Try other words, or ask it yourself.'
+                  : cancerFilter
+                    ? 'Tap All to see every question, or ask the first one.'
+                    : 'Be the first to ask.'
               }
               action={{ label: 'Ask a question', onPress: () => askQuestion(signedIn) }}
             />

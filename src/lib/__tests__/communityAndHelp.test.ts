@@ -1,6 +1,14 @@
 import { CRISIS_LINE } from '@/constants/crisis';
 import { initials, questionMeta } from '@/lib/community';
-import { callLabel, HELP_SECTIONS, isNear, matchesResource, regionFor } from '@/lib/help';
+import {
+  callLabel,
+  cancerKeyword,
+  HELP_SECTIONS,
+  isNear,
+  matchesResource,
+  regionFor,
+  supportGroupsFor,
+} from '@/lib/help';
 import { FORUM_CATEGORIES } from '@/types/question';
 
 describe('regions for the Near filter', () => {
@@ -91,5 +99,32 @@ describe('matchesResource', () => {
     expect(matchesResource(doh, 'health 1555')).toBe(true);
     expect(matchesResource(doh, '  DEPARTMENT  ')).toBe(true);
     expect(matchesResource(doh, 'health cebu')).toBe(false);
+  });
+});
+
+describe('support groups on a cancer page', () => {
+  const cancers = ['Breast cancer', 'Prostate cancer', 'Lymphoma'];
+  const groups = [
+    { name: 'ICanServe Foundation', description: 'Breast cancer support community' },
+    { name: 'Cancer Warriors Foundation', description: 'Peer support for cancer patients' },
+    { name: 'Pink Ribbon Brigade PH', description: 'Online breast cancer survivor community' },
+  ];
+  const names = (cancer: string) => supportGroupsFor(cancer, groups, cancers).map((g) => g.name);
+
+  it('shows groups about that cancer and general ones', () => {
+    expect(names('Breast cancer')).toEqual([
+      'ICanServe Foundation',
+      'Cancer Warriors Foundation',
+      'Pink Ribbon Brigade PH',
+    ]);
+  });
+
+  it('leaves out groups about another cancer', () => {
+    expect(names('Prostate cancer')).toEqual(['Cancer Warriors Foundation']);
+  });
+
+  it('uses the first word of the name', () => {
+    expect(cancerKeyword('Breast cancer')).toBe('breast');
+    expect(cancerKeyword('Lymphoma')).toBe('lymphoma');
   });
 });

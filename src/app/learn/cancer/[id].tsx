@@ -11,9 +11,13 @@ import {
   LoadingState,
   PressableScale,
   Screen,
+  Section,
   Text,
 } from '@/components/ui';
-import { useCancerType } from '@/hooks/useCancerInfo';
+import { ResourceRow } from '@/components/help/ResourceRow';
+import { useCancerType, useCancerTypes } from '@/hooks/useCancerInfo';
+import { useAllResources } from '@/hooks/useResources';
+import { supportGroupsFor } from '@/lib/help';
 import { useSelfCheckGuides } from '@/hooks/usePrevention';
 import { queryKeys } from '@/hooks/queryKeys';
 import { bodySystemForCancer, firstSentence, guideForCancer, iconForCancer } from '@/lib/learn';
@@ -75,6 +79,9 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
   const { palette } = useDesign();
   const guides = useSelfCheckGuides();
   const guide = guides.data ? guideForCancer(guides.data, cancer) : null;
+  const resources = useAllResources();
+  const cancerNames = (useCancerTypes().data ?? []).map((type) => type.name);
+  const groups = supportGroupsFor(cancer.name, resources.data?.supportGroups ?? [], cancerNames);
   const system = bodySystemForCancer(cancer.name);
   const statistic = firstSentence(cancer.statistics);
   const scrollRef = useRef<ScrollViewInstance | null>(null);
@@ -187,6 +194,16 @@ function CancerDetails({ cancer }: { cancer: CancerType }) {
           <Text variant="reading">{guide?.whenToSeeDoctor || GENERAL_DOCTOR_ADVICE}</Text>
         </Topic>
       </View>
+
+      {groups.length ? (
+        <Section
+          title="Talk to people who've been there"
+          subtitle="Support groups for patients, survivors and families">
+          {groups.map((group) => (
+            <ResourceRow key={group.id} resource={group} />
+          ))}
+        </Section>
+      ) : null}
 
       {cancer.sourceName && cancer.sourceUrl ? (
         <Button
