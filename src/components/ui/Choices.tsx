@@ -83,7 +83,11 @@ export function SegmentedControl<T extends string>({
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-      style={[styles.segments, isCompact && styles.segmentsCompact, { backgroundColor: palette.raised }]}>
+      style={[
+        styles.segments,
+        isCompact && styles.segmentsCompact,
+        { backgroundColor: palette.raised },
+      ]}>
       {width > 0 && index >= 0 ? (
         <Animated.View
           pointerEvents="none"
@@ -160,5 +164,48 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
+  },
+});
+
+/**
+ * A round checkbox (the sign-up terms, "Keep me signed in"): filled with a tick when on.
+ * Put the label beside it; the label can toggle it too.
+ */
+export function Checkbox({
+  checked,
+  onChange,
+  accessibilityLabel,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  accessibilityLabel: string;
+}) {
+  const { palette } = useDesign();
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      accessibilityLabel={accessibilityLabel}
+      hitSlop={8}
+      onPress={() => onChange(!checked)}
+      style={[
+        checkboxStyles.circle,
+        checked
+          ? { backgroundColor: palette.action, borderColor: palette.action }
+          : { borderColor: palette.muted },
+      ]}>
+      {checked ? <Icon name="check" size={16} tone="onAction" bold /> : null}
+    </Pressable>
+  );
+}
+
+const checkboxStyles = StyleSheet.create({
+  circle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

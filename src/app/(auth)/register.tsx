@@ -2,13 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { FormTextField } from '@/components/account/FormTextField';
 import { LegalSheet, type LegalTitle } from '@/components/account/LegalSheet';
 import { PasswordRules } from '@/components/account/PasswordRules';
-import { Button, Chip, Icon, Screen, Text } from '@/components/ui';
-import { useDesign } from '@/theme/useTheme';
+import { Button, Checkbox, Chip, Screen, Text } from '@/components/ui';
 import { GENDER_OPTIONS } from '@/constants/app';
 import { MESSAGES, registerSchema, type RegisterForm } from '@/constants/validation';
 import { useSignUp } from '@/hooks/useAuth';
@@ -21,7 +20,6 @@ import { space } from '@/theme/tokens';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/welcome'));
 
 export default function CreateAccountScreen() {
-  const { palette } = useDesign();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const signUp = useSignUp();
@@ -130,20 +128,11 @@ export default function CreateAccountScreen() {
         />
         {/* A round checkbox like the habit ticks; the two names open their pages. */}
         <View style={styles.terms}>
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: termsAccepted }}
+          <Checkbox
+            checked={termsAccepted}
+            onChange={setTermsAccepted}
             accessibilityLabel="I agree to the Terms of service and Privacy policy"
-            hitSlop={8}
-            onPress={() => setTermsAccepted(!termsAccepted)}
-            style={[
-              styles.circle,
-              termsAccepted
-                ? { backgroundColor: palette.action, borderColor: palette.action }
-                : { borderColor: palette.muted },
-            ]}>
-            {termsAccepted ? <Icon name="check" size={16} tone="onAction" bold /> : null}
-          </Pressable>
+          />
           <Text
             variant="supporting"
             style={styles.flex1}
@@ -187,14 +176,6 @@ const styles = StyleSheet.create({
   field: { gap: space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
   terms: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
-  circle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   flex1: { flex: 1 },
   link: { textDecorationLine: 'underline' },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },

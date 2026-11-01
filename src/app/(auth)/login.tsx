@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { FormTextField } from '@/components/account/FormTextField';
-import { Button, ListRow, Screen, Section, Switch, Text } from '@/components/ui';
+import { Button, Checkbox, Screen, Text } from '@/components/ui';
 import { loginSchema, type LoginForm } from '@/constants/validation';
 import { continueAsGuest, useSignIn } from '@/hooks/useAuth';
 import { space } from '@/theme/tokens';
@@ -47,19 +47,16 @@ export default function SignInScreen() {
           textContentType="password"
           onSubmitEditing={() => onSubmit()}
         />
-        <Section divided={false}>
-          <ListRow
-            title="Keep me signed in"
-            subtitle="On this phone"
-            accessory={
-              <Switch
-                accessibilityLabel="Keep me signed in"
-                value={keepSignedIn}
-                onValueChange={setKeepSignedIn}
-              />
-            }
+        <View style={styles.keep}>
+          <Checkbox
+            checked={keepSignedIn}
+            onChange={setKeepSignedIn}
+            accessibilityLabel="Keep me signed in on this phone"
           />
-        </Section>
+          <Text variant="body" onPress={() => setKeepSignedIn(!keepSignedIn)}>
+            Keep me signed in
+          </Text>
+        </View>
         <Button title="Sign in" loading={signIn.isPending} onPress={onSubmit} />
         <Button
           title="Forgot your password?"
@@ -94,6 +91,7 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
+  keep: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   fill: { flex: 1 },
   divider: { alignItems: 'center' },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },

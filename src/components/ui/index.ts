@@ -2,7 +2,7 @@
 // Screens import from '@/components/ui'.
 
 export { Button, IconButton, type ButtonVariant } from './Button';
-export { Chip, SegmentedControl } from './Choices';
+export { Checkbox, Chip, SegmentedControl } from './Choices';
 export { DateField, type DateFieldProps } from './DateField';
 export { DateRow, PickerRow } from './FormRows';
 export { Icon, ICON_NAMES, type IconName } from './Icon';
