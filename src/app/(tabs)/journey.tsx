@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 
 import { MyHealth } from '@/components/journey/MyHealth';
+import { useMyCancer } from '@/hooks/useCancerInfo';
 import { StyleSheet, View } from 'react-native';
 
 import { ProfileButton } from '@/components/account/ProfileButton';
@@ -73,6 +74,7 @@ export default function JourneyTab() {
 
 function Dashboard() {
   const focus = useFocus();
+  const myCancer = useMyCancer();
   const now = useNow(60_000);
   const { diagnosisDate, cancerFreeDate } = useJourneySetup();
   const entries = useJourneyEntries();
@@ -94,7 +96,9 @@ function Dashboard() {
       inTabs
       tab="journey"
       title="Journey"
-      subtitle={focusSubtitle(focus, diagnosisDate, cancerFreeDate)}
+      subtitle={[myCancer?.name, focusSubtitle(focus, diagnosisDate, cancerFreeDate)]
+        .filter(Boolean)
+        .join(' · ')}
       titleAside={<ProfileButton />}
       onRefresh={refresh}
       refreshing={queries.some((query) => query.isRefetching)}>
