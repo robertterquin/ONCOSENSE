@@ -1,25 +1,20 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { DateField, Chip, Icon, ListRow, Sheet, Switch, Text } from '@/components/ui';
-import { useSelfChecks } from '@/hooks/useSelfChecks';
+import { Chip, DateField, Icon, ListRow, Sheet, Switch, Text } from '@/components/ui';
 import { formatTime } from '@/lib/dates';
-import {
-  rescheduleSelfCheckReminder,
-  setReminderTime,
-  setNotificationTypeEnabled,
-} from '@/lib/notifications/service';
+import { setReminderTime, setNotificationTypeEnabled } from '@/lib/notifications/service';
 import {
   useNotificationPrefs,
   type NotificationType,
   type ReminderTime,
 } from '@/stores/notificationStore';
-import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
 // One reminder in Settings (redesign Phase 6): a switch, and a sheet to change when it
-// fires (and, for self-checks, which guides).
+// fires (and, for self-checks, a link to Your checks).
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -94,7 +89,16 @@ export function ReminderRow({ type }: { type: NotificationType }) {
             ))}
           </View>
         ) : null}
-        {type === 'self_check' ? <GuidePicker /> : null}
+        {type === 'self_check' ? (
+          <ListRow
+            title="Choose your checks"
+            titleTone="action"
+            onPress={() => {
+              setEditing(false);
+              router.push('/checks');
+            }}
+          />
+        ) : null}
       </Sheet>
     </>
   );
@@ -123,33 +127,6 @@ function TimePicker({
           <Text variant="body">{formatTime(date)}</Text>
         </View>
       </DateField>
-    </View>
-  );
-}
-
-/** Which self-check guides count (the defaults come from the profile's gender). */
-function GuidePicker() {
-  const { all, mine } = useSelfChecks();
-  const setChosen = useSelfCheckStore((state) => state.setChosen);
-  const chosen = mine.map((status) => status.guide.id);
-  const toggle = (id: string) => {
-    const next = chosen.includes(id) ? chosen.filter((item) => item !== id) : [...chosen, id];
-    setChosen(next);
-    void rescheduleSelfCheckReminder();
-  };
-  return (
-    <View style={styles.field}>
-      <Text variant="row">Which guides</Text>
-      <View style={styles.chips}>
-        {all.map((status) => (
-          <Chip
-            key={status.guide.id}
-            label={status.guide.title}
-            selected={chosen.includes(status.guide.id)}
-            onPress={() => toggle(status.guide.id)}
-          />
-        ))}
-      </View>
     </View>
   );
 }

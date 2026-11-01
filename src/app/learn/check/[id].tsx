@@ -9,7 +9,9 @@ import {
   Banner,
   BottomActionBar,
   Button,
+  Icon,
   IconButton,
+  ListRow,
   ProgressSegments,
   RibbonMark,
   Tag,
@@ -20,8 +22,10 @@ import {
 } from '@/components/ui';
 import { useSelfCheckGuide } from '@/hooks/usePrevention';
 import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
-import { openWebPage } from '@/lib/links';
+import { formatShortDate, parseDbTimestamp } from '@/lib/dates';
+import { callPhone, openWebPage } from '@/lib/links';
 import { formatMonthDay } from '@/lib/selfCheck';
+import { useIsSignedIn } from '@/stores/authStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
@@ -29,10 +33,13 @@ import { useDesign } from '@/theme/useTheme';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 // The guided self-check (redesign Phase 3): one step at a time with the rest as a list,
-// read aloud on request, ending with "Mark as done" which sets the next due date and
-// moves the reminder. Illustrations are not part of v1.
+// read aloud on request. It ends by asking how it went (design refresh Phase 22): a
+// normal check sets the next due date; a noticed change says to see a doctor soon.
+// Illustrations are not part of v1.
 
-const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
+const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+const findCenter = () => router.navigate({ pathname: '/help', params: { section: 'screening' } });
+const DOH_HOTLINE = '1555';
 
 export default function SelfCheckScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -56,6 +63,9 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
   const [current, setCurrent] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [nextCheck, setNextCheck] = useState<Date | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [changed, setChanged] = useState<boolean | null>(null);
+  const signedIn = useIsSignedIn();
   const status = useSelfChecks().status(guide);
   const saved = useSelfCheckStore((state) => state.savedGuides.includes(guide.id));
   const toggleSaved = useSelfCheckStore((state) => state.toggleSavedGuide);
@@ -89,14 +99,28 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     });
   };
 
-  const finish = () => {
+  const ask = () => {
     stopReading();
-    setNextCheck(markSelfCheckDone(guide));
+    setAsking(true);
+  };
+  const finish = () => {
+    if (changed === null) return;
+    setNextCheck(markSelfCheckDone(guide, changed));
   };
 
   const bottomBar = nextCheck ? (
     <BottomActionBar>
-      <Button title="Back to Learn" onPress={() => router.navigate('/learn')} />
+      <Button title="Done" onPress={back} />
+    </BottomActionBar>
+  ) : asking ? (
+    <BottomActionBar>
+      <Button
+        title="Back"
+        variant="secondary"
+        onPress={() => setAsking(false)}
+        style={styles.flex1}
+      />
+      <Button title="Continue" disabled={changed === null} onPress={finish} style={styles.flex2} />
     </BottomActionBar>
   ) : steps.length ? (
     <BottomActionBar>
@@ -109,9 +133,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
         />
       ) : null}
       <Button
-        title={last ? 'Mark as done' : 'Next step'}
-        icon={last ? 'check' : undefined}
-        onPress={last ? finish : () => goTo(current + 1)}
+        title={last ? 'Finish' : 'Next step'}
+        onPress={last ? ask : () => goTo(current + 1)}
         style={styles.flex2}
       />
     </BottomActionBar>
@@ -131,7 +154,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
               showToast(saved ? 'Removed from saved' : 'Guide saved', saved ? 'info' : 'success');
             }}
           />
-          {steps.length && !nextCheck ? (
+          {steps.length && !nextCheck && !asking ? (
             <IconButton
               icon={speaking ? 'close' : 'volume'}
               look="tinted"
@@ -144,7 +167,43 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       title={guide.title}
       subtitle={[guide.frequency, guide.ageRecommendation].filter(Boolean).join(' · ')}
       bottomBar={bottomBar}>
-      {nextCheck ? (
+      {nextCheck && changed ? (
+        <View style={styles.change} accessibilityLiveRegion="polite">
+          <Text variant="heading" accessibilityRole="header">
+            See a doctor soon
+          </Text>
+          <Text variant="body" tone="muted">
+            You noted a change today. Most changes turn out to be harmless, but only a doctor can
+            tell. Book a check-up this week, and bring a note of what you noticed and when.
+          </Text>
+          <Button
+            title="Find a screening center"
+            icon="hospital"
+            variant="help"
+            onPress={findCenter}
+          />
+          <Button
+            title={`Call the DOH hotline, ${DOH_HOTLINE}`}
+            icon="phone"
+            variant="secondary"
+            onPress={() => callPhone(DOH_HOTLINE)}
+          />
+          {signedIn ? (
+            <Section>
+              <ListRow
+                icon="calendar"
+                title="Add an appointment"
+                subtitle="We'll remind you the evening before"
+                onPress={() => router.push('/journey/appointment')}
+              />
+            </Section>
+          ) : null}
+          <Text variant="supporting" tone="muted">
+            OncoSense doesn&apos;t send this to anyone. If you&apos;re worried right now, call your
+            doctor.
+          </Text>
+        </View>
+      ) : nextCheck ? (
         <View style={styles.done} accessibilityLiveRegion="polite">
           <RibbonMark height={96} weight={18} color={palette.action} draw />
           <Text variant="heading" accessibilityRole="header">
@@ -152,6 +211,35 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
           </Text>
           <Text variant="body" tone="muted" style={styles.centered}>
             {`Your next check is on ${formatMonthDay(nextCheck)}. We'll remind you.`}
+          </Text>
+        </View>
+      ) : asking ? (
+        <View style={styles.change}>
+          <Text variant="heading" accessibilityRole="header">
+            How did it go?
+          </Text>
+          <Section>
+            <ListRow
+              icon="check"
+              title="Everything looked normal"
+              subtitle="The same as last time"
+              accessory={
+                changed === false ? <Icon name="check" size={22} tone="action" bold /> : <></>
+              }
+              accessibilityLabel={`Everything looked normal${changed === false ? ', selected' : ''}`}
+              onPress={() => setChanged(false)}
+            />
+            <ListRow
+              icon="circle-alert"
+              title="I noticed a change"
+              subtitle="A lump, a new spot, pain or anything different"
+              accessory={changed ? <Icon name="check" size={22} tone="action" bold /> : <></>}
+              accessibilityLabel={`I noticed a change${changed ? ', selected' : ''}`}
+              onPress={() => setChanged(true)}
+            />
+          </Section>
+          <Text variant="supporting" tone="muted">
+            Most changes aren&apos;t cancer, but a doctor should look.
           </Text>
         </View>
       ) : (
@@ -216,6 +304,19 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
         {guide.whenToSeeDoctor}
       </Banner>
 
+      {status.history.length ? (
+        <Section title="Your checks">
+          {status.history.slice(0, 6).map((entry) => (
+            <ListRow
+              key={entry.date}
+              title={formatShortDate(parseDbTimestamp(entry.date))}
+              subtitle={entry.changed ? 'Noticed a change' : 'Everything normal'}
+              subtitleTone={entry.changed ? 'sunInk' : 'muted'}
+            />
+          ))}
+        </Section>
+      ) : null}
+
       <Button
         title={`Source: ${guide.sourceName}`}
         icon="external-link"
@@ -231,6 +332,7 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
   done: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
+  change: { gap: space.md, paddingTop: space.md },
   centered: { textAlign: 'center', maxWidth: 320 },
   flex2: { flex: 2 },
   progress: { gap: space.sm },

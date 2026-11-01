@@ -41,11 +41,15 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
   const title = allDone ? `Done for ${formatMonth(now)}` : 'Your checks';
   const done =
     checks.length === 1 ? 'Your check is done.' : `All ${checks.length} checks are done.`;
-  const body = allDone
-    ? `${done} The next one is your ${next.guide.cancerType.toLowerCase()} check on ${formatWeekdayDate(next.due)}.`
-    : snoozed
-      ? "We'll remind you tomorrow."
-      : `${checks.length - waiting.length} of ${checks.length} done. About 10 minutes each.`;
+  // A noted change (design refresh Phase 22) matters more than the next date.
+  const changed = checks.find((check) => check.changeNoted);
+  const body = changed
+    ? `You noted a change in your ${changed.guide.cancerType.toLowerCase()} check. See a doctor soon.`
+    : allDone
+      ? `${done} The next one is your ${next.guide.cancerType.toLowerCase()} check on ${formatWeekdayDate(next.due)}.`
+      : snoozed
+        ? "We'll remind you tomorrow."
+        : `${checks.length - waiting.length} of ${checks.length} done. About 10 minutes each.`;
 
   return (
     <View
@@ -71,7 +75,9 @@ export function ChecksCard({ checks, snoozed, onSnooze, now }: ChecksCardProps) 
       ) : (
         <View>
           {checks.map((check) => {
-            const label = checkStatusLabel(check.lastDone, check.due, now);
+            const label = check.changeNoted
+              ? 'Change noted, see a doctor'
+              : checkStatusLabel(check.lastDone, check.due, now);
             return (
               <View key={check.guide.id} style={styles.row}>
                 <Pressable

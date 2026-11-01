@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
-import { userGender } from '@/api/auth';
+import { userAge, userGender } from '@/api/auth';
 import { getTipOfTheDay } from '@/api/healthTips';
 import type { HealthTip } from '@/types/healthTip';
 import { queryKeys } from '@/hooks/queryKeys';
@@ -54,7 +54,8 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
   const guides = queryClient.getQueryData<SelfCheckGuide[]>(queryKeys.selfCheckGuides);
   if (!guides?.length) return null;
   const state = useSelfCheckStore.getState();
-  const mine = chosenGuides(guides, state.chosen, userGender(useAuthStore.getState().user));
+  const user = useAuthStore.getState().user;
+  const mine = chosenGuides(guides, state.chosen, userGender(user), userAge(user));
   const soonest = soonestGuide(mine, state, now);
   if (!soonest) return null;
   const snoozed = isSnoozed(state, now) ? parseDbTimestamp(state.snoozedUntil!) : null;

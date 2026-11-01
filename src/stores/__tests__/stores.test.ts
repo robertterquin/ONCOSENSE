@@ -5,7 +5,7 @@ jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
 describe('self-check store', () => {
   beforeEach(() =>
-    useSelfCheckStore.setState({ lastDone: {}, snoozedUntil: null, savedGuides: [] }),
+    useSelfCheckStore.setState({ lastDone: {}, history: {}, snoozedUntil: null, savedGuides: [] }),
   );
 
   it('snoozes until the start of tomorrow, and marking a check done clears the snooze', () => {
@@ -18,6 +18,16 @@ describe('self-check store', () => {
       lastDone: { skin: '2026-10-25T09:05:00.000' },
       snoozedUntil: null,
     });
+  });
+
+  it('keeps each check, newest first, with whether a change was noted', () => {
+    const { markDone } = useSelfCheckStore.getState();
+    markDone('skin', new Date(2026, 8, 25, 9, 0));
+    markDone('skin', new Date(2026, 9, 25, 9, 0), true);
+    expect(useSelfCheckStore.getState().history?.skin).toEqual([
+      { date: '2026-10-25T09:00:00.000', changed: true },
+      { date: '2026-09-25T09:00:00.000', changed: false },
+    ]);
   });
 
   it('saves and unsaves a guide', () => {

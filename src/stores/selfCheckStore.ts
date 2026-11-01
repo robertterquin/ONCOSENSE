@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 import { persistStorage } from '@/lib/storage';
 import { useAuthStore } from '@/stores/authStore';
 import { addDays, toDbTimestamp } from '@/lib/dates';
-import { startOfDay, type SelfCheckState } from '@/lib/selfCheck';
+import { historyFor, mergeHistory, startOfDay, type SelfCheckState } from '@/lib/selfCheck';
 
 // Self-checks: when each guide was last done, saved guides and reminder choices. Signed
 // in, history and saved guides belong to the account (src/lib/selfCheckSync.ts) and
@@ -13,7 +13,8 @@ import { startOfDay, type SelfCheckState } from '@/lib/selfCheck';
 type SelfCheckStore = SelfCheckState & {
   /** Guide IDs the person picked; null means the defaults for their profile. */
   chosen: string[] | null;
-  markDone: (guideId: string, when?: Date) => void;
+  /** `changed`: the person noticed a change (design refresh Phase 22). */
+  markDone: (guideId: string, when?: Date, changed?: boolean) => void;
   /** "Remind me tomorrow" on Today's next-step panel. */
   snoozeUntilTomorrow: (now?: Date) => void;
   setChosen: (guideIds: string[] | null) => void;
@@ -26,13 +27,21 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
   persist(
     (set) => ({
       lastDone: {},
+      history: {},
       snoozedUntil: null,
       chosen: null,
-      markDone: (guideId, when = new Date()) =>
-        set((state) => ({
-          lastDone: { ...state.lastDone, [guideId]: toDbTimestamp(when) },
-          snoozedUntil: null,
-        })),
+      markDone: (guideId, when = new Date(), changed = false) =>
+        set((state) => {
+          const date = toDbTimestamp(when);
+          return {
+            lastDone: { ...state.lastDone, [guideId]: date },
+            history: {
+              ...state.history,
+              [guideId]: mergeHistory([{ date, changed }], historyFor(state, guideId)),
+            },
+            snoozedUntil: null,
+          };
+        }),
       snoozeUntilTomorrow: (now = new Date()) =>
         set({ snoozedUntil: toDbTimestamp(addDays(startOfDay(now), 1)) }),
       setChosen: (chosen) => set({ chosen }),
