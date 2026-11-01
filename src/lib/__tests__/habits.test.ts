@@ -1,6 +1,7 @@
 import { HABITS, MAX_TRACKED } from '@/constants/habits';
+import { toDayKey } from '@/stores/habitsStore';
 
-import { habitPlan, habitWeek } from '../habits';
+import { habitPlan, habitStreak, habitWeek } from '../habits';
 
 jest.mock('@/lib/haptics', () => ({ haptics: {} }));
 
@@ -45,5 +46,25 @@ describe('habitWeek', () => {
     expect(week).toHaveLength(7);
     expect(week[5]).toMatchObject({ key: '2026-10-30', done: true });
     expect(week[6]).toMatchObject({ key: '2026-10-31', done: false, isToday: true });
+  });
+});
+
+describe('habitStreak', () => {
+  const today = new Date(2026, 10, 1, 9);
+  const key = (daysAgo: number) => {
+    const day = new Date(today);
+    day.setDate(day.getDate() - daysAgo);
+    return toDayKey(day);
+  };
+
+  it('counts full days back from today, not breaking on an unfinished today', () => {
+    const done = { [key(1)]: ['a', 'b'], [key(2)]: ['a', 'b'], [key(3)]: ['a'] };
+    expect(habitStreak(done, ['a', 'b'], today)).toBe(2);
+    expect(habitStreak({ ...done, [key(0)]: ['a', 'b'] }, ['a', 'b'], today)).toBe(3);
+  });
+
+  it('is zero with nothing tracked or nothing done', () => {
+    expect(habitStreak({}, ['a'], today)).toBe(0);
+    expect(habitStreak({ [key(0)]: ['a'] }, [], today)).toBe(0);
   });
 });

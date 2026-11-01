@@ -39,6 +39,7 @@ import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 import type { PreventionTip } from '@/types/preventionTip';
+import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
 // Learn's three lists in the redesign (docs/redesign/03-phase-3-today-and-learn.md).
 
@@ -69,38 +70,26 @@ export function GuideRow({ status }: { status: GuideStatus }) {
   );
 }
 
-/** Soonest due first. */
-const byDue = (a: GuideStatus, b: GuideStatus) => a.due.getTime() - b.due.getTime();
-
-/** The person's checks split into due now and up to date, then the rest on request. */
-export function CheckYourself({ mine, all }: { mine: GuideStatus[]; all: GuideStatus[] }) {
-  const [showAll, setShowAll] = useState(false);
-  const own = [...mine].sort(byDue);
-  const due = own.filter((status) => status.isDue);
-  const upToDate = own.filter((status) => !status.isDue);
-  const others = all
-    .filter((item) => !mine.some((check) => check.guide.id === item.guide.id))
-    .sort(byDue);
-  // Someone who follows no checks yet sees them all at once.
-  const showOthers = showAll || !own.length;
-  const row = (status: GuideStatus) => <GuideRow key={status.guide.id} status={status} />;
+/**
+ * Learn › How to check: each guide as reading, without due dates. When a check is due it
+ * shows on Today, and its history is in Journey.
+ */
+export function HowToCheck({ guides }: { guides: SelfCheckGuide[] }) {
   return (
-    <>
-      {due.length ? <Section title="Due now">{due.map(row)}</Section> : null}
-      {upToDate.length ? <Section title="Up to date">{upToDate.map(row)}</Section> : null}
-      {others.length ? (
-        <Section title={own.length ? 'More checks' : 'All checks'}>
-          {showOthers ? others.map(row) : null}
-          {showOthers ? null : (
-            <ListRow
-              title={`Show ${others.length} more`}
-              titleTone="action"
-              onPress={() => setShowAll(true)}
-            />
-          )}
-        </Section>
-      ) : null}
-    </>
+    <Section
+      title="How to check"
+      subtitle="Step-by-step guides. Due checks show on Today, and your history is in Journey.">
+      {guides.map((guide) => (
+        <ListRow
+          key={guide.id}
+          icon={iconForCancer(guide.cancerType)}
+          iconTone="action"
+          title={guide.title}
+          subtitle={`${guide.frequency}, ${guide.steps.length} steps`}
+          onPress={() => openGuide(guide.id)}
+        />
+      ))}
+    </Section>
   );
 }
 
@@ -431,7 +420,45 @@ export function HabitResults({ habits }: { habits: Habit[] }) {
 }
 
 /**
- * Learn › Habits: the daily habits someone tracks under a ring and their week, then the
+ * Learn › Habits: why each habit helps, with its source, and no ticks. Tracking is on the
+ * Habits screen, opened from here, Today and Journey.
+ */
+export function AboutHabits() {
+  const [open, setOpen] = useState<Habit | null>(null);
+  const group = (kind: Habit['kind'], audience?: Habit['audience']) =>
+    HABITS.filter((habit) => habit.kind === kind && (!audience || habit.audience === audience));
+  const row = (habit: Habit) => (
+    <HabitInfoRow key={habit.id} tip={habit} onPress={() => setOpen(habit)} />
+  );
+  return (
+    <View style={styles.sectionGap}>
+      <Section>
+        <ListRow
+          icon="target"
+          title="Track your habits"
+          subtitle="Today's ticks and your week"
+          onPress={() => router.push('/habits')}
+        />
+      </Section>
+      <Section title="Every day" subtitle="Lower your risk">
+        {group('daily', 'prevention').map(row)}
+      </Section>
+      <Section title="During treatment" subtitle="Small things that help">
+        {group('daily', 'treatment').map(row)}
+      </Section>
+      <Section title="Protect yourself" subtitle="Once, not every day">
+        {group('once').map(row)}
+      </Section>
+      <Section title="Feel well" subtitle="Good for you, not proven to lower cancer risk">
+        {group('wellbeing').map(row)}
+      </Section>
+      <PreventionDetailSheet tip={open} onClose={() => setOpen(null)} />
+    </View>
+  );
+}
+
+/**
+ * The Habits screen: the daily habits someone tracks under a ring and their week, then the
  * once-only list and the wellbeing ones. Treatment shows gentle "feel better" habits.
  */
 export function LowerYourRisk() {
@@ -440,9 +467,7 @@ export function LowerYourRisk() {
   const [open, setOpen] = useState<Habit | null>(null);
   const [choosing, setChoosing] = useState(false);
   const trackedIds = plan.tracked.map((habit) => habit.id);
-  const completedByDate = useHabitsStore((state) => state.completedByDate);
   const done = useHabitsStore((state) => trackedIds.filter((id) => state.isDone(id)).length);
-  const week = habitWeek(completedByDate, trackedIds);
   const left = plan.tracked.length - done;
 
   return (
@@ -468,19 +493,7 @@ export function LowerYourRisk() {
             </Text>
           </View>
         </View>
-        <View
-          accessible
-          accessibilityLabel={`${week.filter((day) => day.done).length} of the last 7 days complete`}
-          style={styles.week}>
-          {week.map((day) => (
-            <View key={day.key} style={styles.day}>
-              <Text variant="caption" tone={day.isToday ? 'ink' : 'muted'}>
-                {day.label}
-              </Text>
-              <WeekDot done={day.done} today={day.isToday} />
-            </View>
-          ))}
-        </View>
+        <HabitWeekStrip trackedIds={trackedIds} />
       </Section>
 
       <Section>
@@ -521,6 +534,27 @@ export function LowerYourRisk() {
         options={plan.options}
         tracked={trackedIds}
       />
+    </View>
+  );
+}
+
+/** The last seven days as dots, filled when every tracked habit was done. */
+export function HabitWeekStrip({ trackedIds }: { trackedIds: string[] }) {
+  const completedByDate = useHabitsStore((state) => state.completedByDate);
+  const week = habitWeek(completedByDate, trackedIds);
+  return (
+    <View
+      accessible
+      accessibilityLabel={`${week.filter((day) => day.done).length} of the last 7 days complete`}
+      style={styles.week}>
+      {week.map((day) => (
+        <View key={day.key} style={styles.day}>
+          <Text variant="caption" tone={day.isToday ? 'ink' : 'muted'}>
+            {day.label}
+          </Text>
+          <WeekDot done={day.done} today={day.isToday} />
+        </View>
+      ))}
     </View>
   );
 }

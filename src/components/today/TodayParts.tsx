@@ -98,7 +98,7 @@ export function ComingUpToday({ appointments }: { appointments: Appointment[] })
   );
 }
 
-/** Today's habits as one row: the ring and what's left, opening Learn's Habits. */
+/** Today's habits as one row: the ring and what's left, opening the Habits screen. */
 export function HabitsRow() {
   const { tracked } = useHabitPlan();
   const today = useHabitsStore((state) => state.completedByDate[toDayKey()]);
@@ -117,7 +117,7 @@ export function HabitsRow() {
               ? `1 left: ${undone[0].title.toLowerCase()}`
               : `${undone.length} left today`
         }
-        onPress={() => router.navigate({ pathname: '/learn', params: { section: 'risk' } })}
+        onPress={() => router.push('/habits')}
       />
     </Section>
   );

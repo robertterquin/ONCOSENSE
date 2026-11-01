@@ -62,3 +62,27 @@ export function habitWeek(
     };
   });
 }
+
+/**
+ * Days in a row, ending today, on which every tracked habit was done. An unfinished
+ * today doesn't break the streak; it just isn't counted yet.
+ */
+export function habitStreak(
+  completedByDate: Record<string, string[]>,
+  trackedIds: string[],
+  today: Date = new Date(),
+): number {
+  if (!trackedIds.length) return 0;
+  const complete = (day: Date) => {
+    const done = completedByDate[toDayKey(day)] ?? [];
+    return trackedIds.every((id) => done.includes(id));
+  };
+  const day = new Date(today);
+  if (!complete(day)) day.setDate(day.getDate() - 1);
+  let streak = 0;
+  while (complete(day)) {
+    streak += 1;
+    day.setDate(day.getDate() - 1);
+  }
+  return streak;
+}

@@ -219,8 +219,8 @@ describe('saved preferences from earlier versions', () => {
 
 describe('taps', () => {
   it('opens the related tab', () => {
-    expect(routeForNotification('self_check')).toBe('/learn');
-    expect(routeForNotification('screening')).toBe('/learn');
+    expect(routeForNotification('self_check')).toBe('/today');
+    expect(routeForNotification('screening')).toBe('/today');
     expect(routeForNotification('weekly_check_in')).toBe('/journey');
     expect(routeForNotification('daily_check_in')).toBe('/journey');
     expect(routeForNotification('appointment')).toBe('/journey');

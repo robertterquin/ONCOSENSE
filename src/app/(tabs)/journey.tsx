@@ -1,4 +1,6 @@
 import { router } from 'expo-router';
+
+import { MyHealth } from '@/components/journey/MyHealth';
 import { StyleSheet, View } from 'react-native';
 
 import { ProfileButton } from '@/components/account/ProfileButton';
@@ -37,26 +39,16 @@ import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import { upcomingAppointments } from '@/types/appointment';
 
-// The Journey tab (redesign Phase 4): opt-in by focus. Learning (or no focus yet)
-// shows a short invitation; Treatment, Finished and Caring show the dashboard.
+// The Journey tab (redesign Phase 4): by focus. Learning (or no focus yet) shows My health
+// (design refresh Phase 19); Treatment, Finished and Caring show the dashboard.
 
 export default function JourneyTab() {
   const focus = useFocus();
   const signedIn = useIsSignedIn();
   const { journeyStarted } = useJourneySetup();
 
-  if (!usesJourney(focus)) {
-    return (
-      <Invitation
-        title="Track how you feel"
-        body="Journey keeps daily check-ins, treatments and appointments in one place, and can turn them into a summary for your doctor."
-        action={{
-          label: focus ? 'Change what brings you here' : 'Set up Journey',
-          onPress: () => router.push('/journey/focus'),
-        }}
-      />
-    );
-  }
+  // Learning (or no focus yet): their checks and habits over time, with a way into Journey.
+  if (!usesJourney(focus)) return <MyHealth />;
   if (!signedIn) {
     return (
       <Invitation
