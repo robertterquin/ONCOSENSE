@@ -59,6 +59,7 @@ Three supporting changes:
 | 24 | Your checks, bundled | [24-phase-24-checks.md](24-phase-24-checks.md) | 1 day | Merged into `main` |
 | 25 | Every check, step by step | [25-phase-25-step-by-step-checks.md](25-phase-25-step-by-step-checks.md) | 1 day | Merged into `main` |
 | 26 | Treatment week | [26-phase-26-treatment-week.md](26-phase-26-treatment-week.md) | 1 day | On `main` |
+| 27 | Clean-up | [27-phase-27-clean-up.md](27-phase-27-clean-up.md) | 1 day | On `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -94,3 +95,4 @@ Same as the redesign:
 | 2026-11-03 | Breast and testicular become two-step change checks (look and feel, then "any of these changes?"); skin keeps its ABCDE steps | The American Cancer Society no longer recommends a structured breast self-exam for women at average risk, and the USPSTF recommends against routine testicular self-exams; knowing what's normal is the honest ask | Robert |
 | 2026-11-02 | People in treatment get a treatment week card on Today (sessions, appointments, check-in days), sharing the checks card's calendar | Today in treatment had no view of the week ahead; one calendar look for both card types keeps Today consistent | Robert |
 | 2026-11-02 | Vote and answer counts are recounted from the votes and answers, callable only when signed in; posts and votes only under your own id; counts can't be set by hand | The schema snapshot showed anyone with the public key could change any count, and old permissive rules let a signed-in user post or vote as someone else | Robert |
+| 2026-11-02 | Saving guides and saving habits are removed; Saved keeps questions and help contacts; Help puts costs and support groups first for people with or after cancer | Guides now arrive through the checks and habits through picks, so a second saved list duplicated them; screening centers matter least to someone in treatment | Robert |

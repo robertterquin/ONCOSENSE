@@ -4,9 +4,7 @@ import { useSelfCheckStore } from '../selfCheckStore';
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
 describe('self-check store', () => {
-  beforeEach(() =>
-    useSelfCheckStore.setState({ lastDone: {}, history: {}, snoozedUntil: null, savedGuides: [] }),
-  );
+  beforeEach(() => useSelfCheckStore.setState({ lastDone: {}, history: {}, snoozedUntil: null }));
 
   it('snoozes until the start of tomorrow, and marking a check done clears the snooze', () => {
     const { snoozeUntilTomorrow, markDone } = useSelfCheckStore.getState();
@@ -28,15 +26,6 @@ describe('self-check store', () => {
       { date: '2026-10-25T09:00:00.000', changed: true },
       { date: '2026-09-25T09:00:00.000', changed: false },
     ]);
-  });
-
-  it('saves and unsaves a guide', () => {
-    const { toggleSavedGuide } = useSelfCheckStore.getState();
-    toggleSavedGuide('skin');
-    toggleSavedGuide('oral');
-    expect(useSelfCheckStore.getState().savedGuides).toEqual(['skin', 'oral']);
-    toggleSavedGuide('skin');
-    expect(useSelfCheckStore.getState().savedGuides).toEqual(['oral']);
   });
 });
 

@@ -1,9 +1,6 @@
 import {
-  deleteHabitBookmark,
   deleteHabitCompletion,
-  fetchHabitBookmarks,
   fetchHabitCompletions,
-  insertHabitBookmark,
   insertHabitCompletion,
   type HabitCompletionRow,
 } from '@/api/habits';
@@ -13,18 +10,16 @@ import { showToast } from '@/stores/toastStore';
 
 let applying = false;
 
-const apply = (state: { completedByDate?: Record<string, string[]>; bookmarkedHabits?: string[] }) => {
+const apply = (state: { completedByDate: Record<string, string[]> }) => {
   applying = true;
   useHabitsStore.setState(state);
   applying = false;
 };
 
-/** Merges cloud completions and bookmarks with local habits store. */
+/** Merges cloud completions with the local habits store. */
 export function mergeHabits(
   localCompleted: Record<string, string[]>,
-  localBookmarked: string[],
   cloudCompletions: HabitCompletionRow[],
-  cloudBookmarks: string[],
 ) {
   // Merge completed by date
   const mergedCompleted: Record<string, string[]> = { ...localCompleted };
@@ -50,46 +45,25 @@ export function mergeHabits(
     }
   }
 
-  // Merge bookmarks
-  const mergedBookmarks = Array.from(new Set([...localBookmarked, ...cloudBookmarks]));
-  const toUploadBookmarks = localBookmarked.filter((id) => !cloudBookmarks.includes(id));
-
-  return {
-    mergedCompleted,
-    mergedBookmarks,
-    toUploadCompletions,
-    toUploadBookmarks,
-  };
+  return { mergedCompleted, toUploadCompletions };
 }
 
 /** Synchronize habits with the user account on sign-in / app launch while signed in. */
 export async function syncHabits(): Promise<void> {
   try {
-    const [cloudCompletions, cloudBookmarks] = await Promise.all([
-      fetchHabitCompletions(),
-      fetchHabitBookmarks(),
-    ]);
+    const cloudCompletions = await fetchHabitCompletions();
+    if (!cloudCompletions) return;
 
-    if (!cloudCompletions || !cloudBookmarks) return;
-
-    const current = useHabitsStore.getState();
-    const { mergedCompleted, mergedBookmarks, toUploadCompletions, toUploadBookmarks } = mergeHabits(
-      current.completedByDate,
-      current.bookmarkedHabits,
+    const { mergedCompleted, toUploadCompletions } = mergeHabits(
+      useHabitsStore.getState().completedByDate,
       cloudCompletions,
-      cloudBookmarks,
     );
-
-    apply({
-      completedByDate: mergedCompleted,
-      bookmarkedHabits: mergedBookmarks,
-    });
+    apply({ completedByDate: mergedCompleted });
 
     // Upload any offline / guest items to cloud
-    await Promise.all([
-      ...toUploadCompletions.map((item) => insertHabitCompletion(item.habitId, item.date)),
-      ...toUploadBookmarks.map((id) => insertHabitBookmark(id)),
-    ]);
+    await Promise.all(
+      toUploadCompletions.map((item) => insertHabitCompletion(item.habitId, item.date)),
+    );
   } catch (error) {
     console.warn('syncHabits error:', error);
   }
@@ -97,10 +71,7 @@ export async function syncHabits(): Promise<void> {
 
 /** Clear habits state when signing out. */
 export function clearHabits(): void {
-  apply({
-    completedByDate: {},
-    bookmarkedHabits: [],
-  });
+  apply({ completedByDate: {} });
 }
 
 /** Subscribe to habit changes while signed in to keep cloud in sync. Returns cleanup unsubscribe. */
@@ -133,25 +104,6 @@ export function startHabitSync(): () => void {
           showToast("Couldn't update habit. Check your connection.", 'error'),
         );
       }
-    }
-
-    // Detect bookmarks added or removed
-    const addedBookmarks = state.bookmarkedHabits.filter(
-      (id) => !previous.bookmarkedHabits.includes(id),
-    );
-    for (const id of addedBookmarks) {
-      insertHabitBookmark(id).catch(() =>
-        showToast("Couldn't bookmark habit. Check your connection.", 'error'),
-      );
-    }
-
-    const removedBookmarks = previous.bookmarkedHabits.filter(
-      (id) => !state.bookmarkedHabits.includes(id),
-    );
-    for (const id of removedBookmarks) {
-      deleteHabitBookmark(id).catch(() =>
-        showToast("Couldn't remove bookmark. Check your connection.", 'error'),
-      );
     }
   });
 }

@@ -15,8 +15,6 @@ export function toDayKey(date: Date = new Date()): string {
 type HabitsStore = {
   /** Map of 'YYYY-MM-DD' -> array of habit IDs completed on that date. */
   completedByDate: Record<string, string[]>;
-  /** Habit IDs saved by the user to their profile bookmarks. */
-  bookmarkedHabits: string[];
   // shortcut: picks and the smoking answer stay on this phone; move them to the account's metadata if people ask for them on a second phone.
   /** Daily habits picked in "Change habits"; null until someone picks. */
   chosenHabits: string[] | null;
@@ -35,18 +33,12 @@ type HabitsStore = {
   isDoneEver: (habitId: string) => boolean;
   /** Ticks a once-only habit today, or clears it from every day. */
   toggleOnce: (habitId: string) => void;
-
-  /** Toggle bookmarking a habit. */
-  toggleBookmark: (habitId: string) => boolean;
-  /** Check if a habit is bookmarked. */
-  isBookmarked: (habitId: string) => boolean;
 };
 
 export const useHabitsStore = create<HabitsStore>()(
   persist(
     (set, get) => ({
       completedByDate: {},
-      bookmarkedHabits: [],
       chosenHabits: null,
       smoker: null,
       setChosenHabits: (ids) => set({ chosenHabits: ids }),
@@ -104,25 +96,17 @@ export const useHabitsStore = create<HabitsStore>()(
           ),
         }));
       },
-
-      toggleBookmark: (habitId) => {
-        const current = get().bookmarkedHabits;
-        const bookmarked = current.includes(habitId);
-        const next = bookmarked ? current.filter((id) => id !== habitId) : [...current, habitId];
-
-        set({ bookmarkedHabits: next });
-        haptics.lightImpact();
-        return !bookmarked;
-      },
-
-      isBookmarked: (habitId) => {
-        return get().bookmarkedHabits.includes(habitId);
-      },
     }),
     {
       name: 'prevention-habits',
       storage: persistStorage,
-      version: 1,
+      version: 2,
+      migrate: (persisted) => {
+        const state = { ...(persisted as Partial<HabitsStore>) };
+        // 2: saved habits are gone (design refresh Phase 27).
+        delete (state as { bookmarkedHabits?: unknown }).bookmarkedHabits;
+        return state as HabitsStore;
+      },
     },
   ),
 );

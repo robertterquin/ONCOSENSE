@@ -71,18 +71,6 @@ export function iconForPreventionTip(tip: Pick<PreventionTip, 'title' | 'categor
   return 'activity';
 }
 
-/** Clean short representation of health agency sources (WHO, CDC, NCI, etc.). */
-export function shortenSourceName(source: string): string {
-  const match = source.match(/\(([^)]+)\)/);
-  if (match?.[1]) return match[1];
-
-  const lowerSource = lower(source);
-  if (lowerSource.includes('american cancer society')) return 'ACS';
-  if (lowerSource.includes('american institute for cancer research')) return 'AICR';
-  if (lowerSource.includes('skin cancer foundation')) return 'Skin Cancer Fdn';
-  return source;
-}
-
 type LearnLists = {
   cancers: CancerType[];
   guides: SelfCheckGuide[];

@@ -4,6 +4,7 @@ import {
   callLabel,
   cancerKeyword,
   HELP_SECTIONS,
+  helpSectionsFor,
   isNear,
   matchesResource,
   regionFor,
@@ -36,6 +37,11 @@ describe('regions for the Near filter', () => {
 
   it('opens screening centers from Learn', () => {
     expect(HELP_SECTIONS.find((s) => s.key === 'screening')?.type).toBe('screening_center');
+    const keys = (focus: Parameters<typeof helpSectionsFor>[0]) =>
+      helpSectionsFor(focus).map((s) => s.key);
+    expect(keys('learning')).toEqual(['hotlines', 'screening', 'costs', 'groups']);
+    expect(keys('treatment')).toEqual(['hotlines', 'costs', 'groups', 'screening']);
+    expect(keys('finished')).toEqual(['hotlines', 'costs', 'groups', 'screening']);
   });
 });
 

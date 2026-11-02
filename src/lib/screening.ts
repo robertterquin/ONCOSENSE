@@ -10,8 +10,6 @@ import { addMonths, startOfDay } from './selfCheck';
 /** Cancers by the first word of their name ("breast" for "Breast cancer"). */
 export type CancerKey = string;
 
-export type Sex = 'Male' | 'Female' | null;
-
 /** Answers to the two questions asked when following lung or liver cancer. */
 export type ScreeningAnswers = {
   /** About a pack a day for 20 years or more (20 pack-years), now or in the past. */

@@ -7,9 +7,9 @@ import { addDays, toDbTimestamp } from '@/lib/dates';
 import type { CancerKey, ScreeningAnswers } from '@/lib/screening';
 import { historyFor, mergeHistory, startOfDay, type SelfCheckState } from '@/lib/selfCheck';
 
-// Self-checks: when each guide was last done, saved guides and reminder choices. Signed
-// in, history and saved guides belong to the account (src/lib/selfCheckSync.ts) and
-// aren't written to the phone; guests keep them on the phone until they sign in.
+// Self-checks: when each guide was last done, and reminder choices. Signed in, history
+// belongs to the account (src/lib/selfCheckSync.ts) and isn't written to the phone;
+// guests keep it on the phone until they sign in.
 
 type SelfCheckStore = SelfCheckState & {
   /** Account ID that `followed` and `answers` belong to (null for a guest). */
@@ -27,9 +27,6 @@ type SelfCheckStore = SelfCheckState & {
   markDone: (guideId: string, when?: Date, changed?: boolean) => void;
   /** "Remind me tomorrow" on Today's next-step panel. */
   snoozeUntilTomorrow: (now?: Date) => void;
-  /** Guides saved to Profile → Saved (on the device; redesign Phase 5). */
-  savedGuides: string[];
-  toggleSavedGuide: (guideId: string) => void;
 };
 
 export const useSelfCheckStore = create<SelfCheckStore>()(
@@ -62,22 +59,17 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
         }),
       snoozeUntilTomorrow: (now = new Date()) =>
         set({ snoozedUntil: toDbTimestamp(addDays(startOfDay(now), 1)) }),
-      savedGuides: [],
-      toggleSavedGuide: (guideId) =>
-        set((state) => ({
-          savedGuides: state.savedGuides.includes(guideId)
-            ? state.savedGuides.filter((id) => id !== guideId)
-            : [...state.savedGuides, guideId],
-        })),
     }),
     {
       name: 'self-checks',
       storage: persistStorage,
-      version: 4,
+      version: 5,
       migrate: (persisted, version) => {
-        const state = persisted as Partial<SelfCheckStore>;
-        // Before 3: followed cancers and answers start again from the defaults; history and
-        // saved guides are kept (a guest's exist only on this phone).
+        const state = { ...(persisted as Partial<SelfCheckStore>) };
+        // 5: saved guides are gone (design refresh Phase 27).
+        delete (state as { savedGuides?: unknown }).savedGuides;
+        // Before 3: followed cancers and answers start again from the defaults; history is
+        // kept (a guest's exists only on this phone).
         if (version < 3) return { ...state, ownerId: null, followed: null, answers: {} };
         // 4: the liver question now tells cirrhosis from hepatitis B, so an old "yes" (B, C
         // or cirrhosis) is asked again.

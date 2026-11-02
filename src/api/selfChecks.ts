@@ -5,14 +5,13 @@ import type { CheckEntry } from '@/lib/selfCheck';
 import { check, currentUserId } from './errors';
 import { isMissingTable } from './journey';
 
-// Self-check history and saved guides for the signed-in account (migration
-// 20261025000000). Kept in step with the phone by src/lib/selfCheckSync.ts.
+// Self-check history for the signed-in account (migration 20261025000000; its `saved`
+// column is no longer used and defaults to false). Kept in step with the phone by src/lib/selfCheckSync.ts.
 
 export type SelfCheckRow = {
   guide_id: string;
   /** Local wall-clock time, `toDbTimestamp` (read back with an offset to ignore). */
   last_done: string | null;
-  saved: boolean;
   /** Finished checks, newest first (migration 20261102010000). */
   history: CheckEntry[];
 };
@@ -23,7 +22,7 @@ export async function fetchSelfCheckProgress(): Promise<SelfCheckRow[] | null> {
   if (!userId) return null;
   const { data, error } = await supabase
     .from('self_check_progress')
-    .select('guide_id,last_done,saved,history')
+    .select('guide_id,last_done,history')
     .eq('user_id', userId);
   if (isMissingTable(error)) return null;
   check(error, 'Failed to load self-checks');

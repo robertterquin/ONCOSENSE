@@ -12,7 +12,7 @@ jest.mock('@/lib/haptics', () => ({
 
 describe('habitsStore', () => {
   beforeEach(() => {
-    useHabitsStore.setState({ completedByDate: {}, bookmarkedHabits: [] });
+    useHabitsStore.setState({ completedByDate: {} });
     jest.clearAllMocks();
   });
 
@@ -44,18 +44,5 @@ describe('habitsStore', () => {
     expect(useHabitsStore.getState().completedByDate['2026-10-02']).toEqual(['a']);
     useHabitsStore.getState().toggleOnce('hpv');
     expect(useHabitsStore.getState().isDone('hpv')).toBe(true);
-  });
-
-  it('toggles bookmarks for habits', () => {
-    const habitId = 'habit-diet';
-
-    expect(useHabitsStore.getState().isBookmarked(habitId)).toBe(false);
-
-    useHabitsStore.getState().toggleBookmark(habitId);
-    expect(useHabitsStore.getState().isBookmarked(habitId)).toBe(true);
-    expect(useHabitsStore.getState().bookmarkedHabits).toContain(habitId);
-
-    useHabitsStore.getState().toggleBookmark(habitId);
-    expect(useHabitsStore.getState().isBookmarked(habitId)).toBe(false);
   });
 });

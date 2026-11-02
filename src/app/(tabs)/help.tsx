@@ -20,9 +20,10 @@ import {
   Text,
 } from '@/components/ui';
 import { CRISIS_LINE } from '@/constants/crisis';
+import { useFocus } from '@/hooks/useFocus';
 import { useAllResources } from '@/hooks/useResources';
 import {
-  HELP_SECTIONS,
+  helpSectionsFor,
   isNear,
   matchesResource,
   REGIONS,
@@ -44,6 +45,7 @@ const FIRST_ROWS = 3;
 export default function HelpTab() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const resources = useAllResources();
+  const sections = helpSectionsFor(useFocus());
   const [region, setRegion] = useState<Region | null>(null);
   const [search, setSearch] = useState('');
   const scrollRef = useRef<ScrollViewInstance | null>(null);
@@ -108,7 +110,7 @@ export default function HelpTab() {
               onRetry={() => resources.refetch()}
             />
           ) : search.trim() &&
-            HELP_SECTIONS.every(
+            sections.every(
               (helpSection) =>
                 !resources.data[helpSection.list].some((r) => matchesResource(r, search)),
             ) ? (
@@ -118,7 +120,7 @@ export default function HelpTab() {
               message="Try a city, a hospital name or a number."
             />
           ) : (
-            HELP_SECTIONS.map((helpSection) => (
+            sections.map((helpSection) => (
               <View
                 key={helpSection.key}
                 onLayout={(event) => {

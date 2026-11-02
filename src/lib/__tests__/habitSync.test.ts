@@ -13,7 +13,7 @@ describe('mergeHabits', () => {
       { habit_id: 'habit-4', completed_date: '2026-10-27' },
     ];
 
-    const { mergedCompleted, toUploadCompletions } = mergeHabits(local, [], cloud, []);
+    const { mergedCompleted, toUploadCompletions } = mergeHabits(local, cloud);
 
     // 2026-10-28 should contain habit-1, habit-2, habit-3
     expect(mergedCompleted['2026-10-28']).toEqual(
@@ -26,22 +26,5 @@ describe('mergeHabits', () => {
 
     // Only habit-1 was missing from cloud for 2026-10-28
     expect(toUploadCompletions).toEqual([{ habitId: 'habit-1', date: '2026-10-28' }]);
-  });
-
-  it('merges local and cloud bookmarks and tracks missing cloud items', () => {
-    const localBookmarked = ['habit-a', 'habit-b'];
-    const cloudBookmarks = ['habit-b', 'habit-c'];
-
-    const { mergedBookmarks, toUploadBookmarks } = mergeHabits(
-      {},
-      localBookmarked,
-      [],
-      cloudBookmarks,
-    );
-
-    expect(mergedBookmarks).toEqual(expect.arrayContaining(['habit-a', 'habit-b', 'habit-c']));
-    expect(mergedBookmarks).toHaveLength(3);
-
-    expect(toUploadBookmarks).toEqual(['habit-a']);
   });
 });

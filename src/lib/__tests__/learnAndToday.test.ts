@@ -5,7 +5,6 @@ import {
   iconForCancer,
   iconForPreventionTip,
   searchLearn,
-  shortenSourceName,
 } from '@/lib/learn';
 import { firstName, formatTodayDate, greeting } from '@/lib/today';
 import type { CancerType } from '@/types/cancerType';
@@ -83,16 +82,6 @@ describe('Learn links', () => {
     expect(iconForPreventionTip({ title: 'Stay Hydrated', category: 'Hydration' })).toBe(
       'glass-water',
     );
-  });
-
-  it('shortens health agency source names cleanly', () => {
-    expect(shortenSourceName('World Health Organization (WHO)')).toBe('WHO');
-    expect(shortenSourceName('Centers for Disease Control (CDC)')).toBe('CDC');
-    expect(shortenSourceName('National Cancer Institute (NCI)')).toBe('NCI');
-    expect(shortenSourceName('American Cancer Society')).toBe('ACS');
-    expect(shortenSourceName('American Institute for Cancer Research')).toBe('AICR');
-    expect(shortenSourceName('Skin Cancer Foundation')).toBe('Skin Cancer Fdn');
-    expect(shortenSourceName('Mayo Clinic')).toBe('Mayo Clinic');
   });
 });
 

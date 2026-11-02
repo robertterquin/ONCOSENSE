@@ -24,8 +24,6 @@ import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
 import { formatShortDate, parseDbTimestamp } from '@/lib/dates';
 import { openWebPage } from '@/lib/links';
 import { formatMonthDay } from '@/lib/selfCheck';
-import { useSelfCheckStore } from '@/stores/selfCheckStore';
-import { showToast } from '@/stores/toastStore';
 import { space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
@@ -62,8 +60,6 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
   const [asking, setAsking] = useState(false);
   const [changed, setChanged] = useState<boolean | null>(null);
   const status = useSelfChecks().status(guide);
-  const saved = useSelfCheckStore((state) => state.savedGuides.includes(guide.id));
-  const toggleSaved = useSelfCheckStore((state) => state.toggleSavedGuide);
   const steps = guide.steps;
   const { palette } = useDesign();
   const step = steps[current];
@@ -143,15 +139,6 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
       back={stepBack ?? { label: 'Back', onPress: back }}
       actions={
         <>
-          <IconButton
-            icon="bookmark"
-            look={saved ? 'tinted' : 'plain'}
-            accessibilityLabel={saved ? 'Saved. Remove from saved' : 'Save guide'}
-            onPress={() => {
-              toggleSaved(guide.id);
-              showToast(saved ? 'Removed from saved' : 'Guide saved', saved ? 'info' : 'success');
-            }}
-          />
           {steps.length && !nextCheck && !asking ? (
             <IconButton
               icon={speaking ? 'close' : 'volume'}

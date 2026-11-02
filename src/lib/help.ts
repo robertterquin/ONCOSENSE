@@ -1,6 +1,8 @@
 import type { AllResources } from '@/api/resources';
 import type { Resource, ResourceType } from '@/types/resource';
 
+import { usesJourney, type JourneyFocus } from './focus';
+
 // Help tab helpers (redesign Phase 5): the "Near" filter's regions and the sections.
 
 export const REGIONS = [
@@ -160,6 +162,20 @@ export const HELP_SECTIONS: HelpSection[] = [
     empty: 'No support groups listed near you yet.',
   },
 ];
+
+/**
+ * Help's sections for this person: with or after cancer, help with costs and support
+ * groups come before screening centers (design refresh Phase 27). Nothing is hidden;
+ * family members use Help too.
+ */
+export function helpSectionsFor(focus: JourneyFocus | null): HelpSection[] {
+  if (!usesJourney(focus)) return HELP_SECTIONS;
+  const isScreening = (section: HelpSection) => section.key === 'screening';
+  return [
+    ...HELP_SECTIONS.filter((section) => !isScreening(section)),
+    ...HELP_SECTIONS.filter(isScreening),
+  ];
+}
 
 /** "Call Philippine Cancer Society, (02) 8508-7777" */
 export function callLabel(resource: Pick<Resource, 'name' | 'phone'>): string {

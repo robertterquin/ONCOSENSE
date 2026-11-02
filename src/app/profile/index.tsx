@@ -14,7 +14,6 @@ import { initials } from '@/lib/community';
 import { confirm } from '@/lib/confirm';
 import { FOCUS_OPTIONS } from '@/lib/focus';
 import { useAuthStore } from '@/stores/authStore';
-import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { radii, space } from '@/theme/tokens';
 import { useDesign } from '@/theme/useTheme';
 
@@ -29,9 +28,7 @@ export default function ProfileScreen() {
   const focus = useFocus();
   const focusTitle = FOCUS_OPTIONS.find((option) => option.value === focus)?.title ?? null;
   const savedCount =
-    (useBookmarkedQuestions().data?.length ?? 0) +
-    (useBookmarkedResources().data?.length ?? 0) +
-    useSelfCheckStore((state) => state.savedGuides.length);
+    (useBookmarkedQuestions().data?.length ?? 0) + (useBookmarkedResources().data?.length ?? 0);
   const [legal, setLegal] = useState<LegalTitle | null>(null);
   const [about, setAbout] = useState(false);
   const name = user ? userDisplayName(user) : 'Guest';

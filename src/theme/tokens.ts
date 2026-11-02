@@ -1,13 +1,3 @@
-// Radius and animation durations from lib/utils/constants.dart.
-
-export const radius = {
-  small: 8,
-  medium: 12,
-  large: 16,
-  /** Header bottom corners. */
-  header: 24,
-} as const;
-
 // ---- Redesign (docs/redesign/02-phase-2-foundations.md) ----
 
 /** 4-based spacing. */
@@ -40,11 +30,4 @@ export const sizes = {
   touch: 44,
   button: 54,
   row: 68,
-} as const;
-
-/** Milliseconds. */
-export const durations = {
-  short: 200,
-  medium: 300,
-  long: 500,
 } as const;

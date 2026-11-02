@@ -9,14 +9,13 @@ jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('@/lib/notifications/service', () => ({ rescheduleSelfCheckReminder: jest.fn() }));
 
 describe('mergeSelfChecks', () => {
-  it('keeps the later "done" and every saved guide, and uploads what the account lacks', () => {
+  it('keeps the later "done", and uploads what the account lacks', () => {
     const local = {
       lastDone: { skin: '2026-10-20T09:00:00.000', oral: '2026-10-01T09:00:00.000' },
-      savedGuides: ['skin'],
     };
     const cloud = [
-      { guide_id: 'oral', last_done: '2026-10-10T08:00:00+00:00', saved: true, history: [] },
-      { guide_id: 'breast', last_done: '2026-09-30T07:00:00+00:00', saved: false, history: [] },
+      { guide_id: 'oral', last_done: '2026-10-10T08:00:00+00:00', history: [] },
+      { guide_id: 'breast', last_done: '2026-09-30T07:00:00+00:00', history: [] },
     ];
     const merged = mergeSelfChecks(local, cloud);
 
@@ -25,7 +24,6 @@ describe('mergeSelfChecks', () => {
       oral: '2026-10-10T08:00:00+00:00',
       breast: '2026-09-30T07:00:00+00:00',
     });
-    expect(merged.savedGuides.sort()).toEqual(['oral', 'skin']);
     expect(merged.history?.oral).toEqual([
       { date: '2026-10-10T08:00:00+00:00', changed: false },
       { date: '2026-10-01T09:00:00.000', changed: false },
@@ -38,13 +36,11 @@ describe('mergeSelfChecks', () => {
     const local = {
       lastDone: { skin: '2026-10-20T09:00:00.000' },
       history: { skin: [{ date: '2026-10-20T09:00:00.000', changed: true }] },
-      savedGuides: [],
     };
     const cloud = [
       {
         guide_id: 'skin',
         last_done: '2026-10-20T09:00:00.000',
-        saved: false,
         history: [
           { date: '2026-10-20T09:00:00.000', changed: false },
           { date: '2026-09-20T09:00:00.000', changed: false },
@@ -64,15 +60,14 @@ describe('self-check storage on the phone', () => {
     return raw ? JSON.parse(raw).state : null;
   };
 
-  it('keeps history and saved guides off the phone while signed in', () => {
+  it('keeps history off the phone while signed in', () => {
     useAuthStore.setState({ user: { id: 'u1' } as User });
     useSelfCheckStore.getState().markDone('skin', new Date(2026, 9, 25, 9, 0));
     expect(written()).not.toHaveProperty('lastDone');
-    expect(written()).not.toHaveProperty('savedGuides');
 
     useAuthStore.setState({ user: null });
-    useSelfCheckStore.getState().toggleSavedGuide('oral');
-    expect(written()).toMatchObject({ savedGuides: ['oral'] });
+    useSelfCheckStore.getState().markDone('oral', new Date(2026, 9, 26, 9, 0));
+    expect(written()).toHaveProperty('lastDone.oral');
   });
 
   it('clears followed cancers and risk answers on sign-out', () => {
@@ -86,7 +81,7 @@ describe('self-check storage on the phone', () => {
     });
   });
 
-  it('keeps history and saved guides when the stored version changes', () => {
+  it('keeps history and drops saved guides when the stored version changes', () => {
     const migrate = useSelfCheckStore.persist.getOptions().migrate!;
     const old = {
       lastDone: { skin: '2026-10-01T09:00:00' },
@@ -101,9 +96,9 @@ describe('self-check storage on the phone', () => {
     expect(migrate(old, 2)).toMatchObject({
       lastDone: old.lastDone,
       history: old.history,
-      savedGuides: ['skin'],
       followed: null,
       answers: {},
     });
+    expect(migrate(old, 4)).not.toHaveProperty('savedGuides');
   });
 });

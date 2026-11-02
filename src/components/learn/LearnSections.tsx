@@ -334,10 +334,8 @@ export function PreventionDetailSheet({
   const isDone = useHabitsStore((state) =>
     tip ? (once ? state.isDoneEver(tip.id) : state.isDone(tip.id)) : false,
   );
-  const isBookmarked = useHabitsStore((state) => (tip ? state.isBookmarked(tip.id) : false));
   const toggleDone = useHabitsStore((state) => state.toggleDone);
   const toggleOnce = useHabitsStore((state) => state.toggleOnce);
-  const toggleBookmark = useHabitsStore((state) => state.toggleBookmark);
 
   return (
     <Sheet visible={tip !== null} onClose={onClose} title={tip?.title ?? ''}>
@@ -377,12 +375,6 @@ export function PreventionDetailSheet({
                 onPress={() => (once ? toggleOnce(tip.id) : toggleDone(tip.id))}
               />
             )}
-            <Button
-              title={isBookmarked ? 'Saved in bookmarks' : 'Save habit to bookmarks'}
-              icon="bookmark"
-              variant="secondary"
-              onPress={() => toggleBookmark(tip.id)}
-            />
             <Button
               title={`Source: ${tip.sourceName}`}
               icon="external-link"
