@@ -16,6 +16,8 @@ export type Habit = PreventionTip & {
   audience: HabitAudience;
   /** Only offered to people who said they smoke. */
   smokersOnly?: boolean;
+  /** Upper age limit when a one-off protection (like HPV vaccination) is only offered up to a certain age. */
+  maxAge?: number;
   /** Cancers whose risk it lowers (WCRF/AICR, IARC, WHO); ranks it for people who follow them. */
   lowers?: CancerKey[];
   /**
@@ -23,6 +25,12 @@ export type Habit = PreventionTip & {
    * cancer survivors, 2022). Only where there's evidence for that cancer.
    */
   afterCancer?: Partial<Record<CancerKey, string>>;
+  /** After treatment for any cancer, why this habit helps recovery when `afterCancer` has no specific line. */
+  afterAnyCancer?: string;
+  /** Detailed explanation tailored for someone in active treatment (`focus === 'treatment'`). */
+  treatmentDetail?: string;
+  /** Detailed explanation tailored for someone who finished treatment (`focus === 'finished'`). */
+  survivorDetail?: string;
 };
 
 type HabitInput = Omit<Habit, 'iconName' | 'dateVerified' | 'displayOrder' | 'isActive'>;
@@ -46,10 +54,17 @@ export const HABITS: Habit[] = (
       category: 'Diet',
       title: 'Eat plants',
       description: 'Vegetables, fruit, whole grains and beans',
-      lowers: ['colorectal'],
-      afterCancer: { colorectal: 'Linked to longer survival after colorectal cancer' },
+      lowers: ['colorectal', 'stomach', 'oral'],
+      afterCancer: {
+        colorectal: 'Linked to longer survival after colorectal cancer',
+        breast: 'Linked to better overall survival after breast cancer',
+        prostate: 'Supports heart and long-term health after prostate cancer',
+      },
+      afterAnyCancer: 'Supports recovery and long-term health after treatment',
       detailedInfo:
-        'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
+        'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal and stomach cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
+      survivorDetail:
+        'After treatment, meals built around vegetables, fruit, whole grains and beans—with little red or processed meat—support recovery, heart health and long-term survival.',
       sourceName: 'World Cancer Research Fund',
       sourceUrl: WCRF,
     },
@@ -59,14 +74,19 @@ export const HABITS: Habit[] = (
       audience: 'prevention',
       category: 'Exercise',
       title: 'Move 30 minutes',
-      description: 'A brisk walk counts',
+      description: 'A brisk walk counts, at your own pace',
       lowers: ['colorectal', 'breast', 'uterine'],
       afterCancer: {
         colorectal: 'Linked to a lower chance of colon cancer coming back',
         breast: 'Linked to a lower chance of breast cancer coming back',
+        prostate: 'Linked to longer survival after prostate cancer',
+        uterine: 'Helps recovery and long-term health after uterine cancer',
       },
+      afterAnyCancer: 'Eases post-treatment tiredness and helps rebuild strength',
       detailedInfo:
         'Being active lowers the risk of colon, breast and endometrial cancer. Aim for 150 minutes a week, about 30 minutes on five days, and sit less: get up and move every hour.',
+      survivorDetail:
+        'After treatment, regular movement eases lingering tiredness, anxiety and stiffness, and is linked to a lower chance of breast, colon and prostate cancer coming back. Build up towards 30 minutes at your own pace.',
       sourceName: 'American Cancer Society',
       sourceUrl: 'https://www.cancer.org/healthy/eat-healthy-get-active.html',
     },
@@ -81,9 +101,14 @@ export const HABITS: Habit[] = (
       afterCancer: {
         breast: 'Less alcohol may lower the chance of a new breast cancer',
         liver: 'Advised after liver cancer, to protect your liver',
+        oral: 'Avoiding alcohol lowers the chance of a second oral or throat cancer',
+        stomach: 'Avoiding alcohol helps protect your stomach after treatment',
+        colorectal: 'Skipping alcohol supports recovery after colorectal cancer',
       },
       detailedInfo:
         'Alcohol causes at least seven types of cancer, including breast, liver and colorectal cancer. There is no safe amount, so every day without it lowers your risk.',
+      survivorDetail:
+        'After cancer treatment, avoiding or limiting alcohol lowers the risk of a second cancer and helps protect your liver and digestive system.',
       sourceName: 'World Health Organization (WHO)',
       sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/alcohol',
     },
@@ -98,6 +123,8 @@ export const HABITS: Habit[] = (
       afterCancer: { skin: 'Lowers the chance of a new skin cancer' },
       detailedInfo:
         "The sun's UV rays cause most skin cancers. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use sunscreen of SPF 30 or higher.",
+      survivorDetail:
+        "After skin cancer, protecting your skin from UV rays lowers the chance of a new skin cancer. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use SPF 30+ sunscreen.",
       sourceName: 'Skin Cancer Foundation',
       sourceUrl: 'https://www.skincancer.org/skin-cancer-prevention/',
     },
@@ -113,6 +140,10 @@ export const HABITS: Habit[] = (
       lowers: ['lung', 'oral', 'cervical', 'stomach', 'liver', 'colorectal', 'leukemia'],
       detailedInfo:
         'Tobacco is the biggest single cause of cancer. Stopping at any age lowers your risk, and every smoke-free day counts. A doctor or health center can help you quit.',
+      treatmentDetail:
+        'Stopping smoking during cancer treatment helps radiation, chemotherapy and surgery work better, lowers side effects and helps your body heal. Ask your care team for help to quit.',
+      survivorDetail:
+        'Quitting smoking after cancer lowers the chance of the cancer coming back or a second cancer starting, and helps you live longer. Every smoke-free day counts.',
       sourceName: 'National Cancer Institute (NCI)',
       sourceUrl: 'https://www.cancer.gov/about-cancer/causes-prevention/risk/tobacco',
     },
@@ -144,12 +175,13 @@ export const HABITS: Habit[] = (
       id: 'c79cc8a3-382c-4996-bba8-f3bc616ddb66',
       kind: 'once',
       audience: 'prevention',
+      maxAge: 45,
       category: 'Prevention',
       title: 'HPV vaccine',
       description: 'Protects against cervical and other cancers',
       lowers: ['cervical', 'oral'],
       detailedInfo:
-        "The HPV vaccine prevents most cervical cancers and some throat and genital cancers. It works best before age 15; adults can ask a doctor whether it's right for them.",
+        "The HPV vaccine prevents most cervical cancers and some throat and genital cancers. It works best before age 26; adults up to 45 can ask a doctor whether it's right for them.",
       sourceName: 'World Health Organization (WHO)',
       sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cancer',
     },
@@ -167,18 +199,6 @@ export const HABITS: Habit[] = (
       sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/hepatitis-b',
     },
     {
-      id: '485c7247-5446-4890-995d-50e53a84d331',
-      kind: 'once',
-      audience: 'prevention',
-      category: 'Screening',
-      title: 'Screening for your age',
-      description: 'Ask about cervical, breast and colorectal screening',
-      detailedInfo:
-        'Screening finds some cancers early, when they are easier to treat, and can find cervical and colorectal changes before they become cancer. Ask a doctor which tests suit your age.',
-      sourceName: 'Centers for Disease Control (CDC)',
-      sourceUrl: 'https://www.cdc.gov/cancer/dcpc/prevention/screening.htm',
-    },
-    {
       id: '5396337a-8dca-444d-b8b0-f0382c33b6fd',
       kind: 'once',
       audience: 'prevention',
@@ -188,6 +208,8 @@ export const HABITS: Habit[] = (
       lowers: ['breast', 'colorectal', 'uterine', 'liver', 'ovarian', 'thyroid', 'stomach'],
       detailedInfo:
         'Excess body fat raises the risk of at least 13 cancers. Ask a health worker to check your weight and waist, and let the daily habits do the rest.',
+      survivorDetail:
+        'Keeping a healthy weight after treatment supports recovery and lowers the risk of several cancers coming back. Ask your care team what weight and nutrition goals suit you.',
       sourceName: 'American Cancer Society',
       sourceUrl:
         'https://www.cancer.org/healthy/eat-healthy-get-active/take-action/cancer-risk-and-weight.html',
@@ -201,6 +223,10 @@ export const HABITS: Habit[] = (
       description: 'Helps energy, mood and recovery',
       detailedInfo:
         "Good sleep helps energy, mood and recovery. Studies haven't shown that sleep length changes cancer risk, so this one is for feeling well.",
+      treatmentDetail:
+        "Rest and sleep help your body recover between treatments. Steroids, pain or worry can make sleeping harder—short daytime naps count too, and your care team can help if you're struggling to sleep.",
+      survivorDetail:
+        'Good sleep helps energy, mood and recovery after treatment. Trouble sleeping can linger for a while after treatment ends; a steady bedtime routine helps.',
       sourceName: 'Mayo Clinic',
       sourceUrl:
         'https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/sleep/art-20048379',
@@ -214,6 +240,8 @@ export const HABITS: Habit[] = (
       description: 'Drink when thirsty, more in the heat',
       detailedInfo:
         "How much water you need depends on the weather, how active you are and your health. During treatment, follow your care team's advice on fluids.",
+      treatmentDetail:
+        "Small sips of water, broth or herbal tea throughout the day help replace fluids during treatment, especially after vomiting or diarrhea. Follow your care team's advice on fluids.",
       sourceName: 'Mayo Clinic',
       sourceUrl:
         'https://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/water/art-20044256',

@@ -20,6 +20,8 @@ export type HabitPlan = {
   wellbeing: Habit[];
   /** Why a habit is shown to this person; null shows its usual description. */
   reason: (habit: Habit) => HabitReason | null;
+  /** The detailed explanation for this person's situation (treatment, recovery or prevention). */
+  detail: (habit: Habit) => string | null;
 };
 
 /** "liver cancer", but "leukemia". */
@@ -40,6 +42,7 @@ export function habitPlan(
     chosen,
     followed = [],
     myCancer = null,
+    age = null,
   }: {
     focus: JourneyFocus | null;
     smoker: Smoker | null;
@@ -47,17 +50,21 @@ export function habitPlan(
     followed?: CancerKey[];
     /** The cancer someone finished treatment for. */
     myCancer?: CancerKey | null;
+    age?: number | null;
   },
 ): HabitPlan {
   const inTreatment = focus === 'treatment';
-  const survivor = focus === 'finished' && myCancer ? myCancer : null;
+  const finished = focus === 'finished';
+  const survivor = finished && myCancer ? myCancer : null;
   const audience = inTreatment ? 'treatment' : 'prevention';
-  const fits = (habit: Habit) => habit.audience === audience || habit.audience === 'all';
+  const fits = (habit: Habit) =>
+    (habit.audience === audience || habit.audience === 'all') &&
+    (habit.maxAge === undefined || age === null || age <= habit.maxAge);
   const matches = (habit: Habit) =>
     (habit.lowers ?? []).filter((key) => followed.includes(key) && key !== survivor);
   const score = (habit: Habit) =>
     (habit.smokersOnly ? 100 : 0) +
-    (survivor && habit.afterCancer?.[survivor] ? 10 : 0) +
+    (survivor && habit.afterCancer?.[survivor] ? 10 : finished && habit.afterAnyCancer ? 5 : 0) +
     matches(habit).length;
   // Array sort is stable, so equal scores keep the catalog order.
   const ranked = (list: Habit[]) => [...list].sort((a, b) => score(b) - score(a));
@@ -73,20 +80,29 @@ export function habitPlan(
     if (habit.smokersOnly && inTreatment) {
       return { text: 'Helps treatment work and lowers side effects', linked: true };
     }
-    if (habit.smokersOnly && survivor) {
+    if (habit.smokersOnly && finished) {
       return { text: 'Quitting after cancer helps you live longer', linked: true };
     }
     const after = survivor ? habit.afterCancer?.[survivor] : undefined;
     if (after) return { text: after, linked: true };
+    if (finished && habit.afterAnyCancer) {
+      return { text: habit.afterAnyCancer, linked: true };
+    }
     const keys = matches(habit);
     if (keys.length) {
       const names = keys.slice(0, 2).map(cancerLabel).join(' and ');
       return { text: `For ${names}${keys.length > 2 ? ' and others' : ''}`, linked: true };
     }
-    if (survivor && habit.kind === 'daily' && !inTreatment) {
+    if (finished && habit.kind === 'daily' && !inTreatment) {
       return { text: 'Good for your overall health', linked: false };
     }
     return null;
+  };
+
+  const detail = (habit: Habit): string | null => {
+    if (inTreatment && habit.treatmentDetail) return habit.treatmentDetail;
+    if (finished && habit.survivorDetail) return habit.survivorDetail;
+    return habit.detailedInfo;
   };
 
   return {
@@ -95,6 +111,7 @@ export function habitPlan(
     once: ranked(habits.filter((habit) => habit.kind === 'once' && fits(habit))),
     wellbeing: habits.filter((habit) => habit.kind === 'wellbeing' && fits(habit)),
     reason,
+    detail,
   };
 }
 

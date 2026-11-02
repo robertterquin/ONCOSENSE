@@ -13,7 +13,15 @@ describe('habitPlan', () => {
     expect(plan.tracked).toHaveLength(MAX_TRACKED);
     expect(titles(plan.options)).not.toContain('Smoke-free day');
     expect(titles(plan.once)).toContain('HPV vaccine');
+    expect(titles(plan.once)).not.toContain('Screening for your age');
     expect(plan.tracked.every((habit) => habit.kind === 'daily')).toBe(true);
+  });
+
+  it('offers the HPV vaccine only up to age 45', () => {
+    const at45 = habitPlan(HABITS, { focus: 'learning', smoker: 'no', chosen: null, age: 45 });
+    const at50 = habitPlan(HABITS, { focus: 'learning', smoker: 'no', chosen: null, age: 50 });
+    expect(titles(at45.once)).toContain('HPV vaccine');
+    expect(titles(at50.once)).not.toContain('HPV vaccine');
   });
 
   it('puts smoke-free first for smokers', () => {
@@ -64,6 +72,26 @@ describe('habitPlan', () => {
     expect(plan.reason(plan.tracked[1])?.text).toMatch(/coming back/);
     const sun = plan.options.find((habit) => habit.title === 'Sun-safe outside')!;
     expect(plan.reason(sun)).toEqual({ text: 'Good for your overall health', linked: false });
+  });
+
+  it('gives recovery reasons and tailored details across all cancers and in treatment', () => {
+    const thyroidSurvivor = habitPlan(HABITS, {
+      focus: 'finished',
+      smoker: 'no',
+      chosen: null,
+      myCancer: 'thyroid',
+    });
+    expect(titles(thyroidSurvivor.tracked).slice(0, 2)).toEqual(['Eat plants', 'Move 30 minutes']);
+    expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[0])).toEqual({
+      text: 'Supports recovery and long-term health after treatment',
+      linked: true,
+    });
+    expect(thyroidSurvivor.detail(thyroidSurvivor.tracked[1])).toMatch(/After treatment/);
+
+    const inTreatment = habitPlan(HABITS, { focus: 'treatment', smoker: 'yes', chosen: null });
+    const sleep = inTreatment.wellbeing.find((habit) => habit.title === 'Sleep 7 to 9 hours')!;
+    expect(inTreatment.detail(sleep)).toMatch(/Steroids, pain or worry/);
+    expect(inTreatment.detail(sleep)).not.toMatch(/cancer risk/);
   });
 });
 

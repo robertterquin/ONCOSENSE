@@ -326,9 +326,12 @@ export function PreventionDetailSheet({
   onClose: () => void;
 }) {
   const { palette } = useDesign();
+  const plan = useHabitPlan();
   const openTone = tip ? categoryTone(tip.category) : null;
   const openIcon = tip ? iconForPreventionTip(tip) : null;
   const once = tip?.kind === 'once';
+  const why = tip ? plan.reason(tip) : null;
+  const detailText = tip ? plan.detail(tip) : null;
   const isDone = useHabitsStore((state) =>
     tip ? (once ? state.isDoneEver(tip.id) : state.isDone(tip.id)) : false,
   );
@@ -351,8 +354,14 @@ export function PreventionDetailSheet({
               <Icon name={openIcon} size={18} tone={openTone.color} />
             </View>
           </View>
-          <Text variant="reading">{tip.description}</Text>
-          {tip.detailedInfo ? <Text variant="reading">{tip.detailedInfo}</Text> : null}
+          {why?.linked ? (
+            <Text variant="strong" tone="action">
+              {why.text}
+            </Text>
+          ) : (
+            <Text variant="reading">{tip.description}</Text>
+          )}
+          {detailText ? <Text variant="reading">{detailText}</Text> : null}
           <View style={styles.sheetActions}>
             {tip.kind === 'wellbeing' ? null : (
               <Button
@@ -414,8 +423,12 @@ export function LowerYourRisk() {
   const myCancer = useMyCancer();
   const survivor = focus === 'finished' && myCancer ? myCancer : null;
   const helpsAfter =
-    survivor && plan.tracked.some((habit) => habit.afterCancer?.[cancerKeyword(survivor.name)]);
+    survivor &&
+    plan.tracked.some(
+      (habit) => habit.afterCancer?.[cancerKeyword(survivor.name)] || habit.afterAnyCancer,
+    );
   const picked = plan.tracked.some((habit) => plan.reason(habit)?.linked);
+  const smoker = useHabitsStore((state) => state.smoker);
   const [open, setOpen] = useState<Habit | null>(null);
   const [choosing, setChoosing] = useState(false);
   const trackedIds = plan.tracked.map((habit) => habit.id);
@@ -461,11 +474,23 @@ export function LowerYourRisk() {
             onPress={() => setOpen(habit)}
           />
         ))}
-        <ListRow
-          title={inTreatment ? 'Do you smoke or vape?' : 'Change habits'}
-          titleTone="action"
-          onPress={() => setChoosing(true)}
-        />
+        {inTreatment ? (
+          smoker === 'no' ? null : (
+            <ListRow
+              title={smoker === 'yes' ? 'Change smoking status' : 'Do you smoke or vape?'}
+              subtitle={smoker === null ? 'Quitting helps treatment work' : undefined}
+              titleTone="action"
+              onPress={() => setChoosing(true)}
+            />
+          )
+        ) : (
+          <ListRow
+            title="Change habits"
+            subtitle={smoker === null ? 'Pick up to 3, or say if you smoke' : undefined}
+            titleTone="action"
+            onPress={() => setChoosing(true)}
+          />
+        )}
       </Section>
       {inTreatment ? (
         <Text variant="supporting" tone="muted" style={styles.footnote}>

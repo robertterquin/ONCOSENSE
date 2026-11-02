@@ -6,7 +6,7 @@ import { MoodPicker } from '@/components/journey/MoodPicker';
 import { Button, Icon, ListRow, Section, Text } from '@/components/ui';
 import { ProgressRing } from '@/components/learn/LearnSections';
 import { useJourneyEntries, useSaveJourneyEntry } from '@/hooks/useJourney';
-import { useSaveFocus } from '@/hooks/useFocus';
+import { useFocus, useSaveFocus } from '@/hooks/useFocus';
 import { useHabitPlan } from '@/hooks/useHabits';
 import { addDays, formatShortDate, formatTime, isSameDay } from '@/lib/dates';
 import { startOfDay } from '@/lib/selfCheck';
@@ -117,6 +117,7 @@ export function ComingUpToday({
 /** Today's habits as one row: the ring and what's left, opening the Habits screen. */
 export function HabitsRow() {
   const { tracked } = useHabitPlan();
+  const inTreatment = useFocus() === 'treatment';
   const today = useHabitsStore((state) => state.completedByDate[toDayKey()]);
   const undone = tracked.filter((habit) => !today?.includes(habit.id));
   const done = tracked.length - undone.length;
@@ -125,7 +126,7 @@ export function HabitsRow() {
     <Section>
       <ListRow
         leading={<ProgressRing done={done} total={tracked.length} />}
-        title="Today's habits"
+        title={inTreatment ? 'Feel a bit better today' : "Today's habits"}
         subtitle={
           undone.length === 0
             ? 'All done today'
