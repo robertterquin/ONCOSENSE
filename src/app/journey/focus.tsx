@@ -173,7 +173,7 @@ export default function FocusScreen() {
           key={cancer.id}
           icon={iconForCancer(cancer.name)}
           title={cancer.name}
-          subtitle={followSummary(key, age, answers)}
+          subtitle={followSummary(key, age, answers, sex)}
           accessibilityLabel={`${cancer.name}, ${on ? 'selected' : 'not selected'}`}
           accessory={
             <Icon name={on ? 'circle-check' : 'circle'} size={26} tone={on ? 'action' : 'muted'} />

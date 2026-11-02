@@ -30,8 +30,16 @@ describe('asChangeCheck', () => {
     expect(asChangeCheck(guide('Testicular', ['Lump'])).changeCheck).toBe(true);
   });
 
-  it('leaves skin, and any guide without warning signs, as it is', () => {
-    expect(asChangeCheck(guide('Skin', ['Changing mole'])).steps).toHaveLength(5);
+  it('gives skin the body areas to look at, then its signs', () => {
+    const skin = asChangeCheck(guide('Skin', ['Asymmetrical mole', 'Ugly duckling']));
+    expect(skin.title).toBe('Skin change check');
+    expect(skin.steps).toHaveLength(5);
+    expect(skin.steps[0].instruction).toBe('Front, back and sides');
+    expect(skin.steps[4]).toMatchObject({ step: 5, instruction: 'Any of these changes?' });
+  });
+
+  it('leaves other cancers, and any guide without warning signs, as they are', () => {
+    expect(asChangeCheck(guide('Oral', ['Sore'])).steps).toHaveLength(5);
     expect(asChangeCheck(guide('Breast', null)).changeCheck).toBeUndefined();
   });
 });

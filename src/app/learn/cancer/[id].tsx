@@ -15,7 +15,7 @@ import {
   Section,
   Text,
 } from '@/components/ui';
-import { userAge } from '@/api/auth';
+import { userAge, userGender } from '@/api/auth';
 import { QuestionRow } from '@/components/community/QuestionRow';
 import { ResourceRow } from '@/components/help/ResourceRow';
 import { useCancerType, useCancerTypes } from '@/hooks/useCancerInfo';
@@ -325,14 +325,15 @@ function useCheckFor(
   cancer: CancerType,
   guide: SelfCheckGuide | null,
 ): { title: string; detail: string; open?: () => void } | null {
-  const age = userAge(useUser());
+  const user = useUser();
+  const age = userAge(user);
   const answers = useSelfCheckStore((state) => state.answers);
   const { careTeamCancer } = useFollowedCancers();
   const key = cancerKeyword(cancer.name);
   if (key === careTeamCancer) {
     return { title: 'Your follow-up', detail: 'Set by your care team' };
   }
-  const action = primaryAction(key, age, answers);
+  const action = primaryAction(key, age, answers, userGender(user));
   if (action.kind === 'screening') {
     return {
       title: action.test.title,

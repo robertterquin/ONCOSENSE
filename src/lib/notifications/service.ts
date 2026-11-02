@@ -72,6 +72,7 @@ function selfCheckPlan(now: Date = new Date()): SelfCheckPlan | null {
     followed,
     age,
     answers: state.answers,
+    sex,
     state,
     now,
   }).find((item) => item.due !== null);

@@ -118,6 +118,11 @@ export default function SignsCheckScreen() {
             }))}
             current={current}>
             <SignList signs={item.cancer?.symptoms ?? []} />
+            {/* Some signs shouldn't wait the 2 weeks (ACS, NHS). */}
+            <Text variant="strong" tone="sunInk">
+              Bleeding you can&apos;t explain, or a new lump: see a doctor even if it&apos;s
+              happened once.
+            </Text>
           </StepList>
           <Text variant="supporting" tone="muted">
             {list.length === 1

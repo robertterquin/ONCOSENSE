@@ -36,22 +36,32 @@ import type { CancerType } from '@/types/cancerType';
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/learn'));
 
-const QUESTIONS: Record<keyof ScreeningAnswers, { text: string; note: string }> = {
+type Answer = NonNullable<ScreeningAnswers[keyof ScreeningAnswers]>;
+
+const QUESTIONS: Record<
+  keyof ScreeningAnswers,
+  { text: string; note: string; answers: { value: Answer; label: string }[] }
+> = {
   heavySmoker: {
     text: 'Have you smoked about a pack a day for 20 years or more?',
-    note: 'Including if you stopped in the last 15 years. Screening is for people at high risk.',
+    note: 'Now or in the past, however long ago you stopped, or the same over more years (half a pack for 40). Screening is for people at high risk.',
+    answers: [
+      { value: 'yes', label: 'Yes' },
+      { value: 'no', label: 'No' },
+      { value: 'unsaid', label: "I'd rather not say" },
+    ],
   },
   hepatitis: {
-    text: 'Do you have hepatitis B or C, or cirrhosis?',
-    note: 'People with these have regular liver checks; everyone else follows the warning signs.',
+    text: 'Do you have cirrhosis, or hepatitis B?',
+    note: 'Cirrhosis from any cause counts, including from hepatitis C. People with these have regular liver checks; everyone else follows the warning signs.',
+    answers: [
+      { value: 'cirrhosis', label: 'Cirrhosis' },
+      { value: 'hepatitis-b', label: 'Hepatitis B' },
+      { value: 'no', label: 'Neither' },
+      { value: 'unsaid', label: "I'd rather not say" },
+    ],
   },
 };
-
-const ANSWERS = [
-  { value: 'yes', label: 'Yes' },
-  { value: 'no', label: 'No' },
-  { value: 'unsaid', label: "I'd rather not say" },
-] as const;
 
 export default function YourCancersScreen() {
   const cancers = useCancerTypes();
@@ -117,7 +127,7 @@ export default function YourCancersScreen() {
                 key={cancer.id}
                 icon={iconForCancer(cancer.name)}
                 title={cancer.name}
-                subtitle={followSummary(key, age, answers)}
+                subtitle={followSummary(key, age, answers, sex)}
                 accessory={
                   <Switch
                     accessibilityLabel={`Follow ${cancer.name.toLowerCase()}`}
@@ -131,8 +141,8 @@ export default function YourCancersScreen() {
         </Section>
       )}
       <Text variant="supporting" tone="muted">
-        Most people follow 3 or fewer. Self-checks come together as one monthly body check,
-        and cancers with no check or test as one signs check every 3 months.
+        Most people follow 3 or fewer. Self-checks come together as one monthly body check, and
+        cancers with no check or test as one signs check every 3 months.
       </Text>
 
       <Sheet visible={asking !== null} onClose={() => setAsking(null)} title={asking?.name ?? ''}>
@@ -143,7 +153,7 @@ export default function YourCancersScreen() {
               {QUESTIONS[question].note}
             </Text>
             <Section>
-              {ANSWERS.map((answer) => (
+              {QUESTIONS[question].answers.map((answer) => (
                 <ListRow
                   key={answer.value}
                   title={answer.label}

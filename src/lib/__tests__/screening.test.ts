@@ -5,10 +5,16 @@ import {
   followSummary,
   nextDueAfter,
   primaryAction,
+  type ScreeningAnswers,
 } from '../screening';
 
-const kinds = (cancer: string, age: number | null, answers = {}) =>
-  actionsFor(cancer, age, answers).map((action) =>
+const kinds = (
+  cancer: string,
+  age: number | null,
+  answers: ScreeningAnswers = {},
+  sex: string | null = null,
+) =>
+  actionsFor(cancer, age, answers, sex).map((action) =>
     action.kind === 'screening' ? action.test.id : action.kind,
   );
 
@@ -56,8 +62,16 @@ describe('actionsFor', () => {
     expect(kinds('lung', 60)).toEqual(['signs']);
     expect(kinds('lung', 60, { heavySmoker: 'yes' })).toEqual(['lung-ct']);
     expect(kinds('lung', 40, { heavySmoker: 'yes' })).toEqual(['signs']);
-    expect(kinds('liver', 35, { hepatitis: 'yes' })).toEqual(['liver-ultrasound']);
+    expect(kinds('liver', 35, { hepatitis: 'cirrhosis' })).toEqual(['liver-ultrasound']);
     expect(kinds('liver', 35, { hepatitis: 'unsaid' })).toEqual(['signs']);
+  });
+
+  it('offers liver ultrasound for hepatitis B from 40 for men and 50 for women (AASLD)', () => {
+    const b = { hepatitis: 'hepatitis-b' } as const;
+    expect(kinds('liver', 42, b, 'Male')).toEqual(['liver-ultrasound']);
+    expect(kinds('liver', 42, b, 'Female')).toEqual(['signs']);
+    expect(kinds('liver', 52, b, 'Female')).toEqual(['liver-ultrasound']);
+    expect(kinds('liver', 35, b, 'Male')).toEqual(['signs']);
   });
 
   it('gives cancers with no check or test their warning signs', () => {

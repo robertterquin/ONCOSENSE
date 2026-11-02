@@ -61,6 +61,7 @@ export function checkItems({
   followed,
   age,
   answers,
+  sex = null,
   state,
   now = new Date(),
 }: {
@@ -69,6 +70,7 @@ export function checkItems({
   followed: CancerKey[];
   age: number | null;
   answers: ScreeningAnswers;
+  sex?: string | null;
   state: SelfCheckState;
   now?: Date;
 }): CheckItem[] {
@@ -93,7 +95,7 @@ export function checkItems({
 
   const signs: CancerKey[] = [];
   for (const cancer of followed) {
-    for (const action of actionsFor(cancer, age, answers)) {
+    for (const action of actionsFor(cancer, age, answers, sex)) {
       if (action.kind === 'signs') signs.push(cancer);
       if (action.kind !== 'screening') continue;
       const id = screeningId(action.test);

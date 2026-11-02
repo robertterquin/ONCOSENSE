@@ -77,7 +77,7 @@ describe('self-check storage on the phone', () => {
 
   it('clears followed cancers and risk answers on sign-out', () => {
     useSelfCheckStore.getState().setFollowed(['liver', 'thyroid']);
-    useSelfCheckStore.getState().setAnswer('hepatitis', 'yes');
+    useSelfCheckStore.getState().setAnswer('hepatitis', 'hepatitis-b');
     clearSelfChecks();
     expect(useSelfCheckStore.getState()).toMatchObject({
       followed: null,
@@ -95,6 +95,9 @@ describe('self-check storage on the phone', () => {
       followed: ['thyroid'],
       answers: { hepatitis: 'yes' },
     };
+    const fromThree = migrate({ ...old, answers: { hepatitis: 'yes', heavySmoker: 'no' } }, 3);
+    expect(fromThree).toMatchObject({ history: old.history, followed: ['thyroid'] });
+    expect((fromThree as { answers: object }).answers).toEqual({ heavySmoker: 'no' });
     expect(migrate(old, 2)).toMatchObject({
       lastDone: old.lastDone,
       history: old.history,

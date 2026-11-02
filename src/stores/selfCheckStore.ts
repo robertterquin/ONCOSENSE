@@ -19,7 +19,10 @@ type SelfCheckStore = SelfCheckState & {
   setFollowed: (cancers: CancerKey[]) => void;
   /** Answers to the lung and liver questions. */
   answers: ScreeningAnswers;
-  setAnswer: (key: keyof ScreeningAnswers, value: 'yes' | 'no' | 'unsaid') => void;
+  setAnswer: <K extends keyof ScreeningAnswers>(
+    key: K,
+    value: NonNullable<ScreeningAnswers[K]>,
+  ) => void;
   /** `changed`: the person noticed a change (design refresh Phase 22). */
   markDone: (guideId: string, when?: Date, changed?: boolean) => void;
   /** "Remind me tomorrow" on Today's next-step panel. */
@@ -70,15 +73,17 @@ export const useSelfCheckStore = create<SelfCheckStore>()(
     {
       name: 'self-checks',
       storage: persistStorage,
-      version: 3,
-      // Followed cancers and answers start again from the defaults; history and saved
-      // guides are kept (a guest's exist only on this phone).
-      migrate: (persisted) => ({
-        ...(persisted as Partial<SelfCheckStore>),
-        ownerId: null,
-        followed: null,
-        answers: {},
-      }),
+      version: 4,
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<SelfCheckStore>;
+        // Before 3: followed cancers and answers start again from the defaults; history and
+        // saved guides are kept (a guest's exist only on this phone).
+        if (version < 3) return { ...state, ownerId: null, followed: null, answers: {} };
+        // 4: the liver question now tells cirrhosis from hepatitis B, so an old "yes" (B, C
+        // or cirrhosis) is asked again.
+        const { hepatitis, ...answers } = (state.answers ?? {}) as Record<string, string>;
+        return { ...state, answers: hepatitis === 'yes' ? answers : (state.answers ?? {}) };
+      },
       partialize: (state) =>
         useAuthStore.getState().user
           ? // shortcut: followed cancers and answers stay on this phone; move them to the

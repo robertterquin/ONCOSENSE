@@ -14,10 +14,10 @@ export type Sex = 'Male' | 'Female' | null;
 
 /** Answers to the two questions asked when following lung or liver cancer. */
 export type ScreeningAnswers = {
-  /** About a pack a day for 20 years or more, now or in the last 15 years. */
+  /** About a pack a day for 20 years or more (20 pack-years), now or in the past. */
   heavySmoker?: 'yes' | 'no' | 'unsaid';
-  /** Hepatitis B or C, or cirrhosis. */
-  hepatitis?: 'yes' | 'no' | 'unsaid';
+  /** Cirrhosis from any cause, or hepatitis B. (Before November 2026: 'yes' for B, C or cirrhosis.) */
+  hepatitis?: 'cirrhosis' | 'hepatitis-b' | 'no' | 'unsaid';
 };
 
 export type ScreeningTest = {
@@ -33,7 +33,7 @@ export type ScreeningTest = {
   months: (age: number | null) => number | null;
   howOften: (age: number | null) => string;
   /** Whether this person should be offered it. */
-  eligible: (age: number | null, answers: ScreeningAnswers) => boolean;
+  eligible: (age: number | null, answers: ScreeningAnswers, sex: string | null) => boolean;
   source: string;
 };
 
@@ -86,27 +86,34 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     cancer: 'lung',
     title: 'Low-dose CT scan',
     about: 'A quick scan of the lungs that finds cancer early in people who have smoked heavily.',
-    who: 'Ages 50 to 80 who smoked heavily, now or in the last 15 years',
+    who: 'Ages 50 to 80 who have smoked heavily, now or in the past',
     howToGet:
       'Ask a doctor to refer you to a hospital that does low-dose CT. The scan takes a few minutes.',
     months: () => 12,
     howOften: () => 'Every year',
+    // American Cancer Society 2023: however long ago they quit (the USPSTF still stops at 15 years).
     eligible: (age, answers) => answers.heavySmoker === 'yes' && within(age, 50, 80),
-    source: 'US Preventive Services Task Force, American Cancer Society',
+    source: 'American Cancer Society (2023), US Preventive Services Task Force',
   },
   {
     id: 'liver-ultrasound',
     cancer: 'liver',
     title: 'Liver ultrasound',
     about:
-      'An ultrasound, often with an AFP blood test, that finds liver cancer early in people with hepatitis B or C, or cirrhosis.',
-    who: 'People with hepatitis B or C, or cirrhosis',
+      'An ultrasound, often with an AFP blood test, that finds liver cancer early in people with cirrhosis, or with long-term hepatitis B.',
+    who: 'People with cirrhosis; with hepatitis B, men from 40 and women from 50',
     howToGet:
       'Ask the doctor who looks after your liver. It is often booked with an AFP blood test.',
     months: () => 6,
     howOften: () => 'Every 6 months',
-    eligible: (_age, answers) => answers.hepatitis === 'yes',
-    source: 'WHO, American Association for the Study of Liver Diseases',
+    // AASLD 2023: cirrhosis from any cause (hepatitis C included), or hepatitis B in Asian
+    // men from 40 and women from 50. Hepatitis C without cirrhosis isn't enough.
+    // shortcut: a family history of liver cancer, which lowers the hepatitis B age, isn't
+    // asked; add the question if a clinician wants it.
+    eligible: (age, answers, sex) =>
+      answers.hepatitis === 'cirrhosis' ||
+      (answers.hepatitis === 'hepatitis-b' && within(age, sex === 'Female' ? 50 : 40)),
+    source: 'American Association for the Study of Liver Diseases (2023)',
   },
   {
     id: 'psa-talk',
@@ -114,7 +121,7 @@ export const SCREENING_TESTS: ScreeningTest[] = [
     title: 'Talk to a doctor about PSA testing',
     about:
       "A PSA blood test can find prostate cancer early, but it can also lead to treatment you don't need. Whether to have it is a choice to make with your doctor.",
-    who: 'Men 50 and over (45 if a father or brother had it)',
+    who: 'Men 50 and over (45 if a father or brother had it before 65)',
     howToGet: 'Bring it up at your next check-up and ask about the benefits and harms for you.',
     months: () => null,
     howOften: () => 'Once, then as your doctor advises',
@@ -154,11 +161,12 @@ export function actionsFor(
   cancer: CancerKey,
   age: number | null,
   answers: ScreeningAnswers,
+  sex: string | null = null,
 ): CancerAction[] {
   const actions: CancerAction[] = [];
   if (SELF_CHECK_CANCERS.includes(cancer)) actions.push({ kind: 'self-check' });
   for (const test of SCREENING_TESTS) {
-    if (test.cancer === cancer && test.eligible(age, answers)) {
+    if (test.cancer === cancer && test.eligible(age, answers, sex)) {
       actions.push({ kind: 'screening', test });
     }
   }
@@ -173,8 +181,9 @@ export function primaryAction(
   cancer: CancerKey,
   age: number | null,
   answers: ScreeningAnswers,
+  sex: string | null = null,
 ): CancerAction {
-  const actions = actionsFor(cancer, age, answers);
+  const actions = actionsFor(cancer, age, answers, sex);
   return actions.find((action) => action.kind === 'screening') ?? actions[0];
 }
 
@@ -198,8 +207,9 @@ export function followSummary(
   key: CancerKey,
   age: number | null,
   answers: ScreeningAnswers,
+  sex: string | null = null,
 ): string {
-  const parts = actionsFor(key, age, answers).map((action) =>
+  const parts = actionsFor(key, age, answers, sex).map((action) =>
     action.kind === 'self-check'
       ? 'Monthly body check'
       : action.kind === 'screening'

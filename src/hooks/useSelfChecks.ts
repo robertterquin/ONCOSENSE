@@ -149,7 +149,7 @@ export function useSelfChecks(now: Date = new Date()) {
     };
   };
   const follows = followed.flatMap((cancerKey) =>
-    actionsFor(cancerKey, age, state.answers).flatMap((action) =>
+    actionsFor(cancerKey, age, state.answers, gender).flatMap((action) =>
       action.kind === 'screening'
         ? [followStatus(screeningId(action.test), cancerKey, action.test, action.test.months(age))]
         : action.kind === 'signs'
@@ -171,7 +171,15 @@ export function useSelfChecks(now: Date = new Date()) {
     /** Warning-signs prompts for followed cancers with no check or test. */
     signs: follows.filter((item) => !item.test),
     /** Everything above bundled for Today: one body check, each test, one signs check. */
-    items: checkItems({ guides: mine, followed, age, answers: state.answers, state, now }),
+    items: checkItems({
+      guides: mine,
+      followed,
+      age,
+      answers: state.answers,
+      sex: gender,
+      state,
+      now,
+    }),
     /** A due check was put off with "Remind me tomorrow". */
     snoozed: isSnoozed(state, now),
     status,
