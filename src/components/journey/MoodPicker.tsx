@@ -36,7 +36,7 @@ export function MoodPicker({ value, onChange, disabled = false }: MoodPickerProp
             style={[
               styles.mood,
               fill,
-              { backgroundColor: selected ? palette.action : palette.ground },
+              { backgroundColor: selected ? palette.action : palette.raised },
             ]}>
             <Icon
               name={mood.icon}

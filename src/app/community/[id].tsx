@@ -393,7 +393,8 @@ function Composer({ questionId }: { questionId: string }) {
       style={[
         styles.composer,
         {
-          backgroundColor: palette.surface,
+          // Like every bottom bar: the page's color, a hairline, and colored controls.
+          backgroundColor: palette.ground,
           borderTopColor: palette.line,
           paddingBottom: Math.max(insets.bottom, space.md),
         },
@@ -419,7 +420,7 @@ function Composer({ questionId }: { questionId: string }) {
         style={[
           type('body'),
           styles.field,
-          { color: palette.ink, backgroundColor: palette.ground },
+          { color: palette.ink, backgroundColor: palette.surface, borderColor: palette.border },
         ]}
       />
       <Button
@@ -442,7 +443,8 @@ function SignInToAnswer() {
       style={[
         styles.composer,
         {
-          backgroundColor: palette.surface,
+          // Like every bottom bar: the page's color, a hairline, and colored controls.
+          backgroundColor: palette.ground,
           borderTopColor: palette.line,
           paddingBottom: Math.max(insets.bottom, space.md),
         },
@@ -511,5 +513,6 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
     paddingBottom: space.sm,
     borderRadius: 20,
+    borderWidth: 1,
   },
 });
