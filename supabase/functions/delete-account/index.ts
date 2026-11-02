@@ -54,20 +54,21 @@ Deno.serve(async (req) => {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   try {
-    // Votes: remove the user's votes and the counts they added.
+    // Votes: remove the user's votes, then recount what they voted on (the count
+    // functions recount from the votes since 20261104000000_community_counts.sql).
     const questionVotes = await admin.from('question_votes').select('question_id').eq('user_id', userId);
     check('read question votes', questionVotes.error);
+    check('delete question votes', (await admin.from('question_votes').delete().eq('user_id', userId)).error);
     for (const vote of questionVotes.data ?? []) {
       await admin.rpc('decrement_question_upvotes', { question_id_param: vote.question_id });
     }
-    check('delete question votes', (await admin.from('question_votes').delete().eq('user_id', userId)).error);
 
     const answerVotes = await admin.from('answer_votes').select('answer_id').eq('user_id', userId);
     check('read answer votes', answerVotes.error);
+    check('delete answer votes', (await admin.from('answer_votes').delete().eq('user_id', userId)).error);
     for (const vote of answerVotes.data ?? []) {
       await admin.rpc('decrement_answer_upvotes', { answer_id_param: vote.answer_id });
     }
-    check('delete answer votes', (await admin.from('answer_votes').delete().eq('user_id', userId)).error);
 
     // The user's own questions, with everything attached to them.
     const questions = await admin.from('questions').select('id').eq('user_id', userId);
