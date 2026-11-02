@@ -42,7 +42,7 @@ export default function SettingsScreen() {
   const remindersOn = useNotificationPrefs((state) => state.enabled);
   const [deleting, setDeleting] = useState(false);
   const reminders: NotificationType[] = [
-    'self_check',
+    ...(focus === 'treatment' ? [] : (['self_check'] as const)),
     ...(signedIn && usesJourney(focus) ? (['daily_checkin', 'appointments'] as const) : []),
     'weekly_tip',
   ];

@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { updateProfile, userCancerTypeId } from '@/api/auth';
 import { focusFromMetadata, type JourneyFocus } from '@/lib/focus';
+import { asksWhichCancer } from '@/lib/forYou';
 import { useUser } from '@/stores/authStore';
 import { useFocusStore } from '@/stores/focusStore';
 
@@ -25,8 +26,18 @@ export function useSaveFocus() {
   });
 }
 
-/** "Which cancer?": an id, `'none'` for "I'd rather not say", or null when not answered. */
+/**
+ * "Which cancer?" for the current focus: an id, `'none'` for "I'd rather not say", or null
+ * when not answered or not asked. Learning gets null even with an earlier answer, so every
+ * screen follows a change of focus.
+ */
 export function useMyCancerId(): string | null {
+  const saved = useSavedCancerId();
+  return asksWhichCancer(useFocus()) ? saved : null;
+}
+
+/** The last "Which cancer?" answer whatever the focus, to fill in the choice again. */
+export function useSavedCancerId(): string | null {
   const user = useUser();
   const guestCancerId = useFocusStore((state) => state.guestCancerId);
   return user ? userCancerTypeId(user) : guestCancerId;

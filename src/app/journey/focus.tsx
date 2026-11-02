@@ -19,14 +19,14 @@ import {
 } from '@/components/ui';
 import { userAge, userGender } from '@/api/auth';
 import { useCancerTypes } from '@/hooks/useCancerInfo';
-import { useFocus, useMyCancerId, useSaveFocus, useSaveMyCancer } from '@/hooks/useFocus';
+import { useFocus, useSavedCancerId, useSaveFocus, useSaveMyCancer } from '@/hooks/useFocus';
 import { useJourneySetup, useStartJourney } from '@/hooks/useJourney';
 import { useFollowedCancers } from '@/hooks/useSelfChecks';
 import { addDays, formatLongDate } from '@/lib/dates';
 import { type JourneyFocus } from '@/lib/focus';
 import { cancerKeyword } from '@/lib/help';
 import { iconForCancer } from '@/lib/learn';
-import { rescheduleCheckInReminder } from '@/lib/notifications/service';
+import { rescheduleForFocus } from '@/lib/notifications/service';
 import {
   cancerAppliesToSex,
   defaultFollowed,
@@ -34,6 +34,7 @@ import {
   type CancerKey,
 } from '@/lib/screening';
 import { useIsSignedIn, useUser } from '@/stores/authStore';
+import { useHabitsStore } from '@/stores/habitsStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
 import { radii, space } from '@/theme/tokens';
@@ -80,7 +81,7 @@ export default function FocusScreen() {
   const saveFocus = useSaveFocus();
   const saveMyCancer = useSaveMyCancer();
   const startJourney = useStartJourney();
-  const myCancerId = useMyCancerId();
+  const myCancerId = useSavedCancerId();
   const cancers = useCancerTypes();
   const [kind, setKind] = useState<Kind | null>(
     current === null ? null : current === 'learning' ? 'learning' : 'cancer',
@@ -109,10 +110,15 @@ export default function FocusScreen() {
     setStep('cancers');
   };
 
+  const newFocus: JourneyFocus = kind === 'learning' ? 'learning' : stage;
+  const situationChanged = newFocus !== current || (kind === 'cancer' && cancerId !== myCancerId);
+
   const done = (message: string) => {
+    // A new situation gets its own suggested habits; earlier picks would hide them.
+    if (situationChanged) useHabitsStore.getState().setChosenHabits(null);
     showToast(message, 'success');
-    // The daily check-in reminder is only for Journey focuses.
-    void rescheduleCheckInReminder();
+    // The check-in reminder is for Journey focuses, check reminders for all but treatment.
+    void rescheduleForFocus();
     router.replace('/today');
   };
 

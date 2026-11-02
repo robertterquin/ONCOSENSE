@@ -42,13 +42,13 @@ jest.mock('../device', () => {
 const scheduled = (device as unknown as { scheduled: Map<string, unknown> }).scheduled;
 const ids = () => [...scheduled.keys()].sort();
 
-/** A signed-in person going through treatment, so the daily check-in applies. */
-const inTreatment = { id: 'u1', user_metadata: { journey_focus: 'treatment' } } as never;
+/** A signed-in person who finished treatment, so the check-in and check reminders apply. */
+const afterTreatment = { id: 'u1', user_metadata: { journey_focus: 'finished' } } as never;
 
 beforeEach(() => {
   scheduled.clear();
   jest.clearAllMocks();
-  useAuthStore.setState({ user: inTreatment, isGuest: false });
+  useAuthStore.setState({ user: afterTreatment, isGuest: false });
   useNotificationPrefs.setState({
     enabled: true,
     setupComplete: false,
@@ -96,7 +96,7 @@ describe('reminder times', () => {
     const selfCheckBefore = scheduled.get('self-check-monthly');
     await setReminderTime('daily_checkin', { hour: 21, minute: 30 });
     expect(scheduled.get('daily-checkin')).toMatchObject({
-      trigger: { kind: 'daily', hour: 21, minute: 30 },
+      trigger: { kind: 'weekly', hour: 21, minute: 30 },
     });
     // The self-check reminder is the same object: it wasn't cancelled and set again.
     expect(scheduled.get('self-check-monthly')).toBe(selfCheckBefore);
@@ -126,7 +126,16 @@ describe('daily check-in and focus', () => {
       user: { id: 'u1', user_metadata: { journey_started: true } } as never,
     });
     await initializeNotifications();
-    expect(ids()).toEqual(['daily-checkin', 'self-check-monthly']);
+    // An older account with no end date is in treatment: no check reminder.
+    expect(ids()).toEqual(['daily-checkin']);
+  });
+
+  it('leaves out the check reminder in treatment', async () => {
+    useAuthStore.setState({
+      user: { id: 'u1', user_metadata: { journey_focus: 'treatment' } } as never,
+    });
+    await initializeNotifications();
+    expect(ids()).toEqual(['daily-checkin']);
   });
 });
 

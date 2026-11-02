@@ -67,13 +67,10 @@ export function habitPlan(
   // Only non-cancer users match against `followed`; cancer patients focus on `myCancer`.
   const matches = (habit: Habit) =>
     hasCancer ? [] : (habit.lowers ?? []).filter((key) => followed.includes(key));
-  const onceMatch = (habit: Habit) =>
-    survivor && habit.kind === 'once' && habit.lowers?.includes(survivor) ? 1 : 0;
   const score = (habit: Habit) =>
     (habit.smokersOnly ? 100 : 0) +
     (patient && habit.duringCancer?.[patient] ? 10 : inTreatment && habit.duringAnyCancer ? 5 : 0) +
     (survivor && habit.afterCancer?.[survivor] ? 10 : finished && habit.afterAnyCancer ? 5 : 0) +
-    onceMatch(habit) +
     matches(habit).length;
   // Array sort is stable, so equal scores keep the catalog order.
   const ranked = (list: Habit[]) => [...list].sort((a, b) => score(b) - score(a));
@@ -103,9 +100,6 @@ export function habitPlan(
     if (after) return { text: after, linked: true };
     if (finished && habit.afterAnyCancer) {
       return { text: habit.afterAnyCancer, linked: true };
-    }
-    if (finished && onceMatch(habit)) {
-      return { text: `Recommended after ${cancerLabel(survivor!)}`, linked: true };
     }
     const keys = matches(habit);
     if (keys.length) {

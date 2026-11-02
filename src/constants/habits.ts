@@ -61,7 +61,7 @@ export const HABITS: Habit[] = (
       category: 'Diet',
       title: 'Eat plants',
       description: 'Vegetables, fruit, whole grains and beans',
-      lowers: ['colorectal', 'stomach', 'oral'],
+      lowers: ['colorectal'],
       afterCancer: {
         colorectal: 'Linked to longer survival after colorectal cancer',
         breast: 'Linked to better overall survival after breast cancer',
@@ -69,7 +69,7 @@ export const HABITS: Habit[] = (
       },
       afterAnyCancer: 'Supports recovery and long-term health after treatment',
       detailedInfo:
-        'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal and stomach cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
+        'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
       survivorDetail:
         'After treatment, meals built around vegetables, fruit, whole grains and beans, with little red or processed meat, support recovery, heart health and long-term survival.',
       sourceName: 'World Cancer Research Fund',
@@ -115,6 +115,8 @@ export const HABITS: Habit[] = (
         liver: 'Advised after liver cancer, to protect your liver',
         oral: 'Avoiding alcohol lowers the chance of a second oral or throat cancer',
       },
+      // ACS guideline for cancer survivors (2022): it's best not to drink alcohol.
+      afterAnyCancer: 'Less alcohol may lower the chance of a second cancer',
       detailedInfo:
         'Alcohol causes at least seven types of cancer, including breast, liver and colorectal cancer. There is no safe amount, so every day without it lowers your risk.',
       treatmentDetail:

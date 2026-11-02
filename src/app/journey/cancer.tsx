@@ -4,6 +4,7 @@ import { ErrorState, Icon, ListRow, LoadingState, Screen, Section, Text } from '
 import { useCancerTypes } from '@/hooks/useCancerInfo';
 import { useMyCancerId, useSaveMyCancer } from '@/hooks/useFocus';
 import { haptics } from '@/lib/haptics';
+import { useHabitsStore } from '@/stores/habitsStore';
 import { showToast } from '@/stores/toastStore';
 
 // "Which cancer?" (a sheet): asked after "What brings you here?" for Treatment,
@@ -19,7 +20,11 @@ export default function WhichCancerScreen() {
   const pick = (id: string) => {
     haptics.selection();
     save.mutate(id, {
-      onSuccess: back,
+      onSuccess: () => {
+        // Habits suggested for the new cancer replace picks made for the old one.
+        if (id !== current) useHabitsStore.getState().setChosenHabits(null);
+        back();
+      },
       onError: (error) => showToast(`Couldn't save: ${error.message}`, 'error'),
     });
   };

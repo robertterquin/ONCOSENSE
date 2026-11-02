@@ -21,7 +21,8 @@ type HabitsStore = {
   /** Daily habits picked in "Change habits"; null until someone picks. */
   chosenHabits: string[] | null;
   smoker: Smoker | null;
-  setChosenHabits: (ids: string[]) => void;
+  /** Null goes back to the suggested habits. */
+  setChosenHabits: (ids: string[] | null) => void;
   setSmoker: (smoker: Smoker) => void;
 
   /** Toggle habit completed for a given date (defaults to today). */
@@ -107,9 +108,7 @@ export const useHabitsStore = create<HabitsStore>()(
       toggleBookmark: (habitId) => {
         const current = get().bookmarkedHabits;
         const bookmarked = current.includes(habitId);
-        const next = bookmarked
-          ? current.filter((id) => id !== habitId)
-          : [...current, habitId];
+        const next = bookmarked ? current.filter((id) => id !== habitId) : [...current, habitId];
 
         set({ bookmarkedHabits: next });
         haptics.lightImpact();

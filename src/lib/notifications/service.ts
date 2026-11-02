@@ -96,6 +96,11 @@ function wantsCheckInReminder(): boolean {
   return user !== null && usesJourney(focusFromMetadata(user));
 }
 
+/** Check reminders aren't for people in treatment: their checks are their care team's. */
+function wantsSelfCheckReminder(): boolean {
+  return focusFromMetadata(useAuthStore.getState().user) !== 'treatment';
+}
+
 /** Appointments already loaded for the signed-in person (Journey), soonest first. */
 function cachedAppointments(): Appointment[] {
   const userId = useAuthStore.getState().user?.id ?? null;
@@ -106,6 +111,7 @@ function cachedAppointments(): Appointment[] {
 async function scheduleType(type: ScheduledPrefType): Promise<void> {
   await cancelType(type);
   if (type === 'daily_checkin' && !wantsCheckInReminder()) return;
+  if (type === 'self_check' && !wantsSelfCheckReminder()) return;
   const now = new Date();
   const reminders = remindersForType(type, {
     now,
@@ -134,14 +140,16 @@ export async function setReminderTime(type: NotificationType, time: ReminderTime
   }
 }
 
-/** Adds or removes the daily check-in reminder after the focus changes (if it is on). */
-export async function rescheduleCheckInReminder(): Promise<void> {
+/** Adds or removes the check-in and self-check reminders after the focus changes (if on). */
+export async function rescheduleForFocus(): Promise<void> {
   const prefs = useNotificationPrefs.getState();
-  if (!REMINDERS_SUPPORTED || !prefs.enabled || !prefs.types.daily_checkin) return;
+  if (!REMINDERS_SUPPORTED || !prefs.enabled) return;
   try {
-    if (await device.hasPermission()) await scheduleType('daily_checkin');
+    if (!(await device.hasPermission())) return;
+    if (prefs.types.daily_checkin) await scheduleType('daily_checkin');
+    if (prefs.types.self_check) await scheduleType('self_check');
   } catch (error) {
-    console.warn('Failed to update the check-in reminder', error);
+    console.warn('Failed to update the reminders for the focus', error);
   }
 }
 

@@ -103,7 +103,15 @@ describe('habitPlan', () => {
       followed: ['skin', 'liver'],
       myCancer: 'thyroid',
     });
-    expect(titles(thyroidSurvivor.tracked)).toEqual(['Eat plants', 'Move 30 minutes']);
+    expect(titles(thyroidSurvivor.tracked)).toEqual([
+      'Eat plants',
+      'Move 30 minutes',
+      'Alcohol-free day',
+    ]);
+    expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[2])).toEqual({
+      text: 'Less alcohol may lower the chance of a second cancer',
+      linked: true,
+    });
     expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[0])).toEqual({
       text: 'Supports recovery and long-term health after treatment',
       linked: true,
@@ -118,6 +126,16 @@ describe('habitPlan', () => {
       linked: false,
     });
     expect(thyroidSurvivor.detail(thyroidSurvivor.tracked[1])).toMatch(/After treatment/);
+
+    // Lowering a cancer's risk isn't a recommendation after it (no HPV vaccine "for" cervical).
+    const cervicalSurvivor = habitPlan(HABITS, {
+      focus: 'finished',
+      smoker: 'no',
+      chosen: null,
+      myCancer: 'cervical',
+    });
+    const hpv = cervicalSurvivor.once.find((habit) => habit.title === 'HPV vaccine')!;
+    expect(cervicalSurvivor.reason(hpv)).toBeNull();
 
     // In active treatment, habits and reasons adapt to the person's cancer.
     const oralTreatment = habitPlan(HABITS, {
