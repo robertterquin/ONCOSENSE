@@ -34,7 +34,7 @@ const CANCER_ICONS: [prefix: string, icon: IconName][] = [
   ['gastric', 'stomach'],
   ['oral', 'tooth'],
   ['testicular', 'testicular'],
-  ['thyroid', 'stethoscope'],
+  ['thyroid', 'thyroid'],
   ['uterine', 'ovaries'],
   ['endometri', 'ovaries'],
 ];
@@ -51,8 +51,11 @@ export function iconForPreventionTip(tip: Pick<PreventionTip, 'title' | 'categor
   const cat = lower(tip.category);
 
   if (title.includes('plant') || title.includes('apple') || title.includes('fruit')) return 'apple';
+  if (title.startsWith('eat') || title.includes('meal')) return 'meal';
   if (title.includes('diet') || title.includes('food') || cat === 'diet') return 'natural-food';
-  if (title.includes('exercise') || title.includes('run') || title.includes('walk'))
+  if (title.includes('gentle') || title.includes('walk') || title.includes('stretch'))
+    return 'walking';
+  if (title.includes('exercise') || title.includes('run') || title.includes('move'))
     return 'running-shoes';
   if (title.includes('active') || cat === 'exercise') return 'activity';
   if (title.includes('smok') || title.includes('tobacco')) return 'cigarette-off';

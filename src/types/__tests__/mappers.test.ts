@@ -149,7 +149,7 @@ describe('journey models', () => {
     expect(iconForTreatment('radiation')).toBe('radiation');
     expect(iconForTreatment('immunotherapy')).toBe('immunotherapy');
     expect(iconForTreatment('targetedTherapy')).toBe('target');
-    expect(iconForTreatment('stemCell')).toBe('dna');
+    expect(iconForTreatment('stemCell')).toBe('blood');
     expect(iconForTreatment('hormoneTherapy')).toBe('pill');
     expect(iconForTreatment('other')).toBe('pill');
   });

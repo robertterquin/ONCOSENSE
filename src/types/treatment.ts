@@ -104,7 +104,8 @@ export function iconForTreatment(type: TreatmentType): IconName {
     case 'targetedTherapy':
       return 'target';
     case 'stemCell':
-      return 'dna';
+      // A transplant of blood-forming cells.
+      return 'blood';
     case 'hormoneTherapy':
     case 'other':
     default:

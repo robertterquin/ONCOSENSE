@@ -26,6 +26,7 @@ describe('Learn links', () => {
   it('gives each cancer type an accurate organ or clinical icon, falling back to ribbon', () => {
     expect(iconForCancer('Lung Cancer')).toBe('lungs');
     expect(iconForCancer('Leukemia')).toBe('blood-cells');
+    expect(iconForCancer('Thyroid cancer')).toBe('thyroid');
     expect(iconForCancer('Skin Cancer')).toBe('skin-check');
     expect(iconForCancer('Oral')).toBe('tooth');
     expect(iconForCancer('Breast Cancer')).toBe('breast');
@@ -51,10 +52,23 @@ describe('Learn links', () => {
       'running-shoes',
     );
     expect(iconForPreventionTip({ title: 'Stay Active', category: 'Exercise' })).toBe('activity');
+    // The app's own habits.
+    expect(iconForPreventionTip({ title: 'Move 30 minutes', category: 'Exercise' })).toBe(
+      'running-shoes',
+    );
+    expect(iconForPreventionTip({ title: 'Gentle movement', category: 'Exercise' })).toBe(
+      'walking',
+    );
+    expect(iconForPreventionTip({ title: 'Eat something you enjoy', category: 'Diet' })).toBe(
+      'meal',
+    );
+    expect(iconForPreventionTip({ title: 'Eat plants', category: 'Diet' })).toBe('apple');
     expect(iconForPreventionTip({ title: 'No Smoking', category: 'Lifestyle' })).toBe(
       'cigarette-off',
     );
-    expect(iconForPreventionTip({ title: 'Limit Alcohol', category: 'Lifestyle' })).toBe('beer-off');
+    expect(iconForPreventionTip({ title: 'Limit Alcohol', category: 'Lifestyle' })).toBe(
+      'beer-off',
+    );
     expect(iconForPreventionTip({ title: 'Sun Protection', category: 'Lifestyle' })).toBe('sun');
     expect(iconForPreventionTip({ title: 'Quality Sleep', category: 'Lifestyle' })).toBe('moon');
     expect(iconForPreventionTip({ title: 'Healthy Weight', category: 'Weight' })).toBe(
