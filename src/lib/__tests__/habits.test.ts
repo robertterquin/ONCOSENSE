@@ -48,16 +48,26 @@ describe('habitPlan', () => {
     expect(plan.wellbeing.length).toBeGreaterThan(0);
   });
 
-  it('ranks habits by the cancers someone follows, and says why', () => {
+  it('ranks habits by the cancers someone follows, only auto-tracking matching ones', () => {
     const plan = habitPlan(HABITS, {
       focus: 'learning',
       smoker: 'no',
       chosen: null,
       followed: ['skin', 'liver'],
     });
-    expect(titles(plan.tracked).slice(0, 2)).toEqual(['Alcohol-free day', 'Sun-safe outside']);
+    expect(titles(plan.tracked)).toEqual(['Alcohol-free day', 'Sun-safe outside']);
     expect(plan.reason(plan.tracked[1])).toEqual({ text: 'For skin cancer', linked: true });
     expect(plan.once[0].title).toBe('Hepatitis B vaccine');
+
+    // When a followed cancer has no specific daily habit, falls back to the 3 general habits.
+    const general = habitPlan(HABITS, {
+      focus: 'learning',
+      smoker: 'no',
+      chosen: null,
+      followed: ['prostate'],
+    });
+    expect(general.tracked).toHaveLength(MAX_TRACKED);
+    expect(general.tracked.every((habit) => general.reason(habit) === null)).toBe(true);
   });
 
   it('after colorectal cancer, puts what may help first and leaves out prevention lines', () => {
@@ -74,19 +84,47 @@ describe('habitPlan', () => {
     expect(plan.reason(sun)).toEqual({ text: 'Good for your overall health', linked: false });
   });
 
-  it('gives recovery reasons and tailored details across all cancers and in treatment', () => {
+  it('gives recovery reasons and tailored details strictly for myCancer, and tailors treatment by cancer', () => {
+    // Even if a thyroid survivor also follows skin cancer, their habits are strictly for thyroid recovery.
     const thyroidSurvivor = habitPlan(HABITS, {
       focus: 'finished',
       smoker: 'no',
       chosen: null,
+      followed: ['skin', 'liver'],
       myCancer: 'thyroid',
     });
-    expect(titles(thyroidSurvivor.tracked).slice(0, 2)).toEqual(['Eat plants', 'Move 30 minutes']);
+    expect(titles(thyroidSurvivor.tracked)).toEqual(['Eat plants', 'Move 30 minutes']);
     expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[0])).toEqual({
-      text: 'Supports recovery and long-term health after treatment',
+      text: 'Supports energy and healthy weight after thyroid cancer',
       linked: true,
     });
+    expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[1])).toEqual({
+      text: 'Helps energy and mood while your thyroid hormone settles',
+      linked: true,
+    });
+    const sun = thyroidSurvivor.options.find((habit) => habit.title === 'Sun-safe outside')!;
+    expect(thyroidSurvivor.reason(sun)).toEqual({
+      text: 'Good for your overall health',
+      linked: false,
+    });
     expect(thyroidSurvivor.detail(thyroidSurvivor.tracked[1])).toMatch(/After treatment/);
+
+    // In active treatment, habits and reasons adapt to the person's cancer.
+    const oralTreatment = habitPlan(HABITS, {
+      focus: 'treatment',
+      smoker: 'no',
+      chosen: null,
+      myCancer: 'oral',
+    });
+    expect(titles(oralTreatment.tracked)).toEqual([
+      'Alcohol-free day',
+      'Gentle movement',
+      'Eat something you enjoy',
+    ]);
+    expect(oralTreatment.reason(oralTreatment.tracked[2])).toEqual({
+      text: 'Soft, moist foods and smoothies are gentler on a sore mouth or throat',
+      linked: true,
+    });
 
     const inTreatment = habitPlan(HABITS, { focus: 'treatment', smoker: 'yes', chosen: null });
     const sleep = inTreatment.wellbeing.find((habit) => habit.title === 'Sleep 7 to 9 hours')!;

@@ -29,9 +29,9 @@ const cancerLabel = (key: CancerKey) =>
   key === 'leukemia' || key === 'lymphoma' ? key : `${key} cancer`;
 
 /**
- * Which habits someone sees, and why. In treatment: the gentle treatment habits (and
- * smoke-free for smokers), all tracked. Otherwise the prevention habits, ranked by the
- * cancers they follow; after treatment, by what may help after their own cancer. Picks
+ * Which habits someone sees, and why. For someone with or after cancer (`treatment` or
+ * `finished`), habits and reasons are tailored strictly to their own cancer (`myCancer`).
+ * For everyone else (`learning`), habits are ranked by the cancers they follow. Picks
  * always win over the ranking.
  */
 export function habitPlan(
@@ -48,23 +48,32 @@ export function habitPlan(
     smoker: Smoker | null;
     chosen: string[] | null;
     followed?: CancerKey[];
-    /** The cancer someone finished treatment for. */
+    /** The cancer the person has (`treatment`) or finished treatment for (`finished`). */
     myCancer?: CancerKey | null;
     age?: number | null;
   },
 ): HabitPlan {
   const inTreatment = focus === 'treatment';
   const finished = focus === 'finished';
+  const hasCancer = inTreatment || finished;
+  const patient = inTreatment && myCancer ? myCancer : null;
   const survivor = finished && myCancer ? myCancer : null;
   const audience = inTreatment ? 'treatment' : 'prevention';
   const fits = (habit: Habit) =>
-    (habit.audience === audience || habit.audience === 'all') &&
+    (habit.audience === audience ||
+      habit.audience === 'all' ||
+      Boolean(patient && habit.duringCancer?.[patient])) &&
     (habit.maxAge === undefined || age === null || age <= habit.maxAge);
+  // Only non-cancer users match against `followed`; cancer patients focus on `myCancer`.
   const matches = (habit: Habit) =>
-    (habit.lowers ?? []).filter((key) => followed.includes(key) && key !== survivor);
+    hasCancer ? [] : (habit.lowers ?? []).filter((key) => followed.includes(key));
+  const onceMatch = (habit: Habit) =>
+    survivor && habit.kind === 'once' && habit.lowers?.includes(survivor) ? 1 : 0;
   const score = (habit: Habit) =>
     (habit.smokersOnly ? 100 : 0) +
+    (patient && habit.duringCancer?.[patient] ? 10 : inTreatment && habit.duringAnyCancer ? 5 : 0) +
     (survivor && habit.afterCancer?.[survivor] ? 10 : finished && habit.afterAnyCancer ? 5 : 0) +
+    onceMatch(habit) +
     matches(habit).length;
   // Array sort is stable, so equal scores keep the catalog order.
   const ranked = (list: Habit[]) => [...list].sort((a, b) => score(b) - score(a));
@@ -75,6 +84,7 @@ export function habitPlan(
     ),
   );
   const picked = options.filter((habit) => chosen?.includes(habit.id));
+  const matched = options.filter((habit) => score(habit) > 0);
 
   const reason = (habit: Habit): HabitReason | null => {
     if (habit.smokersOnly && inTreatment) {
@@ -83,17 +93,24 @@ export function habitPlan(
     if (habit.smokersOnly && finished) {
       return { text: 'Quitting after cancer helps you live longer', linked: true };
     }
+    if (inTreatment) {
+      const during = patient ? habit.duringCancer?.[patient] : habit.duringAnyCancer;
+      return during ? { text: during, linked: Boolean(patient) } : null;
+    }
     const after = survivor ? habit.afterCancer?.[survivor] : undefined;
     if (after) return { text: after, linked: true };
     if (finished && habit.afterAnyCancer) {
       return { text: habit.afterAnyCancer, linked: true };
+    }
+    if (finished && onceMatch(habit)) {
+      return { text: `Recommended after ${cancerLabel(survivor!)}`, linked: true };
     }
     const keys = matches(habit);
     if (keys.length) {
       const names = keys.slice(0, 2).map(cancerLabel).join(' and ');
       return { text: `For ${names}${keys.length > 2 ? ' and others' : ''}`, linked: true };
     }
-    if (finished && habit.kind === 'daily' && !inTreatment) {
+    if (finished && habit.kind === 'daily') {
       return { text: 'Good for your overall health', linked: false };
     }
     return null;
@@ -107,7 +124,11 @@ export function habitPlan(
 
   return {
     options,
-    tracked: inTreatment ? options : picked.length ? picked : options.slice(0, MAX_TRACKED),
+    tracked: inTreatment
+      ? options.slice(0, MAX_TRACKED)
+      : picked.length
+        ? picked
+        : (matched.length ? matched : options).slice(0, MAX_TRACKED),
     once: ranked(habits.filter((habit) => habit.kind === 'once' && fits(habit))),
     wellbeing: habits.filter((habit) => habit.kind === 'wellbeing' && fits(habit)),
     reason,

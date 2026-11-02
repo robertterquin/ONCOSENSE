@@ -3,9 +3,11 @@ import { useMemo } from 'react';
 import { userAge } from '@/api/auth';
 import { HABITS } from '@/constants/habits';
 import { habitPlan } from '@/lib/habits';
+import { cancerKeyword } from '@/lib/help';
 import { useUser } from '@/stores/authStore';
 import { useHabitsStore } from '@/stores/habitsStore';
 
+import { useMyCancer } from './useCancerInfo';
 import { useFocus } from './useFocus';
 import { useFollowedCancers } from './useSelfChecks';
 
@@ -15,12 +17,14 @@ export function useHabitPlan() {
   const age = userAge(useUser());
   const smoker = useHabitsStore((state) => state.smoker);
   const chosen = useHabitsStore((state) => state.chosenHabits);
-  const { followed, careTeamCancer } = useFollowedCancers();
+  const { followed } = useFollowedCancers();
+  const cancer = useMyCancer();
+  const myCancer = cancer ? cancerKeyword(cancer.name) : null;
   const followedKey = followed.join();
   return useMemo(
-    () => habitPlan(HABITS, { focus, smoker, chosen, followed, myCancer: careTeamCancer, age }),
+    () => habitPlan(HABITS, { focus, smoker, chosen, followed, myCancer, age }),
     // `followed` is a new array each render; its contents are what matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [focus, smoker, chosen, followedKey, careTeamCancer, age],
+    [focus, smoker, chosen, followedKey, myCancer, age],
   );
 }

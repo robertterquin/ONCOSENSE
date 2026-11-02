@@ -450,15 +450,17 @@ export function LowerYourRisk() {
             <Text variant="supporting" tone="muted">
               {left === 0
                 ? 'All done today'
-                : left === 1
+                : left === 1 && done > 0
                   ? 'One more to finish today'
                   : inTreatment
-                    ? 'Small things that help during treatment'
+                    ? myCancer
+                      ? `Gentle steps during ${myCancer.name.toLowerCase()} treatment`
+                      : 'Small things that help during treatment'
                     : helpsAfter
                       ? `Habits that may help after ${survivor.name.toLowerCase()}`
                       : picked
                         ? 'Picked for the cancers you follow'
-                        : 'Small steps that lower your risk'}
+                        : 'Lowers your overall cancer risk'}
             </Text>
           </View>
         </View>

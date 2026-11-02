@@ -21,6 +21,13 @@ export type Habit = PreventionTip & {
   /** Cancers whose risk it lowers (WCRF/AICR, IARC, WHO); ranks it for people who follow them. */
   lowers?: CancerKey[];
   /**
+   * During active treatment for this cancer, why it helps (ACS nutrition & physical activity
+   * during treatment, 2022). Allows a habit to be included for specific cancers in treatment.
+   */
+  duringCancer?: Partial<Record<CancerKey, string>>;
+  /** During active treatment for any cancer, why this habit helps when `duringCancer` has no specific line. */
+  duringAnyCancer?: string;
+  /**
    * After treatment for this cancer, why it may help (American Cancer Society guideline for
    * cancer survivors, 2022). Only where there's evidence for that cancer.
    */
@@ -59,6 +66,17 @@ export const HABITS: Habit[] = (
         colorectal: 'Linked to longer survival after colorectal cancer',
         breast: 'Linked to better overall survival after breast cancer',
         prostate: 'Supports heart and long-term health after prostate cancer',
+        stomach: 'Nutrient-rich plant foods support recovery after stomach cancer',
+        liver: 'Vegetables, fruit, whole grains and beans support your liver in recovery',
+        oral: 'Soft vegetables, fruit and whole grains support healing after oral cancer',
+        uterine: 'Supports healthy weight and heart health after uterine cancer',
+        ovarian: 'Supports recovery and digestive health after ovarian cancer',
+        cervical: 'Supports immunity and long-term health after cervical cancer',
+        lung: 'Fruit, vegetables and whole grains support recovery after lung cancer',
+        leukemia: 'Supports immunity and recovery after leukemia treatment',
+        lymphoma: 'Supports heart health and recovery after lymphoma treatment',
+        thyroid: 'Supports energy and healthy weight after thyroid cancer',
+        testicular: 'Supports long-term heart health after testicular cancer',
       },
       afterAnyCancer: 'Supports recovery and long-term health after treatment',
       detailedInfo:
@@ -81,6 +99,17 @@ export const HABITS: Habit[] = (
         breast: 'Linked to a lower chance of breast cancer coming back',
         prostate: 'Linked to longer survival after prostate cancer',
         uterine: 'Helps recovery and long-term health after uterine cancer',
+        ovarian: 'Eases lingering tiredness and rebuilds strength after ovarian cancer',
+        cervical: 'Helps rebuild energy, strength and mood after cervical cancer',
+        lung: 'Helps breathing capacity, stamina and energy after lung cancer',
+        leukemia: 'Eases treatment tiredness and rebuilds stamina after leukemia',
+        lymphoma: 'Eases treatment tiredness and rebuilds strength after lymphoma',
+        stomach: 'Helps rebuild muscle and energy after stomach cancer',
+        liver: 'Helps rebuild energy and stamina after liver cancer',
+        oral: 'Helps rebuild strength and energy after oral cancer',
+        thyroid: 'Helps energy and mood while your thyroid hormone settles',
+        testicular: 'Supports heart health and stamina after testicular cancer',
+        skin: 'Helps rebuild energy and strength after skin cancer treatment',
       },
       afterAnyCancer: 'Eases post-treatment tiredness and helps rebuild strength',
       detailedInfo:
@@ -98,6 +127,11 @@ export const HABITS: Habit[] = (
       title: 'Alcohol-free day',
       description: 'For cancer, the safest amount is none',
       lowers: ['breast', 'colorectal', 'liver', 'oral', 'stomach'],
+      duringCancer: {
+        liver: 'Protects your liver while it is being treated',
+        oral: 'Alcohol irritates a healing mouth and throat during treatment',
+        stomach: 'Protects your stomach lining during treatment',
+      },
       afterCancer: {
         breast: 'Less alcohol may lower the chance of a new breast cancer',
         liver: 'Advised after liver cancer, to protect your liver',
@@ -107,6 +141,8 @@ export const HABITS: Habit[] = (
       },
       detailedInfo:
         'Alcohol causes at least seven types of cancer, including breast, liver and colorectal cancer. There is no safe amount, so every day without it lowers your risk.',
+      treatmentDetail:
+        'During treatment for liver, stomach or oral cancer, avoiding alcohol protects healing tissues, reduces mouth and digestive irritation, and helps your liver process medicines safely.',
       survivorDetail:
         'After cancer treatment, avoiding or limiting alcohol lowers the risk of a second cancer and helps protect your liver and digestive system.',
       sourceName: 'World Health Organization (WHO)',
@@ -120,9 +156,14 @@ export const HABITS: Habit[] = (
       title: 'Sun-safe outside',
       description: 'Shade, sleeves and sunscreen',
       lowers: ['skin'],
+      duringCancer: {
+        skin: 'Protects healing skin from UV damage during skin cancer treatment',
+      },
       afterCancer: { skin: 'Lowers the chance of a new skin cancer' },
       detailedInfo:
         "The sun's UV rays cause most skin cancers. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use sunscreen of SPF 30 or higher.",
+      treatmentDetail:
+        "During skin cancer treatment, protecting your skin from UV rays prevents further damage and helps treated areas heal. Stay in the shade between 10 a.m. and 4 p.m., cover up and use SPF 30+ sunscreen.",
       survivorDetail:
         "After skin cancer, protecting your skin from UV rays lowers the chance of a new skin cancer. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use SPF 30+ sunscreen.",
       sourceName: 'Skin Cancer Foundation',
@@ -154,6 +195,24 @@ export const HABITS: Habit[] = (
       category: 'Exercise',
       title: 'Gentle movement',
       description: 'A short walk or a stretch',
+      duringCancer: {
+        breast: 'Eases treatment tiredness and keeps your shoulder and arm moving',
+        lung: 'Gentle walks and breathing movement support your lungs during treatment',
+        colorectal: 'Short walks help digestion and ease tiredness during treatment',
+        prostate: 'Helps keep muscle and bone strength during prostate treatment',
+        leukemia: 'Light movement eases chemo tiredness on days you feel up to it',
+        lymphoma: 'Light movement eases chemo tiredness on days you feel up to it',
+        ovarian: 'Short walks ease treatment tiredness and stiffness',
+        uterine: 'Short walks ease treatment tiredness and stiffness',
+        cervical: 'Short walks ease treatment tiredness and stiffness',
+        thyroid: 'Light movement helps energy while your hormone levels adjust',
+        stomach: 'Short, gentle walks help digestion and energy during treatment',
+        liver: 'Short walks help ease tiredness during liver cancer treatment',
+        oral: 'Short walks help keep your strength and mood up during treatment',
+        testicular: 'Light movement eases chemo tiredness on days you feel up to it',
+        skin: 'A short walk outdoors in the shade helps energy and mood',
+      },
+      duringAnyCancer: 'A short walk or stretch eases treatment tiredness',
       detailedInfo:
         "Light activity during and after treatment can ease tiredness, anxiety and low mood. Start small, rest when you need to, and ask your care team what's safe for you.",
       sourceName: 'Exercise guidelines for cancer survivors (2019)',
@@ -166,6 +225,24 @@ export const HABITS: Habit[] = (
       category: 'Diet',
       title: 'Eat something you enjoy',
       description: 'Small meals count on hard days',
+      duringCancer: {
+        stomach: 'Small, frequent, easy-to-digest meals help keep your strength',
+        oral: 'Soft, moist foods and smoothies are gentler on a sore mouth or throat',
+        colorectal: 'Small, frequent meals that are gentle on your gut help keep your strength',
+        liver: 'Small, protein-rich snacks and meals help keep your strength',
+        leukemia: 'Small meals and snacks help when chemo changes your taste or appetite',
+        lymphoma: 'Small meals and snacks help when chemo changes your taste or appetite',
+        breast: 'Small, frequent meals help keep your strength on treatment days',
+        lung: 'Small, frequent meals are easier when breathing or treatment tires you',
+        ovarian: 'Small, frequent meals are easier when your abdomen feels full',
+        cervical: 'Small, frequent meals help keep your strength during treatment',
+        uterine: 'Small, frequent meals help keep your strength during treatment',
+        prostate: 'Balanced meals with protein help keep your muscle strength',
+        testicular: 'Small snacks and meals help on days when chemo causes nausea',
+        thyroid: 'Soft foods help if your neck or throat feels tender after treatment',
+        skin: 'Nourishing meals help your skin and body heal during treatment',
+      },
+      duringAnyCancer: 'Small meals count on hard days',
       detailedInfo:
         'Eating enough helps you keep your strength during treatment. Small, frequent meals can be easier. If eating is hard or you are losing weight, tell your care team.',
       sourceName: 'American Cancer Society',
