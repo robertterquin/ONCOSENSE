@@ -58,6 +58,7 @@ Three supporting changes:
 | 23 | Your cancers | [23-phase-23-your-cancers.md](23-phase-23-your-cancers.md) | 1 day | Merged into `main` |
 | 24 | Your checks, bundled | [24-phase-24-checks.md](24-phase-24-checks.md) | 1 day | Merged into `main` |
 | 25 | Every check, step by step | [25-phase-25-step-by-step-checks.md](25-phase-25-step-by-step-checks.md) | 1 day | Merged into `main` |
+| 26 | Treatment week | [26-phase-26-treatment-week.md](26-phase-26-treatment-week.md) | 1 day | On `main` |
 
 Estimates assume one developer full time. Phase 1 must merge first; Phases 2–5 touch different screens and can then run in any order or in parallel.
 
@@ -91,3 +92,4 @@ Same as the redesign:
 | 2026-11-02 | Checks bundle into a monthly body check, each test, and a signs check every 3 months, on one calendar card; cancers are chosen at sign-up with a soft "3 or fewer" | The calendar only showed self-checks, and a hard limit of 3 would crowd out family history; guidelines favour body awareness over set self-exams | Robert |
 | 2026-11-02 | Every check uses the self-check guide's step layout; Learn drops its Checks list for one "Check for it" card per cancer | The body check, tests and signs check each looked different, and Learn listed guides already reached from Today and each cancer page | Robert |
 | 2026-11-03 | Breast and testicular become two-step change checks (look and feel, then "any of these changes?"); skin keeps its ABCDE steps | The American Cancer Society no longer recommends a structured breast self-exam for women at average risk, and the USPSTF recommends against routine testicular self-exams; knowing what's normal is the honest ask | Robert |
+| 2026-11-02 | People in treatment get a treatment week card on Today (sessions, appointments, check-in days), sharing the checks card's calendar | Today in treatment had no view of the week ahead; one calendar look for both card types keeps Today consistent | Robert |

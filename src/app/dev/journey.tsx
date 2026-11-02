@@ -9,6 +9,7 @@ import {
   Treatments,
 } from '@/components/journey/Dashboard';
 import { ThreadWeek } from '@/components/journey/ThreadWeek';
+import { TreatmentWeekCard } from '@/components/today/TreatmentWeekCard';
 import { Button, Screen, Section } from '@/components/ui';
 import { addDays } from '@/lib/dates';
 import type { Appointment } from '@/types/appointment';
@@ -69,6 +70,18 @@ const APPOINTMENTS: Appointment[] = [
     notes: null,
     treatmentId: 'sample-t1',
   },
+  {
+    id: 'sample-a2',
+    title: 'Blood test',
+    startsAt: (() => {
+      const date = addDays(now, 1);
+      date.setHours(8, 0, 0, 0);
+      return date;
+    })(),
+    location: "St. Luke's Medical Center",
+    notes: null,
+    treatmentId: null,
+  },
 ];
 
 const TREATMENTS: Treatment[] = [
@@ -108,6 +121,20 @@ export default function JourneySampleScreen() {
       back={{ label: 'Back' }}
       title="My journey"
       subtitle="In treatment since August 2026 (sample data)">
+      <Section title="Today, in treatment" look="plain">
+        <TreatmentWeekCard
+          appointments={APPOINTMENTS}
+          treatments={TREATMENTS}
+          checkIns={ENTRIES.map((sample) => sample.date)}
+          now={now}
+        />
+        <TreatmentWeekCard
+          appointments={[]}
+          treatments={TREATMENTS}
+          checkIns={ENTRIES.map((sample) => sample.date)}
+          now={now}
+        />
+      </Section>
       <ThreadWeek entries={ENTRIES} now={now} />
       <Button title="Check in for today" icon="plus" onPress={() => {}} />
       <EnergyAndPain entries={ENTRIES} now={now} />

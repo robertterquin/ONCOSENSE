@@ -1,31 +1,25 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Button, RibbonMark, Text } from '@/components/ui';
+import { Button } from '@/components/ui';
 import type { CheckItem, CheckKind } from '@/lib/checks';
 import { addDays, formatShortMonthDay } from '@/lib/dates';
 import { formatMonth, formatWeekdayDate, startOfDay } from '@/lib/selfCheck';
-import { elevation } from '@/theme/elevation';
-import type { Palette } from '@/theme/palette';
-import { radii, sizes, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
+
+import { CalendarCard, CalendarRow, calendarStyles, WeekStrip, type DotKind } from './CalendarCard';
 
 // Today's checks card (design refresh Phase 24): flat night violet with a week strip.
 // It covers everything the person follows, bundled (lib/checks.ts): a dot on each day
 // something is due, colored by kind, and up to three items underneath. With something
 // due this week it shows this week; otherwise the week of the next check.
 
-const LINE = 'rgba(255, 255, 255, 0.14)';
-const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MAX_LISTED = 3;
 
-const KIND_LABEL: Record<CheckKind, string> = {
-  test: 'Test',
-  body: 'Body check',
-  signs: 'Signs check',
-};
-const kindColor = (kind: CheckKind, palette: Palette) =>
-  kind === 'test' ? palette.sun : kind === 'body' ? palette.onPanelAccent : palette.help;
+const KINDS: DotKind<CheckKind>[] = [
+  { kind: 'test', color: 'sun', label: 'Test' },
+  { kind: 'body', color: 'onPanelAccent', label: 'Body check' },
+  { kind: 'signs', color: 'help', label: 'Signs check' },
+];
 
 export const openCheck = (item: CheckItem) => {
   if (item.kind === 'body') router.push('/body-check');
@@ -45,7 +39,6 @@ type ChecksCardProps = {
 };
 
 export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
-  const { palette, isDark } = useDesign();
   const today = startOfDay(now);
   const sunday = addDays(today, -today.getDay());
   const saturday = addDays(sunday, 6);
@@ -58,7 +51,6 @@ export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
   // The week shown: this one, or the one the next check falls in.
   const next = scheduled[0] ? startOfDay(scheduled[0].due) : null;
   const weekStart = thisWeek.length || !next ? sunday : addDays(next, -next.getDay());
-  const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
   // Overdue checks sit on today.
   const dayOf = (item: CheckItem & { due: Date }) =>
     Math.max(startOfDay(item.due).getTime(), today.getTime());
@@ -89,110 +81,48 @@ export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
       : next
         ? `Next: ${listed.map((item) => lowerFirst(item.title)).join(' and ')} on ${formatWeekdayDate(next)}.`
         : 'Nothing is due.';
-  const kinds = [...new Set(listed.map((item) => item.kind))];
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(weekStart, index);
+    const marks = listed.filter((item) => dayOf(item) === date.getTime()).map((item) => item.kind);
+    return { date, marks };
+  });
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: palette.panel, borderColor: palette.tintEdge },
-        elevation('panel', palette, isDark),
-      ]}>
-      <View style={styles.ribbon}>
-        <RibbonMark height={40} weight={16} color={palette.onPanelAccent} />
-      </View>
-      <View style={styles.header}>
-        <Text variant="heading" tone="onPanel" accessibilityRole="header">
-          {title}
-        </Text>
-        <Text variant="supporting" tone="onPanelMuted">
-          {body}
-        </Text>
-      </View>
-
+    <CalendarCard title={title} body={body}>
       {next || thisWeek.length ? (
-        <View style={styles.week}>
-          {thisWeek.length ? null : (
-            <Text variant="caption" tone="onPanelMuted">
-              {`Next check · ${formatMonth(next!)}`}
-            </Text>
-          )}
-          <View
-            style={styles.days}
-            accessible
-            accessibilityLabel={listed
-              .map((item) => `${item.title}, ${formatShortMonthDay(new Date(dayOf(item)))}`)
-              .join('; ')}>
-            {days.map((day) => {
-              const onDay = listed.filter((item) => dayOf(item) === day.getTime());
-              const marked = day.getTime() === highlight;
-              return (
-                <View key={day.getTime()} style={styles.day}>
-                  <Text variant="caption" tone="onPanelMuted">
-                    {DAY_NAMES[day.getDay()]}
-                  </Text>
-                  <View style={[styles.date, marked && { backgroundColor: palette.onPanelAccent }]}>
-                    <Text variant="row" color={marked ? palette.panel : palette.onPanel}>
-                      {day.getDate()}
-                    </Text>
-                  </View>
-                  <View style={styles.dots}>
-                    {[...new Set(onDay.map((item) => item.kind))].map((kind) => (
-                      <View
-                        key={kind}
-                        style={[styles.dot, { backgroundColor: kindColor(kind, palette) }]}
-                      />
-                    ))}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-          {kinds.length > 1 ? (
-            <View style={styles.legend} {...{ accessibilityElementsHidden: true }}>
-              {kinds.map((kind) => (
-                <View key={kind} style={styles.legendItem}>
-                  <View style={[styles.dot, { backgroundColor: kindColor(kind, palette) }]} />
-                  <Text variant="caption" tone="onPanelMuted">
-                    {KIND_LABEL[kind]}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-        </View>
+        <WeekStrip
+          days={days}
+          kinds={KINDS}
+          highlight={highlight === undefined ? undefined : new Date(highlight)}
+          caption={thisWeek.length ? undefined : `Next check · ${formatMonth(next!)}`}
+          accessibilityLabel={listed
+            .map((item) => `${item.title}, ${formatShortMonthDay(new Date(dayOf(item)))}`)
+            .join('; ')}
+        />
       ) : null}
 
       <View>
         {listed.slice(0, MAX_LISTED).map((item) => (
-          <Pressable
+          <CalendarRow
             key={item.id}
-            accessibilityRole="button"
+            color={KINDS.find((kind) => kind.kind === item.kind)!.color}
+            title={item.title}
+            detail={
+              item.isDue
+                ? `Due now · ${item.detail}`
+                : `${formatShortMonthDay(item.due)} · ${item.detail}`
+            }
+            highlighted={item.isDue}
             accessibilityLabel={`${item.title}, ${item.isDue ? 'due now' : formatShortMonthDay(item.due)}`}
             onPress={() => openCheck(item)}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-            <View style={[styles.dot, { backgroundColor: kindColor(item.kind, palette) }]} />
-            <View style={styles.rowMain}>
-              <Text variant="row" tone="onPanel">
-                {item.title}
-              </Text>
-              <Text variant="caption" tone={item.isDue ? 'onPanelAccent' : 'onPanelMuted'}>
-                {item.isDue
-                  ? `Due now · ${item.detail}`
-                  : `${formatShortMonthDay(item.due)} · ${item.detail}`}
-              </Text>
-            </View>
-            <Text variant="supporting" tone="onPanelAccent">
-              Open
-            </Text>
-          </Pressable>
+          />
         ))}
         {listed.length > MAX_LISTED ? (
           <Button
             title={`${listed.length - MAX_LISTED} more`}
             variant="onPanelAccent"
             small
-            style={styles.link}
+            style={calendarStyles.link}
             onPress={() => router.navigate('/journey')}
           />
         ) : null}
@@ -203,7 +133,7 @@ export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
           title="Find a screening center"
           variant="onPanelAccent"
           small
-          style={styles.link}
+          style={calendarStyles.link}
           onPress={() => router.navigate({ pathname: '/help', params: { section: 'screening' } })}
         />
       ) : anyDue ? (
@@ -212,7 +142,7 @@ export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
             title="Remind me tomorrow"
             variant="onPanelAccent"
             small
-            style={styles.link}
+            style={calendarStyles.link}
             onPress={onSnooze}
           />
         )
@@ -221,53 +151,10 @@ export function ChecksCard({ items, snoozed, onSnooze, now }: ChecksCardProps) {
           title="Your cancers"
           variant="onPanelAccent"
           small
-          style={styles.link}
+          style={calendarStyles.link}
           onPress={() => router.push('/checks')}
         />
       )}
-    </View>
+    </CalendarCard>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: radii.panel,
-    borderWidth: 1,
-    padding: space.xxl,
-    gap: space.md,
-  },
-  ribbon: { position: 'absolute', right: space.xl, top: space.xl },
-  // Clear of the ribbon.
-  header: { gap: space.xs, paddingRight: space.xxl + space.sm },
-  week: {
-    gap: space.sm,
-    borderTopWidth: 1,
-    borderTopColor: LINE,
-    paddingTop: space.md,
-  },
-  days: { flexDirection: 'row' },
-  day: { flex: 1, alignItems: 'center', gap: space.xs },
-  date: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.tile - 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dots: { flexDirection: 'row', gap: 3, height: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    borderTopWidth: 1,
-    borderTopColor: LINE,
-    minHeight: sizes.touch,
-  },
-  rowMain: { flex: 1, gap: 2, paddingVertical: space.md },
-  pressed: { opacity: 0.6 },
-  // A text link under the content, lined up with it (the pill's padding sits outside).
-  link: { alignSelf: 'flex-start', marginLeft: -space.lg },
-});

@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { hasCompletedJourneySetup, userDisplayName } from '@/api/auth';
 import { ProfileButton } from '@/components/account/ProfileButton';
 import { ChecksCard } from '@/components/today/ChecksCard';
+import { TreatmentWeekCard } from '@/components/today/TreatmentWeekCard';
 import {
   CaregiverRetiredCard,
   ComingUpToday,
@@ -15,7 +16,7 @@ import {
 import { IconButton, NextStepPanel, Screen, Text } from '@/components/ui';
 import { useMyCancer } from '@/hooks/useCancerInfo';
 import { useFocus } from '@/hooks/useFocus';
-import { useAppointments, useJourneyEntries } from '@/hooks/useJourney';
+import { useAppointments, useJourneyEntries, useTreatments } from '@/hooks/useJourney';
 import { snoozeSelfCheck, useSelfChecks } from '@/hooks/useSelfChecks';
 import { useNow } from '@/hooks/useNow';
 import { formatTime, isSameDay } from '@/lib/dates';
@@ -26,8 +27,8 @@ import { space } from '@/theme/tokens';
 import { appointmentWithinDay, upcomingAppointments } from '@/types/appointment';
 
 // The Today tab (redesign Phase 3, appointments from Phase 4): the checks card (design
-// refresh Phase 24), a quick mood check-in and what's coming up for Journey users, and
-// today's habits. After a Rough or Low mood, a support card comes first.
+// refresh Phase 24) or, in treatment, the treatment week (Phase 26), a quick mood
+// check-in for Journey users, and today's habits. After a Rough or Low mood, a support card comes first.
 
 export default function TodayTab() {
   const user = useUser();
@@ -36,6 +37,7 @@ export default function TodayTab() {
   const focus = useFocus();
   const myCancer = useMyCancer();
   const appointments = useAppointments();
+  const treatments = useTreatments();
   const name = user ? userDisplayName(user) : '';
   const journeyUser = user !== null && usesJourney(focus) && hasCompletedJourneySetup(user);
   const upcoming = journeyUser ? upcomingAppointments(appointments.data ?? [], now) : [];
@@ -72,7 +74,8 @@ export default function TodayTab() {
 
       {journeyUser ? (
         <>
-          {soon ? (
+          {/* In treatment the week card shows it. */}
+          {soon && focus === 'finished' ? (
             <NextStepPanel
               status={`${isSameDay(soon.startsAt, now) ? 'Today' : 'Tomorrow'} at ${formatTime(soon.startsAt)}`}
               statusIcon="calendar-check"
@@ -98,10 +101,16 @@ export default function TodayTab() {
               ) : null}
             </>
           ) : (
+            // In treatment: the week's sessions and appointments, then the check-in.
             <>
+              <TreatmentWeekCard
+                appointments={appointments.data ?? []}
+                treatments={treatments.data ?? []}
+                checkIns={(entries.data ?? []).map((entry) => entry.date)}
+                now={now}
+              />
               <MoodCard now={now} />
               <YourCancerTodayCard cancer={myCancer} />
-              <ComingUpToday appointments={upcoming.slice(0, 2)} />
             </>
           )}
         </>
