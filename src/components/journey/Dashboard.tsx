@@ -28,6 +28,7 @@ import { showToast } from '@/stores/toastStore';
 import { elevation } from '@/theme/elevation';
 import { DURATION, EASE_FN, useTransition } from '@/theme/motion';
 import { radii, space } from '@/theme/tokens';
+import { fontFamily } from '@/theme/type';
 import { useDesign } from '@/theme/useTheme';
 import type { Appointment } from '@/types/appointment';
 import type { JourneyEntry } from '@/types/journeyEntry';
@@ -557,9 +558,7 @@ const styles = StyleSheet.create({
   faded: { opacity: 0.3 },
   // Web can't shrink "Today" to fit its column, so it spills into the gutter instead.
   todayLabel: { marginHorizontal: -space.sm },
-  selectedDayLabel: {
-    fontWeight: '700',
-  },
+  selectedDayLabel: { fontFamily: fontFamily.semiBold },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   bar: { width: 14, borderTopLeftRadius: 7, borderTopRightRadius: 7, transformOrigin: 'bottom' },
   chartLabels: { flexDirection: 'row', paddingTop: space.xs },

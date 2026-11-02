@@ -94,7 +94,8 @@ export function SegmentedControl<T extends string>({
           style={[
             styles.selection,
             glide,
-            !isDark && styles.raisedShadow,
+            // Violet-tinted like the other light shadows (theme/elevation.ts).
+            !isDark && [styles.raisedShadow, { shadowColor: palette.panel }],
             {
               top: inset,
               bottom: inset,
@@ -159,7 +160,6 @@ const styles = StyleSheet.create({
   segmentLabel: { textAlign: 'center' },
   compactSelectedLabel: { fontFamily: fontFamily.extraBold },
   raisedShadow: {
-    shadowColor: '#221A36',
     shadowOpacity: 0.18,
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },

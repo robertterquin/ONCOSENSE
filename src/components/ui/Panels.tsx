@@ -63,8 +63,8 @@ export function NextStepPanel({
         <Tag tone="due" label={status} />
       ) : (
         <View style={styles.status}>
-          <Icon name={statusIcon} size={18} color="#D9CFF5" />
-          <Text variant="caption" color="#D9CFF5">
+          <Icon name={statusIcon} size={18} color={palette.onPanelAccent} />
+          <Text variant="caption" tone="onPanelAccent">
             {status}
           </Text>
         </View>

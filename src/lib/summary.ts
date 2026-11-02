@@ -1,3 +1,4 @@
+import { lightPalette } from '@/theme/palette';
 import type { Appointment } from '@/types/appointment';
 import type { JourneyEntry } from '@/types/journeyEntry';
 import { treatmentTypeLabel, type Treatment } from '@/types/treatment';
@@ -216,6 +217,8 @@ const escapeHtml = (text: string) =>
 
 /** A standardized, clinical 1-to-2 page PDF document for physician review. */
 export function summaryHtml(summary: Summary): string {
+  // Paper is always light; the fonts load from Google Fonts and fall back to the system font offline.
+  const p = lightPalette;
   const range = isSameDay(summary.from, summary.to)
     ? formatLongDate(summary.to)
     : `${formatLongDate(summary.from)} to ${formatLongDate(summary.to)}`;
@@ -361,23 +364,24 @@ export function summaryHtml(summary: Summary): string {
 <head>
 <meta charset="utf-8">
 <title>Health summary for my doctor — OncoSense</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@800&family=Lexend:wght@400;600;800&display=swap">
 <style>
   @page { margin: 12mm 14mm; size: portrait; }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #1F1930;
+    font-family: Lexend, -apple-system, Roboto, sans-serif;
+    color: ${p.ink};
     margin: 0;
     padding: 24px;
     font-size: 13px;
     line-height: 1.5;
-    background-color: #FFFFFF;
+    background-color: ${p.surface};
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
   .header-card {
-    background: #2E1F66;
-    color: #FFFFFF;
+    background: ${p.panel};
+    color: ${p.onPanel};
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 20px;
@@ -391,11 +395,12 @@ export function summaryHtml(summary: Summary): string {
     margin-bottom: 14px;
   }
   h1 {
+    font-family: Figtree, Lexend, sans-serif;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 800;
     margin: 0;
     letter-spacing: -0.2px;
-    color: #FFFFFF;
+    color: ${p.onPanel};
   }
   .app-tag {
     font-size: 11px;
@@ -430,8 +435,8 @@ export function summaryHtml(summary: Summary): string {
     margin-bottom: 20px;
   }
   .metric-card {
-    background: #F6F4FA;
-    border: 1px solid #ECE7F8;
+    background: ${p.ground};
+    border: 1px solid ${p.line};
     border-radius: 10px;
     padding: 12px 14px;
     text-align: center;
@@ -439,64 +444,66 @@ export function summaryHtml(summary: Summary): string {
   .metric-label {
     font-size: 11px;
     font-weight: 600;
-    color: #5D5672;
+    color: ${p.muted};
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
   .metric-value {
+    font-family: Figtree, Lexend, sans-serif;
     font-size: 22px;
     font-weight: 800;
-    color: #221A36;
+    color: ${p.ink};
     line-height: 1.2;
   }
   .metric-unit {
     font-size: 12px;
-    font-weight: 500;
-    color: #5D5672;
+    font-weight: 400;
+    color: ${p.muted};
   }
   .metric-sub {
     font-size: 11px;
-    color: #5D5672;
+    color: ${p.muted};
     margin-top: 4px;
     text-transform: capitalize;
   }
   .metric-trend {
     display: inline-block;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     padding: 2px 8px;
     border-radius: 999px;
     margin-top: 6px;
     text-transform: capitalize;
   }
   .trend-positive {
-    background: #E1F2EF;
-    color: #0E6B63;
+    background: ${p.helpTint};
+    color: ${p.onHelpTint};
   }
   .trend-negative {
-    background: #FBE8EF;
-    color: #C2255C;
+    background: ${p.dangerTint};
+    color: ${p.danger};
   }
   .trend-neutral {
-    background: #ECE7F8;
-    color: #5D5672;
+    background: ${p.raised};
+    color: ${p.muted};
   }
   .section-card {
-    background: #FFFFFF;
-    border: 1px solid #ECE7F8;
+    background: ${p.surface};
+    border: 1px solid ${p.line};
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 16px;
     page-break-inside: avoid;
   }
   .section-title {
+    font-family: Figtree, Lexend, sans-serif;
     font-size: 14px;
-    font-weight: 700;
-    color: #221A36;
+    font-weight: 800;
+    color: ${p.ink};
     margin: 0 0 10px;
     padding-bottom: 6px;
-    border-bottom: 1.5px solid #F0ECF9;
+    border-bottom: 1.5px solid ${p.line};
   }
   .symptom-list {
     display: flex;
@@ -511,19 +518,19 @@ export function summaryHtml(summary: Summary): string {
     margin-bottom: 3px;
   }
   .symptom-meta {
-    color: #5D5672;
-    font-weight: 500;
+    color: ${p.muted};
+    font-weight: 400;
   }
   .bar-track {
     width: 100%;
     height: 7px;
-    background: #ECE7F8;
+    background: ${p.line};
     border-radius: 4px;
     overflow: hidden;
   }
   .bar-fill {
     height: 100%;
-    background: #6A55D6;
+    background: ${p.action};
     border-radius: 4px;
   }
   ul {
@@ -534,12 +541,12 @@ export function summaryHtml(summary: Summary): string {
     margin-bottom: 5px;
   }
   .questions-card {
-    border-color: #B4A3F5;
-    background: #FAF9FE;
+    border-color: ${p.border};
+    background: ${p.actionTint};
   }
   .questions-title {
-    color: #5236B5;
-    border-bottom-color: #E3DDF2;
+    color: ${p.onActionTint};
+    border-bottom-color: ${p.border};
   }
   .notes-list {
     list-style: none;
@@ -547,31 +554,31 @@ export function summaryHtml(summary: Summary): string {
   }
   .note-item {
     padding: 8px 12px;
-    background: #F6F4FA;
+    background: ${p.ground};
     border-radius: 6px;
     margin-bottom: 6px;
     font-size: 12px;
   }
   .note-date {
-    font-weight: 700;
-    color: #5236B5;
+    font-weight: 600;
+    color: ${p.action};
     margin-right: 8px;
   }
   .empty-notice {
     padding: 16px;
-    color: #5D5672;
+    color: ${p.muted};
     font-style: italic;
-    background: #F6F4FA;
+    background: ${p.ground};
     border-radius: 8px;
     text-align: center;
     margin-bottom: 16px;
   }
   .footer-notice {
-    color: #5D5672;
+    color: ${p.muted};
     font-size: 11px;
     margin-top: 24px;
     padding-top: 10px;
-    border-top: 1px solid #ECE7F8;
+    border-top: 1px solid ${p.line};
     text-align: center;
   }
 </style>

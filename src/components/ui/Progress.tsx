@@ -96,7 +96,7 @@ export function StepList({ steps, current, children }: StepListProps) {
                 {done ? (
                   <Icon name="check" size={18} color={palette.onAction} bold />
                 ) : (
-                  <Text variant="strong" color={active ? '#FFFFFF' : palette.muted}>
+                  <Text variant="strong" color={active ? palette.onPanel : palette.muted}>
                     {String(index + 1)}
                   </Text>
                 )}

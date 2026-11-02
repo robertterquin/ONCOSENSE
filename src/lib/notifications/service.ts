@@ -19,6 +19,7 @@ import {
 } from '@/stores/notificationStore';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
+import { lightPalette } from '@/theme/palette';
 import type { Appointment } from '@/types/appointment';
 import type { SelfCheckGuide } from '@/types/selfCheckGuide';
 
@@ -273,7 +274,7 @@ export async function sendTestNotification(): Promise<void> {
         title: 'Test notification',
         body: 'OncoSense notifications are working!',
         channelId: 'health_reminders',
-        color: '#5236B5',
+        color: lightPalette.action,
         data: { type: NotificationKind.test, payload: NotificationKind.test },
       });
     }

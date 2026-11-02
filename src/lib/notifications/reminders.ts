@@ -1,3 +1,4 @@
+import { lightPalette } from '@/theme/palette';
 import { formatTime } from '@/lib/dates';
 import {
   DEFAULT_TIMES,
@@ -97,7 +98,7 @@ function monthlySelfExamReminder(
     title: 'Time for your monthly self-check',
     body: 'Open OncoSense to see which check is due. It takes about 10 minutes.',
     channelId: 'screening_reminders',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
     trigger: { kind: 'monthly', day: dayOfMonth, hour: time.hour, minute: time.minute },
   };
@@ -110,7 +111,7 @@ function selfCheckReminder(guideTitle: string, date: Date): ReminderRequest {
     title: 'Time for a check',
     body: `Your ${guideTitle.replace(/^[A-Z](?![A-Z])/, (letter) => letter.toLowerCase())} is due today.`,
     channelId: 'screening_reminders',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: { type: NotificationKind.selfCheck, payload: NotificationKind.selfCheck },
     trigger: { kind: 'date', date },
   };
@@ -133,7 +134,7 @@ function checkInReminder(
     title: weekly ? 'How was this week?' : 'How was today?',
     body: 'A one-minute check-in helps you and your doctor see how things change.',
     channelId: 'wellness_check_in',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: { type: kind, payload: kind },
     trigger: weekly
       ? { kind: 'weekly', weekday: time.weekday ?? 7, hour: time.hour, minute: time.minute }
@@ -151,7 +152,7 @@ function weeklyTipReminder(
     title: 'Tip of the week',
     body: tip,
     channelId: 'health_reminders',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: { type: NotificationKind.weeklyTip, payload: NotificationKind.weeklyTip },
     trigger: {
       kind: 'weekly',
@@ -174,7 +175,7 @@ export function screeningReminder(
     title,
     body: message,
     channelId: 'screening_reminders',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: { type: NotificationKind.screening, payload: `${NotificationKind.screening}:${id}` },
     trigger: { kind: 'date', date },
   };
@@ -207,7 +208,7 @@ export function appointmentReminder(
     title: 'Appointment tomorrow',
     body: `${appointment.title}, ${formatTime(appointment.startsAt)}${where}.`,
     channelId: 'screening_reminders',
-    color: '#5236B5',
+    color: lightPalette.action,
     data: {
       type: NotificationKind.appointment,
       payload: `${NotificationKind.appointment}:${appointment.id}`,
