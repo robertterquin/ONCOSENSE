@@ -29,7 +29,6 @@ import {
   iconForPreventionTip,
   type BodySystem,
 } from '@/lib/learn';
-import { cancerKeyword } from '@/lib/help';
 import { openWebPage } from '@/lib/links';
 import type { ForYouPick } from '@/lib/forYou';
 import { habitWeek, type HabitReason, type Smoker } from '@/lib/habits';
@@ -358,9 +357,8 @@ export function PreventionDetailSheet({
             <Text variant="strong" tone="action">
               {why.text}
             </Text>
-          ) : (
-            <Text variant="reading">{tip.description}</Text>
-          )}
+          ) : null}
+          <Text variant="reading">{tip.description}</Text>
           {detailText ? <Text variant="reading">{detailText}</Text> : null}
           <View style={styles.sheetActions}>
             {tip.kind === 'wellbeing' ? null : (
@@ -421,13 +419,11 @@ export function LowerYourRisk() {
   const focus = useFocus();
   const inTreatment = focus === 'treatment';
   const myCancer = useMyCancer();
-  const survivor = focus === 'finished' && myCancer ? myCancer : null;
-  const helpsAfter =
-    survivor &&
-    plan.tracked.some(
-      (habit) => habit.afterCancer?.[cancerKeyword(survivor.name)] || habit.afterAnyCancer,
-    );
-  const picked = plan.tracked.some((habit) => plan.reason(habit)?.linked);
+  const finished = focus === 'finished';
+  const survivor = finished && myCancer ? myCancer : null;
+  const linked = plan.tracked.some((habit) => plan.reason(habit)?.linked);
+  const helpsAfter = finished && linked;
+  const picked = !finished && linked;
   const smoker = useHabitsStore((state) => state.smoker);
   const [open, setOpen] = useState<Habit | null>(null);
   const [choosing, setChoosing] = useState(false);
@@ -457,7 +453,7 @@ export function LowerYourRisk() {
                       ? `Gentle steps during ${myCancer.name.toLowerCase()} treatment`
                       : 'Small things that help during treatment'
                     : helpsAfter
-                      ? `Habits that may help after ${survivor.name.toLowerCase()}`
+                      ? `Habits that may help after ${survivor ? survivor.name.toLowerCase() : 'treatment'}`
                       : picked
                         ? 'Picked for the cancers you follow'
                         : 'Lowers your overall cancer risk'}
@@ -477,14 +473,12 @@ export function LowerYourRisk() {
           />
         ))}
         {inTreatment ? (
-          smoker === 'no' ? null : (
-            <ListRow
-              title={smoker === 'yes' ? 'Change smoking status' : 'Do you smoke or vape?'}
-              subtitle={smoker === null ? 'Quitting helps treatment work' : undefined}
-              titleTone="action"
-              onPress={() => setChoosing(true)}
-            />
-          )
+          <ListRow
+            title={smoker === null ? 'Do you smoke or vape?' : 'Change smoking status'}
+            subtitle={smoker === null ? 'Quitting helps treatment work' : undefined}
+            titleTone="action"
+            onPress={() => setChoosing(true)}
+          />
         ) : (
           <ListRow
             title="Change habits"

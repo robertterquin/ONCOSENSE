@@ -66,23 +66,12 @@ export const HABITS: Habit[] = (
         colorectal: 'Linked to longer survival after colorectal cancer',
         breast: 'Linked to better overall survival after breast cancer',
         prostate: 'Supports heart and long-term health after prostate cancer',
-        stomach: 'Nutrient-rich plant foods support recovery after stomach cancer',
-        liver: 'Vegetables, fruit, whole grains and beans support your liver in recovery',
-        oral: 'Soft vegetables, fruit and whole grains support healing after oral cancer',
-        uterine: 'Supports healthy weight and heart health after uterine cancer',
-        ovarian: 'Supports recovery and digestive health after ovarian cancer',
-        cervical: 'Supports immunity and long-term health after cervical cancer',
-        lung: 'Fruit, vegetables and whole grains support recovery after lung cancer',
-        leukemia: 'Supports immunity and recovery after leukemia treatment',
-        lymphoma: 'Supports heart health and recovery after lymphoma treatment',
-        thyroid: 'Supports energy and healthy weight after thyroid cancer',
-        testicular: 'Supports long-term heart health after testicular cancer',
       },
       afterAnyCancer: 'Supports recovery and long-term health after treatment',
       detailedInfo:
         'Meals built on whole grains, vegetables, fruit and beans lower the risk of several cancers, including colorectal and stomach cancer. Fill half your plate with vegetables and fruit, choose whole grains, and keep red and processed meat to a little.',
       survivorDetail:
-        'After treatment, meals built around vegetables, fruit, whole grains and beans—with little red or processed meat—support recovery, heart health and long-term survival.',
+        'After treatment, meals built around vegetables, fruit, whole grains and beans, with little red or processed meat, support recovery, heart health and long-term survival.',
       sourceName: 'World Cancer Research Fund',
       sourceUrl: WCRF,
     },
@@ -98,18 +87,7 @@ export const HABITS: Habit[] = (
         colorectal: 'Linked to a lower chance of colon cancer coming back',
         breast: 'Linked to a lower chance of breast cancer coming back',
         prostate: 'Linked to longer survival after prostate cancer',
-        uterine: 'Helps recovery and long-term health after uterine cancer',
-        ovarian: 'Eases lingering tiredness and rebuilds strength after ovarian cancer',
-        cervical: 'Helps rebuild energy, strength and mood after cervical cancer',
         lung: 'Helps breathing capacity, stamina and energy after lung cancer',
-        leukemia: 'Eases treatment tiredness and rebuilds stamina after leukemia',
-        lymphoma: 'Eases treatment tiredness and rebuilds strength after lymphoma',
-        stomach: 'Helps rebuild muscle and energy after stomach cancer',
-        liver: 'Helps rebuild energy and stamina after liver cancer',
-        oral: 'Helps rebuild strength and energy after oral cancer',
-        thyroid: 'Helps energy and mood while your thyroid hormone settles',
-        testicular: 'Supports heart health and stamina after testicular cancer',
-        skin: 'Helps rebuild energy and strength after skin cancer treatment',
       },
       afterAnyCancer: 'Eases post-treatment tiredness and helps rebuild strength',
       detailedInfo:
@@ -136,8 +114,6 @@ export const HABITS: Habit[] = (
         breast: 'Less alcohol may lower the chance of a new breast cancer',
         liver: 'Advised after liver cancer, to protect your liver',
         oral: 'Avoiding alcohol lowers the chance of a second oral or throat cancer',
-        stomach: 'Avoiding alcohol helps protect your stomach after treatment',
-        colorectal: 'Skipping alcohol supports recovery after colorectal cancer',
       },
       detailedInfo:
         'Alcohol causes at least seven types of cancer, including breast, liver and colorectal cancer. There is no safe amount, so every day without it lowers your risk.',
@@ -163,9 +139,9 @@ export const HABITS: Habit[] = (
       detailedInfo:
         "The sun's UV rays cause most skin cancers. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use sunscreen of SPF 30 or higher.",
       treatmentDetail:
-        "During skin cancer treatment, protecting your skin from UV rays prevents further damage and helps treated areas heal. Stay in the shade between 10 a.m. and 4 p.m., cover up and use SPF 30+ sunscreen.",
+        'During skin cancer treatment, protecting your skin from UV rays prevents further damage and helps treated areas heal. Stay in the shade between 10 a.m. and 4 p.m., cover up and use SPF 30+ sunscreen.',
       survivorDetail:
-        "After skin cancer, protecting your skin from UV rays lowers the chance of a new skin cancer. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use SPF 30+ sunscreen.",
+        'After skin cancer, protecting your skin from UV rays lowers the chance of a new skin cancer. Between 10 a.m. and 4 p.m., stay in the shade, cover up with sleeves and a hat, and use SPF 30+ sunscreen.',
       sourceName: 'Skin Cancer Foundation',
       sourceUrl: 'https://www.skincancer.org/skin-cancer-prevention/',
     },
@@ -258,7 +234,7 @@ export const HABITS: Habit[] = (
       description: 'Protects against cervical and other cancers',
       lowers: ['cervical', 'oral'],
       detailedInfo:
-        "The HPV vaccine prevents most cervical cancers and some throat and genital cancers. It works best before age 26; adults up to 45 can ask a doctor whether it's right for them.",
+        "The HPV vaccine prevents most cervical cancers and some throat and genital cancers. It works best at ages 9 to 14, before any sexual contact. It's offered up to 26, and adults 27 to 45 can ask a doctor whether it's right for them.",
       sourceName: 'World Health Organization (WHO)',
       sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cancer',
     },
@@ -301,7 +277,7 @@ export const HABITS: Habit[] = (
       detailedInfo:
         "Good sleep helps energy, mood and recovery. Studies haven't shown that sleep length changes cancer risk, so this one is for feeling well.",
       treatmentDetail:
-        "Rest and sleep help your body recover between treatments. Steroids, pain or worry can make sleeping harder—short daytime naps count too, and your care team can help if you're struggling to sleep.",
+        "Rest and sleep help your body recover between treatments. Steroids, pain or worry can make sleeping harder; short daytime naps count too, and your care team can help if you're struggling to sleep.",
       survivorDetail:
         'Good sleep helps energy, mood and recovery after treatment. Trouble sleeping can linger for a while after treatment ends; a steady bedtime routine helps.',
       sourceName: 'Mayo Clinic',

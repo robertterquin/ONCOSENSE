@@ -68,6 +68,16 @@ describe('habitPlan', () => {
     });
     expect(general.tracked).toHaveLength(MAX_TRACKED);
     expect(general.tracked.every((habit) => general.reason(habit) === null)).toBe(true);
+
+    // Smoke-free always matches, so it doesn't stop the fallback.
+    const smoker = habitPlan(HABITS, {
+      focus: 'learning',
+      smoker: 'yes',
+      chosen: null,
+      followed: ['prostate'],
+    });
+    expect(smoker.tracked).toHaveLength(MAX_TRACKED);
+    expect(smoker.tracked[0].title).toBe('Smoke-free day');
   });
 
   it('after colorectal cancer, puts what may help first and leaves out prevention lines', () => {
@@ -95,11 +105,11 @@ describe('habitPlan', () => {
     });
     expect(titles(thyroidSurvivor.tracked)).toEqual(['Eat plants', 'Move 30 minutes']);
     expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[0])).toEqual({
-      text: 'Supports energy and healthy weight after thyroid cancer',
+      text: 'Supports recovery and long-term health after treatment',
       linked: true,
     });
     expect(thyroidSurvivor.reason(thyroidSurvivor.tracked[1])).toEqual({
-      text: 'Helps energy and mood while your thyroid hormone settles',
+      text: 'Eases post-treatment tiredness and helps rebuild strength',
       linked: true,
     });
     const sun = thyroidSurvivor.options.find((habit) => habit.title === 'Sun-safe outside')!;
@@ -125,6 +135,20 @@ describe('habitPlan', () => {
       text: 'Soft, moist foods and smoothies are gentler on a sore mouth or throat',
       linked: true,
     });
+
+    // Nothing to pick in treatment, so all of them are tracked.
+    const liverSmoker = habitPlan(HABITS, {
+      focus: 'treatment',
+      smoker: 'yes',
+      chosen: null,
+      myCancer: 'liver',
+    });
+    expect(titles(liverSmoker.tracked)).toEqual([
+      'Smoke-free day',
+      'Alcohol-free day',
+      'Gentle movement',
+      'Eat something you enjoy',
+    ]);
 
     const inTreatment = habitPlan(HABITS, { focus: 'treatment', smoker: 'yes', chosen: null });
     const sleep = inTreatment.wellbeing.find((habit) => habit.title === 'Sleep 7 to 9 hours')!;

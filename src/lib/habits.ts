@@ -85,6 +85,8 @@ export function habitPlan(
   );
   const picked = options.filter((habit) => chosen?.includes(habit.id));
   const matched = options.filter((habit) => score(habit) > 0);
+  // Smoke-free always scores; with nothing else matched, fall back to the general habits.
+  const autoTracked = matched.some((habit) => !habit.smokersOnly) ? matched : options;
 
   const reason = (habit: Habit): HabitReason | null => {
     if (habit.smokersOnly && inTreatment) {
@@ -124,11 +126,8 @@ export function habitPlan(
 
   return {
     options,
-    tracked: inTreatment
-      ? options.slice(0, MAX_TRACKED)
-      : picked.length
-        ? picked
-        : (matched.length ? matched : options).slice(0, MAX_TRACKED),
+    // In treatment there's nothing to pick, so every treatment habit is tracked (at most 4).
+    tracked: inTreatment ? options : picked.length ? picked : autoTracked.slice(0, MAX_TRACKED),
     once: ranked(habits.filter((habit) => habit.kind === 'once' && fits(habit))),
     wellbeing: habits.filter((habit) => habit.kind === 'wellbeing' && fits(habit)),
     reason,
