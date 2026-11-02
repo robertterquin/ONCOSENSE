@@ -17,7 +17,7 @@ import {
   StepList,
   Text,
 } from '@/components/ui';
-import { HowDidItGo, StepProgress } from '@/components/learn/CheckSteps';
+import { AnswerButtons, HowDidItGo, SignList, StepProgress } from '@/components/learn/CheckSteps';
 import { SeeADoctor } from '@/components/learn/SeeADoctor';
 import { useSelfCheckGuide } from '@/hooks/usePrevention';
 import { markSelfCheckDone, useSelfChecks } from '@/hooks/useSelfChecks';
@@ -102,6 +102,13 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     if (changed === null) return;
     setNextCheck(markSelfCheckDone(guide, changed));
   };
+  // A change check's last step is the question itself, answered here.
+  const answer = (yes: boolean) => {
+    stopReading();
+    setChanged(yes);
+    setNextCheck(markSelfCheckDone(guide, yes));
+  };
+  const answering = guide.changeCheck && last;
 
   const bottomBar = nextCheck ? (
     <BottomActionBar>
@@ -111,6 +118,8 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
     <BottomActionBar>
       <Button title="Continue" disabled={changed === null} onPress={finish} />
     </BottomActionBar>
+  ) : answering ? (
+    <AnswerButtons noHint="Sets your next check" onAnswer={answer} />
   ) : steps.length ? (
     <BottomActionBar>
       <Button
@@ -182,13 +191,17 @@ function GuidedCheck({ guide }: { guide: SelfCheckGuide }) {
           ) : null}
           {step ? (
             <StepList steps={steps.map((s) => ({ title: s.instruction }))} current={current}>
-              <Text variant="reading">{step.detail}</Text>
+              {answering ? (
+                <SignList signs={guide.warningSigns ?? []} />
+              ) : (
+                <Text variant="reading">{step.detail}</Text>
+              )}
             </StepList>
           ) : null}
         </>
       )}
 
-      {guide.warningSigns?.length ? (
+      {guide.warningSigns?.length && !guide.changeCheck ? (
         <Section
           title="Warning signs"
           subtitle="See a doctor if you notice any of these"

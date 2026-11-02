@@ -1,15 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
 
-import { StepProgress } from '@/components/learn/CheckSteps';
+import { AnswerButtons, SignList, StepProgress } from '@/components/learn/CheckSteps';
 import { SeeADoctor } from '@/components/learn/SeeADoctor';
 import {
   BottomActionBar,
   Button,
   EmptyState,
   LoadingState,
-  PressableScale,
   Screen,
   StepList,
   Text,
@@ -20,9 +18,6 @@ import { cancerKeyword } from '@/lib/help';
 import { signsId, SIGNS_EVERY_MONTHS, type CancerKey } from '@/lib/screening';
 import { useSelfCheckStore } from '@/stores/selfCheckStore';
 import { showToast } from '@/stores/toastStore';
-import { elevation } from '@/theme/elevation';
-import { radii, sizes, space } from '@/theme/tokens';
-import { useDesign } from '@/theme/useTheme';
 import type { CancerType } from '@/types/cancerType';
 
 // The signs check (design refresh Phase 24; steps since Phase 25, like a self-check
@@ -87,24 +82,14 @@ export default function SignsCheckScreen() {
             <Button title="Done" onPress={back} />
           </BottomActionBar>
         ) : item ? (
-          // Two equal answer cards side by side that say what happens next, so the app
-          // doesn't nudge the answer and "Yes" doesn't need the question read again.
-          <BottomActionBar>
-            <AnswerCard
-              title="No, none"
-              detail={
-                current < list.length - 1
-                  ? `Next: ${short(list[current + 1])}`
-                  : `We'll ask again in ${SIGNS_EVERY_MONTHS} months`
-              }
-              onPress={() => answer(false)}
-            />
-            <AnswerCard
-              title="Yes, I have"
-              detail="We'll show what to do next"
-              onPress={() => answer(true)}
-            />
-          </BottomActionBar>
+          <AnswerButtons
+            noHint={
+              current < list.length - 1
+                ? `Next: ${short(list[current + 1])}`
+                : `We'll ask again in ${SIGNS_EVERY_MONTHS} months`
+            }
+            onAnswer={answer}
+          />
         ) : undefined
       }>
       {finished ? (
@@ -132,16 +117,7 @@ export default function SignsCheckScreen() {
                   : name(entry),
             }))}
             current={current}>
-            {(item.cancer?.symptoms ?? []).map((sign) => (
-              <View key={sign} style={styles.sign}>
-                <Text variant="body" tone="action" accessibilityElementsHidden>
-                  •
-                </Text>
-                <Text variant="body" style={styles.flex1}>
-                  {sign}
-                </Text>
-              </View>
-            ))}
+            <SignList signs={item.cancer?.symptoms ?? []} />
           </StepList>
           <Text variant="supporting" tone="muted">
             {list.length === 1
@@ -153,52 +129,3 @@ export default function SignsCheckScreen() {
     </Screen>
   );
 }
-
-/**
- * One answer, side by side with the other, at button height. What happens next is read
- * out as the hint.
- */
-function AnswerCard({
-  title,
-  detail,
-  onPress,
-}: {
-  title: string;
-  detail: string;
-  onPress: () => void;
-}) {
-  const { palette, isDark } = useDesign();
-  return (
-    <PressableScale
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityHint={detail}
-      onPress={onPress}
-      style={[
-        styles.answer,
-        { backgroundColor: palette.surface },
-        elevation('resting', palette, isDark),
-      ]}>
-      <Text variant="strong" tone="action" numberOfLines={1} style={styles.answerLabel}>
-        {title}
-      </Text>
-    </PressableScale>
-  );
-}
-
-const styles = StyleSheet.create({
-  // Each takes half the bar, at button height.
-  answer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.sm,
-    minHeight: sizes.touch,
-    paddingHorizontal: space.md,
-    borderRadius: radii.control,
-  },
-  answerLabel: { flexShrink: 1 },
-  flex1: { flex: 1 },
-  sign: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
-});

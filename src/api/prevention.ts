@@ -1,3 +1,4 @@
+import { asChangeCheck } from '@/lib/changeChecks';
 import { supabase } from '@/lib/supabase';
 import { selfCheckGuideFromRow, type SelfCheckGuide } from '@/types/selfCheckGuide';
 
@@ -14,7 +15,8 @@ export async function fetchSelfCheckGuides(cancerType?: string): Promise<SelfChe
   // The oral self-exam isn't shown: it has too little evidence that it finds cancer earlier.
   return (data ?? [])
     .map(selfCheckGuideFromRow)
-    .filter((guide) => guide.cancerType.toLowerCase() !== 'oral');
+    .filter((guide) => guide.cancerType.toLowerCase() !== 'oral')
+    .map(asChangeCheck);
 }
 
 export async function fetchSelfCheckGuideById(id: string): Promise<SelfCheckGuide> {
@@ -25,5 +27,5 @@ export async function fetchSelfCheckGuideById(id: string): Promise<SelfCheckGuid
     .eq('is_active', true)
     .single();
   check(error, 'Failed to fetch self-check guide');
-  return selfCheckGuideFromRow(data);
+  return asChangeCheck(selfCheckGuideFromRow(data));
 }

@@ -23,6 +23,8 @@ export type SelfCheckGuide = {
   dateVerified: Date | null;
   displayOrder: number;
   isActive: boolean;
+  /** Two steps ending in "any of these changes?" (lib/changeChecks.ts), not an exam. */
+  changeCheck?: boolean;
 };
 
 /** JSONB columns normally arrive as arrays; older rows may hold a JSON string. */

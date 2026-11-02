@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { HowDidItGo, StepProgress } from '@/components/learn/CheckSteps';
+import { AnswerButtons, HowDidItGo, SignList, StepProgress } from '@/components/learn/CheckSteps';
 import { SeeADoctor } from '@/components/learn/SeeADoctor';
 import {
   BottomActionBar,
@@ -58,10 +58,10 @@ export default function BodyCheckScreen() {
   const before = guides.slice(0, index).reduce((sum, item) => sum + item.steps.length, 0);
   const lastStep = guide ? step === guide.steps.length - 1 : false;
 
-  const record = () => {
-    if (!guide || changed === null) return;
-    const next = markSelfCheckDone(guide, changed);
-    setResults((list) => [...list, changed]);
+  const record = (result: boolean | null = changed) => {
+    if (!guide || result === null) return;
+    const next = markSelfCheckDone(guide, result);
+    setResults((list) => [...list, result]);
     setNextDue((current) => (current && current < next ? current : next));
     setAsking(false);
     setChanged(null);
@@ -126,8 +126,14 @@ export default function BodyCheckScreen() {
     </BottomActionBar>
   ) : asking ? (
     <BottomActionBar>
-      <Button title="Continue" disabled={changed === null} onPress={record} />
+      <Button title="Continue" disabled={changed === null} onPress={() => record()} />
     </BottomActionBar>
+  ) : lastStep && guide.changeCheck ? (
+    // A change check's last step is the question itself.
+    <AnswerButtons
+      noHint={guides[index + 1] ? `Next: ${guides[index + 1].title}` : 'Sets your next check'}
+      onAnswer={record}
+    />
   ) : (
     <BottomActionBar>
       <Button
@@ -191,7 +197,11 @@ export default function BodyCheckScreen() {
               <StepList
                 steps={guide.steps.map((item) => ({ title: item.instruction }))}
                 current={step}>
-                <Text variant="reading">{guide.steps[step]?.detail}</Text>
+                {lastStep && guide.changeCheck ? (
+                  <SignList signs={guide.warningSigns ?? []} />
+                ) : (
+                  <Text variant="reading">{guide.steps[step]?.detail}</Text>
+                )}
               </StepList>
             </>
           )}
