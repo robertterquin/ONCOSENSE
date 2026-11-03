@@ -83,7 +83,7 @@ const HelpSceneInner = () => {
                 <Icon name={icon} size={38} color={C.help} />
               </div>
               <div>
-                <div style={{ fontSize: 32, fontWeight: 500 }}>{title}</div>
+                <div style={{ fontSize: 32, fontWeight: 600 }}>{title}</div>
                 <div style={{ fontSize: 24, color: C.helpTint, opacity: 0.85 }}>
                   {line}
                 </div>
@@ -166,7 +166,7 @@ const HelpSceneInner = () => {
             color: "#04332F",
             fontFamily: body,
             fontSize: 44,
-            fontWeight: 600,
+            fontWeight: 800,
             opacity: interpolate(frame, [18, 26], [0, 1], clamp),
             translate: `0 ${interpolate(frame, [18, 32], [30, 0], { ...clamp, easing: OUT })}px`,
           }}

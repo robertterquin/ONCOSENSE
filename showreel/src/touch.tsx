@@ -10,15 +10,7 @@ import { clamp, IN_OUT, OUT } from "./theme";
 
 /** A synthesized sound in public/audio (scripts/make-audio.mjs). */
 export const sfx = (
-  name:
-    | "tap"
-    | "pop"
-    | "tick"
-    | "ding"
-    | "ring"
-    | "bloom"
-    | "toggle"
-    | "whoosh",
+  name: "tap" | "pop" | "tick" | "ding" | "ring" | "bloom" | "whoosh",
 ) => staticFile(`audio/${name}.wav`);
 
 export const useTall = () => {

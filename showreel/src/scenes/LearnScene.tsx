@@ -101,7 +101,7 @@ const LearnSceneInner = () => {
                 gap: 14,
                 fontFamily: body,
                 fontSize: 26,
-                fontWeight: 500,
+                fontWeight: 600,
                 color: C.ink,
                 opacity: interpolate(frame, [at, at + 6], [0, 1], clamp),
                 scale: String(
@@ -218,7 +218,7 @@ const LearnSceneInner = () => {
               background: C.action,
               color: "white",
               fontSize: 28,
-              fontWeight: 500,
+              fontWeight: 800,
               scale: isPressed(frame, { target: next, down: NEXT_TAP })
                 ? "0.95"
                 : "1",

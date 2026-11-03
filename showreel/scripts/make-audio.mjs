@@ -424,21 +424,6 @@ function bloom() {
   );
 }
 
-function toggle() {
-  // A theme switch: two close clicks, the second higher.
-  const out = buffer(0.12);
-  for (let i = 0; i < out.length; i++) {
-    const t = i / SR;
-    out[i] =
-      Math.sin(2 * Math.PI * 1100 * t) * Math.exp(-t * 120) +
-      (t > 0.045
-        ? Math.sin(2 * Math.PI * 1700 * (t - 0.045)) *
-          Math.exp(-(t - 0.045) * 120)
-        : 0);
-  }
-  writeWav("toggle.wav", out, undefined, 0.7);
-}
-
 music();
 whoosh();
 tap();
@@ -447,4 +432,3 @@ tick();
 ding();
 ring();
 bloom();
-toggle();

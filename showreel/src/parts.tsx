@@ -150,7 +150,7 @@ export const TabBar = ({ active }: { active: number }) => {
             alignItems: "center",
             gap: 4,
             fontSize: 12,
-            fontWeight: 500,
+            fontWeight: index === active ? 800 : 600,
             color: index === active ? C.action : C.muted,
           }}
         >

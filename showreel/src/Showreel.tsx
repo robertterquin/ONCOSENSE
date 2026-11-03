@@ -13,7 +13,7 @@ import { CommunityScene } from "./scenes/CommunityScene";
 import { HelpScene } from "./scenes/HelpScene";
 import { LearnScene } from "./scenes/LearnScene";
 import { LogoScene } from "./scenes/LogoScene";
-import { ReadingScene } from "./scenes/ReadingScene";
+import { JourneyScene } from "./scenes/JourneyScene";
 import { TodayScene } from "./scenes/TodayScene";
 import { C, clamp, IN_OUT } from "./theme";
 import { sfx, useTall } from "./touch";
@@ -40,7 +40,7 @@ const TRIM = {
   learn: 20,
   checkIn: 16,
   today: 0,
-  reading: 8,
+  journey: 10,
   community: 10,
   help: 6,
 };
@@ -70,10 +70,10 @@ const DAYS: DayNote[] = [
   },
   {
     name: "Wednesday",
-    line: "A foggy day? Make everything easier to read.",
-    recap: "Switched to easier reading",
+    line: "See how your week is going, and share it with your doctor.",
+    recap: "Shared a summary with my doctor",
     dot: C.lavender,
-    doneAt: at(3, TRIM.reading, 66),
+    doneAt: at(3, TRIM.journey, 114),
   },
   {
     name: "Thursday",
@@ -129,7 +129,16 @@ const FOCUS = {
       [430, 1380],
     ],
   },
-  reading: { L: [[1400, 560]], P: [[540, 1080]] },
+  journey: {
+    L: [
+      [1445, 470],
+      [1445, 640],
+    ],
+    P: [
+      [540, 1110],
+      [540, 1330],
+    ],
+  },
   community: {
     L: [
       [550, 480],
@@ -147,7 +156,7 @@ const ZOOM = {
   learn: { L: [0.95, 1.05], P: [0.85, 0.92] },
   checkIn: { L: [1.05, 1.15], P: [0.92, 0.98] },
   today: { L: [1.0, 1.12], P: [0.9, 0.98] },
-  reading: { L: [1.0, 1.08], P: [0.9, 0.95] },
+  journey: { L: [1.0, 1.1], P: [0.92, 0.98] },
   community: { L: [1.0, 1.1], P: [0.9, 0.96] },
   help: { L: [0.9, 0.95], P: [0.82, 0.86] },
 } satisfies Record<string, Zoom>;
@@ -235,12 +244,12 @@ export const Showreel = () => {
             trimBefore={TRIM.checkIn}
             style={day(1, FOCUS.checkIn, ZOOM.checkIn, C.panel)}
           />
-          <ReadingScene
+          <JourneyScene
             name="Wednesday"
             from={from(3)}
             durationInFrames={LENGTH}
-            trimBefore={TRIM.reading}
-            style={day(3, FOCUS.reading, ZOOM.reading, C.panel)}
+            trimBefore={TRIM.journey}
+            style={day(3, FOCUS.journey, ZOOM.journey, C.night)}
           />
           <HelpScene
             name="Friday"

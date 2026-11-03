@@ -7,7 +7,7 @@ import { CheckInScene } from "./scenes/CheckInScene";
 import { LearnScene } from "./scenes/LearnScene";
 import { CommunityScene } from "./scenes/CommunityScene";
 import { HelpScene } from "./scenes/HelpScene";
-import { ReadingScene } from "./scenes/ReadingScene";
+import { JourneyScene } from "./scenes/JourneyScene";
 import { Showreel } from "./Showreel";
 
 export const RemotionRoot: React.FC = () => {
@@ -102,13 +102,13 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ style: { backgroundColor: "#0E6B63" } }}
         />
         <Composition
-          id="ReadingScene"
-          component={ReadingScene}
-          durationInFrames={120}
+          id="JourneyScene"
+          component={JourneyScene}
+          durationInFrames={135}
           fps={30}
           width={1920}
           height={1080}
-          defaultProps={{ style: { backgroundColor: "#2E1F66" } }}
+          defaultProps={{ style: { backgroundColor: "#140D33" } }}
         />
       </Folder>
       <Folder name="Elements">

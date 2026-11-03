@@ -74,7 +74,7 @@ const Row = ({
         style={{ width: 10, height: 10, borderRadius: 5, background: dot }}
       />
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 19, fontWeight: 500, color: "white" }}>
+        <div style={{ fontSize: 19, fontWeight: 600, color: "white" }}>
           {title}
         </div>
         <div
@@ -216,7 +216,7 @@ const TodaySceneInner = () => {
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: 17,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         background: i === 2 ? C.lavender : "transparent",
                         color: i === 2 ? C.panel : "white",
                       }}
@@ -291,7 +291,7 @@ const TodaySceneInner = () => {
               <Icon name="mood-good" size={30} color={C.action} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 18, fontWeight: 500 }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>
                 Daily check-in
               </div>
               <div style={{ fontSize: 15, color: C.muted }}>

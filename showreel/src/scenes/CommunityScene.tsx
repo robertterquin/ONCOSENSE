@@ -95,7 +95,7 @@ const CommunitySceneInner = () => {
                   background: C.raised,
                   color: C.action,
                   fontSize: 20,
-                  fontWeight: 500,
+                  fontWeight: 600,
                 }}
               >
                 {question.tag}
@@ -103,7 +103,7 @@ const CommunitySceneInner = () => {
               <div
                 style={{
                   fontSize: 32,
-                  fontWeight: 500,
+                  fontWeight: 600,
                   lineHeight: 1.3,
                   marginTop: 14,
                 }}

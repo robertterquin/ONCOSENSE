@@ -156,7 +156,13 @@ export const WeekOverlay = ({ days }: { days: DayNote[] }) => {
                   translate: `0 ${interpolate(frame, [at, at + 12], [16, 0], { ...clamp, easing: POP })}px`,
                 }}
               >
-                <div style={{ fontSize: 22, color: C.onPanelMuted }}>
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    color: C.onPanelMuted,
+                  }}
+                >
                   {letter}
                 </div>
                 <div
@@ -166,9 +172,8 @@ export const WeekOverlay = ({ days }: { days: DayNote[] }) => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: display,
-                    fontWeight: 800,
-                    fontSize: 32,
+                    fontWeight: 600,
+                    fontSize: 30,
                     color: current ? C.panel : "white",
                   }}
                 >
@@ -279,8 +284,7 @@ export const WeekOverlay = ({ days }: { days: DayNote[] }) => {
               />
               <div
                 style={{
-                  fontFamily: display,
-                  fontWeight: 800,
+                  fontWeight: 600,
                   fontSize: tall ? 34 : 30,
                   color: "white",
                   width: tall ? 220 : 190,

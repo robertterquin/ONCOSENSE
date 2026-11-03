@@ -67,7 +67,7 @@ const Slider = ({
           display: "flex",
           justifyContent: "space-between",
           fontSize: 18,
-          fontWeight: 500,
+          fontWeight: 600,
         }}
       >
         <span>{label}</span>
@@ -161,7 +161,7 @@ const CheckInSceneInner = () => {
         >
           <ScreenTitle>Check in</ScreenTitle>
           <div
-            style={{ padding: "0 24px 14px", fontSize: 20, fontWeight: 500 }}
+            style={{ padding: "0 24px 14px", fontSize: 20, fontWeight: 600 }}
           >
             How are you feeling?
           </div>
@@ -182,6 +182,7 @@ const CheckInSceneInner = () => {
                     justifyContent: "center",
                     gap: 6,
                     fontSize: 14,
+                    fontWeight: 600,
                     background: on ? C.action : C.raised,
                     color: on ? "white" : C.ink,
                     scale: String(
@@ -225,7 +226,7 @@ const CheckInSceneInner = () => {
               background: saved ? C.help : C.action,
               color: "white",
               fontSize: 19,
-              fontWeight: 500,
+              fontWeight: 800,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

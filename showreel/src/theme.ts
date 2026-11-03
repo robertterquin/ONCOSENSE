@@ -11,7 +11,7 @@ export const display = loadFigtree("normal", {
 }).fontFamily;
 
 export const body = loadLexend("normal", {
-  weights: ["400", "500", "600"],
+  weights: ["400", "600", "800"],
   subsets: ["latin"],
 }).fontFamily;
 
@@ -27,6 +27,7 @@ export const C = {
   ink: "#221A36",
   muted: "#5D5672",
   line: "#DDD5EE",
+  border: "#CEC6E2",
   action: "#5236B5",
   help: "#0E6B63",
   helpBright: "#6FD3C5",
