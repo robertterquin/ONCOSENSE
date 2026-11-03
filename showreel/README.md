@@ -1,3 +1,14 @@
+# OncoSense showreel
+
+"A week with OncoSense": a 30-second Remotion video, landscape (`Showreel`) and portrait (`ShowreelPortrait`).
+
+```console
+npm i
+node scripts/make-audio.mjs   # synthesizes the music and sound effects into public/audio
+npm run dev                   # opens Remotion Studio
+npx remotion render ShowreelPortrait out/oncosense-showreel-portrait.mp4
+```
+
 # Remotion video
 
 <p align="center">
