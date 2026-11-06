@@ -1,4 +1,4 @@
-import { Composition, Folder } from "remotion";
+import { Composition, Folder, Still } from "remotion";
 import { Headline } from "./parts";
 import { LogoScene } from "./scenes/LogoScene";
 import { TabsScene } from "./scenes/TabsScene";
@@ -8,6 +8,7 @@ import { LearnScene } from "./scenes/LearnScene";
 import { CommunityScene } from "./scenes/CommunityScene";
 import { HelpScene } from "./scenes/HelpScene";
 import { JourneyScene } from "./scenes/JourneyScene";
+import { Screens } from "./Screens";
 import { Showreel } from "./Showreel";
 
 export const RemotionRoot: React.FC = () => {
@@ -29,6 +30,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
+      <Still id="Screens" component={Screens} width={1800} height={1240} />
       <Folder name="Scenes">
         <Composition
           id="LogoScene"
